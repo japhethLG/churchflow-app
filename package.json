@@ -1,0 +1,38 @@
+{
+  "name": "church-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bash scripts/wait-for-api.sh && next dev",
+    "dev:test": "dotenv -e .env.test.local -- next dev",
+    "build": "next build",
+    "build:test": "dotenv -e .env.test.local -- next build",
+    "start": "next start",
+    "start:test": "dotenv -e .env.test.local -- next start",
+    "typecheck": "tsc --noEmit",
+    "api:types": "openapi-typescript http://localhost:8000/api-docs-json -o src/lib/api/schema.d.ts"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.100.1",
+    "@tanstack/react-query-devtools": "^5.100.1",
+    "firebase": "^12.12.1",
+    "firebase-admin": "^13.8.0",
+    "next": "^16.2.4",
+    "openapi-fetch": "^0.17.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "dotenv-cli": "^11.0.0",
+    "openapi-typescript": "^7.13.0",
+    "server-only": "^0.0.1",
+    "tailwindcss": "^4.2.4",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
