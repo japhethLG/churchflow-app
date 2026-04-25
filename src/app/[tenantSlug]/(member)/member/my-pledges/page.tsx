@@ -9,11 +9,11 @@ import { useTenant } from "@/lib/api/tenants";
 import { MemberPledgesTable } from "@/components/pages/member-pledges/MemberPledgesTable";
 import { SANCTUARY as S } from "@/lib/design/tokens";
 
-function fmtCurrency(v: number | string): string {
+const fmtCurrency = (v: number | string): string  => {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function MyPledgesPage() {
+export default () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   const tenantQ = useTenant(tenantSlug);

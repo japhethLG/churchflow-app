@@ -23,7 +23,7 @@ type AdminUser = {
   createdAt: string;
 };
 
-export default function SuperAdminAdminsPage() {
+export default () => {
   const [search, setSearch] = useState("");
   const [tenantFilter, setTenantFilter] = useState("");
   const [superAdminOnly, setSuperAdminOnly] = useState(false);

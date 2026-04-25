@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth/actions";
 
-export default function LogoutPage() {
+export default () => {
   const router = useRouter();
 
   useEffect(() => {

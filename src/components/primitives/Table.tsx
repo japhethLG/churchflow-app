@@ -10,7 +10,7 @@ export type TableColumn<Row = Record<string, ReactNode>> = {
 
 export type TableRow = Record<string, ReactNode> & { _hover?: boolean };
 
-export function Table({ columns, rows }: { columns: TableColumn[]; rows: TableRow[] }) {
+export const Table = ({ columns, rows }: { columns: TableColumn[]; rows: TableRow[] }) => {
   const gridTemplate = columns.map((c) => c.width || "1fr").join(" ");
   return (
     <div

@@ -11,7 +11,7 @@ import {
 import { useAddCampaignItem, useCreateCampaign } from "@/lib/api/campaigns";
 import { useTenant } from "@/lib/api/tenants";
 
-export default function NewCampaignPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { data: tenant } = useTenant(tenantSlug);
@@ -36,7 +36,7 @@ export default function NewCampaignPage() {
     setValue((v) => (v.currency ? v : { ...v, currency: tenant.currency }));
   }, [tenant?.currency]);
 
-  async function handleSubmit() {
+  const handleSubmit = async () => {
     setError(null);
     setSubmitting(true);
     try {

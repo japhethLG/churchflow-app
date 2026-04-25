@@ -20,18 +20,18 @@ const STATUS_LABEL: Record<CampaignStatusFilter, string> = {
 
 const STATUS_CYCLE: CampaignStatusFilter[] = ["all", "DRAFT", "ACTIVE", "COMPLETED", "CANCELLED"];
 
-function next<T>(arr: readonly T[], v: T): T {
+const next = <T,>(arr: readonly T[], v: T): T => {
   const i = arr.indexOf(v);
   return arr[(i + 1) % arr.length];
 }
 
-export function CampaignsFilters({
+export const CampaignsFilters = ({
   value,
   onChange,
 }: {
   value: CampaignsFiltersValue;
   onChange: (v: CampaignsFiltersValue) => void;
-}) {
+}) => {
   return (
     <div
       style={{

@@ -19,17 +19,17 @@ export type ConfirmCancelCampaignProps = {
   onCancelled?: () => void;
 };
 
-export function ConfirmCancelCampaignModal({
+export const ConfirmCancelCampaignModal = ({
   tenantSlug,
   campaignId,
   campaignTitle,
   onCancelled,
   onClose,
-}: ConfirmCancelCampaignProps & ModalBaseProps) {
+}: ConfirmCancelCampaignProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useUpdateCampaign(tenantSlug);
 
-  async function handleCancel() {
+  const handleCancel = async () => {
     setError(null);
     try {
       await mutateAsync({

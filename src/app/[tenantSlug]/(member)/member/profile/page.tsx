@@ -1,5 +1,5 @@
 import { MemberProfile } from "@/components/pages/member-profile/MemberProfile";
 
-export default function MemberProfilePage() {
+export default () => {
   return <MemberProfile />;
 }

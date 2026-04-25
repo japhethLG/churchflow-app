@@ -6,11 +6,11 @@ import { getSessionUser } from "@/lib/auth/server";
 // Platform-ops gate. Lives at the top level (not under [tenantSlug])
 // because /super-admin/* routes manage all tenants — they're not scoped
 // to any one church.
-export default async function SuperAdminLayout({
+export default async ({
   children,
 }: {
   children: ReactNode;
-}) {
+}) => {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   if (!user.isSuperAdmin) redirect("/");

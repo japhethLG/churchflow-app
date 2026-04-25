@@ -9,12 +9,12 @@ import { signInWithGoogle } from "@/lib/auth/actions";
 // redirect already knows the rules (super-admin → /super-admin/tenants,
 // 0 memberships → /select-church, 1 → /[slug]/(admin|member)/dashboard,
 // >1 → /select-church) so we don't duplicate them here.
-export function LoginButton() {
+export const LoginButton = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleClick() {
+  const handleClick = async () => {
     setLoading(true);
     setError(null);
     try {

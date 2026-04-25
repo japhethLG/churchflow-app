@@ -5,6 +5,6 @@ export const INVITATION_PATHS: readonly string[] = [
   "/api/v1/tenants/{tenantId}/invitations",
 ];
 
-export function invalidateInvitations(qc: QueryClient) {
+export const invalidateInvitations = (qc: QueryClient) => {
   return invalidateByPaths(qc, INVITATION_PATHS);
 }

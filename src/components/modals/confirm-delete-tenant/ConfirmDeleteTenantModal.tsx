@@ -18,16 +18,16 @@ export type ConfirmDeleteTenantProps = {
   onDeleted?: () => void;
 };
 
-export function ConfirmDeleteTenantModal({
+export const ConfirmDeleteTenantModal = ({
   tenantId,
   tenantName,
   onDeleted,
   onClose,
-}: ConfirmDeleteTenantProps & ModalBaseProps) {
+}: ConfirmDeleteTenantProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useDeleteTenant();
 
-  async function handleDelete() {
+  const handleDelete = async () => {
     setError(null);
     try {
       await mutateAsync({ params: { path: { tenantId } } });

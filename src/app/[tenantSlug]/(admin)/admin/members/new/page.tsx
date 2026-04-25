@@ -1,5 +1,5 @@
 import { ScaffoldPage } from "@/components/pages/ScaffoldPage";
 
-export default function NewMemberPage() {
+export default () => {
   return <ScaffoldPage title="Add member" />;
 }

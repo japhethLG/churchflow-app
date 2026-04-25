@@ -62,7 +62,7 @@ const registry: Partial<Record<ModalName, AnyModal>> = {
   "cancel-invitation": CancelInvitationModal as AnyModal,
 };
 
-export function ModalHost() {
+export const ModalHost = () => {
   const { active, close } = useModalStore();
   if (!active) return null;
   const { name, props } = active as {

@@ -1,5 +1,5 @@
 import { SuperAdminProfile } from "@/components/pages/super-admin-profile/SuperAdminProfile";
 
-export default function SuperAdminProfilePage() {
+export default () => {
   return <SuperAdminProfile />;
 }

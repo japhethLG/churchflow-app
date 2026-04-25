@@ -11,13 +11,13 @@ import { getSessionUser } from "@/lib/auth/server";
 // to the admin view too (they're platform owners acting on the tenant's
 // data). If a super-admin *does* have a USER membership, though, they
 // get sent to the member view — their explicit role takes precedence.
-export default async function AdminLayout({
+export default async ({
   params,
   children,
 }: {
   params: Promise<{ tenantSlug: string }>;
   children: ReactNode;
-}) {
+}) => {
   const { tenantSlug } = await params;
   const user = (await getSessionUser())!; // TenantLayout guaranteed non-null
 

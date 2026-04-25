@@ -30,20 +30,20 @@ const STATUS_MAP: Record<
   CANCELLED: "Cancelled",
 };
 
-function fmtCompact(v: number): string {
+const fmtCompact = (v: number): string  => {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
   return Number(v).toFixed(0);
 }
 
-function fmtCurrency(v: number | string): string {
+const fmtCurrency = (v: number | string): string  => {
   return Number(v).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
-export default function MemberCampaignsPage() {
+export default () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const open = useModalStore((s) => s.open);
 
@@ -246,7 +246,7 @@ export default function MemberCampaignsPage() {
 
 /* ─── Campaign Card with inline progress ─── */
 
-function CampaignCard({
+const CampaignCard = ({
   campaign: c,
   myPledges,
   tenantSlug,
@@ -264,7 +264,7 @@ function CampaignCard({
   currencySymbol: string;
   onPledge: (name: "member-pledge", props: MemberPledgeProps) => void;
   past?: boolean;
-}) {
+}) => {
   const progressQ = useCampaignProgress(tenantSlug, c.id, Boolean(c.id));
   const progress = progressQ.data;
   const goal = Number(progress?.goalAmount ?? 0);

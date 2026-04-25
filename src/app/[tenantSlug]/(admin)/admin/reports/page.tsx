@@ -27,7 +27,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "by-month", label: "By Month" },
 ];
 
-export default function ReportsPage() {
+export default () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [tab, setTab] = useState<Tab>("by-type");
 

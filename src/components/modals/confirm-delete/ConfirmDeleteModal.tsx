@@ -18,17 +18,17 @@ export type ConfirmDeleteProps = {
   onConfirm: () => Promise<void> | void;
 };
 
-export function ConfirmDeleteModal({
+export const ConfirmDeleteModal = ({
   title,
   message,
   confirmLabel = "Delete",
   onConfirm,
   onClose,
-}: ConfirmDeleteProps & ModalBaseProps) {
+}: ConfirmDeleteProps & ModalBaseProps) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleConfirm() {
+  const handleConfirm = async () => {
     setBusy(true);
     setError(null);
     try {

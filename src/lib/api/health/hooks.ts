@@ -2,6 +2,6 @@
 
 import { useApiQuery } from "../hooks";
 
-export function useHealth() {
+export const useHealth = () => {
   return useApiQuery("/api/v1/health");
 }

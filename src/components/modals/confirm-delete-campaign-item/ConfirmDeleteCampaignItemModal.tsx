@@ -19,17 +19,17 @@ export type ConfirmDeleteCampaignItemProps = {
   itemTitle: string;
 };
 
-export function ConfirmDeleteCampaignItemModal({
+export const ConfirmDeleteCampaignItemModal = ({
   tenantSlug,
   campaignId,
   itemId,
   itemTitle,
   onClose,
-}: ConfirmDeleteCampaignItemProps & ModalBaseProps) {
+}: ConfirmDeleteCampaignItemProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useDeleteCampaignItem(tenantSlug);
 
-  async function handleDelete() {
+  const handleDelete = async () => {
     setError(null);
     try {
       await mutateAsync({ params: { path: { tenantId: tenantSlug, id: campaignId, itemId } } });

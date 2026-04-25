@@ -10,7 +10,7 @@ export const TRANSACTION_PATHS = [
 // `invalidateTransactions(qc, tenantId)` only touches queries whose init
 // had params.path.tenantId === tenantId. Pass undefined to invalidate
 // transactions for every tenant (rare — e.g. sign-out).
-export function invalidateTransactions(qc: QueryClient, tenantId?: string) {
+export const invalidateTransactions = (qc: QueryClient, tenantId?: string) => {
   const set = new Set<string>(TRANSACTION_PATHS);
   return qc.invalidateQueries({
     predicate: (q) => {

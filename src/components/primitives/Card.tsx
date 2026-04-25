@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { SANCTUARY as S } from "@/lib/design/tokens";
 
-export function Card({
+export const Card = ({
   children,
   padding = 24,
   style,
@@ -11,7 +11,7 @@ export function Card({
   padding?: number;
   style?: CSSProperties;
   bg?: string;
-}) {
+}) => {
   return (
     <div
       style={{

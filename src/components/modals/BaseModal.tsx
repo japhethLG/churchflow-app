@@ -36,7 +36,7 @@ type BaseModalProps = {
 
 const WIDTHS: Record<Size, number> = { sm: 400, md: 560, lg: 720, xl: 920 };
 
-export function BaseModal({
+export const BaseModal = ({
   overline,
   title,
   showClose = true,
@@ -47,7 +47,7 @@ export function BaseModal({
   size = "md",
   onClose,
   dismissible = true,
-}: BaseModalProps) {
+}: BaseModalProps) => {
   useEffect(() => {
     if (!dismissible) return;
     const onKey = (e: KeyboardEvent) => {

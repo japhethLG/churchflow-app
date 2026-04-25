@@ -6,12 +6,12 @@ import type { components } from "@/lib/api";
 
 type Progress = components["schemas"]["CampaignProgressResponseDto"];
 
-function pct(n: number, d: number): number {
+const pct = (n: number, d: number): number  => {
   if (d <= 0) return 0;
   return Math.min(100, Math.round((n / d) * 100));
 }
 
-export function CampaignProgressCard({
+export const CampaignProgressCard = ({
   progress,
   loading,
   currency,
@@ -19,7 +19,7 @@ export function CampaignProgressCard({
   progress: Progress | undefined;
   loading?: boolean;
   currency: string;
-}) {
+}) => {
   if (loading || !progress) {
     return (
       <Card padding={24}>

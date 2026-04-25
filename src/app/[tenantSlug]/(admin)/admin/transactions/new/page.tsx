@@ -7,7 +7,7 @@ import { openModal } from "@/lib/modals/store";
 // Deep-link convenience: navigating here opens the record-gift modal
 // over the transactions list. Useful for "Record gift" buttons that
 // aren't bound to the modal store directly (e.g. emails, sidebars).
-export default function NewTransactionPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

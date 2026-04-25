@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   description: "Record tithes, offerings, and giving for your church.",
 };
 
-export default function RootLayout({
+export default ({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <html lang="en" className={inter.variable}>
       <body>

@@ -17,7 +17,7 @@ export type AddMemberProps = {
   tenantSlug: string;
 };
 
-export function AddMemberModal({ tenantSlug, onClose }: AddMemberProps & ModalBaseProps) {
+export const AddMemberModal = ({ tenantSlug, onClose }: AddMemberProps & ModalBaseProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ export function AddMemberModal({ tenantSlug, onClose }: AddMemberProps & ModalBa
 
   const canSubmit = firstName.trim().length > 0 && lastName.trim().length > 0;
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!canSubmit) return;
     setError(null);
     try {

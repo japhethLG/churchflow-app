@@ -18,16 +18,16 @@ export type ConfirmRestoreTenantProps = {
   onRestored?: () => void;
 };
 
-export function ConfirmRestoreTenantModal({
+export const ConfirmRestoreTenantModal = ({
   tenantId,
   tenantName,
   onRestored,
   onClose,
-}: ConfirmRestoreTenantProps & ModalBaseProps) {
+}: ConfirmRestoreTenantProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useRestoreTenant();
 
-  async function handleRestore() {
+  const handleRestore = async () => {
     setError(null);
     try {
       await mutateAsync({ params: { path: { tenantId } } });

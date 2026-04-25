@@ -22,18 +22,18 @@ export type EditCampaignItemProps = {
   item: Item;
 };
 
-function toDateInput(d: unknown): string {
+const toDateInput = (d: unknown): string  => {
   const s = nstr(d);
   if (!s) return "";
   return new Date(s).toISOString().slice(0, 10);
 }
 
-export function EditCampaignItemModal({
+export const EditCampaignItemModal = ({
   tenantSlug,
   campaignId,
   item,
   onClose,
-}: EditCampaignItemProps & ModalBaseProps) {
+}: EditCampaignItemProps & ModalBaseProps) => {
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(nstr(item.description) ?? "");
   const [target, setTarget] = useState(item.targetAmount.toString());
@@ -43,7 +43,7 @@ export function EditCampaignItemModal({
 
   const canSubmit = title.trim().length > 0 && Number(target) > 0;
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!canSubmit) return;
     setError(null);
     try {

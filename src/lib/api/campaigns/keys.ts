@@ -12,7 +12,7 @@ export const CAMPAIGN_PATHS = [
   "/api/v1/tenants/{tenantId}/campaigns/{id}/items/{itemId}",
 ] as const;
 
-export function invalidateCampaigns(qc: QueryClient, tenantId?: string) {
+export const invalidateCampaigns = (qc: QueryClient, tenantId?: string) => {
   const set = new Set<string>(CAMPAIGN_PATHS);
   return qc.invalidateQueries({
     predicate: (q) => {

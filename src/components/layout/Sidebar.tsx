@@ -23,7 +23,7 @@ export type TenantSummary = {
   role: "ADMIN" | "USER";
 };
 
-function buildNav(perspective: Perspective, tenantSlug?: string): NavItem[] {
+const buildNav = (perspective: Perspective, tenantSlug?: string): NavItem[]  => {
   if (perspective === "super") {
     return [
       { icon: "home", label: "Tenants", href: "/super-admin/tenants" },
@@ -58,7 +58,7 @@ function buildNav(perspective: Perspective, tenantSlug?: string): NavItem[] {
   ];
 }
 
-export function Sidebar({
+export const Sidebar = ({
   perspective,
   tenantSlug,
   churchName,
@@ -74,7 +74,7 @@ export function Sidebar({
   userEmail?: string;
   memberships?: TenantSummary[];
   isSuperAdmin?: boolean;
-}) {
+}) => {
   const pathname = usePathname();
   const items = buildNav(perspective, tenantSlug);
 
@@ -145,13 +145,13 @@ export function Sidebar({
 /* ─────────────────────────────────────────────────────
    Brand header
    ───────────────────────────────────────────────────── */
-function BrandHeader({
+const BrandHeader = ({
   perspective,
   churchName,
 }: {
   perspective: Perspective;
   churchName: string;
-}) {
+}) => {
   const initials = churchName
     .split(" ")
     .map((w) => w[0])
@@ -215,7 +215,7 @@ function BrandHeader({
    Account menu — avatar trigger + dropdown with
    flyout submenus for Admin / Member
    ───────────────────────────────────────────────────── */
-function AccountMenu({
+const AccountMenu = ({
   perspective,
   tenantSlug,
   userName,
@@ -229,7 +229,7 @@ function AccountMenu({
   userEmail?: string;
   memberships: TenantSummary[];
   isSuperAdmin: boolean;
-}) {
+}) => {
   const [open, setOpen] = useState(false);
   const [flyout, setFlyout] = useState<"admin" | "member" | null>(null);
   const router = useRouter();
@@ -239,7 +239,7 @@ function AccountMenu({
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    function handleClick(e: MouseEvent) {
+    const handleClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
         setFlyout(null);
@@ -249,24 +249,24 @@ function AccountMenu({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  function closeAll() {
+  const closeAll = () => {
     setOpen(false);
     setFlyout(null);
   }
 
   // Debounced flyout open/close for smooth hover
-  function openFlyout(which: "admin" | "member") {
+  const openFlyout = (which: "admin" | "member") => {
     if (flyoutTimeout.current) clearTimeout(flyoutTimeout.current);
     setFlyout(which);
   }
-  function scheduleFlyoutClose() {
+  const scheduleFlyoutClose = () => {
     flyoutTimeout.current = setTimeout(() => setFlyout(null), 200);
   }
-  function cancelFlyoutClose() {
+  const cancelFlyoutClose = () => {
     if (flyoutTimeout.current) clearTimeout(flyoutTimeout.current);
   }
 
-  async function handleSignOut() {
+  const handleSignOut = async () => {
     closeAll();
     await signOut();
     router.push("/login");
@@ -518,7 +518,7 @@ function AccountMenu({
    Flyout trigger row — the menu item that spawns
    a flyout panel to the right on hover / click
    ───────────────────────────────────────────────────── */
-function FlyoutTriggerRow({
+const FlyoutTriggerRow = ({
   icon,
   label,
   active,
@@ -530,7 +530,7 @@ function FlyoutTriggerRow({
   active: boolean;
   isOpen: boolean;
   onClick: () => void;
-}) {
+}) => {
   return (
     <button
       type="button"
@@ -601,7 +601,7 @@ function FlyoutTriggerRow({
    Flyout panel — pops out to the right of the
    parent dropdown, showing child tenants
    ───────────────────────────────────────────────────── */
-function FlyoutPanel({
+const FlyoutPanel = ({
   children,
   onMouseEnter,
   onMouseLeave,
@@ -609,7 +609,7 @@ function FlyoutPanel({
   children: React.ReactNode;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
-}) {
+}) => {
   return (
     <div
       onMouseEnter={onMouseEnter}
@@ -643,7 +643,7 @@ function FlyoutPanel({
 /* ─────────────────────────────────────────────────────
    Tenant link — a single church inside a flyout
    ───────────────────────────────────────────────────── */
-function TenantLink({
+const TenantLink = ({
   name,
   href,
   active,
@@ -653,7 +653,7 @@ function TenantLink({
   href: string;
   active: boolean;
   onClick?: () => void;
-}) {
+}) => {
   return (
     <Link
       href={href}
@@ -702,7 +702,7 @@ function TenantLink({
 
 /* ─── Shared sub-components ─── */
 
-function MenuLink({
+const MenuLink = ({
   icon,
   label,
   href,
@@ -716,7 +716,7 @@ function MenuLink({
   onClick?: () => void;
   accent?: string;
   active?: boolean;
-}) {
+}) => {
   return (
     <Link
       href={href}
@@ -767,7 +767,7 @@ function MenuLink({
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+const SectionLabel = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       style={{
@@ -784,7 +784,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MenuDivider() {
+const MenuDivider = () => {
   return (
     <div
       style={{
@@ -797,6 +797,6 @@ function MenuDivider() {
   );
 }
 
-function perspectiveLabel(p: Perspective): string {
+const perspectiveLabel = (p: Perspective): string  => {
   return p === "super" ? "Super Admin" : p === "admin" ? "Admin" : "Member";
 }

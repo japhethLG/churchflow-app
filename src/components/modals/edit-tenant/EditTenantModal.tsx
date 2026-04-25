@@ -19,18 +19,18 @@ export type EditTenantProps = {
   currentDescription?: string | null;
 };
 
-export function EditTenantModal({
+export const EditTenantModal = ({
   tenantId,
   currentName,
   currentDescription,
   onClose,
-}: EditTenantProps & ModalBaseProps) {
+}: EditTenantProps & ModalBaseProps) => {
   const [name, setName] = useState(currentName);
   const [description, setDescription] = useState(currentDescription ?? "");
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useUpdateTenant();
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!name.trim()) return;
     setError(null);
     try {

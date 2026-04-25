@@ -29,7 +29,7 @@ const STATUS_LABEL: Record<CampaignRow["status"], Status> = {
   CANCELLED: "Cancelled",
 };
 
-function fmtDeadline(d: string | null): string {
+const fmtDeadline = (d: string | null): string  => {
   if (!d) return "Open-ended";
   const date = new Date(d);
   const now = Date.now();
@@ -41,7 +41,7 @@ function fmtDeadline(d: string | null): string {
   return fmt;
 }
 
-export function CampaignsTable({
+export const CampaignsTable = ({
   rows,
   loading,
   pagination,
@@ -53,7 +53,7 @@ export function CampaignsTable({
   pagination?: DataTablePagination;
   handlers: CampaignsTableHandlers;
   onCreate?: () => void;
-}) {
+}) => {
   const columns: DataTableColumn<CampaignRow>[] = [
     {
       key: "title",

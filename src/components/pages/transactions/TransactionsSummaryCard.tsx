@@ -27,7 +27,7 @@ const TYPE_COLOR: Record<ByType["type"], string> = {
   OTHER: S.txOther,
 };
 
-function fmtCompact(value: number): string {
+const fmtCompact = (value: number): string  => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 10_000) return `${(value / 1_000).toFixed(0)}k`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
@@ -40,7 +40,7 @@ const PERIOD_OPTIONS = [
   { months: 12, label: "Last 12mo" },
 ];
 
-export function TransactionsSummaryCard({
+export const TransactionsSummaryCard = ({
   summary,
   loading,
   months,
@@ -50,7 +50,7 @@ export function TransactionsSummaryCard({
   loading?: boolean;
   months: number;
   onMonthsChange: (m: number) => void;
-}) {
+}) => {
   if (loading || !summary) {
     return (
       <div
@@ -290,7 +290,7 @@ export function TransactionsSummaryCard({
   );
 }
 
-function Kpi({ label, value, caption }: { label: string; value: React.ReactNode; caption?: string }) {
+const Kpi = ({ label, value, caption }: { label: string; value: React.ReactNode; caption?: string }) => {
   return (
     <div>
       <div

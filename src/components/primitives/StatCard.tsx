@@ -3,7 +3,7 @@ import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 
-export function StatCard({
+export const StatCard = ({
   label,
   value,
   caption,
@@ -17,7 +17,7 @@ export function StatCard({
   delta?: string;
   deltaDirection?: "up" | "down" | "flat";
   accent?: boolean;
-}) {
+}) => {
   return (
     <Card padding={24}>
       <div

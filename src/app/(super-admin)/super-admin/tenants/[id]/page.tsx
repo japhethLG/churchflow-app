@@ -9,7 +9,7 @@ import { useTenant } from "@/lib/api/tenants";
 import { useAdminStats } from "@/lib/api/admin";
 import { tenantLogoGradient, tenantInitials } from "@/lib/design/logo-gradient";
 
-function TenantLogoTile({ name, slug, size = 48 }: { name: string; slug: string; size?: number }) {
+const TenantLogoTile = ({ name, slug, size = 48 }: { name: string; slug: string; size?: number }) => {
   const { from, to } = tenantLogoGradient(slug);
   return (
     <div
@@ -31,7 +31,7 @@ function TenantLogoTile({ name, slug, size = 48 }: { name: string; slug: string;
   );
 }
 
-export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const router = useRouter();
   const { data: tenant, isLoading } = useTenant(id);

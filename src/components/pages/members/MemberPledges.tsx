@@ -13,7 +13,7 @@ const STATUS_LABEL: Record<Pledge["status"], "Active" | "Completed" | "Cancelled
   CANCELLED: "Cancelled",
 };
 
-export function MemberPledges({ tenantSlug, memberId }: { tenantSlug: string; memberId: string }) {
+export const MemberPledges = ({ tenantSlug, memberId }: { tenantSlug: string; memberId: string }) => {
   const { data, isLoading } = usePledges(tenantSlug, { memberId, limit: 10 });
   const items = (data?.items ?? []) as Pledge[];
 

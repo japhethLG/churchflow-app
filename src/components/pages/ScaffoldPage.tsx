@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/primitives";
 // Placeholder "this page isn't implemented yet" shell. Kept around so
 // route scaffolding is visible in the app without pretending the
 // features are finished. Each page gets a real implementation later.
-export function ScaffoldPage({
+export const ScaffoldPage = ({
   title,
   subtitle,
   children,
@@ -13,7 +13,7 @@ export function ScaffoldPage({
   title: string;
   subtitle?: string;
   children?: ReactNode;
-}) {
+}) => {
   return (
     <div style={{ padding: "24px 0", maxWidth: 1100 }}>
       <PageHeader title={title} subtitle={subtitle} />

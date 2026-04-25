@@ -31,7 +31,7 @@ const DEFAULT_FILTERS: TransactionsFiltersValue = {
 
 // Map the UI period chip onto how many trailing months the summary
 // endpoint should aggregate.
-function rangeToMonths(range: TransactionsFiltersValue["range"]): number {
+const rangeToMonths = (range: TransactionsFiltersValue["range"]): number  => {
   switch (range) {
     case "today":
     case "this-month":
@@ -45,7 +45,7 @@ function rangeToMonths(range: TransactionsFiltersValue["range"]): number {
   }
 }
 
-export default function TransactionsPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

@@ -10,7 +10,7 @@ let _app: FirebaseApp | null = null;
 let _auth: Auth | null = null;
 let _db: Firestore | null = null;
 
-function firebaseApp(): FirebaseApp {
+const firebaseApp = (): FirebaseApp  => {
   if (_app) return _app;
   _app = getApps()[0] ?? null;
   if (_app) return _app;
@@ -34,19 +34,19 @@ function firebaseApp(): FirebaseApp {
   return _app;
 }
 
-export function getClientAuth(): Auth {
+export const getClientAuth = (): Auth  => {
   if (_auth) return _auth;
   _auth = getAuth(firebaseApp());
   return _auth;
 }
 
-export function getClientDb(): Firestore {
+export const getClientDb = (): Firestore  => {
   if (_db) return _db;
   _db = getFirestore(firebaseApp());
   return _db;
 }
 
-export function getGoogleProvider(): GoogleAuthProvider {
+export const getGoogleProvider = (): GoogleAuthProvider  => {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
   return provider;

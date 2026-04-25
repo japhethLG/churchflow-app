@@ -4,7 +4,7 @@ import { getSessionUser } from "@/lib/auth/server";
 // Landing redirect per SPECS §11.5. The URL (/[slug]/…) is the source of
 // truth for which tenant a request targets, so `/` just decides *where*
 // to send the user based on their session.
-export default async function Root() {
+export default async () => {
   const user = await getSessionUser();
 
   if (!user) redirect("/login");

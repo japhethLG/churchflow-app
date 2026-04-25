@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation, useApiQuery } from "../hooks";
 import { invalidateInvitations } from "./keys";
 
-export function useInvitations(tenantId: string, enabled = true) {
+export const useInvitations = (tenantId: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/invitations",
     { params: { path: { tenantId } } },
@@ -12,14 +12,14 @@ export function useInvitations(tenantId: string, enabled = true) {
   );
 }
 
-export function useIssueInvitation() {
+export const useIssueInvitation = () => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/invitations", "post", {
     onSuccess: () => invalidateInvitations(qc),
   });
 }
 
-export function useCancelInvitation() {
+export const useCancelInvitation = () => {
   const qc = useQueryClient();
   return useApiMutation(
     "/api/v1/tenants/{tenantId}/invitations/{invitationId}/cancel",
@@ -28,11 +28,11 @@ export function useCancelInvitation() {
   );
 }
 
-export function useAcceptInvitation() {
+export const useAcceptInvitation = () => {
   return useApiMutation("/api/v1/invitations/accept", "post");
 }
 
-export function useLookupInvitation(token: string) {
+export const useLookupInvitation = (token: string) => {
   return useApiQuery("/api/v1/invitations/lookup", {
     params: { query: { token } },
   });

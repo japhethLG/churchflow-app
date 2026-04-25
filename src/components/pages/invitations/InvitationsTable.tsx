@@ -15,7 +15,7 @@ const STATUS_MAP: Record<Invitation["status"], Status> = {
   CANCELLED: "Cancelled",
 };
 
-export function InvitationsTable({
+export const InvitationsTable = ({
   rows,
   loading,
   tenantId,
@@ -25,7 +25,7 @@ export function InvitationsTable({
   loading?: boolean;
   tenantId: string;
   onCancel: (inv: Invitation) => void;
-}) {
+}) => {
   const columns: DataTableColumn<Invitation>[] = [
     {
       key: "email",

@@ -21,7 +21,7 @@ const PAGE_SIZE = 20;
 type Member = components["schemas"]["MemberResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-export default function PledgesPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

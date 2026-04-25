@@ -1,4 +1,4 @@
-export function Avatar({
+export const Avatar = ({
   name = "",
   size = 36,
   src,
@@ -8,7 +8,7 @@ export function Avatar({
   size?: number;
   src?: string;
   color?: string;
-}) {
+}) => {
   const initials = name
     .split(" ")
     .map((n) => n[0])

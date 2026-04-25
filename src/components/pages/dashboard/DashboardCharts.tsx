@@ -42,7 +42,7 @@ const TYPE_COLOR: Record<ByType["type"], string> = {
 
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function fmtCompact(value: number): string {
+const fmtCompact = (value: number): string  => {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}k`;
   return `$${value.toFixed(0)}`;
@@ -56,7 +56,7 @@ const PERIOD_OPTIONS: PeriodOption[] = [
 ];
 
 // Monthly trend recharts bar chart + income breakdown donut side-by-side
-export function DashboardCharts({
+export const DashboardCharts = ({
   summary,
   loading,
   months,
@@ -66,7 +66,7 @@ export function DashboardCharts({
   loading?: boolean;
   months: number;
   onMonthsChange: (m: number) => void;
-}) {
+}) => {
   if (loading || !summary) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }}>

@@ -11,23 +11,23 @@ import type { components } from "@/lib/api";
 
 type Tenant = components["schemas"]["TenantResponseDto"];
 
-function formatAmount(n: number): string {
+const formatAmount = (n: number): string  => {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
   return `$${n.toFixed(0)}`;
 }
 
-function formatMonthYear(d: Date | string): string {
+const formatMonthYear = (d: Date | string): string  => {
   return new Date(d).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
-function AdminAvatarStack({
+const AdminAvatarStack = ({
   admins,
   count,
 }: {
   admins: Array<{ memberId: string; displayName: string; photoUrl: string | null }>;
   count: number;
-}) {
+}) => {
   if (count === 0) return <span style={{ fontSize: 12, color: S.onSurfaceMuted }}>No admins yet</span>;
   return (
     <span style={{ display: "inline-flex", alignItems: "center" }}>
@@ -46,7 +46,7 @@ function AdminAvatarStack({
   );
 }
 
-function TenantLogoTile({ name, slug }: { name: string; slug: string }) {
+const TenantLogoTile = ({ name, slug }: { name: string; slug: string }) => {
   const { from, to } = tenantLogoGradient(slug);
   return (
     <div
@@ -68,7 +68,7 @@ function TenantLogoTile({ name, slug }: { name: string; slug: string }) {
   );
 }
 
-export default function SuperAdminTenantsPage() {
+export default () => {
   const router = useRouter();
   const { data: tenantsData, isLoading } = useTenants();
   const { data: stats } = useAdminStats();

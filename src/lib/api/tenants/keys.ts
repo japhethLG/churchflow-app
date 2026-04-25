@@ -9,6 +9,6 @@ export const TENANT_PATHS = [
   "/api/v1/tenants/{tenantId}",
 ] as const;
 
-export function invalidateTenants(qc: QueryClient) {
+export const invalidateTenants = (qc: QueryClient) => {
   return invalidateByPaths(qc, TENANT_PATHS);
 }

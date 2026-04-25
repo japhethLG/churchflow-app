@@ -10,13 +10,13 @@ import {
 import { useCampaign, useUpdateCampaign } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api";
 
-function toDateInput(d: unknown): string {
+const toDateInput = (d: unknown): string  => {
   const s = nstr(d);
   if (!s) return "";
   return new Date(s).toISOString().slice(0, 10);
 }
 
-export default function EditCampaignPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
   const { data: campaign, isLoading } = useCampaign(tenantSlug, id);
@@ -49,7 +49,7 @@ export default function EditCampaignPage() {
     });
   }, [campaign]);
 
-  async function handleSubmit() {
+  const handleSubmit = async () => {
     if (!value) return;
     setError(null);
     setSubmitting(true);

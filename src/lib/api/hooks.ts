@@ -42,14 +42,14 @@ type GetResponse<P, M extends HttpMethod> = P extends keyof paths
     : unknown
   : unknown;
 
-export function useApiQuery<P extends PathsWithMethod<"get">>(
+export const useApiQuery = <P extends PathsWithMethod<"get">>(
   path: P,
   init?: GetInit<P, "get">,
   options?: Omit<
     UseQueryOptions<GetResponse<P, "get">, Error>,
     "queryKey" | "queryFn"
   >
-) {
+) => {
   return useQuery<GetResponse<P, "get">, Error>({
     queryKey: [path, init],
     queryFn: async () => {
@@ -62,7 +62,7 @@ export function useApiQuery<P extends PathsWithMethod<"get">>(
   });
 }
 
-export function useApiMutation<
+export const useApiMutation = <
   M extends Exclude<HttpMethod, "get">,
   P extends PathsWithMethod<M>
 >(
@@ -72,7 +72,7 @@ export function useApiMutation<
     UseMutationOptions<GetResponse<P, M>, Error, GetInit<P, M>>,
     "mutationFn"
   >
-) {
+) => {
   return useMutation<GetResponse<P, M>, Error, GetInit<P, M>>({
     mutationFn: async (init) => {
       const verb = method.toUpperCase() as "POST" | "PUT" | "PATCH" | "DELETE";
@@ -90,7 +90,7 @@ export function useApiMutation<
 // helper invalidates every cached query whose path is one of the given
 // template strings. Per-entity `keys.ts` files use this to define precise
 // invalidation scopes.
-export function invalidateByPaths(qc: QueryClient, paths: readonly string[]) {
+export const invalidateByPaths = (qc: QueryClient, paths: readonly string[]) => {
   const set = new Set<string>(paths);
   return qc.invalidateQueries({
     predicate: (q) => typeof q.queryKey[0] === "string" && set.has(q.queryKey[0] as string),
@@ -99,7 +99,7 @@ export function invalidateByPaths(qc: QueryClient, paths: readonly string[]) {
 
 // Nuclear: invalidate every API query. Use after operations that change the
 // caller's identity or permissions (sign-in, tenant switch, sign-out).
-export function invalidateAllApiQueries(qc: QueryClient) {
+export const invalidateAllApiQueries = (qc: QueryClient) => {
   return qc.invalidateQueries({
     predicate: (q) =>
       typeof q.queryKey[0] === "string" &&

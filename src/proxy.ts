@@ -7,7 +7,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 // shape for the URL they're rendering.
 const PUBLIC_PATHS = ["/login", "/invite", "/logout"];
 
-export function proxy(req: NextRequest) {
+export const proxy = (req: NextRequest) => {
   const { pathname } = req.nextUrl;
   const hasSession = req.cookies.has(SESSION_COOKIE_NAME);
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));

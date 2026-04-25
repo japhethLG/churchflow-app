@@ -8,11 +8,11 @@ import { invalidateTenants } from "./keys";
 // Callers pass whichever is more convenient — frontend URLs carry the
 // slug, so most call sites pass the slug straight through.
 
-export function useTenants() {
+export const useTenants = () => {
   return useApiQuery("/api/v1/tenants");
 }
 
-export function useTenant(tenantId: string, enabled = true) {
+export const useTenant = (tenantId: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}",
     { params: { path: { tenantId } } },
@@ -20,21 +20,21 @@ export function useTenant(tenantId: string, enabled = true) {
   );
 }
 
-export function useCreateTenant() {
+export const useCreateTenant = () => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants", "post", {
     onSuccess: () => invalidateTenants(qc),
   });
 }
 
-export function useUpdateTenant() {
+export const useUpdateTenant = () => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}", "patch", {
     onSuccess: () => invalidateTenants(qc),
   });
 }
 
-export function useDeleteTenant() {
+export const useDeleteTenant = () => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}", "delete", {
     onSuccess: () => invalidateTenants(qc),
@@ -44,21 +44,21 @@ export function useDeleteTenant() {
 // Slug rename is super-admin only. Keep it separate from generic update
 // so the UI can ask for explicit confirmation (it invalidates URLs that
 // point at the old slug).
-export function useRenameTenantSlug() {
+export const useRenameTenantSlug = () => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/slug", "patch", {
     onSuccess: () => invalidateTenants(qc),
   });
 }
 
-export function useRestoreTenant() {
+export const useRestoreTenant = () => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/restore", "post", {
     onSuccess: () => invalidateTenants(qc),
   });
 }
 
-export function useSlugSuggestion(name: string, enabled = true) {
+export const useSlugSuggestion = (name: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/slug-suggestion",
     { params: { query: { name } } },

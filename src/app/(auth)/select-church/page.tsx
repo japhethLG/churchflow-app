@@ -5,7 +5,7 @@ import { Wordmark } from "@/components/primitives/Wordmark";
 import { Badge } from "@/components/primitives/Badge";
 import { getSessionUser } from "@/lib/auth/server";
 
-export default async function SelectChurchPage() {
+export default async () => {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 

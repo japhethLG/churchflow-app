@@ -2,7 +2,7 @@ import type { CSSProperties, ChangeEventHandler, HTMLInputTypeAttribute } from "
 import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Icon, type IconName } from "./Icon";
 
-export function Input({
+export const Input = ({
   label,
   icon,
   value,
@@ -32,7 +32,7 @@ export function Input({
   type?: HTMLInputTypeAttribute;
   disabled?: boolean;
   readOnly?: boolean;
-}) {
+}) => {
   const interactive = Boolean(onChange);
   return (
     <div style={{ width: fullWidth ? "100%" : undefined }}>

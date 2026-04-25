@@ -19,11 +19,11 @@ const TYPE_LABEL: Record<Tx["type"], TransactionType> = {
   OTHER: "Other",
 };
 
-function formatDate(d: string): string {
+const formatDate = (d: string): string  => {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-export function MemberRecentGiving({ tenantSlug, memberId }: { tenantSlug: string; memberId: string }) {
+export const MemberRecentGiving = ({ tenantSlug, memberId }: { tenantSlug: string; memberId: string }) => {
   const router = useRouter();
   const { data, isLoading } = useTransactions(tenantSlug, { memberId, limit: 10 });
   const items = (data?.items ?? []) as Tx[];

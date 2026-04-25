@@ -9,11 +9,11 @@ import { nstr } from "@/lib/api/coerce";
 type Campaign = components["schemas"]["CampaignResponseDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
-function fmtCurrency(v: number | string): string {
+const fmtCurrency = (v: number | string): string  => {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function fmtCompact(v: number): string {
+const fmtCompact = (v: number): string  => {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
   return v.toFixed(0);
@@ -25,7 +25,7 @@ const PLEDGE_STATUS_MAP: Record<Pledge["status"], "Active" | "Completed" | "Canc
   CANCELLED: "Cancelled",
 };
 
-export function MemberCampaignsPledges({
+export const MemberCampaignsPledges = ({
   campaigns,
   pledges,
   progressMap,
@@ -39,7 +39,7 @@ export function MemberCampaignsPledges({
   loading?: boolean;
   tenantSlug: string;
   memberId?: string;
-}) {
+}) => {
   if (loading) {
     return (
       <Card>

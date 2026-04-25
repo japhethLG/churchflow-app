@@ -18,17 +18,17 @@ export type ConfirmToggleSuperAdminProps = {
   currentIsSuperAdmin: boolean;
 };
 
-export function ConfirmToggleSuperAdminModal({
+export const ConfirmToggleSuperAdminModal = ({
   userId,
   userName,
   currentIsSuperAdmin,
   onClose,
-}: ConfirmToggleSuperAdminProps & ModalBaseProps) {
+}: ConfirmToggleSuperAdminProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useToggleSuperAdmin();
   const promoting = !currentIsSuperAdmin;
 
-  async function handleToggle() {
+  const handleToggle = async () => {
     setError(null);
     try {
       await mutateAsync({

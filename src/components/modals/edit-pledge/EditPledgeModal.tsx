@@ -29,12 +29,12 @@ const STATUS_OPTIONS: { value: PledgeStatus; label: string; hint: string }[] = [
   { value: "CANCELLED", label: "Cancelled", hint: "Withdrawn" },
 ];
 
-export function EditPledgeModal({
+export const EditPledgeModal = ({
   tenantSlug,
   pledge,
   currency,
   onClose,
-}: EditPledgeProps & ModalBaseProps) {
+}: EditPledgeProps & ModalBaseProps) => {
   // campaignId / campaignItemId / memberId are immutable per SPECS §10.4 —
   // we only let the user edit amount, status, note.
   const [amount, setAmount] = useState(pledge.pledgedAmount.toString());
@@ -45,7 +45,7 @@ export function EditPledgeModal({
 
   const canSubmit = Number(amount) > 0;
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!canSubmit) return;
     setError(null);
     try {

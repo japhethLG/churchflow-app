@@ -9,7 +9,7 @@ const MESSAGES = [
   "Your giving matters, {name}. Together, we're building something that lasts.",
 ];
 
-export function MemberThankYou({ name }: { name: string }) {
+export const MemberThankYou = ({ name }: { name: string }) => {
   // Rotate message based on day of month for variety
   const dayIndex = new Date().getDate() % MESSAGES.length;
   const message = MESSAGES[dayIndex].replace("{name}", name);

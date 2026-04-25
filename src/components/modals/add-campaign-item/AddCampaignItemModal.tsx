@@ -20,13 +20,13 @@ export type AddCampaignItemProps = {
   defaultSortOrder?: number;
 };
 
-export function AddCampaignItemModal({
+export const AddCampaignItemModal = ({
   tenantSlug,
   campaignId,
   currency,
   defaultSortOrder,
   onClose,
-}: AddCampaignItemProps & ModalBaseProps) {
+}: AddCampaignItemProps & ModalBaseProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [target, setTarget] = useState("");
@@ -36,7 +36,7 @@ export function AddCampaignItemModal({
 
   const canSubmit = title.trim().length > 0 && Number(target) > 0;
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!canSubmit) return;
     setError(null);
     try {

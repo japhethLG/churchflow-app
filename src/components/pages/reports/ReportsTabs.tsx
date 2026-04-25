@@ -45,13 +45,13 @@ const TYPE_COLOR: Record<ByType["type"], string> = {
 
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function fmtCompact(value: number): string {
+const fmtCompact = (value: number): string  => {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}k`;
   return `$${value.toFixed(0)}`;
 }
 
-function fmtCurrency(value: number): string {
+const fmtCurrency = (value: number): string  => {
   return Number(value).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -60,13 +60,13 @@ function fmtCurrency(value: number): string {
 
 // ─── By Type Tab ─────────────────────────────────────────────────
 
-export function ReportsByType({
+export const ReportsByType = ({
   summary,
   loading,
 }: {
   summary: Summary | undefined;
   loading?: boolean;
-}) {
+}) => {
   if (loading || !summary) {
     return <LoadingPlaceholder />;
   }
@@ -204,13 +204,13 @@ export function ReportsByType({
 
 // ─── By Month Tab ────────────────────────────────────────────────
 
-export function ReportsByMonth({
+export const ReportsByMonth = ({
   summary,
   loading,
 }: {
   summary: Summary | undefined;
   loading?: boolean;
-}) {
+}) => {
   if (loading || !summary) {
     return <LoadingPlaceholder />;
   }
@@ -304,7 +304,7 @@ export function ReportsByMonth({
 type Transaction = components["schemas"]["TransactionResponseDto"];
 type Member = components["schemas"]["MemberResponseDto"];
 
-export function ReportsByMember({
+export const ReportsByMember = ({
   transactions,
   membersById,
   currency,
@@ -314,7 +314,7 @@ export function ReportsByMember({
   membersById: Record<string, Member>;
   currency: string;
   loading?: boolean;
-}) {
+}) => {
   if (loading) {
     return <LoadingPlaceholder />;
   }
@@ -412,7 +412,7 @@ export function ReportsByMember({
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-export function ReportsByCampaign({
+export const ReportsByCampaign = ({
   transactions,
   campaignsById,
   currency,
@@ -422,7 +422,7 @@ export function ReportsByCampaign({
   campaignsById: Record<string, Campaign>;
   currency: string;
   loading?: boolean;
-}) {
+}) => {
   if (loading) {
     return <LoadingPlaceholder />;
   }
@@ -526,7 +526,7 @@ export function ReportsByCampaign({
 
 // ─── Shared loading placeholder ─────────────────────────────────
 
-function LoadingPlaceholder() {
+const LoadingPlaceholder = () => {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 16, marginBottom: 24 }}>
       {[0, 1].map((i) => (

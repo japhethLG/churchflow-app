@@ -14,7 +14,7 @@ const STATUS_MAP: Record<Pledge["status"], Status> = {
   CANCELLED: "Cancelled",
 };
 
-export function MemberPledgesTable({
+export const MemberPledgesTable = ({
   rows,
   loading,
   campaignMap,
@@ -26,7 +26,7 @@ export function MemberPledgesTable({
   campaignMap: Record<string, Campaign>;
   campaignItemMap?: Record<string, string>;
   currencySymbol: string;
-}) {
+}) => {
   const columns: DataTableColumn<Pledge>[] = [
     {
       key: "campaign",

@@ -26,7 +26,7 @@ export type SessionUser = {
   tenantMemberships: Record<string, TenantMembership>;
 };
 
-export async function getSessionUser(): Promise<SessionUser | null> {
+export const getSessionUser = async (): Promise<SessionUser | null>  => {
   const store = await cookies();
   const cookie = store.get(SESSION_COOKIE_NAME)?.value;
   if (!cookie) return null;
@@ -52,9 +52,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   }
 }
 
-function normaliseMemberships(
+const normaliseMemberships = (
   raw: unknown,
-): Record<string, TenantMembership> {
+): Record<string, TenantMembership>  => {
   if (!raw || typeof raw !== "object") return {};
   const out: Record<string, TenantMembership> = {};
   for (const [slug, value] of Object.entries(raw as Record<string, unknown>)) {
@@ -74,9 +74,9 @@ function normaliseMemberships(
 // Super-admins are not implicitly members of every tenant — they use
 // /super-admin/* for platform-ops and need a real Member row to act
 // as admin/member of a specific church.
-export function getMembership(
+export const getMembership = (
   user: SessionUser,
   tenantSlug: string,
-): TenantMembership | null {
+): TenantMembership | null  => {
   return user.tenantMemberships[tenantSlug] ?? null;
 }

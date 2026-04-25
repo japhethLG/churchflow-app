@@ -11,7 +11,7 @@ import type { components } from "@/lib/api";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
-export default function ManageTenantAdminsPage({ params }: { params: Promise<{ id: string }> }) {
+export default ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const router = useRouter();
   const { data: tenant } = useTenant(id);

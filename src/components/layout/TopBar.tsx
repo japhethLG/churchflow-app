@@ -1,7 +1,7 @@
 import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Icon } from "@/components/primitives/Icon";
 
-export function TopBar({ breadcrumb = "Dashboard" }: { breadcrumb?: string }) {
+export const TopBar = ({ breadcrumb = "Dashboard" }: { breadcrumb?: string }) => {
   return (
     <div
       style={{

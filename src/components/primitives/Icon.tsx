@@ -57,7 +57,7 @@ type IconProps = {
   strokeWidth?: number;
 } & Omit<SVGProps<SVGSVGElement>, "name" | "size" | "color">;
 
-export function Icon({ name, size = 20, color = "currentColor", strokeWidth = 1.6, ...rest }: IconProps) {
+export const Icon = ({ name, size = 20, color = "currentColor", strokeWidth = 1.6, ...rest }: IconProps) => {
   return (
     <svg
       width={size}

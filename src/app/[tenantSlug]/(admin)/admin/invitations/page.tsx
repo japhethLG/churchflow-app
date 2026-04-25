@@ -8,7 +8,7 @@ import { openModal } from "@/lib/modals/store";
 import { InvitationsTable } from "@/components/pages/invitations/InvitationsTable";
 import { InvitationsStatsBar } from "@/components/pages/invitations/InvitationsStatsBar";
 
-export default function InvitationsPage() {
+export default () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const tenantQ = useTenant(tenantSlug);
   const tenantId = tenantQ.data?.id ?? tenantSlug;

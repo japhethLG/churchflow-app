@@ -18,7 +18,7 @@ export type TransactionsListQuery = {
   limit?: number;
 };
 
-export function useTransactions(tenantId: string, query: TransactionsListQuery = {}, enabled = true) {
+export const useTransactions = (tenantId: string, query: TransactionsListQuery = {}, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/transactions",
     { params: { path: { tenantId }, query } },
@@ -29,7 +29,7 @@ export function useTransactions(tenantId: string, query: TransactionsListQuery =
 // Summary KPIs + per-type / per-month breakdowns. The `months` window is
 // the count of trailing UTC month buckets the backend should aggregate
 // (1 = MTD, 12 = trailing year, etc.).
-export function useTransactionSummary(tenantId: string, months = 1, enabled = true) {
+export const useTransactionSummary = (tenantId: string, months = 1, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/transactions/summary",
     { params: { path: { tenantId }, query: { months: String(months) } } },
@@ -37,7 +37,7 @@ export function useTransactionSummary(tenantId: string, months = 1, enabled = tr
   );
 }
 
-export function useTransaction(tenantId: string, id: string, enabled = true) {
+export const useTransaction = (tenantId: string, id: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/transactions/{id}",
     { params: { path: { tenantId, id } } },
@@ -45,7 +45,7 @@ export function useTransaction(tenantId: string, id: string, enabled = true) {
   );
 }
 
-export function useCreateTransaction(tenantId: string) {
+export const useCreateTransaction = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/transactions", "post", {
     onSuccess: () => {
@@ -57,7 +57,7 @@ export function useCreateTransaction(tenantId: string) {
   });
 }
 
-export function useUpdateTransaction(tenantId: string) {
+export const useUpdateTransaction = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation(
     "/api/v1/tenants/{tenantId}/transactions/{id}",
@@ -66,7 +66,7 @@ export function useUpdateTransaction(tenantId: string) {
   );
 }
 
-export function useDeleteTransaction(tenantId: string) {
+export const useDeleteTransaction = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation(
     "/api/v1/tenants/{tenantId}/transactions/{id}",

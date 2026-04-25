@@ -6,18 +6,18 @@ import type { components } from "@/lib/api";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 
-function fmtCurrency(value: number, currency: string): string {
+const fmtCurrency = (value: number, currency: string): string  => {
   return `${currency} ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function fmtCompact(value: number): string {
+const fmtCompact = (value: number): string  => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 10_000) return `${(value / 1_000).toFixed(0)}k`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
   return value.toFixed(0);
 }
 
-export function DashboardKpiStrip({
+export const DashboardKpiStrip = ({
   summary,
   previousSummary,
   memberCount,
@@ -31,7 +31,7 @@ export function DashboardKpiStrip({
   newMembersThisMonth?: number;
   activeCampaignCount: number;
   loading?: boolean;
-}) {
+}) => {
   if (loading || !summary) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>

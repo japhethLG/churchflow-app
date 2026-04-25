@@ -2,7 +2,7 @@
 
 import { SANCTUARY as S } from "@/lib/design/tokens";
 
-export function CampaignsStatsBar({
+export const CampaignsStatsBar = ({
   total,
   active,
   draft,
@@ -12,7 +12,7 @@ export function CampaignsStatsBar({
   active: number;
   draft: number;
   completed: number;
-}) {
+}) => {
   return (
     <div style={{ display: "flex", gap: 32, padding: "8px 24px 20px", fontSize: 13, color: S.onSurfaceVariant }}>
       <span>

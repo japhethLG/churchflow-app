@@ -15,7 +15,7 @@ import { openModal } from "@/lib/modals/store";
 
 const PAGE_SIZE = 20;
 
-export default function CampaignsPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

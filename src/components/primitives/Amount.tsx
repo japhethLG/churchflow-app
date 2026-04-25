@@ -1,6 +1,6 @@
 import { SANCTUARY as S } from "@/lib/design/tokens";
 
-export function Amount({
+export const Amount = ({
   value,
   size = "row",
   currency = "$",
@@ -10,7 +10,7 @@ export function Amount({
   size?: "label" | "row" | "display";
   currency?: string;
   gradient?: boolean;
-}) {
+}) => {
   const sizes = { label: 13, row: 14, display: 48 } as const;
   return (
     <span

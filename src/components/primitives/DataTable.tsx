@@ -35,7 +35,7 @@ export type DataTableProps<Row> = {
 
 const cellBase: CSSProperties = { minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" };
 
-export function DataTable<Row>({
+export const DataTable = <Row,>({
   columns,
   rows,
   rowKey,
@@ -46,7 +46,7 @@ export function DataTable<Row>({
   emptyAction,
   onRowClick,
   pagination,
-}: DataTableProps<Row>) {
+}: DataTableProps<Row>) => {
   const gridTemplate = columns.map((c) => c.width || "1fr").join(" ");
 
   return (
@@ -151,7 +151,7 @@ export function DataTable<Row>({
   );
 }
 
-function Pagination({ total, offset, limit, onChange }: DataTablePagination) {
+const Pagination = ({ total, offset, limit, onChange }: DataTablePagination) => {
   const page = Math.floor(offset / limit) + 1;
   const pages = Math.max(1, Math.ceil(total / limit));
   const last = Math.min(total, offset + limit);

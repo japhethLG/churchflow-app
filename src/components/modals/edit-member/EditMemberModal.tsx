@@ -21,11 +21,11 @@ export type EditMemberProps = {
   member: Member;
 };
 
-function asString(v: unknown): string {
+const asString = (v: unknown): string  => {
   return typeof v === "string" ? v : "";
 }
 
-export function EditMemberModal({ tenantSlug, member, onClose }: EditMemberProps & ModalBaseProps) {
+export const EditMemberModal = ({ tenantSlug, member, onClose }: EditMemberProps & ModalBaseProps) => {
   const [firstName, setFirstName] = useState(member.firstName);
   const [lastName, setLastName] = useState(member.lastName);
   const [email, setEmail] = useState(asString(member.email));
@@ -38,7 +38,7 @@ export function EditMemberModal({ tenantSlug, member, onClose }: EditMemberProps
 
   const canSubmit = firstName.trim().length > 0 && lastName.trim().length > 0;
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!canSubmit) return;
     setError(null);
     try {
@@ -102,7 +102,7 @@ export function EditMemberModal({ tenantSlug, member, onClose }: EditMemberProps
   );
 }
 
-function PillChoice({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+const PillChoice = ({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) => {
   return (
     <button
       type="button"

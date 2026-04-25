@@ -12,7 +12,7 @@ import { MemberRecentGiving } from "@/components/pages/member-dashboard/MemberRe
 import { MemberCampaignsPledges } from "@/components/pages/member-dashboard/MemberCampaignsPledges";
 import { MemberThankYou } from "@/components/pages/member-dashboard/MemberThankYou";
 
-export default function MemberDashboardPage() {
+export default () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   // Tenant info for currency

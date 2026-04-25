@@ -11,7 +11,7 @@ import {
 import { useMember } from "@/lib/api/members";
 import { openModal } from "@/lib/modals/store";
 
-export default function MemberDetailPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
   const { data: member, isLoading, error } = useMember(tenantSlug, id);

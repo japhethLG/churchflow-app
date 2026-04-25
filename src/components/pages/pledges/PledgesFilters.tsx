@@ -23,12 +23,12 @@ const STATUS_LABEL: Record<PledgeStatusFilter, string> = {
 
 const STATUS_CYCLE: PledgeStatusFilter[] = ["all", "ACTIVE", "FULFILLED", "CANCELLED"];
 
-function next<T>(arr: readonly T[], v: T): T {
+const next = <T,>(arr: readonly T[], v: T): T => {
   const i = arr.indexOf(v);
   return arr[(i + 1) % arr.length];
 }
 
-export function PledgesFilters({
+export const PledgesFilters = ({
   value,
   campaigns,
   onChange,
@@ -36,13 +36,13 @@ export function PledgesFilters({
   value: PledgesFiltersValue;
   campaigns: Campaign[];
   onChange: (v: PledgesFiltersValue) => void;
-}) {
+}) => {
   const campaignLabel =
     value.campaignId === "all"
       ? "Campaign: All"
       : `Campaign: ${campaigns.find((c) => c.id === value.campaignId)?.title ?? "…"}`;
 
-  function cycleCampaign() {
+  const cycleCampaign = () => {
     const ids: (string | "all")[] = ["all", ...campaigns.map((c) => c.id)];
     onChange({ ...value, campaignId: next(ids, value.campaignId) });
   }

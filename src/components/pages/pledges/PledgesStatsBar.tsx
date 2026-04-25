@@ -3,7 +3,7 @@
 import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Amount } from "@/components/primitives";
 
-export function PledgesStatsBar({
+export const PledgesStatsBar = ({
   total,
   active,
   fulfilled,
@@ -13,7 +13,7 @@ export function PledgesStatsBar({
   active: number;
   fulfilled: number;
   totalAmount: number;
-}) {
+}) => {
   return (
     <div style={{ display: "flex", gap: 32, padding: "8px 24px 20px", fontSize: 13, color: S.onSurfaceVariant }}>
       <span>

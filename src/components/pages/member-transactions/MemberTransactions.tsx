@@ -20,7 +20,7 @@ import type { components } from "@/lib/api";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
-function fmtCurrency(v: number | string): string {
+const fmtCurrency = (v: number | string): string  => {
   return Number(v).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -37,11 +37,11 @@ const TYPE_MAP: Record<string, TransactionType> = {
   OTHER: "Other",
 };
 
-export function MemberTransactions({
+export const MemberTransactions = ({
   campaignItemMap = {},
 }: {
   campaignItemMap?: Record<string, string>;
-}) {
+}) => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [rangeFilter, setRangeFilter] = useState<string>("YEAR");

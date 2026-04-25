@@ -16,7 +16,7 @@ declare module "@/lib/modals/registry" {
 
 export type InviteAdminGlobalProps = Record<string, never>;
 
-export function InviteAdminGlobalModal({ onClose }: InviteAdminGlobalProps & ModalBaseProps) {
+export const InviteAdminGlobalModal = ({ onClose }: InviteAdminGlobalProps & ModalBaseProps) => {
   const [email, setEmail] = useState("");
   const [tenantId, setTenantId] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,7 @@ export function InviteAdminGlobalModal({ onClose }: InviteAdminGlobalProps & Mod
 
   const tenants = tenantsData?.items ?? [];
 
-  async function handleInvite() {
+  const handleInvite = async () => {
     if (!email.trim() || !tenantId) return;
     setError(null);
     try {

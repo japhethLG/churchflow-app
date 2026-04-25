@@ -26,12 +26,12 @@ const STATUS_LABEL: Record<Pledge["status"], Status> = {
   CANCELLED: "Cancelled",
 };
 
-function fullName(m: { firstName: string; lastName: string } | undefined): string {
+const fullName = (m: { firstName: string; lastName: string } | undefined): string  => {
   if (!m) return "Unknown member";
   return `${m.firstName} ${m.lastName}`.trim();
 }
 
-export function CampaignPledgesList({
+export const CampaignPledgesList = ({
   tenantSlug,
   campaignId,
   campaignTitle,
@@ -47,7 +47,7 @@ export function CampaignPledgesList({
   onCreate: () => void;
   onEdit: (p: Pledge) => void;
   onDelete: (p: Pledge) => void;
-}) {
+}) => {
   const { data: pledgesData, isLoading } = usePledges(tenantSlug, { campaignId, limit: 50 });
   // Pull members so we can render names — small tenants only; fine for v1.
   const { data: membersData } = useMembers(tenantSlug, { limit: 200 });

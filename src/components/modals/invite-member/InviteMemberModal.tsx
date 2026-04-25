@@ -32,14 +32,14 @@ const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
   { value: "ADMIN", label: "Admin", description: "Full access to financials, member directory, campaigns, settings, and reports." },
 ];
 
-export function InviteMemberModal({
+export const InviteMemberModal = ({
   tenantId,
   claimMemberId,
   claimMemberName,
   defaultEmail,
   defaultRole,
   onClose,
-}: InviteMemberProps & ModalBaseProps) {
+}: InviteMemberProps & ModalBaseProps) => {
   const [email, setEmail] = useState(defaultEmail ?? "");
   const [role, setRole] = useState<Role>(defaultRole ?? "USER");
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +48,7 @@ export function InviteMemberModal({
 
   const claiming = Boolean(claimMemberId);
 
-  async function handleInvite() {
+  const handleInvite = async () => {
     if (!email.trim()) return;
     setError(null);
     try {

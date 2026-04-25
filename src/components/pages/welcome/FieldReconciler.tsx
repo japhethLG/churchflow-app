@@ -19,7 +19,7 @@ export type FieldReconcilerProps = {
   hint?: ReactNode;
 };
 
-export function FieldReconciler({
+export const FieldReconciler = ({
   label,
   existing,
   sso,
@@ -27,7 +27,7 @@ export function FieldReconciler({
   edited,
   onChange,
   hint,
-}: FieldReconcilerProps) {
+}: FieldReconcilerProps) => {
   const id = useId();
   const hasExisting = Boolean(existing && existing.length > 0);
   const hasSso = Boolean(sso && sso.length > 0);
@@ -90,7 +90,7 @@ export function FieldReconciler({
   );
 }
 
-function Option({
+const Option = ({
   name,
   label,
   value,
@@ -104,7 +104,7 @@ function Option({
   disabled: boolean;
   selected: boolean;
   onSelect: () => void;
-}) {
+}) => {
   return (
     <button
       type="button"

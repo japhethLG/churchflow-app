@@ -12,7 +12,7 @@ const PALETTES: [string, string][] = [
   ["#7C3AED", "#4C1D95"], // violet
 ];
 
-function hash(s: string): number {
+const hash = (s: string): number => {
   let h = 0;
   for (let i = 0; i < s.length; i++) {
     h = ((h << 5) - h + s.charCodeAt(i)) | 0;
@@ -20,12 +20,12 @@ function hash(s: string): number {
   return Math.abs(h);
 }
 
-export function tenantLogoGradient(slug: string): { from: string; to: string } {
+export const tenantLogoGradient = (slug: string): { from: string; to: string } => {
   const [from, to] = PALETTES[hash(slug) % PALETTES.length]!;
   return { from, to };
 }
 
-export function tenantInitials(name: string): string {
+export const tenantInitials = (name: string): string => {
   const words = name.trim().split(/\s+/);
   if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase();
   return (words[0]![0]! + words[1]![0]!).toUpperCase();

@@ -13,7 +13,7 @@ type ButtonProps = {
   loading?: boolean;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size">;
 
-export function Button({
+export const Button = ({
   children,
   variant = "primary",
   size = "md",
@@ -25,7 +25,7 @@ export function Button({
   loading,
   style,
   ...rest
-}: ButtonProps) {
+}: ButtonProps) => {
   const isCurrentlyDisabled = disabled || loading;
   const sizes: Record<NonNullable<ButtonProps["size"]>, CSSProperties> = {
     sm: { padding: "6px 14px", fontSize: 13, height: 32, gap: 6 },

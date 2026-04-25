@@ -23,7 +23,7 @@ const STATUS_LABEL: Record<PledgeRow["status"], Status> = {
   CANCELLED: "Cancelled",
 };
 
-function fullName(m: Member | undefined): string {
+const fullName = (m: Member | undefined): string  => {
   if (!m) return "Unknown member";
   return `${m.firstName} ${m.lastName}`.trim();
 }
@@ -34,7 +34,7 @@ export type PledgesTableHandlers = {
   onOpenCampaign: (campaignId: string) => void;
 };
 
-export function PledgesTable({
+export const PledgesTable = ({
   rows,
   loading,
   pagination,
@@ -48,7 +48,7 @@ export function PledgesTable({
   membersById: Record<string, Member>;
   campaignsById: Record<string, Campaign>;
   handlers: PledgesTableHandlers;
-}) {
+}) => {
   const columns: DataTableColumn<PledgeRow>[] = [
     {
       key: "member",

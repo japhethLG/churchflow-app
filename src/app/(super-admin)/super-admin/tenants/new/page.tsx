@@ -15,7 +15,7 @@ type Draft = {
   description: string;
 };
 
-function Stepper({ step }: { step: Step }) {
+const Stepper = ({ step }: { step: Step }) => {
   const steps = ["Details", "Invite admins", "Done"];
   return (
     <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 32 }}>
@@ -47,7 +47,7 @@ function Stepper({ step }: { step: Step }) {
   );
 }
 
-function Step1Details({
+const Step1Details = ({
   draft,
   setDraft,
   onNext,
@@ -57,7 +57,7 @@ function Step1Details({
   setDraft: (d: Draft) => void;
   onNext: () => void;
   onCancel: () => void;
-}) {
+}) => {
   const { data: suggestion } = useSlugSuggestion(draft.name, draft.name.length >= 3 && !draft.slug);
   const [slugEdited, setSlugEdited] = useState(false);
 
@@ -140,7 +140,7 @@ function Step1Details({
   );
 }
 
-function Step2Invites({
+const Step2Invites = ({
   tenantId,
   tenantName,
   onNext,
@@ -150,26 +150,26 @@ function Step2Invites({
   tenantName: string;
   onNext: (invitesSent: number) => void;
   onBack: () => void;
-}) {
+}) => {
   const [emails, setEmails] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const { mutateAsync: sendInvite } = useIssueInvitation();
 
-  function addEmail() {
+  const addEmail = () => {
     const trimmed = input.trim().toLowerCase();
     if (!trimmed || emails.includes(trimmed)) { setInput(""); return; }
     setEmails((prev) => [...prev, trimmed]);
     setInput("");
   }
 
-  function removeEmail(email: string) {
+  const removeEmail = (email: string) => {
     setEmails((prev) => prev.filter((e) => e !== email));
     setErrors((prev) => { const n = { ...prev }; delete n[email]; return n; });
   }
 
-  async function handleSend() {
+  const handleSend = async () => {
     setSending(true);
     const results: Record<string, string> = {};
     for (const email of emails) {
@@ -266,7 +266,7 @@ function Step2Invites({
   );
 }
 
-function Step3Success({
+const Step3Success = ({
   tenantName,
   tenantSlug,
   invitesSent,
@@ -274,7 +274,7 @@ function Step3Success({
   tenantName: string;
   tenantSlug: string;
   invitesSent: number;
-}) {
+}) => {
   const router = useRouter();
   return (
     <div style={{ textAlign: "center", padding: "24px 0" }}>
@@ -299,7 +299,7 @@ function Step3Success({
   );
 }
 
-export default function NewTenantPage() {
+export default () => {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [draft, setDraft] = useState<Draft>({ name: "", slug: "", description: "" });
@@ -308,7 +308,7 @@ export default function NewTenantPage() {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync: createTenant, isPending: creating } = useCreateTenant();
 
-  async function handleStep1Next() {
+  const handleStep1Next = async () => {
     setError(null);
     try {
       const t = await createTenant({

@@ -18,16 +18,16 @@ export type CancelInvitationProps = {
   email: string;
 };
 
-export function CancelInvitationModal({
+export const CancelInvitationModal = ({
   tenantId,
   invitationId,
   email,
   onClose,
-}: CancelInvitationProps & ModalBaseProps) {
+}: CancelInvitationProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useCancelInvitation();
 
-  async function handleCancel() {
+  const handleCancel = async () => {
     setError(null);
     try {
       await mutateAsync({

@@ -14,7 +14,7 @@ export type PledgesListQuery = {
   limit?: number;
 };
 
-export function usePledges(tenantId: string, query: PledgesListQuery = {}, enabled = true) {
+export const usePledges = (tenantId: string, query: PledgesListQuery = {}, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/pledges",
     { params: { path: { tenantId }, query } },
@@ -22,7 +22,7 @@ export function usePledges(tenantId: string, query: PledgesListQuery = {}, enabl
   );
 }
 
-export function usePledge(tenantId: string, id: string, enabled = true) {
+export const usePledge = (tenantId: string, id: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/pledges/{id}",
     { params: { path: { tenantId, id } } },
@@ -30,7 +30,7 @@ export function usePledge(tenantId: string, id: string, enabled = true) {
   );
 }
 
-export function useCreatePledge(tenantId: string) {
+export const useCreatePledge = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/pledges", "post", {
     onSuccess: () => {
@@ -41,7 +41,7 @@ export function useCreatePledge(tenantId: string) {
   });
 }
 
-export function useUpdatePledge(tenantId: string) {
+export const useUpdatePledge = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/pledges/{id}", "patch", {
     onSuccess: () => {
@@ -52,7 +52,7 @@ export function useUpdatePledge(tenantId: string) {
   });
 }
 
-export function useDeletePledge(tenantId: string) {
+export const useDeletePledge = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/pledges/{id}", "delete", {
     onSuccess: () => {

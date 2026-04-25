@@ -6,7 +6,7 @@ export const MEMBER_PATHS = [
   "/api/v1/tenants/{tenantId}/members/me",
 ] as const;
 
-export function invalidateMembers(qc: QueryClient, tenantId?: string) {
+export const invalidateMembers = (qc: QueryClient, tenantId?: string) => {
   const set = new Set<string>(MEMBER_PATHS);
   return qc.invalidateQueries({
     predicate: (q) => {

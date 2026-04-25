@@ -33,7 +33,7 @@ const STATUS_OPTIONS: { value: CampaignStatus; label: string; hint: string }[] =
 ];
 
 let _itemIdCounter = 0;
-export function newItemDraft(seed: Partial<CampaignFormItemDraft> = {}): CampaignFormItemDraft {
+export const newItemDraft = (seed: Partial<CampaignFormItemDraft> = {}): CampaignFormItemDraft  => {
   _itemIdCounter += 1;
   return {
     tempId: `tmp-${_itemIdCounter}`,
@@ -45,7 +45,7 @@ export function newItemDraft(seed: Partial<CampaignFormItemDraft> = {}): Campaig
   };
 }
 
-export function CampaignForm({
+export const CampaignForm = ({
   value,
   onChange,
   onSubmit,
@@ -67,7 +67,7 @@ export function CampaignForm({
   showStatus?: boolean;
   itemsEditable?: boolean;
   error?: string | null;
-}) {
+}) => {
   const canSubmit =
     value.title.trim().length > 0 &&
     value.currency.trim().length === 3 &&
@@ -75,18 +75,18 @@ export function CampaignForm({
       (i) => i.title.trim().length > 0 && Number(i.targetAmount) > 0
     );
 
-  function setItem(idx: number, patch: Partial<CampaignFormItemDraft>) {
+  const setItem = (idx: number, patch: Partial<CampaignFormItemDraft>) => {
     const next = [...value.items];
     next[idx] = { ...next[idx], ...patch };
     onChange({ ...value, items: next });
   }
 
-  function removeItem(idx: number) {
+  const removeItem = (idx: number) => {
     const next = value.items.filter((_, i) => i !== idx);
     onChange({ ...value, items: next });
   }
 
-  function addItem() {
+  const addItem = () => {
     onChange({ ...value, items: [...value.items, newItemDraft()] });
   }
 

@@ -1,6 +1,6 @@
 import { SANCTUARY as S } from "@/lib/design/tokens";
 
-export function Wordmark({ size = "md", color }: { size?: "sm" | "md" | "lg"; color?: string }) {
+export const Wordmark = ({ size = "md", color }: { size?: "sm" | "md" | "lg"; color?: string }) => {
   const sizes = { sm: 14, md: 18, lg: 22 } as const;
   const fs = sizes[size];
   return (

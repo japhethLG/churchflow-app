@@ -7,11 +7,11 @@ import type { components } from "@/lib/api";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
-function asString(v: unknown): string | null {
+const asString = (v: unknown): string | null  => {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
-export function MemberInfoCard({ member, footer }: { member: Member; footer?: ReactNode }) {
+export const MemberInfoCard = ({ member, footer }: { member: Member; footer?: ReactNode }) => {
   const name = `${member.firstName} ${member.lastName}`.trim();
   return (
     <Card padding={28}>
@@ -40,7 +40,7 @@ export function MemberInfoCard({ member, footer }: { member: Member; footer?: Re
   );
 }
 
-function Field({ label, value, colspan }: { label: string; value: string | null; colspan?: boolean }) {
+const Field = ({ label, value, colspan }: { label: string; value: string | null; colspan?: boolean }) => {
   return (
     <div style={{ gridColumn: colspan ? "1 / -1" : undefined }}>
       <div

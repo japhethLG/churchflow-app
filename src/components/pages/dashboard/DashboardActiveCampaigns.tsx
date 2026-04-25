@@ -12,7 +12,7 @@ type CampaignWithProgress = Campaign & {
   raisedAmount?: number;
 };
 
-function fmtCompact(value: number): string {
+const fmtCompact = (value: number): string  => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
   return value.toFixed(0);
@@ -25,7 +25,7 @@ const STATUS_MAP: Record<Campaign["status"], "Active" | "Upcoming" | "Completed"
   CANCELLED: "Cancelled",
 };
 
-export function DashboardActiveCampaigns({
+export const DashboardActiveCampaigns = ({
   campaigns,
   progressMap,
   loading,
@@ -35,7 +35,7 @@ export function DashboardActiveCampaigns({
   progressMap: Record<string, { goalAmount: number; raisedAmount: number; pledgedAmount: number }>;
   loading?: boolean;
   tenantSlug: string;
-}) {
+}) => {
   if (loading) {
     return (
       <Card>

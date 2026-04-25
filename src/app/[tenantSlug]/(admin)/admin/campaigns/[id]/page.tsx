@@ -17,7 +17,7 @@ type Item = components["schemas"]["CampaignItemResponseDto"];
 type ItemProgress = components["schemas"]["CampaignItemProgressDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
-export default function CampaignDetailPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
   const { data: campaign, isLoading, error } = useCampaign(tenantSlug, id);

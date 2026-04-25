@@ -4,7 +4,7 @@ import { PageHeader, Card, Input, Icon } from "@/components/primitives";
 import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useAuthMe } from "@/lib/api/auth";
 
-export function SuperAdminProfile() {
+export const SuperAdminProfile = () => {
   const { data: user } = useAuthMe();
 
   return (

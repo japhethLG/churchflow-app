@@ -10,7 +10,7 @@ type StatsProps = {
   cancelled: number;
 };
 
-export function InvitationsStatsBar({ total, pending, accepted, cancelled }: StatsProps) {
+export const InvitationsStatsBar = ({ total, pending, accepted, cancelled }: StatsProps) => {
   return (
     <div
       style={{
@@ -48,7 +48,7 @@ export function InvitationsStatsBar({ total, pending, accepted, cancelled }: Sta
   );
 }
 
-function StatCard({
+const StatCard = ({
   label,
   value,
   icon,
@@ -58,7 +58,7 @@ function StatCard({
   value: number;
   icon: any;
   color: string;
-}) {
+}) => {
   return (
     <div
       style={{

@@ -47,11 +47,11 @@ const METHOD_LABEL: Record<TransactionRow["paymentMethod"], string> = {
   OTHER: "Other",
 };
 
-function fmtDate(iso: string): string {
+const fmtDate = (iso: string): string  => {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function fullName(m: Member | undefined): string {
+const fullName = (m: Member | undefined): string  => {
   if (!m) return "—";
   return `${m.firstName} ${m.lastName}`.trim();
 }
@@ -62,7 +62,7 @@ export type TransactionsTableHandlers = {
   onDelete: (t: TransactionRow) => void;
 };
 
-export function TransactionsTable({
+export const TransactionsTable = ({
   rows,
   loading,
   pagination,
@@ -78,7 +78,7 @@ export function TransactionsTable({
   campaignsById: Record<string, Campaign>;
   handlers: TransactionsTableHandlers;
   onCreate?: () => void;
-}) {
+}) => {
   const columns: DataTableColumn<TransactionRow>[] = [
     {
       key: "date",

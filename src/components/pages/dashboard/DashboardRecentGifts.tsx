@@ -19,7 +19,7 @@ const TYPE_UI: Record<Transaction["type"], string> = {
   OTHER: "Other",
 };
 
-function relativeDate(iso: string): string {
+const relativeDate = (iso: string): string  => {
   const d = new Date(iso);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
@@ -37,7 +37,7 @@ function relativeDate(iso: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function DashboardRecentGifts({
+export const DashboardRecentGifts = ({
   transactions,
   membersById,
   loading,
@@ -47,7 +47,7 @@ export function DashboardRecentGifts({
   membersById: Record<string, Member>;
   loading?: boolean;
   tenantSlug: string;
-}) {
+}) => {
   if (loading) {
     return (
       <Card>

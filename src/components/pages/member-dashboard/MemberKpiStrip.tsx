@@ -10,7 +10,7 @@ type Transaction = {
   date: string;
 };
 
-function fmtCurrency(v: number | string): string {
+const fmtCurrency = (v: number | string): string  => {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
@@ -24,7 +24,7 @@ const TYPE_LABEL: Record<string, string> = {
   OTHER: "Other",
 };
 
-export function MemberKpiStrip({
+export const MemberKpiStrip = ({
   transactions,
   loading,
   currency = "$",
@@ -32,7 +32,7 @@ export function MemberKpiStrip({
   transactions: Transaction[];
   loading?: boolean;
   currency?: string;
-}) {
+}) => {
   if (loading) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>

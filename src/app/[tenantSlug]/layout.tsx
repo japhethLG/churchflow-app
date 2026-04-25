@@ -9,13 +9,13 @@ import { getSessionUser } from "@/lib/auth/server";
 //
 // Per-perspective role (admin vs member) is enforced by the inner
 // (admin) / (member) group layouts, so each gate does exactly one thing.
-export default async function TenantLayout({
+export default async ({
   params,
   children,
 }: {
   params: Promise<{ tenantSlug: string }>;
   children: ReactNode;
-}) {
+}) => {
   const { tenantSlug } = await params;
   const user = await getSessionUser();
   if (!user) {

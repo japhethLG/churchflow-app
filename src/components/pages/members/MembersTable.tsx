@@ -26,11 +26,11 @@ export type MembersTableHandlers = {
   onMerge: (m: MemberRow) => void;
 };
 
-function fullName(m: MemberRow): string {
+const fullName = (m: MemberRow): string  => {
   return `${m.firstName} ${m.lastName}`.trim();
 }
 
-function MemberCell({ m }: { m: MemberRow }) {
+const MemberCell = ({ m }: { m: MemberRow }) => {
   const isLinked = Boolean(m.userId);
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -43,11 +43,11 @@ function MemberCell({ m }: { m: MemberRow }) {
   );
 }
 
-function plainStr(v: unknown): string | null {
+const plainStr = (v: unknown): string | null  => {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
-export function MembersTable({
+export const MembersTable = ({
   rows,
   loading,
   pagination,
@@ -59,7 +59,7 @@ export function MembersTable({
   pagination?: DataTablePagination;
   handlers: MembersTableHandlers;
   onAdd?: () => void;
-}) {
+}) => {
   const columns: DataTableColumn<MemberRow>[] = [
     { key: "member", label: "Member", render: (m) => <MemberCell m={m} /> },
     {

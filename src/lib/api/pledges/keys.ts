@@ -5,7 +5,7 @@ export const PLEDGE_PATHS = [
   "/api/v1/tenants/{tenantId}/pledges/{id}",
 ] as const;
 
-export function invalidatePledges(qc: QueryClient, tenantId?: string) {
+export const invalidatePledges = (qc: QueryClient, tenantId?: string) => {
   const set = new Set<string>(PLEDGE_PATHS);
   return qc.invalidateQueries({
     predicate: (q) => {

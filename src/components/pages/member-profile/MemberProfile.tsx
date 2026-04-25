@@ -13,13 +13,13 @@ import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useMyMembership, useUpdateMyMembership } from "@/lib/api/members";
 import { nstr } from "@/lib/api/coerce";
 
-export function MemberProfile({
+export const MemberProfile = ({
   overline = "Account",
   title = "Personal Profile",
 }: {
   overline?: string;
   title?: string;
-}) {
+}) => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const memberQ = useMyMembership(tenantSlug);
   const updateM = useUpdateMyMembership(tenantSlug);

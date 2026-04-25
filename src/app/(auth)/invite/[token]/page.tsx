@@ -11,15 +11,15 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { signInWithGoogle, signOut, refreshSession } from "@/lib/auth/actions";
 import { tenantLogoGradient, tenantInitials } from "@/lib/design/logo-gradient";
 
-function daysRemaining(expiresAt: string): number {
+const daysRemaining = (expiresAt: string): number  => {
   return Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86_400_000);
 }
 
-export default function InvitePage({
+export default ({
   params,
 }: {
   params: Promise<{ token: string }>;
-}) {
+}) => {
   const { token } = use(params);
   const router = useRouter();
   const { user: firebaseUser, loading: authLoading } = useAuth();
@@ -28,7 +28,7 @@ export default function InvitePage({
   const [dismissed, setDismissed] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  async function handleAccept() {
+  const handleAccept = async () => {
     setActionError(null);
     try {
       if (!firebaseUser) {
@@ -55,7 +55,7 @@ export default function InvitePage({
     }
   }
 
-  async function handleSwitchAccount() {
+  const handleSwitchAccount = async () => {
     await signOut();
     window.location.reload();
   }
@@ -218,7 +218,7 @@ export default function InvitePage({
   );
 }
 
-function PageShell({ children }: { children: React.ReactNode }) {
+const PageShell = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <div style={{ padding: "28px 40px" }}>

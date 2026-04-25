@@ -27,18 +27,18 @@ const LINKED_LABEL: Record<MemberLinkedFilter, string> = {
 const STATUS_CYCLE: MemberStatusFilter[] = ["all", "active", "inactive"];
 const LINKED_CYCLE: MemberLinkedFilter[] = ["all", "linked", "unlinked"];
 
-function next<T>(arr: readonly T[], v: T): T {
+const next = <T,>(arr: readonly T[], v: T): T => {
   const i = arr.indexOf(v);
   return arr[(i + 1) % arr.length];
 }
 
-export function MembersFilters({
+export const MembersFilters = ({
   value,
   onChange,
 }: {
   value: MembersFiltersValue;
   onChange: (v: MembersFiltersValue) => void;
-}) {
+}) => {
   return (
     <div
       style={{

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { SANCTUARY as S } from "@/lib/design/tokens";
 
-export function PageHeader({
+export const PageHeader = ({
   overline,
   title,
   subtitle,
@@ -11,7 +11,7 @@ export function PageHeader({
   title: ReactNode;
   subtitle?: ReactNode;
   action?: ReactNode;
-}) {
+}) => {
   return (
     <div
       style={{
@@ -68,7 +68,7 @@ export function PageHeader({
   );
 }
 
-export function SectionTitle({ title, action }: { title: ReactNode; action?: ReactNode }) {
+export const SectionTitle = ({ title, action }: { title: ReactNode; action?: ReactNode }) => {
   return (
     <div
       style={{

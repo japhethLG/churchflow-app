@@ -27,16 +27,16 @@ const METHOD_LABEL: Record<string, string> = {
   OTHER: "Other",
 };
 
-function fmtDate(iso: string): string {
+const fmtDate = (iso: string): string  => {
   const d = new Date(iso);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function fmtCurrency(v: number | string): string {
+const fmtCurrency = (v: number | string): string  => {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function MemberRecentGiving({
+export const MemberRecentGiving = ({
   transactions,
   loading,
   tenantSlug,
@@ -44,7 +44,7 @@ export function MemberRecentGiving({
   transactions: Transaction[];
   loading?: boolean;
   tenantSlug: string;
-}) {
+}) => {
   if (loading) {
     return (
       <Card>

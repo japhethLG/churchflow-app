@@ -1,4 +1,4 @@
-export function JournalIllustration() {
+export const JournalIllustration = () => {
   return (
     <svg viewBox="0 0 400 400" width="100%" height="100%" fill="none">
       <defs>

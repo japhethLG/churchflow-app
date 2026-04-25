@@ -7,12 +7,12 @@ import { nstr, type components } from "@/lib/api";
 type Item = components["schemas"]["CampaignItemResponseDto"];
 type ItemProgress = components["schemas"]["CampaignItemProgressDto"];
 
-function pct(n: number, d: number): number {
+const pct = (n: number, d: number): number  => {
   if (d <= 0) return 0;
   return Math.min(100, Math.round((n / d) * 100));
 }
 
-export function CampaignItemsList({
+export const CampaignItemsList = ({
   items,
   progressByItemId,
   onAdd,
@@ -26,7 +26,7 @@ export function CampaignItemsList({
   onEdit: (item: Item) => void;
   onDelete: (item: Item) => void;
   disabled?: boolean;
-}) {
+}) => {
   return (
     <Card padding={24}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>

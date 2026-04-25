@@ -3,7 +3,7 @@ import { Wordmark } from "@/components/primitives/Wordmark";
 import { JournalIllustration } from "@/components/illustrations/JournalIllustration";
 import { LoginButton } from "./LoginButton";
 
-export default function LoginPage() {
+export default () => {
   return (
     <>
       <div style={{ padding: "28px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

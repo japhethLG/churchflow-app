@@ -5,7 +5,7 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 let _app: App | null = null;
 
-function getApp(): App {
+const getApp = (): App  => {
   if (_app) return _app;
   _app = getApps()[0] ?? null;
   if (_app) return _app;

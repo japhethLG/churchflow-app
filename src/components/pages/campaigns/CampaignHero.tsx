@@ -13,7 +13,7 @@ const STATUS_LABEL: Record<Campaign["status"], string> = {
   CANCELLED: "Cancelled",
 };
 
-function fmtDeadline(d: string | null): string {
+const fmtDeadline = (d: string | null): string  => {
   if (!d) return "Open-ended · no deadline";
   const date = new Date(d);
   const days = Math.ceil((date.getTime() - Date.now()) / 86_400_000);
@@ -23,13 +23,13 @@ function fmtDeadline(d: string | null): string {
   return `Deadline · ${fmt} (${days} days left)`;
 }
 
-export function CampaignHero({
+export const CampaignHero = ({
   campaign,
   actions,
 }: {
   campaign: Campaign;
   actions?: ReactNode;
-}) {
+}) => {
   const isActive = campaign.status === "ACTIVE";
   return (
     <div
@@ -97,7 +97,7 @@ export function CampaignHero({
   );
 }
 
-function Pill({ children, bg }: { children: ReactNode; bg: string }) {
+const Pill = ({ children, bg }: { children: ReactNode; bg: string }) => {
   return (
     <span
       style={{

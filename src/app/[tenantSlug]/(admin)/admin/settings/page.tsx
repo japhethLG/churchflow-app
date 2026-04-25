@@ -50,7 +50,7 @@ const TIMEZONES = [
   "UTC",
 ];
 
-export default function SettingsPage() {
+export default () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const tenantQ = useTenant(tenantSlug);
   const tenant = tenantQ.data;
@@ -81,12 +81,12 @@ export default function SettingsPage() {
     setDirty(false);
   }, [tenant]);
 
-  function markDirty() {
+  const markDirty = () => {
     setDirty(true);
     setSaved(false);
   }
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!tenant) return;
     setError(null);
     try {

@@ -6,6 +6,6 @@ import { useApiQuery } from "../hooks";
 // hasn't selected a tenant yet, tenantId/memberId/role/isSuperAdmin are
 // undefined in the response. Multi-step flows (signInWithGoogle,
 // switchTenant) live in `@/lib/auth/actions` — this hook is a pure read.
-export function useAuthMe() {
+export const useAuthMe = () => {
   return useApiQuery("/api/v1/auth/me");
 }

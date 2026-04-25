@@ -6,7 +6,7 @@ import { invalidateCampaigns } from "./keys";
 
 // Campaigns
 
-export function useCampaigns(tenantId: string, enabled = true) {
+export const useCampaigns = (tenantId: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/campaigns",
     { params: { path: { tenantId } } },
@@ -15,7 +15,7 @@ export function useCampaigns(tenantId: string, enabled = true) {
 }
 
 // Returns a campaign with its items embedded.
-export function useCampaign(tenantId: string, id: string, enabled = true) {
+export const useCampaign = (tenantId: string, id: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/campaigns/{id}",
     { params: { path: { tenantId, id } } },
@@ -26,7 +26,7 @@ export function useCampaign(tenantId: string, id: string, enabled = true) {
 // Live progress: per-item pledged/raised + campaign-level totals.
 // Recomputed server-side on every read, so no extra invalidation needed
 // beyond the campaign-paths set.
-export function useCampaignProgress(tenantId: string, id: string, enabled = true) {
+export const useCampaignProgress = (tenantId: string, id: string, enabled = true) => {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/campaigns/{id}/progress",
     { params: { path: { tenantId, id } } },
@@ -34,21 +34,21 @@ export function useCampaignProgress(tenantId: string, id: string, enabled = true
   );
 }
 
-export function useCreateCampaign(tenantId: string) {
+export const useCreateCampaign = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/campaigns", "post", {
     onSuccess: () => invalidateCampaigns(qc, tenantId),
   });
 }
 
-export function useUpdateCampaign(tenantId: string) {
+export const useUpdateCampaign = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/campaigns/{id}", "patch", {
     onSuccess: () => invalidateCampaigns(qc, tenantId),
   });
 }
 
-export function useDeleteCampaign(tenantId: string) {
+export const useDeleteCampaign = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/campaigns/{id}", "delete", {
     onSuccess: () => invalidateCampaigns(qc, tenantId),
@@ -57,7 +57,7 @@ export function useDeleteCampaign(tenantId: string) {
 
 // Campaign items (nested under a campaign)
 
-export function useAddCampaignItem(tenantId: string) {
+export const useAddCampaignItem = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation(
     "/api/v1/tenants/{tenantId}/campaigns/{id}/items",
@@ -66,7 +66,7 @@ export function useAddCampaignItem(tenantId: string) {
   );
 }
 
-export function useUpdateCampaignItem(tenantId: string) {
+export const useUpdateCampaignItem = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation(
     "/api/v1/tenants/{tenantId}/campaigns/{id}/items/{itemId}",
@@ -75,7 +75,7 @@ export function useUpdateCampaignItem(tenantId: string) {
   );
 }
 
-export function useDeleteCampaignItem(tenantId: string) {
+export const useDeleteCampaignItem = (tenantId: string) => {
   const qc = useQueryClient();
   return useApiMutation(
     "/api/v1/tenants/{tenantId}/campaigns/{id}/items/{itemId}",

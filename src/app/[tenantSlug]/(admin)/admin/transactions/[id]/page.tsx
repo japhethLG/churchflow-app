@@ -39,7 +39,7 @@ const METHOD_LABEL: Record<Tx["paymentMethod"], string> = {
   OTHER: "Other",
 };
 
-export default function TransactionDetailPage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
   const { data: tx, isLoading, error } = useTransaction(tenantSlug, id);
@@ -252,7 +252,7 @@ export default function TransactionDetailPage() {
   );
 }
 
-function DetailRow({
+const DetailRow = ({
   label,
   value,
   last,
@@ -260,7 +260,7 @@ function DetailRow({
   label: string;
   value: React.ReactNode;
   last?: boolean;
-}) {
+}) => {
   return (
     <div
       style={{
@@ -288,7 +288,7 @@ function DetailRow({
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+const Label = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       style={{

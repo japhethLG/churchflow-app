@@ -31,7 +31,7 @@ export type CreatePledgeProps = {
   defaultMemberId?: string;
 };
 
-export function CreatePledgeModal({
+export const CreatePledgeModal = ({
   tenantSlug,
   campaignId,
   campaignTitle,
@@ -39,7 +39,7 @@ export function CreatePledgeModal({
   items,
   defaultMemberId,
   onClose,
-}: CreatePledgeProps & ModalBaseProps) {
+}: CreatePledgeProps & ModalBaseProps) => {
   const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
   const { data: campaignsData } = useCampaigns(tenantSlug);
   const { mutateAsync, isPending } = useCreatePledge(tenantSlug);
@@ -77,7 +77,7 @@ export function CreatePledgeModal({
 
   const canSubmit = Boolean(memberId) && Number(amount) > 0;
 
-  async function handleCreate() {
+  const handleCreate = async () => {
     if (!canSubmit) return;
     setError(null);
     try {

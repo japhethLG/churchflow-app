@@ -54,12 +54,12 @@ const TYPE_CYCLE: TransactionTypeFilter[] = [
 ];
 const RANGE_CYCLE: DateRangeFilter[] = ["all", "today", "this-month", "last-month", "ytd"];
 
-function next<T>(arr: readonly T[], v: T): T {
+const next = <T,>(arr: readonly T[], v: T): T => {
   const i = arr.indexOf(v);
   return arr[(i + 1) % arr.length];
 }
 
-export function TransactionsFilters({
+export const TransactionsFilters = ({
   value,
   campaigns,
   onChange,
@@ -69,13 +69,13 @@ export function TransactionsFilters({
   campaigns: Campaign[];
   onChange: (v: TransactionsFiltersValue) => void;
   onReset: () => void;
-}) {
+}) => {
   const campaignLabel =
     value.campaignId === "all"
       ? "All campaigns"
       : campaigns.find((c) => c.id === value.campaignId)?.title ?? "Campaign";
 
-  function cycleCampaign() {
+  const cycleCampaign = () => {
     const ids: (string | "all")[] = ["all", ...campaigns.map((c) => c.id)];
     onChange({ ...value, campaignId: next(ids, value.campaignId) });
   }
@@ -141,7 +141,7 @@ export function TransactionsFilters({
 }
 
 // Resolve a `DateRangeFilter` to ISO strings the backend accepts.
-export function resolveRange(range: DateRangeFilter): { dateFrom?: string; dateTo?: string } {
+export const resolveRange = (range: DateRangeFilter): { dateFrom?: string; dateTo?: string } => {
   const now = new Date();
   const startOf = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
   const startOfMonth = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));

@@ -10,17 +10,17 @@ import { useMyMembership, useUpdateMyMembership } from "@/lib/api/members";
 
 type FieldState = { choice: ReconcileChoice; edited: string };
 
-function asString(v: unknown): string | null {
+const asString = (v: unknown): string | null  => {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
-function pick(state: FieldState, existing: string | null, sso: string | null): string {
+const pick = (state: FieldState, existing: string | null, sso: string | null): string  => {
   if (state.choice === "existing") return existing ?? "";
   if (state.choice === "sso") return sso ?? "";
   return state.edited;
 }
 
-export default function WelcomePage() {
+export default () => {
   const router = useRouter();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { user: firebaseUser, loading: authLoading } = useAuth();
@@ -100,7 +100,7 @@ export default function WelcomePage() {
 
   const canSubmit = finalFirst.length > 0 && finalLast.length > 0;
 
-  async function handleContinue() {
+  const handleContinue = async () => {
     setError(null);
     try {
       await mutateAsync({
@@ -234,7 +234,7 @@ export default function WelcomePage() {
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+const Shell = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       style={{

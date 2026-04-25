@@ -25,7 +25,7 @@ export type SignInResult = {
 // tenantMemberships custom claim (keyed by tenant slug), and returns the
 // populated session. We then mint the Next cookie off a *refreshed* ID
 // token so server components see the new claims immediately.
-export async function signInWithGoogle(): Promise<SignInResult> {
+export const signInWithGoogle = async (): Promise<SignInResult>  => {
   const auth = getClientAuth();
   const result = await signInWithPopup(auth, getGoogleProvider());
   const initialToken = await result.user.getIdToken(true);
@@ -66,7 +66,7 @@ export async function signInWithGoogle(): Promise<SignInResult> {
   };
 }
 
-export async function signOut(): Promise<void> {
+export const signOut = async (): Promise<void>  => {
   await fbSignOut(getClientAuth());
   await fetch("/api/auth/session", { method: "DELETE" });
 }
@@ -76,7 +76,7 @@ export async function signOut(): Promise<void> {
 // roles server-side (invite accepted, admin grants a role, member
 // removal) so RSCs pick up the new claims without waiting ~1h for the
 // token to auto-refresh.
-export async function refreshSession(): Promise<void> {
+export const refreshSession = async (): Promise<void>  => {
   const user = getClientAuth().currentUser;
   if (!user) return;
   const idToken = await user.getIdToken(true);

@@ -18,16 +18,16 @@ export type RenameTenantSlugProps = {
   currentSlug: string;
 };
 
-export function RenameTenantSlugModal({
+export const RenameTenantSlugModal = ({
   tenantId,
   currentSlug,
   onClose,
-}: RenameTenantSlugProps & ModalBaseProps) {
+}: RenameTenantSlugProps & ModalBaseProps) => {
   const [slug, setSlug] = useState(currentSlug);
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useRenameTenantSlug();
 
-  async function handleRename() {
+  const handleRename = async () => {
     if (!slug.trim() || slug === currentSlug) return;
     setError(null);
     try {

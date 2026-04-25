@@ -7,6 +7,6 @@ export const ADMIN_PATHS = [
   "/api/v1/admin/users/{id}",
 ] as const;
 
-export function invalidateAdmin(qc: QueryClient) {
+export const invalidateAdmin = (qc: QueryClient) => {
   return invalidateByPaths(qc, ADMIN_PATHS);
 }

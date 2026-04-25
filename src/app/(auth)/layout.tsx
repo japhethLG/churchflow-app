@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { SANCTUARY as S } from "@/lib/design/tokens";
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
+export default ({ children }: { children: ReactNode }) => {
   return (
     <div
       style={{

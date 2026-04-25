@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Icon, type IconName } from "./Icon";
 
-export function Chip({
+export const Chip = ({
   children,
   active,
   icon,
@@ -12,7 +12,7 @@ export function Chip({
   active?: boolean;
   icon?: IconName;
   onClick?: () => void;
-}) {
+}) => {
   return (
     <button
       onClick={onClick}

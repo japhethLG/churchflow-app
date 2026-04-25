@@ -24,20 +24,20 @@ export type MergeMemberProps = {
   initialDropId?: string;
 };
 
-function fullName(m: Member): string {
+const fullName = (m: Member): string  => {
   return `${m.firstName} ${m.lastName}`.trim();
 }
 
-function asString(v: unknown): string | null {
+const asString = (v: unknown): string | null  => {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
-export function MergeMemberModal({
+export const MergeMemberModal = ({
   tenantSlug,
   keep,
   initialDropId,
   onClose,
-}: MergeMemberProps & ModalBaseProps) {
+}: MergeMemberProps & ModalBaseProps) => {
   const [dropId, setDropId] = useState<string | null>(initialDropId ?? null);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export function MergeMemberModal({
     return (candidates?.items ?? []).filter((m) => m.id !== keep.id);
   }, [candidates, keep.id]);
 
-  async function handleMerge() {
+  const handleMerge = async () => {
     if (!dropId) return;
     setError(null);
     try {
@@ -128,7 +128,7 @@ export function MergeMemberModal({
   );
 }
 
-function KeeperRow({ keep }: { keep: Member }) {
+const KeeperRow = ({ keep }: { keep: Member }) => {
   return (
     <div
       style={{
@@ -152,7 +152,7 @@ function KeeperRow({ keep }: { keep: Member }) {
   );
 }
 
-function PickDuplicate({
+const PickDuplicate = ({
   search,
   onSearch,
   candidates,
@@ -164,7 +164,7 @@ function PickDuplicate({
   candidates: Member[];
   loading: boolean;
   onPick: (id: string) => void;
-}) {
+}) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div>
@@ -238,7 +238,7 @@ function PickDuplicate({
   );
 }
 
-function Preview({
+const Preview = ({
   drop,
   keep,
   txCount,
@@ -252,7 +252,7 @@ function Preview({
   pledgeCount: number;
   fields: Array<"email" | "phone" | "address" | "userId">;
   onPickAgain: () => void;
-}) {
+}) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div
@@ -317,7 +317,7 @@ function Preview({
   );
 }
 
-function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+const Row = ({ label, value, muted }: { label: string; value: string; muted?: boolean }) => {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
       <span style={{ color: S.onSurfaceVariant }}>{label}</span>
@@ -334,7 +334,7 @@ function Row({ label, value, muted }: { label: string; value: string; muted?: bo
   );
 }
 
-function SkeletonPreview() {
+const SkeletonPreview = () => {
   return (
     <div
       style={{

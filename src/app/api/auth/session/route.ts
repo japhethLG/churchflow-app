@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from "@/lib/auth/constants";
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
   const { idToken } = (await req.json()) as { idToken?: string };
   if (!idToken) {
     return NextResponse.json({ error: "Missing idToken" }, { status: 400 });
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE() {
+export const DELETE = async () => {
   const response = NextResponse.json({ ok: true });
   response.cookies.delete(SESSION_COOKIE_NAME);
   return response;

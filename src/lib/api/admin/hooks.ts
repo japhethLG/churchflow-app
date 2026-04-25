@@ -5,11 +5,11 @@ import { useApiMutation, useApiQuery } from "../hooks";
 import { invalidateAdmin } from "./keys";
 import { invalidateTenants } from "../tenants/keys";
 
-export function useAdminStats() {
+export const useAdminStats = () => {
   return useApiQuery("/api/v1/admin/stats");
 }
 
-export function useAdminUsers(
+export const useAdminUsers = (
   filters?: {
     search?: string;
     tenantId?: string;
@@ -18,7 +18,7 @@ export function useAdminUsers(
     take?: number;
   },
   enabled = true,
-) {
+) => {
   return useApiQuery(
     "/api/v1/admin/users",
     { params: { query: filters ?? {} } },
@@ -26,7 +26,7 @@ export function useAdminUsers(
   );
 }
 
-export function useToggleSuperAdmin() {
+export const useToggleSuperAdmin = () => {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/admin/users/{id}", "patch", {
     onSuccess: () => {

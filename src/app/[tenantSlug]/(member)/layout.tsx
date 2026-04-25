@@ -7,13 +7,13 @@ import { getSessionUser } from "@/lib/auth/server";
 // admin can flip into the member view to pledge on their own behalf.
 // Super-admins without a Member row get redirected; they should act on
 // tenants through /admin/* instead.
-export default async function MemberLayout({
+export default async ({
   params,
   children,
 }: {
   params: Promise<{ tenantSlug: string }>;
   children: ReactNode;
-}) {
+}) => {
   const { tenantSlug } = await params;
   const user = (await getSessionUser())!; // TenantLayout guaranteed non-null
 

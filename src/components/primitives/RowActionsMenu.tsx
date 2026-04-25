@@ -25,7 +25,7 @@ const item: CSSProperties = {
   borderRadius: 8,
 };
 
-export function RowActionsMenu({ actions, label = "Row actions" }: { actions: RowAction[]; label?: string }) {
+export const RowActionsMenu = ({ actions, label = "Row actions" }: { actions: RowAction[]; label?: string }) => {
   const [open, setOpen] = useState(false);
 
   return (

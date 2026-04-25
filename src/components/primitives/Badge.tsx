@@ -18,7 +18,7 @@ const PALETTES: Record<BadgeColor, { bg: string; fg: string }> = {
   gray: { bg: S.surfaceContainer, fg: S.onSurfaceMuted },
 };
 
-export function Badge({
+export const Badge = ({
   children,
   color = "neutral",
   dot,
@@ -26,7 +26,7 @@ export function Badge({
   children: ReactNode;
   color?: BadgeColor;
   dot?: boolean;
-}) {
+}) => {
   const p = PALETTES[color];
   return (
     <span
@@ -63,7 +63,7 @@ export type TransactionType =
   | "Tithe" | "Offering" | "Mission" | "First Fruit"
   | "Commitment" | "Donation" | "Other";
 
-export function TypeBadge({ type }: { type: TransactionType }) {
+export const TypeBadge = ({ type }: { type: TransactionType }) => {
   const map: Record<TransactionType, BadgeColor> = {
     Tithe: "indigo",
     Offering: "green",
@@ -84,7 +84,7 @@ export type Status =
   | "Active" | "Upcoming" | "Pending" | "Completed"
   | "Cancelled" | "Inactive" | "Ongoing";
 
-export function StatusBadge({ status }: { status: Status }) {
+export const StatusBadge = ({ status }: { status: Status }) => {
   const map: Record<Status, { c: BadgeColor; label: string }> = {
     Active: { c: "green", label: "Active" },
     Upcoming: { c: "green", label: "Upcoming" },

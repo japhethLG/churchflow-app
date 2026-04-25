@@ -19,17 +19,17 @@ export type ConfirmDeleteTransactionProps = {
   onDeleted?: () => void;
 };
 
-export function ConfirmDeleteTransactionModal({
+export const ConfirmDeleteTransactionModal = ({
   tenantSlug,
   transactionId,
   amountLabel,
   onDeleted,
   onClose,
-}: ConfirmDeleteTransactionProps & ModalBaseProps) {
+}: ConfirmDeleteTransactionProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useDeleteTransaction(tenantSlug);
 
-  async function handleDelete() {
+  const handleDelete = async () => {
     setError(null);
     try {
       await mutateAsync({ params: { path: { tenantId: tenantSlug, id: transactionId } } });

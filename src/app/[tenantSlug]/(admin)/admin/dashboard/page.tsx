@@ -19,14 +19,14 @@ import type { components } from "@/lib/api";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-function getGreeting(): string {
+const getGreeting = (): string  => {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";
 }
 
-export default function AdminDashboardPage() {
+export default () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { user } = useAuth();
 

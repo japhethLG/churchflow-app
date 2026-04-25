@@ -3,7 +3,7 @@ import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Sidebar, type Perspective, type TenantSummary } from "./Sidebar";
 import { TopBar } from "./TopBar";
 
-export function AppShell({
+export const AppShell = ({
   perspective,
   tenantSlug,
   breadcrumb,
@@ -27,7 +27,7 @@ export function AppShell({
   children: ReactNode;
   contentPad?: number;
   bg?: string;
-}) {
+}) => {
   return (
     <div
       style={{

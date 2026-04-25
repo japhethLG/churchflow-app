@@ -2,7 +2,7 @@ import { SANCTUARY as S } from "@/lib/design/tokens";
 
 export type BarDatum = { label: string; v: number; label2?: string; highlight?: boolean };
 
-export function BarChart({
+export const BarChart = ({
   data,
   height = 220,
   gradient,
@@ -10,7 +10,7 @@ export function BarChart({
   data: BarDatum[];
   height?: number;
   gradient?: boolean;
-}) {
+}) => {
   const max = Math.max(...data.map((d) => d.v));
   return (
     <div
@@ -67,7 +67,7 @@ export function BarChart({
 
 export type DonutDatum = { v: number; color: string };
 
-export function Donut({
+export const Donut = ({
   data,
   size = 200,
   total,
@@ -75,7 +75,7 @@ export function Donut({
   data: DonutDatum[];
   size?: number;
   total: string;
-}) {
+}) => {
   const radius = size / 2 - 20;
   const circumference = 2 * Math.PI * radius;
   const sum = data.reduce((a, d) => a + d.v, 0);

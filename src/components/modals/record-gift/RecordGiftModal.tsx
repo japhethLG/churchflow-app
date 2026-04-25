@@ -49,17 +49,17 @@ const METHOD_OPTIONS: { value: PaymentMethod; label: string; icon: IconName }[] 
   { value: "OTHER", label: "Other", icon: "dots" },
 ];
 
-function todayInputValue(): string {
+const todayInputValue = (): string  => {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function RecordGiftModal({
+export const RecordGiftModal = ({
   tenantSlug,
   defaultMemberId,
   defaultCampaignId,
   defaultPledgeId,
   onClose,
-}: RecordGiftProps & ModalBaseProps) {
+}: RecordGiftProps & ModalBaseProps) => {
   const { data: tenant } = useTenant(tenantSlug);
   const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
   const { data: campaignsData } = useCampaigns(tenantSlug);
@@ -124,7 +124,7 @@ export function RecordGiftModal({
 
   const canSubmit = Number(amount) > 0 && Boolean(date) && Boolean(paymentMethod);
 
-  async function handleSave() {
+  const handleSave = async () => {
     if (!canSubmit) return;
     setError(null);
     try {
@@ -435,7 +435,7 @@ export function RecordGiftModal({
   );
 }
 
-function Select({
+const Select = ({
   label,
   value,
   onChange,
@@ -449,7 +449,7 @@ function Select({
   options: { value: string; label: string }[];
   disabled?: boolean;
   hint?: string;
-}) {
+}) => {
   return (
     <div>
       <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>{label}</div>

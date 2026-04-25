@@ -17,15 +17,15 @@ export type ConfirmDeletePledgeProps = {
   pledgeId: string;
 };
 
-export function ConfirmDeletePledgeModal({
+export const ConfirmDeletePledgeModal = ({
   tenantSlug,
   pledgeId,
   onClose,
-}: ConfirmDeletePledgeProps & ModalBaseProps) {
+}: ConfirmDeletePledgeProps & ModalBaseProps) => {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useDeletePledge(tenantSlug);
 
-  async function handleDelete() {
+  const handleDelete = async () => {
     setError(null);
     try {
       await mutateAsync({ params: { path: { tenantId: tenantSlug, id: pledgeId } } });

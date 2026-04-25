@@ -18,17 +18,17 @@ export type InviteTenantAdminProps = {
   tenantName: string;
 };
 
-export function InviteTenantAdminModal({
+export const InviteTenantAdminModal = ({
   tenantId,
   tenantName,
   onClose,
-}: InviteTenantAdminProps & ModalBaseProps) {
+}: InviteTenantAdminProps & ModalBaseProps) => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { mutateAsync, isPending } = useIssueInvitation();
 
-  async function handleInvite() {
+  const handleInvite = async () => {
     if (!email.trim()) return;
     setError(null);
     try {
