@@ -19,6 +19,18 @@ import { EditMemberModal } from "@/components/modals/edit-member";
 import { ConfirmDeleteMemberModal } from "@/components/modals/confirm-delete-member";
 import { InviteMemberModal } from "@/components/modals/invite-member";
 import { MergeMemberModal } from "@/components/modals/merge-member";
+import { ConfirmDeleteCampaignModal } from "@/components/modals/confirm-delete-campaign";
+import { ConfirmCancelCampaignModal } from "@/components/modals/confirm-cancel-campaign";
+import { AddCampaignItemModal } from "@/components/modals/add-campaign-item";
+import { EditCampaignItemModal } from "@/components/modals/edit-campaign-item";
+import { ConfirmDeleteCampaignItemModal } from "@/components/modals/confirm-delete-campaign-item";
+import { CreatePledgeModal } from "@/components/modals/create-pledge";
+import { EditPledgeModal } from "@/components/modals/edit-pledge";
+import { ConfirmDeletePledgeModal } from "@/components/modals/confirm-delete-pledge";
+import { RecordGiftModal } from "@/components/modals/record-gift";
+import { ConfirmDeleteTransactionModal } from "@/components/modals/confirm-delete-transaction";
+import { MemberPledgeModal } from "@/components/modals/member-pledge";
+import { CancelInvitationModal } from "@/components/modals/cancel-invitation";
 
 type AnyModal = ComponentType<ModalBaseProps & Record<string, unknown>>;
 
@@ -36,6 +48,18 @@ const registry: Partial<Record<ModalName, AnyModal>> = {
   "confirm-delete-member": ConfirmDeleteMemberModal as AnyModal,
   "invite-member": InviteMemberModal as AnyModal,
   "merge-member": MergeMemberModal as AnyModal,
+  "confirm-delete-campaign": ConfirmDeleteCampaignModal as AnyModal,
+  "confirm-cancel-campaign": ConfirmCancelCampaignModal as AnyModal,
+  "add-campaign-item": AddCampaignItemModal as AnyModal,
+  "edit-campaign-item": EditCampaignItemModal as AnyModal,
+  "confirm-delete-campaign-item": ConfirmDeleteCampaignItemModal as AnyModal,
+  "create-pledge": CreatePledgeModal as AnyModal,
+  "edit-pledge": EditPledgeModal as AnyModal,
+  "confirm-delete-pledge": ConfirmDeletePledgeModal as AnyModal,
+  "record-gift": RecordGiftModal as AnyModal,
+  "confirm-delete-transaction": ConfirmDeleteTransactionModal as AnyModal,
+  "member-pledge": MemberPledgeModal as AnyModal,
+  "cancel-invitation": CancelInvitationModal as AnyModal,
 };
 
 export function ModalHost() {

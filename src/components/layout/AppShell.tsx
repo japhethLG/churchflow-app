@@ -54,12 +54,15 @@ export function AppShell({
           minWidth: 0,
           display: "flex",
           flexDirection: "column",
+          height: "100vh",
+          overflow: "hidden",
         }}
       >
         <TopBar breadcrumb={breadcrumb} />
         <div
           style={{
             flex: 1,
+            overflow: "auto",
             padding: `0 ${contentPad}px ${contentPad}px`,
           }}
         >

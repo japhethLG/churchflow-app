@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 export const TRANSACTION_PATHS = [
   "/api/v1/tenants/{tenantId}/transactions",
   "/api/v1/tenants/{tenantId}/transactions/{id}",
+  "/api/v1/tenants/{tenantId}/transactions/summary",
 ] as const;
 
 // Transactions are always tenant-scoped, so invalidation is scoped too:

@@ -29,6 +29,7 @@ function buildNav(perspective: Perspective, tenantSlug?: string): NavItem[] {
       { icon: "home", label: "Tenants", href: "/super-admin/tenants" },
       { icon: "users", label: "Admins", href: "/super-admin/admins" },
       { icon: "chart", label: "Audit log", href: "/super-admin/audit" },
+      { icon: "user", label: "Profile", href: "/super-admin/profile" },
     ];
   }
 
@@ -43,6 +44,7 @@ function buildNav(perspective: Perspective, tenantSlug?: string): NavItem[] {
       { icon: "receipt", label: "Transactions", href: `${prefix}/admin/transactions` },
       { icon: "chart", label: "Reports", href: `${prefix}/admin/reports` },
       { icon: "mail", label: "Invitations", href: `${prefix}/admin/invitations` },
+      { icon: "user", label: "Profile", href: `${prefix}/admin/profile` },
       { icon: "settings", label: "Settings", href: `${prefix}/admin/settings` },
     ];
   }
@@ -52,6 +54,7 @@ function buildNav(perspective: Perspective, tenantSlug?: string): NavItem[] {
     { icon: "calendar", label: "Campaigns", href: `${prefix}/member/campaigns` },
     { icon: "book", label: "My pledges", href: `${prefix}/member/my-pledges` },
     { icon: "receipt", label: "My giving", href: `${prefix}/member/my-transactions` },
+    { icon: "user", label: "Profile", href: `${prefix}/member/profile` },
   ];
 }
 
@@ -272,11 +275,12 @@ function AccountMenu({
   const adminTenants = memberships.filter((m) => m.role === "ADMIN");
   const memberTenants = memberships;
 
-  const profileHref = tenantSlug
-    ? `/${tenantSlug}/member/profile`
-    : memberships.length > 0
-      ? `/${memberships[0].slug}/member/profile`
-      : null;
+  const profileHref =
+    perspective === "super"
+      ? "/super-admin/profile"
+      : perspective === "admin"
+      ? `/${tenantSlug}/admin/profile`
+      : `/${tenantSlug}/member/profile`;
 
   return (
     <div ref={menuRef} style={{ position: "relative" }}>

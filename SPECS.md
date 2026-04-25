@@ -859,10 +859,10 @@ Anything marked **⏳** is scaffolded but not yet fully implemented — see §17
 
 | Page | Route | Status |
 |---|---|---|
-| Dashboard | `/[slug]/member/dashboard` | ⏳ |
-| Browse campaigns | `/[slug]/member/campaigns` | ⏳ |
-| Campaign detail + pledge | `/[slug]/member/campaigns/[id]` | ⏳ |
-| My pledges | `/[slug]/member/my-pledges` | ⏳ |
+| Dashboard | `/[slug]/member/dashboard` | ✅ KPI strip, recent giving, campaigns & pledges, thank-you banner |
+| Browse campaigns | `/[slug]/member/campaigns` | ✅ card grid, progress bars, item breakdown, member-pledge modal |
+| Campaign detail + pledge | `/[slug]/member/campaigns/[id]` | ✅ folded into campaigns page (inline cards with pledge modals) |
+| My pledges | `/[slug]/member/my-pledges` | ✅ summary strip, active/past grouping, campaign links |
 | My transactions | `/[slug]/member/my-transactions` | ⏳ |
 | Profile | `/[slug]/member/profile` | ⏳ scaffold |
 
@@ -871,16 +871,19 @@ Anything marked **⏳** is scaffolded but not yet fully implemented — see §17
 | Page | Route | Status |
 |---|---|---|
 | Admin dashboard | `/[slug]/admin/dashboard` | ⏳ scaffold |
-| Members list | `/[slug]/admin/members` | ⏳ scaffold |
-| Member detail | `/[slug]/admin/members/[id]` | ⏳ |
-| Add member | `/[slug]/admin/members/new` | ⏳ scaffold |
-| Campaigns list | `/[slug]/admin/campaigns` | ⏳ |
-| Campaign create / edit | `/[slug]/admin/campaigns/new`, `/[slug]/admin/campaigns/[id]` | ⏳ |
-| Campaign items editor | `/[slug]/admin/campaigns/[id]/items` | ⏳ |
-| Pledges | `/[slug]/admin/pledges` | ⏳ |
-| Transactions list | `/[slug]/admin/transactions` | ⏳ scaffold |
-| Record transaction | `/[slug]/admin/transactions/new` | ⏳ scaffold |
-| Transaction detail | `/[slug]/admin/transactions/[id]` | ⏳ |
+| Members list | `/[slug]/admin/members` | ✅ filters, stats bar, table with row actions, pagination |
+| Member detail | `/[slug]/admin/members/[id]` | ✅ info card, recent giving, pledges, edit/merge/invite/remove |
+| Add member | via "Add member" modal | ✅ creates a temp member |
+| Invite member | via "Invite member" modal | ✅ sends sign-in link; can claim a temp profile (`memberId`) |
+| Merge members | via "Merge member" modal | ✅ live preview + confirm |
+| Welcome / reconcile | `/[tenantSlug]/welcome` | ✅ post-claim onboarding with per-field SSO vs existing reconciliation |
+| Campaigns list | `/[slug]/admin/campaigns` | ✅ |
+| Campaign create / edit | `/[slug]/admin/campaigns/new`, `/[slug]/admin/campaigns/[id]/edit` | ✅ |
+| Campaign detail | `/[slug]/admin/campaigns/[id]` | ✅ progress, items, pledges |
+| Pledges | `/[slug]/admin/pledges` | ✅ filters, stats, table |
+| Transactions list | `/[slug]/admin/transactions` | ✅ filters, KPI summary card (recharts donut + period switch), table |
+| Record transaction | via "Record gift" modal (and `/transactions/new` deep link) | ✅ |
+| Transaction detail | `/[slug]/admin/transactions/[id]` | ✅ details + attribution panel |
 | Invitations | `/[slug]/admin/invitations` | ⏳ scaffold |
 | Settings | `/[slug]/admin/settings` | ⏳ scaffold |
 | Reports | `/[slug]/admin/reports` | ⏳ scaffold |
@@ -1115,6 +1118,49 @@ npm run dev                    # next on :3000
       token, already accepted, valid), Google sign-in branch and
       already-signed-in branch, `refreshSession()` after accept,
       redirect to `/{slug}/admin|member/dashboard` based on role
+- [x] **Admin members surface** — list + detail pages composed from
+      `MembersFilters`, `MembersStatsBar`, `MembersTable`, `MemberInfoCard`,
+      `MemberRecentGiving`, `MemberPledges`. `DataTable` + `RowActionsMenu`
+      generic primitives extracted for reuse. Modals: `add-member`,
+      `edit-member`, `confirm-delete-member`, `invite-member` (with
+      claim-by-`memberId` mode), `merge-member` (live preview)
+- [x] **Member claim onboarding** — `/[tenantSlug]/welcome` page with
+      `FieldReconciler` per field; defaults skew toward SSO when SSO
+      provides a value; email overwritten by SSO on link
+- [x] `useMyMembership` + `useUpdateMyMembership` hooks; backend
+      `PATCH /tenants/:tenantId/members/me` for narrow self-update
+- [x] **Member-merging process** (backend Layer 2) +
+      `GET/POST /members/:id/merge-preview` and `/merge` endpoints —
+      reassigns transactions + pledges, copies missing fields,
+      soft-deletes the dropped row, refreshes Firebase claims, audits
+- [x] **Admin campaigns surface** — list page (filters/stats/table),
+      create/edit page (campaign + dynamic item rows), detail page
+      (hero band, progress card with goal/pledged/raised bars, items
+      grid with per-item progress, pledges table). Modals:
+      `confirm-cancel-campaign`, `confirm-delete-campaign`,
+      `add-campaign-item`, `edit-campaign-item`,
+      `confirm-delete-campaign-item`
+- [x] **Admin transactions surface** — list page composes
+      `TransactionsFilters` (search + period chip + type + campaign),
+      a refined `TransactionsSummaryCard` (recharts donut + period
+      toggle wired to summary endpoint, KPIs for total/count/average,
+      type-breakdown legend), and `TransactionsTable` (date, member,
+      type badge, campaign link, payment-method icon, ref #, amount).
+      Detail page shows transaction details + attribution panel
+      (member, campaign+item, pledge). `record-gift` modal hosts the
+      record form (Inter-large amount input, type chips, smart member
+      search, contextual pledge picker, payment-method icon grid);
+      `/transactions/new` is a deep-link route that opens it.
+      `confirm-delete-transaction` modal closes the loop.
+      **recharts** added to deps for the donut and future charting
+- [x] `useTransactionSummary` hook + cross-entity invalidation:
+      transaction mutations now invalidate campaigns + pledges so
+      progress/raised totals stay coherent
+- [x] **Admin pledges surface** — `/[slug]/admin/pledges` with filters
+      (campaign, status), stats (total pledged/active/fulfilled),
+      table; modals: `create-pledge`, `edit-pledge`,
+      `confirm-delete-pledge`
+- [x] `useCampaignProgress` hook
 - [x] **Super-admin pages** — all four fully implemented:
       - `/super-admin/tenants` — stat cards + table with per-tenant
         aggregates, avatar stacks, row actions
@@ -1135,16 +1181,25 @@ npm run dev                    # next on :3000
 **Frontend feature implementations (scaffolds exist — real UIs still to build)**
 - [ ] `/select-church` — currently renders session claims as raw JSON;
       needs a proper card-list UI
-- [ ] Admin: members CRUD UI + "invite to link account" flow
-- [ ] Admin: campaigns CRUD UI + items editor
-- [ ] Admin: pledges list / detail UI
-- [ ] Admin: transactions CRUD UI (incl. pledge picker when member
-      selected) — backend `/transactions/summary` + attribution
-      validation are live
-- [ ] Admin: reports page (income breakdown, monthly trend)
-- [ ] Admin: settings page (tenant profile, `fiscalYearStart`)
-- [ ] Member: dashboard, browse campaigns + pledge flow, my-pledges,
-      my-transactions, profile editor — backend endpoints all live
+- [x] Admin: dashboard — KPI strip (income, gifts, members, campaigns),
+      monthly trend + income distribution charts (Recharts), recent gifts,
+      active campaigns with progress bars
+- [x] Admin: reports page — tabbed view (By Type, By Member, By Campaign,
+      By Month) with donut + bar charts and leaderboards
+- [x] Admin: invitations page — pending / past grouping, role badge,
+      status badge, cancel button, invite-member modal with role picker
+      (admin/user). Backend cancel endpoint added.
+- [x] Admin: settings page — editable church profile (name, address,
+      phone, email), financial settings (currency, fiscal year start),
+      timezone picker, read-only slug + tenant ID
+- [x] Member: dashboard — personalized greeting, KPI strip (giving this
+      month/year/last), recent giving list, campaigns & pledges panel
+      (replaces events), thank-you banner with heart icon
+- [x] Member: browse campaigns — 2-column card grid with progress bars,
+      item breakdowns, pledge badges, member-pledge modal (self-service)
+- [x] Member: my pledges — summary strip, active/past grouping, campaign
+      links, status badges
+- [ ] Member: my-transactions, profile editor — backend endpoints all live
 
 **Backend gaps still outstanding**
 - [ ] Audit-log read API (`GET /audit`) — table + writes exist; no

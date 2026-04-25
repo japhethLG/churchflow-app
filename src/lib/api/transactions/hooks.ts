@@ -3,6 +3,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation, useApiQuery } from "../hooks";
 import { invalidateTransactions } from "./keys";
+import { invalidateCampaigns } from "../campaigns/keys";
+import { invalidatePledges } from "../pledges/keys";
 
 export type TransactionsListQuery = {
   memberId?: string;
@@ -24,6 +26,17 @@ export function useTransactions(tenantId: string, query: TransactionsListQuery =
   );
 }
 
+// Summary KPIs + per-type / per-month breakdowns. The `months` window is
+// the count of trailing UTC month buckets the backend should aggregate
+// (1 = MTD, 12 = trailing year, etc.).
+export function useTransactionSummary(tenantId: string, months = 1, enabled = true) {
+  return useApiQuery(
+    "/api/v1/tenants/{tenantId}/transactions/summary",
+    { params: { path: { tenantId }, query: { months: String(months) } } },
+    { enabled: enabled && Boolean(tenantId) }
+  );
+}
+
 export function useTransaction(tenantId: string, id: string, enabled = true) {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/transactions/{id}",
@@ -35,7 +48,12 @@ export function useTransaction(tenantId: string, id: string, enabled = true) {
 export function useCreateTransaction(tenantId: string) {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/transactions", "post", {
-    onSuccess: () => invalidateTransactions(qc, tenantId),
+    onSuccess: () => {
+      invalidateTransactions(qc, tenantId);
+      // raisedAmount + pledge status are recomputed from transactions.
+      invalidateCampaigns(qc, tenantId);
+      invalidatePledges(qc, tenantId);
+    },
   });
 }
 

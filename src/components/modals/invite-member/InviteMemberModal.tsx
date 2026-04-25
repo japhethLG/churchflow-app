@@ -21,16 +21,27 @@ export type InviteMemberProps = {
   claimMemberId?: string;
   claimMemberName?: string;
   defaultEmail?: string;
+  /** Pre-select a role. When omitted defaults to USER. */
+  defaultRole?: "ADMIN" | "USER";
 };
+
+type Role = "ADMIN" | "USER";
+
+const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
+  { value: "USER", label: "Member", description: "Can view their own giving history, make pledges, and browse public campaigns." },
+  { value: "ADMIN", label: "Admin", description: "Full access to financials, member directory, campaigns, settings, and reports." },
+];
 
 export function InviteMemberModal({
   tenantId,
   claimMemberId,
   claimMemberName,
   defaultEmail,
+  defaultRole,
   onClose,
 }: InviteMemberProps & ModalBaseProps) {
   const [email, setEmail] = useState(defaultEmail ?? "");
+  const [role, setRole] = useState<Role>(defaultRole ?? "USER");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { mutateAsync, isPending } = useIssueInvitation();
@@ -45,7 +56,7 @@ export function InviteMemberModal({
         params: { path: { tenantId } },
         body: {
           email: email.trim(),
-          role: "USER",
+          role,
           ...(claimMemberId ? { memberId: claimMemberId } : {}),
         },
       });
@@ -74,7 +85,7 @@ export function InviteMemberModal({
           ) : (
             <>
               An invitation has been sent to <strong>{email}</strong>. They&apos;ll join the
-              church as a member once they sign in with the link.
+              church as {role === "ADMIN" ? "an admin" : "a member"} once they sign in with the link.
             </>
           )}
         </p>
@@ -114,6 +125,66 @@ export function InviteMemberModal({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="member@example.com"
         />
+
+        {/* Role picker */}
+        <div>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: S.onSurfaceMuted,
+              marginBottom: 8,
+            }}
+          >
+            Role
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            {ROLE_OPTIONS.map((opt) => {
+              const selected = role === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setRole(opt.value)}
+                  style={{
+                    flex: 1,
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    border: `1.5px solid ${selected ? S.primary : S.surfaceContainerHigh}`,
+                    background: selected ? S.primaryFixed : S.surfaceContainerLowest,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontFamily: "inherit",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: selected ? S.primary : S.onSurface,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {opt.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: selected ? S.primary : S.onSurfaceMuted,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {opt.description}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
       </div>
     </BaseModal>

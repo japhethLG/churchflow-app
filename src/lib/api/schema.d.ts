@@ -564,6 +564,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/{tenantId}/invitations/{invitationId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cancel a pending invitation (admin only) */
+        patch: operations["InvitationController_cancel_v1"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2945,6 +2962,30 @@ export interface operations {
                 "application/json": components["schemas"]["AcceptInvitationRequestDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationResponseDto"];
+                };
+            };
+        };
+    };
+    InvitationController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Invitation UUID */
+                invitationId: string;
+                /** @description Tenant UUID or slug */
+                tenantId: unknown;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

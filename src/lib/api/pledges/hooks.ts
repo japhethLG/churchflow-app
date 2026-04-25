@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation, useApiQuery } from "../hooks";
 import { invalidatePledges } from "./keys";
+import { invalidateCampaigns } from "../campaigns/keys";
 
 export type PledgesListQuery = {
   campaignId?: string;
@@ -32,20 +33,32 @@ export function usePledge(tenantId: string, id: string, enabled = true) {
 export function useCreatePledge(tenantId: string) {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/pledges", "post", {
-    onSuccess: () => invalidatePledges(qc, tenantId),
+    onSuccess: () => {
+      invalidatePledges(qc, tenantId);
+      // Pledged totals are a campaign-progress aggregate.
+      invalidateCampaigns(qc, tenantId);
+    },
   });
 }
 
 export function useUpdatePledge(tenantId: string) {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/pledges/{id}", "patch", {
-    onSuccess: () => invalidatePledges(qc, tenantId),
+    onSuccess: () => {
+      invalidatePledges(qc, tenantId);
+      // Pledged totals are a campaign-progress aggregate.
+      invalidateCampaigns(qc, tenantId);
+    },
   });
 }
 
 export function useDeletePledge(tenantId: string) {
   const qc = useQueryClient();
   return useApiMutation("/api/v1/tenants/{tenantId}/pledges/{id}", "delete", {
-    onSuccess: () => invalidatePledges(qc, tenantId),
+    onSuccess: () => {
+      invalidatePledges(qc, tenantId);
+      // Pledged totals are a campaign-progress aggregate.
+      invalidateCampaigns(qc, tenantId);
+    },
   });
 }

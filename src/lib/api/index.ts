@@ -26,3 +26,6 @@ export { api } from "./client";
 
 // Generated OpenAPI types.
 export type { paths, components } from "./schema";
+
+// Schema-coercion helpers for nullable fields (see coerce.ts).
+export { nstr, nnum } from "./coerce";

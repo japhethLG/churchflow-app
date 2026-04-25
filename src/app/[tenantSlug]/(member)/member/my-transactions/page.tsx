@@ -1,5 +1,5 @@
-import { ScaffoldPage } from "@/components/pages/ScaffoldPage";
+import { MemberTransactions } from "@/components/pages/member-transactions/MemberTransactions";
 
 export default function MyTransactionsPage() {
-  return <ScaffoldPage title="My giving" subtitle="Your transaction history." />;
+  return <MemberTransactions />;
 }

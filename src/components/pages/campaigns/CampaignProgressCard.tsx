@@ -1,0 +1,116 @@
+"use client";
+
+import { SANCTUARY as S } from "@/lib/design/tokens";
+import { Amount, Card, SectionTitle, StatCard } from "@/components/primitives";
+import type { components } from "@/lib/api";
+
+type Progress = components["schemas"]["CampaignProgressResponseDto"];
+
+function pct(n: number, d: number): number {
+  if (d <= 0) return 0;
+  return Math.min(100, Math.round((n / d) * 100));
+}
+
+export function CampaignProgressCard({
+  progress,
+  loading,
+  currency,
+}: {
+  progress: Progress | undefined;
+  loading?: boolean;
+  currency: string;
+}) {
+  if (loading || !progress) {
+    return (
+      <Card padding={24}>
+        <SectionTitle title="Progress" />
+        <div style={{ height: 16, background: S.surfaceContainer, borderRadius: 6, width: "60%", marginBottom: 12 }} />
+        <div style={{ height: 16, background: S.surfaceContainer, borderRadius: 6, width: "40%" }} />
+      </Card>
+    );
+  }
+
+  const goal = progress.goalAmount;
+  const pledged = progress.pledgedAmount;
+  const raised = progress.raisedAmount;
+  const pledgedPct = pct(pledged, goal);
+  const raisedPct = pct(raised, goal);
+
+  return (
+    <Card padding={24}>
+      <SectionTitle title="Progress" />
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+        <StatCard
+          label="Goal"
+          value={<Amount value={goal.toString()} />}
+          caption={`${currency} · ${progress.items.length} items`}
+        />
+        <StatCard
+          label="Pledged"
+          value={<Amount value={pledged.toString()} />}
+          caption={`${pledgedPct}% of goal · ${progress.pledgeCount} pledges`}
+        />
+        <StatCard
+          label="Raised"
+          value={<Amount value={raised.toString()} />}
+          caption={`${raisedPct}% of goal`}
+        />
+      </div>
+
+      {/* Stacked bar: raised (filled) on top of pledged (track), in a goal lane */}
+      <div style={{ marginTop: 4 }}>
+        <div
+          style={{
+            position: "relative",
+            height: 12,
+            background: S.surfaceContainer,
+            borderRadius: 9999,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: `${pledgedPct}%`,
+              background: S.surfaceContainerHigh,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: `${raisedPct}%`,
+              background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
+            }}
+          />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: 8,
+            fontSize: 11,
+            color: S.onSurfaceMuted,
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}
+        >
+          <span>
+            <span style={{ display: "inline-block", width: 8, height: 8, background: S.primary, borderRadius: 9999, marginRight: 6 }} />
+            Raised
+          </span>
+          <span>
+            <span style={{ display: "inline-block", width: 8, height: 8, background: S.surfaceContainerHigh, borderRadius: 9999, marginRight: 6 }} />
+            Pledged
+          </span>
+          <span>
+            <span style={{ display: "inline-block", width: 8, height: 8, background: S.surfaceContainer, borderRadius: 9999, marginRight: 6 }} />
+            Goal remaining
+          </span>
+        </div>
+      </div>
+    </Card>
+  );
+}

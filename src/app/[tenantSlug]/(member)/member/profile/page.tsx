@@ -1,5 +1,5 @@
-import { ScaffoldPage } from "@/components/pages/ScaffoldPage";
+import { MemberProfile } from "@/components/pages/member-profile/MemberProfile";
 
 export default function MemberProfilePage() {
-  return <ScaffoldPage title="Profile" subtitle="Your personal details." />;
+  return <MemberProfile />;
 }

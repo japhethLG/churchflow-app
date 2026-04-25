@@ -6,13 +6,16 @@ export function Chip({
   children,
   active,
   icon,
+  onClick,
 }: {
   children: ReactNode;
   active?: boolean;
   icon?: IconName;
+  onClick?: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       style={{
         display: "inline-flex",
         alignItems: "center",

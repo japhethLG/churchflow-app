@@ -10,6 +10,7 @@ type ButtonProps = {
   iconRight?: IconName;
   fullWidth?: boolean;
   destructive?: boolean;
+  loading?: boolean;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size">;
 
 export function Button({
@@ -21,9 +22,11 @@ export function Button({
   fullWidth,
   disabled,
   destructive,
+  loading,
   style,
   ...rest
 }: ButtonProps) {
+  const isCurrentlyDisabled = disabled || loading;
   const sizes: Record<NonNullable<ButtonProps["size"]>, CSSProperties> = {
     sm: { padding: "6px 14px", fontSize: 13, height: 32, gap: 6 },
     md: { padding: "10px 20px", fontSize: 14, height: 40, gap: 8 },
@@ -36,13 +39,14 @@ export function Button({
     justifyContent: "center",
     borderRadius: 9999,
     fontWeight: 500,
-    cursor: disabled ? "default" : "pointer",
+    cursor: isCurrentlyDisabled ? "default" : "pointer",
     border: "none",
     letterSpacing: "-0.005em",
     whiteSpace: "nowrap",
     width: fullWidth ? "100%" : undefined,
-    opacity: disabled ? 0.5 : 1,
+    opacity: isCurrentlyDisabled ? 0.5 : 1,
     fontFamily: "inherit",
+    position: "relative",
   };
   const variants: Record<NonNullable<ButtonProps["variant"]>, CSSProperties> = {
     primary: {
@@ -63,10 +67,28 @@ export function Button({
     },
   };
   return (
-    <button style={{ ...common, ...variants[variant], ...style }} disabled={disabled} {...rest}>
-      {icon && <Icon name={icon} size={size === "sm" ? 14 : 16} />}
-      {children}
-      {iconRight && <Icon name={iconRight} size={size === "sm" ? 14 : 16} />}
+    <button style={{ ...common, ...variants[variant], ...style }} disabled={isCurrentlyDisabled} {...rest}>
+      {loading && (
+        <span
+          style={{
+            width: 14,
+            height: 14,
+            border: "2px solid currentColor",
+            borderRightColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 0.6s linear infinite",
+            marginRight: 8,
+          }}
+        />
+      )}
+      {!loading && icon && <Icon name={icon} size={size === "sm" ? 14 : 16} />}
+      <span style={{ opacity: loading ? 0.7 : 1 }}>{children}</span>
+      {!loading && iconRight && <Icon name={iconRight} size={size === "sm" ? 14 : 16} />}
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </button>
   );
 }
