@@ -122,7 +122,7 @@ export default function SuperAdminAdminsPage() {
     <div style={{ height: "100%", overflow: "auto" }}>
       <PageHeader
         overline="Platform"
-        title="Admins."
+        title="Admins"
         subtitle="Everyone with admin access across all churches."
         action={
           <Button variant="primary" onClick={() => openModal("invite-admin-global", {})}>

@@ -36,14 +36,22 @@ export default function ReportsPage() {
   const summary = useTransactionSummary(tenantSlug, 12);
 
   // For By Member and By Campaign tabs, we need raw transactions
-  const txQuery = useTransactions(tenantSlug, { limit: 500 }, tab === "by-member" || tab === "by-campaign");
+  const txQuery = useTransactions(
+    tenantSlug,
+    { limit: 500 },
+    tab === "by-member" || tab === "by-campaign",
+  );
   const membersQ = useMembers(tenantSlug, { limit: 500 }, tab === "by-member");
   const campaignsQ = useCampaigns(tenantSlug, tab === "by-campaign");
 
   const members: Member[] = membersQ.data?.items ?? [];
   const campaigns: Campaign[] = campaignsQ.data?.items ?? [];
-  const membersById: Record<string, Member> = Object.fromEntries(members.map((m) => [m.id, m]));
-  const campaignsById: Record<string, Campaign> = Object.fromEntries(campaigns.map((c) => [c.id, c]));
+  const membersById: Record<string, Member> = Object.fromEntries(
+    members.map((m) => [m.id, m]),
+  );
+  const campaignsById: Record<string, Campaign> = Object.fromEntries(
+    campaigns.map((c) => [c.id, c]),
+  );
 
   const currency = summary.data?.currency ?? "USD";
 
@@ -51,7 +59,7 @@ export default function ReportsPage() {
     <div style={{ height: "100%", overflow: "auto" }}>
       <PageHeader
         overline="Insights"
-        title="Reports."
+        title="Reports"
         subtitle="Income insights across members, types, campaigns, and time."
         action={
           <Button variant="secondary" icon="download" disabled>
@@ -82,7 +90,8 @@ export default function ReportsPage() {
               borderRadius: 9999,
               fontSize: 13,
               fontWeight: 500,
-              background: tab === t.key ? S.surfaceContainerLowest : "transparent",
+              background:
+                tab === t.key ? S.surfaceContainerLowest : "transparent",
               color: tab === t.key ? S.onSurface : S.onSurfaceMuted,
               border: "none",
               cursor: "pointer",
@@ -99,8 +108,12 @@ export default function ReportsPage() {
       {/* Date range chips */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
         <Chip icon="calendar">
-          Jan 1 — {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })},{" "}
-          {new Date().getFullYear()}
+          Jan 1 —{" "}
+          {new Date().toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+          , {new Date().getFullYear()}
         </Chip>
         <Chip>{currency}</Chip>
       </div>

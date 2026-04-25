@@ -102,7 +102,7 @@ export default function ManageTenantAdminsPage({ params }: { params: Promise<{ i
     <div style={{ height: "100%", overflow: "auto" }}>
       <PageHeader
         overline={tenant ? `Churches / ${tenant.name}` : "Churches"}
-        title="Admins."
+        title="Admins"
         subtitle={tenant ? `Manage admins and members of ${tenant.name}.` : undefined}
         action={
           <div style={{ display: "flex", gap: 8 }}>

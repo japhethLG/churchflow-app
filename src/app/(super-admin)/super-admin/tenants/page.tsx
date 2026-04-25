@@ -163,7 +163,7 @@ export default function SuperAdminTenantsPage() {
     <div style={{ height: "100%", overflow: "auto" }}>
       <PageHeader
         overline="Platform"
-        title="Churches."
+        title="Churches"
         subtitle="All churches on ChurchFlow. Create new ones and manage their admins."
         action={
           <Button variant="primary" onClick={() => router.push("/super-admin/tenants/new")}>

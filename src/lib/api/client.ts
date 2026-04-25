@@ -7,8 +7,7 @@ import type { paths } from "./schema";
 // Generated OpenAPI paths already include the `/api/v1` prefix, so baseUrl
 // must be the host origin only. Override with NEXT_PUBLIC_API_BASE_URL for
 // staging/prod.
-const baseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001";
 
 const authMiddleware: Middleware = {
   async onRequest({ request }) {
