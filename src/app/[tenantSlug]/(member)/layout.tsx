@@ -25,7 +25,7 @@ export default async function MemberLayout({
 
   const memberships = Object.entries(user.tenantMemberships).map(([slug, m]) => ({
     slug,
-    name: slug,
+    name: m.name,
     role: m.role,
   }));
 
@@ -33,8 +33,9 @@ export default async function MemberLayout({
     <AppShell
       perspective="member"
       tenantSlug={tenantSlug}
-      churchName={tenantSlug}
+      churchName={membership.name}
       userName={user.displayName ?? user.email ?? "You"}
+      userEmail={user.email ?? undefined}
       memberships={memberships}
       isSuperAdmin={user.isSuperAdmin}
     >

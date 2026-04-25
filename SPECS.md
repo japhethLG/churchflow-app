@@ -1,8 +1,8 @@
 # Church App — Full Technical Specification
 
-> **Version:** 2.0.0
+> **Version:** 2.1.0
 > **Created:** 2026-03-24
-> **Last updated:** 2026-04-24
+> **Last updated:** 2026-04-25
 > **Status:** Living document — reflects the app as actually built, plus
 > what is still outstanding.
 
@@ -95,7 +95,7 @@ decisions.
 | Database | **PostgreSQL** | `@prisma/adapter-pg` |
 | Auth verification | `firebase-admin` | Verifies Firebase ID tokens and session cookies |
 | API contract | OpenAPI via `@nestjs/swagger` | Frontend generates types from `/api-docs-json` |
-| Email | Resend (planned) | Provider abstraction behind an interface |
+| Email | Gmail SMTP (dev) / Resend (prod) | Provider abstraction behind `IEmailProvider`; Gmail configured via Nodemailer in dev |
 
 ### 3.2 Frontend (`church-app/`)
 
@@ -615,24 +615,39 @@ typed hook under `src/lib/api/<entity>/hooks.ts`.
 | Method | Path | Role |
 |---|---|---|
 | **Auth** | | |
-| `POST` | `/api/v1/auth/session` | any signed-in |
+| `POST` | `/api/v1/auth/session` | public |
 | `GET` | `/api/v1/auth/me` | any signed-in |
-| ~~`POST`~~ | ~~`/api/v1/auth/switch-tenant`~~ | **removed** — no active-tenant state in claims; navigation is the switch |
+| ~~`POST`~~ | ~~`/api/v1/auth/switch-tenant`~~ | **removed** — navigation is the switch |
+| **Platform admin** | | |
+| `GET` | `/api/v1/admin/stats` | super_admin |
+| `GET` | `/api/v1/admin/users` | super_admin |
+| `PATCH` | `/api/v1/admin/users/:id` | super_admin |
 | **Tenants** | | |
-| `GET` | `/api/v1/tenants` | super_admin |
+| `GET` | `/api/v1/tenants` | super_admin — response includes `adminCount`, `memberCount`, `adminsPreview`, `giftsMtd` aggregates |
 | `POST` | `/api/v1/tenants` | super_admin |
 | `GET` | `/api/v1/tenants/:id` | super_admin / member-of-tenant |
 | `PATCH` | `/api/v1/tenants/:id` | super_admin / admin-of-tenant |
 | `DELETE` | `/api/v1/tenants/:id` | super_admin |
+| `PATCH` | `/api/v1/tenants/:id/restore` | super_admin |
+| **Members** | | |
+| `GET` | `/api/v1/tenants/:tenantId/members` | admin |
+| `POST` | `/api/v1/tenants/:tenantId/members` | admin |
+| `GET` | `/api/v1/tenants/:tenantId/members/me` | any member |
+| `GET` | `/api/v1/tenants/:tenantId/members/:id` | admin |
+| `PATCH` | `/api/v1/tenants/:tenantId/members/:id` | admin |
+| `DELETE` | `/api/v1/tenants/:tenantId/members/:id` | admin |
 | **Invitations** | | |
-| `POST` | `/api/v1/invitations` | admin / super_admin |
-| `POST` | `/api/v1/invitations/:token/accept` | any signed-in |
+| `POST` | `/api/v1/tenants/:tenantId/invitations` | admin / super_admin |
+| `GET` | `/api/v1/tenants/:tenantId/invitations` | admin |
+| `GET` | `/api/v1/invitations/lookup?token=` | public — returns `tenantName`, `tenantSlug`, `inviterDisplayName` |
+| `POST` | `/api/v1/invitations/accept` | any signed-in |
 | **Campaigns** | | |
 | `GET` | `/api/v1/tenants/:tenantId/campaigns` | tenant member |
 | `POST` | `/api/v1/tenants/:tenantId/campaigns` | admin |
 | `GET` | `/api/v1/tenants/:tenantId/campaigns/:id` | tenant member |
 | `PATCH` | `/api/v1/tenants/:tenantId/campaigns/:id` | admin |
 | `DELETE` | `/api/v1/tenants/:tenantId/campaigns/:id` | admin |
+| `GET` | `/api/v1/tenants/:tenantId/campaigns/:id/progress` | tenant member |
 | `POST` | `/api/v1/tenants/:tenantId/campaigns/:id/items` | admin |
 | `PATCH` | `/api/v1/tenants/:tenantId/campaigns/:id/items/:itemId` | admin |
 | `DELETE` | `/api/v1/tenants/:tenantId/campaigns/:id/items/:itemId` | admin |
@@ -645,9 +660,10 @@ typed hook under `src/lib/api/<entity>/hooks.ts`.
 | **Transactions** | | |
 | `GET` | `/api/v1/tenants/:tenantId/transactions` | admin |
 | `POST` | `/api/v1/tenants/:tenantId/transactions` | admin |
-| `GET` | `/api/v1/tenants/:tenantId/transactions/:id` | admin / transaction owner (when memberId matches caller) |
+| `GET` | `/api/v1/tenants/:tenantId/transactions/:id` | admin / transaction owner |
 | `PATCH` | `/api/v1/tenants/:tenantId/transactions/:id` | admin |
 | `DELETE` | `/api/v1/tenants/:tenantId/transactions/:id` | admin |
+| `GET` | `/api/v1/tenants/:tenantId/transactions/summary` | admin |
 
 ### 10.4 Invariants on mutations
 
@@ -680,14 +696,10 @@ continue to use the UUID PK.
 
 ## 11. Frontend Routing & Role-Scoped Layouts
 
-> **Gap today:** the `(dashboard)` route group mixes admin-only and
-> member-only pages with no layout gate; `/admin/tenants` exists for
-> super-admin but has no enforcement; there's no tenant slug in any
-> URL. The middleware only checks cookie presence.
->
-> The section below is the **target** structure. Listed in §17 under
-> outstanding; it should land before any admin/member UI is built out,
-> because retrofitting the slug prefix page-by-page later is expensive.
+> **Status: implemented.** The path-based, role-scoped layout structure
+> described below is live. All three layout gates (`[tenantSlug]`,
+> `(admin)`, `(super-admin)`) are wired. Super-admin UI is fully built.
+> Admin and member feature pages are scaffolded and pending real UI.
 
 ### 11.1 URL shape
 
@@ -832,16 +844,16 @@ on admin pages is the discovery affordance; otherwise the URL space
 
 ## 12. Screens & Pages
 
-Reference list after the §11 restructure. Anything marked **⏳ to-build**
-is not implemented — see §17 for the full outstanding list.
+Anything marked **⏳** is scaffolded but not yet fully implemented — see §17.2 for the full outstanding list.
 
 ### 12.1 Auth
 
 | Page | Route | Status |
 |---|---|---|
 | Login | `/login` | ✅ |
-| Accept invitation | `/invite/[token]` | ⏳ scaffold only |
+| Accept invitation | `/invite/[token]` | ✅ fully implemented |
 | Select church | `/select-church` | ⏳ scaffold only |
+| Logout | `/logout` | ✅ |
 
 ### 12.2 Member
 
@@ -877,15 +889,13 @@ is not implemented — see §17 for the full outstanding list.
 
 | Page | Route | Status |
 |---|---|---|
-| Tenants list | `/super-admin/tenants` | ⏳ scaffold (currently at `/admin/tenants`) |
-| Tenant detail | `/super-admin/tenants/[id]` | ⏳ |
-| Create tenant | `/super-admin/tenants/new` | ⏳ scaffold |
-| Manage admins | `/super-admin/tenants/[id]/admins` | ⏳ scaffold |
+| Tenants list | `/super-admin/tenants` | ✅ stat cards + table with aggregates, row menu (edit, rename slug, delete/restore) |
+| Create tenant | `/super-admin/tenants/new` | ✅ 3-step wizard: details → invites → success |
+| Tenant detail | `/super-admin/tenants/[id]` | ✅ about card, stat cards, admins preview, action menu |
+| Per-tenant admins | `/super-admin/tenants/[id]/admins` | ✅ table with promote/demote/remove actions |
+| Unified admins | `/super-admin/admins` | ✅ search/filter, super-admin toggle |
 
-> Super-admin URLs use the tenant **UUID** (internal id), not the
-> slug, because these are platform-ops views where the slug is just
-> one of many fields being edited. The slug is the address of a
-> tenant as users see it; the UUID is its identity in platform tools.
+> Super-admin URLs use the tenant **slug** (same as all other routes). The `TenantGuard` accepts slug or UUID interchangeably.
 
 ### 12.5 Admin dashboard widgets (unchanged from v1)
 
@@ -1023,14 +1033,14 @@ npm run dev                    # next on :3000
 
 ### 17.1 Done
 
-**Backend** (42 endpoints live)
+**Backend** (50+ endpoints live)
 - [x] NestJS scaffolding + Griffin 5-tier layout
 - [x] Prisma 7 multi-file schema + Postgres migration
       (tenant slug + audit log added in 2nd migration)
 - [x] Core modules: user, tenant, member, invitation, campaign,
       campaign-item, pledge, transaction, **audit**
 - [x] Feature modules: auth, tenant, **member**, invitation, campaign,
-      pledge, transaction
+      pledge, transaction, **admin**
 - [x] Firebase Admin integration + `FirebaseAuthGuard`
 - [x] `Tenant.slug` column (URL-safe identifier)
 - [x] `TenantGuard` accepts slug OR UUID in `:tenantId` (§10.5)
@@ -1038,7 +1048,7 @@ npm run dev                    # next on :3000
 - [x] `AuthUser.tenantMemberships: Record<slug, {memberId, role}>`
       custom claim — replaces the per-session `activeTenantId`
 - [x] `UserClaimsService` in infra — rebuilds claims on sign-in,
-      invite-accept, role change
+      invite-accept, role change, super-admin toggle
 - [x] `POST /auth/switch-tenant` **removed** — navigation replaces it
 - [x] Transaction attribution validation
       (`resolveAttribution(pledgeId, campaignId, campaignItemId)`)
@@ -1046,23 +1056,47 @@ npm run dev                    # next on :3000
 - [x] `GET /tenants/:id/campaigns/:id/progress` (per-item totals)
 - [x] `GET /tenants/:id/members/me` (current user's member row)
 - [x] Soft-delete restore on tenants + campaigns
-- [x] Email provider abstraction (`IEmailProvider`) with Resend +
-      console fallback; invitations send on issue
+- [x] Email provider abstraction (`IEmailProvider`) with Gmail SMTP
+      (dev, Nodemailer) + console fallback; invitations send on issue
 - [x] Invitation rate-limit (20/hour per tenant) + duplicate-pending
-      dedup + public `GET /invitations/lookup` for pre-signin landing
+      dedup + public `GET /invitations/lookup` enriched with
+      `tenantName`, `tenantSlug`, `inviterDisplayName`
 - [x] Audit log — `AuditEvent` table + `AuditService` writes on
       tenant/member/campaign/pledge/transaction/invitation mutations
 - [x] Seed script (`npm run prisma:seed`) — super-admin, tenant,
       admin + member users, campaign with items, pledges, transactions
 - [x] Swagger / OpenAPI document served at `/api-docs-json`
+- [x] **AdminFeatureModule** — `GET /admin/stats` (platform KPIs),
+      `GET /admin/users` (cross-tenant listing with filters),
+      `PATCH /admin/users/:id` (isSuperAdmin toggle + claims refresh
+      + audit log)
+- [x] `GET /tenants` enriched with per-row aggregates: `adminCount`,
+      `memberCount`, `adminsPreview` (top 3 avatars), `giftsMtd`
+      (`count` + `total`)
+- [x] `User.isSuperAdmin` column (boolean, default false)
 
-**Frontend** (scaffold + routing + permissions)
+**Frontend** (full super-admin surface + auth flows)
 - [x] Next 16 app scaffolded, TanStack Query + openapi-fetch wired
 - [x] Firebase client + Admin SDK; dual-path auth in
-      `lib/auth/actions.ts` (no more switchTenant)
+      `lib/auth/actions.ts`
 - [x] Entity-folder API layer with invalidation helpers
-- [x] `BaseModal` + modal registry + `openModal` helper
-- [x] `proxy.ts` cookie gate (role enforcement moved to layouts)
+- [x] `unwrapMiddleware` in `lib/api/client.ts` — strips the backend's
+      `{ success: true, data }` envelope before TanStack Query sees the
+      response, fixing silent empty states across all hooks
+- [x] **`BaseModal` refactored** — structured header (overline + title
+      + round close button) + optional footer (primary / secondary
+      action buttons + hint text); sizes sm / md / lg / xl; all modals
+      inherit the shell
+- [x] **7 new modals**: `rename-tenant-slug`, `confirm-delete-tenant`,
+      `confirm-restore-tenant`, `edit-tenant`, `invite-tenant-admin`,
+      `invite-admin-global`, `confirm-toggle-super-admin`
+- [x] `src/lib/api/admin/` hook folder — `useAdminStats`,
+      `useAdminUsers`, `useToggleSuperAdmin`
+- [x] `src/lib/api/members/` hook folder — `useMembers`,
+      `useUpdateMember`, `useDeleteMember`
+- [x] `src/lib/design/logo-gradient.ts` — deterministic gradient pair
+      from tenant slug hash + `tenantInitials()` helper
+- [x] `proxy.ts` cookie gate — `/logout` added to `PUBLIC_PATHS`
 - [x] **Path-based routes per §11**:
       `/[tenantSlug]/(admin)/admin/*`,
       `/[tenantSlug]/(member)/member/*`,
@@ -1071,50 +1105,56 @@ npm run dev                    # next on :3000
       `(admin)/layout.tsx` (admin role), `(super-admin)/layout.tsx`
       (platform role)
 - [x] `/` landing redirect implements §11.5 rules
-- [x] `/select-church` uses real session claims (not mock data)
-- [x] `AppShell` + `Sidebar` rewritten around `perspective` +
-      `tenantSlug`; tenant switcher is a plain `<Link>` menu
-      (no mutation)
+- [x] `/select-church` uses real session claims
+- [x] `AppShell` + `Sidebar` with `perspective` + `tenantSlug`; tenant
+      switcher is a plain `<Link>` menu; logout button in user card
 - [x] "View as member" affordance in admin sidebar
-- [x] Stale `/events`, `/dashboard`, `/members/*`, `/admin/tenants/*`
-      routes deleted
-- [x] Stale `components/pages/{Admin,Member,Tenants}*.tsx` deleted
+- [x] `/logout` route — calls `signOut()` + redirects to `/login`
+- [x] **`/invite/[token]`** fully implemented: lookup call (shows real
+      church name + inviter), four states (loading skeleton, invalid
+      token, already accepted, valid), Google sign-in branch and
+      already-signed-in branch, `refreshSession()` after accept,
+      redirect to `/{slug}/admin|member/dashboard` based on role
+- [x] **Super-admin pages** — all four fully implemented:
+      - `/super-admin/tenants` — stat cards + table with per-tenant
+        aggregates, avatar stacks, row actions
+      - `/super-admin/tenants/new` — 3-step wizard (details → invites
+        → success) with slug suggestion + availability check
+      - `/super-admin/tenants/[id]` — tenant detail with about card,
+        stat cards, admins preview, edit / rename / delete / restore
+        actions
+      - `/super-admin/tenants/[id]/admins` — member table with
+        promote / demote / remove actions
+      - `/super-admin/admins` — unified admin list with search,
+        tenant filter, super-admin-only toggle, KPI pills, toggle-
+        super-admin action
 - [x] `npm run typecheck` + `npm run build` green
 
 ### 17.2 Outstanding
 
-**High-impact architectural — all shipped ✅** (items 1–9 from the
-original ordered list are done; see §17.1).
-
 **Frontend feature implementations (scaffolds exist — real UIs still to build)**
-- [ ] Super-admin: tenants CRUD UI + invite-first-admin flow
+- [ ] `/select-church` — currently renders session claims as raw JSON;
+      needs a proper card-list UI
 - [ ] Admin: members CRUD UI + "invite to link account" flow
 - [ ] Admin: campaigns CRUD UI + items editor
 - [ ] Admin: pledges list / detail UI
 - [ ] Admin: transactions CRUD UI (incl. pledge picker when member
-      selected)
-- [ ] Admin: reports page (income breakdown, monthly trend) —
-      backend `/transactions/summary` endpoint is live, just needs UI
+      selected) — backend `/transactions/summary` + attribution
+      validation are live
+- [ ] Admin: reports page (income breakdown, monthly trend)
 - [ ] Admin: settings page (tenant profile, `fiscalYearStart`)
-- [ ] Member: dashboard
-- [ ] Member: browse campaigns + pledge flow — backend
-      `/campaigns/:id/progress` endpoint is live
-- [ ] Member: my-pledges, my-transactions (scope via `/members/me`)
-- [ ] Member: profile editor
-- [ ] Accept-invitation flow (UI + wiring — backend `POST /invitations/accept`
-      + `UserClaimsService.refreshFor()` already fire; frontend just
-      needs to call `refreshSession()` after)
+- [ ] Member: dashboard, browse campaigns + pledge flow, my-pledges,
+      my-transactions, profile editor — backend endpoints all live
 
 **Backend gaps still outstanding**
-- [ ] Per-tenant custom transaction types
-      (`TenantSettings.transactionTypes`) if we want parity with v1
-      §7.4 — deferred, confirm before implementing
-- [ ] Audit-log read API (table + writes exist; no `GET /audit` yet)
+- [ ] Audit-log read API (`GET /audit`) — table + writes exist; no
+      read endpoint yet; `/super-admin/audit` page is a scaffold
+- [ ] Per-tenant custom transaction types — deferred, confirm before
+      implementing
 - [ ] Transaction receipt emails (post-record → member, opt-in)
 
 **Dev ergonomics**
-- [x] Seed script (super-admin, example tenant, members, campaign with
-      items, pledges, transactions) — `npm run prisma:seed`
+- [x] Seed script — `npm run prisma:seed`
 - [ ] E2E happy-path test (Playwright): sign-in → create campaign →
       pledge → record transaction
 - [ ] CI: typecheck + build on both repos

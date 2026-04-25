@@ -1,10 +1,12 @@
 // Barrel for all entity hooks + keys. Import from the entity folder
 // directly for tighter tree-shaking; this re-export is a convenience.
 
+export * from "./admin";
 export * from "./auth";
 export * from "./campaigns";
 export * from "./health";
 export * from "./invitations";
+export * from "./members";
 export * from "./pledges";
 export * from "./tenants";
 export * from "./transactions";

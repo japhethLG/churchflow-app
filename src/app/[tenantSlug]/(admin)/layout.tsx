@@ -33,7 +33,7 @@ export default async function AdminLayout({
 
   const memberships = Object.entries(user.tenantMemberships).map(([slug, m]) => ({
     slug,
-    name: slug,
+    name: m.name,
     role: m.role,
   }));
 
@@ -41,8 +41,9 @@ export default async function AdminLayout({
     <AppShell
       perspective="admin"
       tenantSlug={tenantSlug}
-      churchName={tenantSlug}
+      churchName={membership?.name ?? tenantSlug}
       userName={user.displayName ?? user.email ?? "You"}
+      userEmail={user.email ?? undefined}
       memberships={memberships}
       isSuperAdmin={user.isSuperAdmin}
     >

@@ -10,4 +10,6 @@ export { Amount } from "./Amount";
 export { Input } from "./Input";
 export { Chip } from "./Chip";
 export { Table, type TableColumn, type TableRow } from "./Table";
+export { DataTable, type DataTableColumn, type DataTablePagination, type DataTableProps } from "./DataTable";
+export { RowActionsMenu, type RowAction } from "./RowActionsMenu";
 export { BarChart, Donut, type BarDatum, type DonutDatum } from "./Charts";

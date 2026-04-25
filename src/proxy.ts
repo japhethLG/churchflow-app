@@ -5,7 +5,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 // (admin / member / super-admin) lives in layout.tsx files so Server
 // Components can rely on `getSessionUser()` returning the expected
 // shape for the URL they're rendering.
-const PUBLIC_PATHS = ["/login", "/invite"];
+const PUBLIC_PATHS = ["/login", "/invite", "/logout"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

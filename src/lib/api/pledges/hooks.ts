@@ -4,10 +4,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation, useApiQuery } from "../hooks";
 import { invalidatePledges } from "./keys";
 
-export function usePledges(tenantId: string, enabled = true) {
+export type PledgesListQuery = {
+  campaignId?: string;
+  campaignItemId?: string;
+  memberId?: string;
+  status?: "ACTIVE" | "FULFILLED" | "CANCELLED";
+  offset?: number;
+  limit?: number;
+};
+
+export function usePledges(tenantId: string, query: PledgesListQuery = {}, enabled = true) {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/pledges",
-    { params: { path: { tenantId } } },
+    { params: { path: { tenantId }, query } },
     { enabled: enabled && Boolean(tenantId) }
   );
 }

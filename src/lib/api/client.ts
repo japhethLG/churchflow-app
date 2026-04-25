@@ -21,5 +21,34 @@ const authMiddleware: Middleware = {
   },
 };
 
+// The backend's GlobalResponseInterceptor wraps every response as
+// { success: true, data: <actual payload> }. Unwrap it here so that
+// openapi-fetch callers receive the raw DTO shape that the schema describes.
+const unwrapMiddleware: Middleware = {
+  async onResponse({ response }) {
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) return response;
+    try {
+      const body = await response.clone().json();
+      if (
+        body !== null &&
+        typeof body === "object" &&
+        "success" in body &&
+        "data" in body &&
+        body.success === true
+      ) {
+        return new Response(JSON.stringify(body.data), {
+          status: response.status,
+          headers: response.headers,
+        });
+      }
+    } catch {
+      // non-JSON or parse error — return original
+    }
+    return response;
+  },
+};
+
 export const api = createClient<paths>({ baseUrl });
 api.use(authMiddleware);
+api.use(unwrapMiddleware);

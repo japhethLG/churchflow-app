@@ -5,7 +5,8 @@ export type IconName =
   | "settings" | "search" | "bell" | "plus" | "check" | "x" | "chevronDown"
   | "chevronRight" | "chevronLeft" | "pin" | "dots" | "filter" | "cash"
   | "check_rect" | "bank" | "phone" | "google" | "book" | "location"
-  | "link" | "edit" | "trash" | "arrowRight" | "arrowUp" | "download" | "logo";
+  | "link" | "edit" | "trash" | "arrowRight" | "arrowUp" | "download" | "logo"
+  | "logout";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z" />,
@@ -46,6 +47,7 @@ const PATHS: Record<IconName, React.ReactNode> = {
   arrowUp: <path d="m6 15 6-6 6 6" />,
   download: <path d="M12 3v14M6 11l6 6 6-6M4 21h16" />,
   logo: <><path d="M4 20V8l8-5 8 5v12" /><path d="M9 20v-7h6v7" /></>,
+  logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></>,
 };
 
 type IconProps = {

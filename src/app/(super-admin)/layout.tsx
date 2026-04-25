@@ -17,7 +17,7 @@ export default async function SuperAdminLayout({
 
   const memberships = Object.entries(user.tenantMemberships).map(([slug, m]) => ({
     slug,
-    name: slug,
+    name: m.name,
     role: m.role,
   }));
 
@@ -26,6 +26,7 @@ export default async function SuperAdminLayout({
       perspective="super"
       churchName="Platform"
       userName={user.displayName ?? user.email ?? "Super Admin"}
+      userEmail={user.email ?? undefined}
       memberships={memberships}
       isSuperAdmin
     >

@@ -4,10 +4,22 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation, useApiQuery } from "../hooks";
 import { invalidateTransactions } from "./keys";
 
-export function useTransactions(tenantId: string, enabled = true) {
+export type TransactionsListQuery = {
+  memberId?: string;
+  campaignId?: string;
+  campaignItemId?: string;
+  pledgeId?: string;
+  type?: "TITHE" | "OFFERING" | "MISSION_GIVING" | "FIRST_FRUIT" | "COMMITMENT" | "DONATION" | "OTHER";
+  dateFrom?: string;
+  dateTo?: string;
+  offset?: number;
+  limit?: number;
+};
+
+export function useTransactions(tenantId: string, query: TransactionsListQuery = {}, enabled = true) {
   return useApiQuery(
     "/api/v1/tenants/{tenantId}/transactions",
-    { params: { path: { tenantId } } },
+    { params: { path: { tenantId }, query } },
     { enabled: enabled && Boolean(tenantId) }
   );
 }

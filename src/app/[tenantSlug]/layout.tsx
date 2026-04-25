@@ -18,7 +18,9 @@ export default async function TenantLayout({
 }) {
   const { tenantSlug } = await params;
   const user = await getSessionUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    redirect("/login");
+  }
 
   const isMember = Boolean(user.tenantMemberships[tenantSlug]);
   if (!isMember && !user.isSuperAdmin) {

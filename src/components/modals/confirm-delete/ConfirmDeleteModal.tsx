@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/primitives";
+import { SANCTUARY as S } from "@/lib/design/tokens";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 
-// Register this modal's props on the global ModalPropsMap so
-// openModal("confirm-delete", { ... }) is type-checked.
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
     "confirm-delete": ConfirmDeleteProps;
@@ -45,23 +43,19 @@ export function ConfirmDeleteModal({
   return (
     <BaseModal
       title={title}
-      description={message}
       size="sm"
       onClose={onClose}
       dismissible={!busy}
-      footer={
-        <>
-          <Button variant="tertiary" onClick={onClose} disabled={busy}>
-            Cancel
-          </Button>
-          <Button variant="primary" destructive onClick={handleConfirm} disabled={busy}>
-            {busy ? "Deleting…" : confirmLabel}
-          </Button>
-        </>
-      }
+      primaryAction={{ label: confirmLabel, onClick: handleConfirm, loading: busy, destructive: true }}
+      secondaryAction={{ label: "Cancel", onClick: onClose, disabled: busy }}
     >
+      {message && (
+        <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+          {message}
+        </p>
+      )}
       {error && (
-        <div style={{ color: "#8C1D18", fontSize: 13, marginTop: 4 }}>{error}</div>
+        <p style={{ margin: "12px 0 0", fontSize: 13, color: S.error }}>{error}</p>
       )}
     </BaseModal>
   );

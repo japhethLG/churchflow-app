@@ -20,6 +20,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform-wide KPI statistics (super admin only) */
+        get: operations["AdminController_getStats_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all users with admin roles across all tenants (super admin only) */
+        get: operations["AdminController_listUsers_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Toggle super-admin status for a user (super admin only) */
+        patch: operations["AdminController_toggleSuperAdmin_v1"];
+        trace?: never;
+    };
     "/api/v1/auth/session": {
         parameters: {
             query?: never;
@@ -67,7 +118,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List all churches (super admin only) */
+        /** List all churches with per-tenant aggregates (super admin only) */
         get: operations["TenantController_list_v1"];
         put?: never;
         /** Create a new church (super admin only) */
@@ -186,7 +237,11 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update the current user’s own member profile
+         * @description Members can update their own first/last name, phone, address. Email is bound to SSO and not editable here. Role + status are admin-only.
+         */
+        patch: operations["MemberController_updateMe_v1"];
         trace?: never;
     };
     "/api/v1/tenants/{tenantId}/members/{id}": {
@@ -206,6 +261,46 @@ export interface paths {
         head?: never;
         /** Update a member */
         patch: operations["MemberController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenantId}/members/{id}/merge-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview a merge: shows what will move from drop → keep without mutating
+         * @description Use this to render a confirmation modal. Pass the candidate to drop via ?dropId=. Returns transaction/pledge counts and the field-copy plan.
+         */
+        get: operations["MemberController_mergePreview_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenantId}/members/{id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Merge another member into this one
+         * @description Reassigns transactions and pledges from the drop member to this one, copies any contact fields the keeper is missing, then soft-deletes the drop member.
+         */
+        post: operations["MemberController_merge_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/tenants/{tenantId}/campaigns": {
@@ -473,6 +568,90 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        PlatformStatsDto: {
+            /**
+             * @description Total non-deleted tenants
+             * @example 0
+             */
+            totalTenants: number;
+            /**
+             * @description Tenants created in the current calendar month
+             * @example 0
+             */
+            createdThisMonth: number;
+            /**
+             * @description Total non-deleted super-admin users
+             * @example 0
+             */
+            superAdmins: number;
+            /**
+             * @description Total members with ADMIN role across all tenants
+             * @example 0
+             */
+            totalAdmins: number;
+            /**
+             * @description Total non-deleted members across all tenants
+             * @example 0
+             */
+            totalMembers: number;
+            /**
+             * @description New members in the current calendar month
+             * @example 0
+             */
+            newMembersThisMonth: number;
+            /**
+             * @description Gift transactions in the last 30 days
+             * @example 0
+             */
+            giftsLast30dCount: number;
+            /**
+             * @description Total gift amount in the last 30 days
+             * @example 100.5
+             */
+            giftsLast30dTotal: number;
+        };
+        AdminUserMembershipDto: {
+            /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
+            tenantId: string;
+            /** @example grace-community */
+            tenantSlug: string;
+            /** @example Grace Community Church */
+            tenantName: string;
+            /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
+            memberId: string;
+            /**
+             * @example ADMIN
+             * @enum {string}
+             */
+            role: "ADMIN" | "USER";
+        };
+        AdminUserDto: {
+            /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
+            id: string;
+            /** @example john.doe@example.com */
+            email: string;
+            /** @example John Doe */
+            displayName: string;
+            /** @example https://example.com/image.png */
+            photoUrl?: Record<string, never> | null;
+            /** @example true */
+            isSuperAdmin: boolean;
+            memberships: components["schemas"]["AdminUserMembershipDto"][];
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+        };
+        AdminUserListResponseDto: {
+            items: components["schemas"]["AdminUserDto"][];
+            /** @example 0 */
+            total: number;
+        };
+        ToggleSuperAdminRequestDto: {
+            /** @example true */
+            isSuperAdmin: boolean;
+        };
         ExchangeTokenRequestDto: {
             /**
              * @description Firebase ID token obtained from the client SDK after Google sign-in
@@ -655,9 +834,103 @@ export interface components {
              * @example 2026-01-01T00:00:00.000Z
              */
             updatedAt: string;
+            /** @example 2026-01-01T00:00:00.000Z */
+            deletedAt?: Record<string, never> | null;
+        };
+        TenantAdminPreviewDto: {
+            /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
+            memberId: string;
+            /** @example John Doe */
+            displayName: string;
+            /** @example https://example.com/image.png */
+            photoUrl?: Record<string, never> | null;
+        };
+        TenantListItemDto: {
+            /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
+            id: string;
+            /**
+             * @description URL-safe unique identifier. Used in frontend paths like /[slug]/admin/* and as a key in tenantMemberships custom claims.
+             * @example grace-community
+             */
+            slug: string;
+            /**
+             * @description Church name
+             * @example Grace Community Church
+             */
+            name: string;
+            /** @example 123 Main St, Anytown, CA */
+            address?: Record<string, never> | null;
+            /** @example +15555550123 */
+            phone?: Record<string, never> | null;
+            /** @example john.doe@example.com */
+            email?: Record<string, never> | null;
+            /** @example https://example.com/image.png */
+            logoUrl?: Record<string, never> | null;
+            /**
+             * @description ISO 4217 currency code
+             * @example USD
+             */
+            currency: string;
+            /**
+             * @description IANA timezone
+             * @example America/New_York
+             */
+            timezone: string;
+            /**
+             * @description Fiscal year start month (1-12)
+             * @example 1
+             */
+            fiscalYearStart: number;
+            /**
+             * @description Tenant-defined custom transaction types
+             * @example [
+             *       "building_fund",
+             *       "youth_ministry"
+             *     ]
+             */
+            customTransactionTypes: string[];
+            /**
+             * @description Firebase UID of creator
+             * @example xGqY3rtbiNa1z8VmOPqRsTuVwXy9
+             */
+            createdBy: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+            /** @example 2026-01-01T00:00:00.000Z */
+            deletedAt?: Record<string, never> | null;
+            /**
+             * @description Number of members with ADMIN role
+             * @example 0
+             */
+            adminCount: number;
+            /**
+             * @description Total non-deleted members
+             * @example 0
+             */
+            memberCount: number;
+            /** @description Up to 3 admin previews for avatar stack */
+            adminsPreview: components["schemas"]["TenantAdminPreviewDto"][];
+            /**
+             * @description Gift transactions in the current calendar month
+             * @example 0
+             */
+            giftsMtdCount: number;
+            /**
+             * @description Total gift amount in the current calendar month
+             * @example 100.5
+             */
+            giftsMtdTotal: number;
         };
         TenantListResponseDto: {
-            items: components["schemas"]["TenantResponseDto"][];
+            items: components["schemas"]["TenantListItemDto"][];
         };
         UpdateTenantRequestDto: {
             /** @example Grace Community Church */
@@ -782,6 +1055,16 @@ export interface components {
             items: components["schemas"]["MemberResponseDto"][];
             meta: components["schemas"]["MetaDto"];
         };
+        UpdateMyMembershipRequestDto: {
+            /** @example John */
+            firstName?: string;
+            /** @example Doe */
+            lastName?: string;
+            /** @example +15555550123 */
+            phone?: string;
+            /** @example 123 Main St, Anytown, CA */
+            address?: string;
+        };
         UpdateMemberRequestDto: {
             /** @example John */
             firstName?: string;
@@ -800,6 +1083,44 @@ export interface components {
             role: "ADMIN" | "USER";
             /** @enum {string} */
             status?: "ACTIVE" | "INACTIVE";
+        };
+        MergeMembersPreviewResponseDto: {
+            keep: components["schemas"]["MemberResponseDto"];
+            drop: components["schemas"]["MemberResponseDto"];
+            /** @example 12 */
+            transactionsToMove: number;
+            /** @example 3 */
+            pledgesToMove: number;
+            /**
+             * @example [
+             *       "email",
+             *       "userId"
+             *     ]
+             */
+            fieldsCopiedFromDrop: ("email" | "phone" | "address" | "userId")[];
+        };
+        MergeMembersRequestDto: {
+            /**
+             * @description Id of the member that will be removed; its data is moved into the keeper.
+             * @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11
+             */
+            dropId: string;
+        };
+        MergeMembersResponseDto: {
+            keep: components["schemas"]["MemberResponseDto"];
+            drop: components["schemas"]["MemberResponseDto"];
+            /** @example 12 */
+            transactionsToMove: number;
+            /** @example 3 */
+            pledgesToMove: number;
+            /**
+             * @example [
+             *       "email",
+             *       "userId"
+             *     ]
+             */
+            fieldsCopiedFromDrop: ("email" | "phone" | "address" | "userId")[];
+            merged: components["schemas"]["MemberResponseDto"];
         };
         CreateCampaignRequestDto: {
             /** @example New Sanctuary Building Fund */
@@ -1404,6 +1725,56 @@ export interface components {
         InvitationListResponseDto: {
             items: components["schemas"]["InvitationResponseDto"][];
         };
+        LookupInvitationResponseDto: {
+            /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
+            id: string;
+            /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
+            tenantId: string;
+            /** @example john.doe@example.com */
+            email: string;
+            /**
+             * @example USER
+             * @enum {string}
+             */
+            role: "ADMIN" | "USER";
+            /**
+             * @description Member this invitation links to on acceptance
+             * @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11
+             */
+            memberId?: Record<string, never> | null;
+            /**
+             * @example PENDING
+             * @enum {string}
+             */
+            status: "PENDING" | "ACCEPTED" | "EXPIRED" | "CANCELLED";
+            /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.signature */
+            token: string;
+            /** @example xGqY3rtbiNa1z8VmOPqRsTuVwXy9 */
+            invitedBy: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            expiresAt: string;
+            /** @example 2026-01-01T00:00:00.000Z */
+            acceptedAt?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+            /** @example Grace Community Church */
+            tenantName: string;
+            /** @example grace-community */
+            tenantSlug: string;
+            /** @example Pastor David Obi */
+            inviterDisplayName?: Record<string, never> | null;
+        };
         AcceptInvitationRequestDto: {
             /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.signature */
             token: string;
@@ -1431,6 +1802,79 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AdminController_getStats_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformStatsDto"];
+                };
+            };
+        };
+    };
+    AdminController_listUsers_v1: {
+        parameters: {
+            query?: {
+                /** @description Filter by email or displayName (case-insensitive) */
+                search?: string;
+                /** @description Filter users who are members of this tenant */
+                tenantId?: string;
+                /** @description When true, return only super-admin users */
+                superAdminOnly?: boolean;
+                skip?: number;
+                take?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserListResponseDto"];
+                };
+            };
+        };
+    };
+    AdminController_toggleSuperAdmin_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToggleSuperAdminRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserDto"];
+                };
             };
         };
     };
@@ -1734,6 +2178,32 @@ export interface operations {
             };
         };
     };
+    MemberController_updateMe_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tenant UUID or slug */
+                tenantId: unknown;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMyMembershipRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberResponseDto"];
+                };
+            };
+        };
+    };
     MemberController_getById_v1: {
         parameters: {
             query?: never;
@@ -1803,6 +2273,60 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MemberResponseDto"];
+                };
+            };
+        };
+    };
+    MemberController_mergePreview_v1: {
+        parameters: {
+            query: {
+                dropId: string;
+            };
+            header?: never;
+            path: {
+                /** @description Keep member id (the surviving member) */
+                id: string;
+                /** @description Tenant UUID or slug */
+                tenantId: unknown;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MergeMembersPreviewResponseDto"];
+                };
+            };
+        };
+    };
+    MemberController_merge_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Keep member id (the surviving member) */
+                id: string;
+                /** @description Tenant UUID or slug */
+                tenantId: unknown;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergeMembersRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MergeMembersResponseDto"];
                 };
             };
         };
@@ -2404,7 +2928,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationResponseDto"];
+                    "application/json": components["schemas"]["LookupInvitationResponseDto"];
                 };
             };
         };

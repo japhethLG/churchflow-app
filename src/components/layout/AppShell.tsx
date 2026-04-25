@@ -9,6 +9,7 @@ export function AppShell({
   breadcrumb,
   churchName,
   userName,
+  userEmail,
   memberships,
   isSuperAdmin,
   children,
@@ -20,6 +21,7 @@ export function AppShell({
   breadcrumb?: string;
   churchName?: string;
   userName: string;
+  userEmail?: string;
   memberships?: TenantSummary[];
   isSuperAdmin?: boolean;
   children: ReactNode;
@@ -42,6 +44,7 @@ export function AppShell({
         tenantSlug={tenantSlug}
         churchName={churchName}
         userName={userName}
+        userEmail={userEmail}
         memberships={memberships}
         isSuperAdmin={isSuperAdmin}
       />

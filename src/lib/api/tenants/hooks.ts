@@ -57,3 +57,11 @@ export function useRestoreTenant() {
     onSuccess: () => invalidateTenants(qc),
   });
 }
+
+export function useSlugSuggestion(name: string, enabled = true) {
+  return useApiQuery(
+    "/api/v1/tenants/slug-suggestion",
+    { params: { query: { name } } },
+    { enabled: enabled && name.length >= 3, staleTime: 30_000 },
+  );
+}
