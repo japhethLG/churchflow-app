@@ -1,11 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/primitives/Input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormInput,
+  FormTextArea,
+} from "@/components/formElements";
 import { useUpdateTenant } from "@/lib/api/tenants";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
-import { cn } from "@/lib/utils";
+import {
+  buildDefaultValues,
+  editTenantSchema,
+  type EditTenantFormValues,
+} from "./formHelpers";
 
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
@@ -25,19 +35,25 @@ export const EditTenantModal = ({
   currentDescription,
   onClose,
 }: EditTenantProps & ModalBaseProps) => {
-  const [name, setName] = useState(currentName);
-  const [description, setDescription] = useState(currentDescription ?? "");
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useUpdateTenant();
 
-  const handleSave = async () => {
-    if (!name.trim()) return;
-    setError(null);
+  const methods = useForm<EditTenantFormValues>({
+    defaultValues: buildDefaultValues(currentName, currentDescription),
+    resolver: zodResolver(editTenantSchema),
+    mode: "onBlur",
+  });
+
+  const onSubmit = async (values: EditTenantFormValues) => {
+    setSubmitError(null);
     try {
-      await mutateAsync({ params: { path: { tenantId } }, body: { name: name.trim() } });
+      await mutateAsync({
+        params: { path: { tenantId } },
+        body: { name: values.name.trim() },
+      });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update");
+      setSubmitError(err instanceof Error ? err.message : "Failed to update");
     }
   };
 
@@ -48,25 +64,24 @@ export const EditTenantModal = ({
       size="md"
       onClose={onClose}
       dismissible={!isPending}
-      primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !name.trim() }}
-      secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
+      primaryAction={{
+        label: "Save",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
+      secondaryAction={{
+        label: "Cancel",
+        onClick: onClose,
+        disabled: isPending,
+      }}
     >
-      <div className="flex flex-col gap-4">
-        <Input label="Church name" value={name} onChange={(e) => setName(e.target.value)} />
-        <div>
-          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Description</div>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className={cn(
-              "box-border w-full resize-y rounded-md border-[1.5px] border-border bg-muted px-4 py-3 font-inherit text-sm text-foreground",
-              "focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-            )}
-          />
-        </div>
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+      <Form methods={methods} onSubmit={onSubmit}>
+        <FormInput inputName="name" label="Church name" />
+        <FormTextArea inputName="description" label="Description" rows={3} />
+        {submitError && (
+          <p className="m-0 text-sm text-destructive">{submitError}</p>
+        )}
+      </Form>
     </BaseModal>
   );
 };

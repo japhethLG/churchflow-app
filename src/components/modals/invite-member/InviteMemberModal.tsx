@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/primitives";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormInput, FormOptionGroup } from "@/components/formElements";
 import { useIssueInvitation } from "@/lib/api/invitations";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
-import { cn } from "@/lib/utils";
+import {
+  inviteMemberSchema,
+  ROLE_OPTIONS,
+  type InviteMemberFormValues,
+} from "./formHelpers";
 
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
@@ -21,22 +27,6 @@ export type InviteMemberProps = {
   defaultRole?: "ADMIN" | "USER";
 };
 
-type Role = "ADMIN" | "USER";
-
-const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
-  {
-    value: "USER",
-    label: "Member",
-    description:
-      "Can view their own giving history, make pledges, and browse public campaigns.",
-  },
-  {
-    value: "ADMIN",
-    label: "Admin",
-    description: "Full access to financials, member directory, campaigns, settings, and reports.",
-  },
-];
-
 export const InviteMemberModal = ({
   tenantId,
   claimMemberId,
@@ -45,33 +35,39 @@ export const InviteMemberModal = ({
   defaultRole,
   onClose,
 }: InviteMemberProps & ModalBaseProps) => {
-  const [email, setEmail] = useState(defaultEmail ?? "");
-  const [role, setRole] = useState<Role>(defaultRole ?? "USER");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<{ email: string; role: "USER" | "ADMIN" } | null>(null);
   const { mutateAsync, isPending } = useIssueInvitation();
 
   const claiming = Boolean(claimMemberId);
 
-  const handleInvite = async () => {
-    if (!email.trim()) return;
-    setError(null);
+  const methods = useForm<InviteMemberFormValues>({
+    defaultValues: {
+      email: defaultEmail ?? "",
+      role: defaultRole ?? "USER",
+    },
+    resolver: zodResolver(inviteMemberSchema),
+    mode: "onBlur",
+  });
+
+  const onSubmit = async (values: InviteMemberFormValues) => {
+    setSubmitError(null);
     try {
       await mutateAsync({
         params: { path: { tenantId } },
         body: {
-          email: email.trim(),
-          role,
+          email: values.email.trim(),
+          role: values.role,
           ...(claimMemberId ? { memberId: claimMemberId } : {}),
         },
       });
-      setSuccess(true);
+      setSentTo({ email: values.email.trim(), role: values.role });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send invite");
+      setSubmitError(err instanceof Error ? err.message : "Failed to send invite");
     }
   };
 
-  if (success) {
+  if (sentTo) {
     return (
       <BaseModal
         overline="Invitation sent"
@@ -83,14 +79,14 @@ export const InviteMemberModal = ({
         <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
           {claiming ? (
             <>
-              An invitation has been sent to <strong>{email}</strong>. When they accept, their existing profile
+              An invitation has been sent to <strong>{sentTo.email}</strong>. When they accept, their existing profile
               {claimMemberName ? ` for ${claimMemberName}` : ""} — including all giving history — will be linked to their
               account.
             </>
           ) : (
             <>
-              An invitation has been sent to <strong>{email}</strong>. They&apos;ll join the church as{" "}
-              {role === "ADMIN" ? "an admin" : "a member"} once they sign in with the link.
+              An invitation has been sent to <strong>{sentTo.email}</strong>. They&apos;ll join the church as{" "}
+              {sentTo.role === "ADMIN" ? "an admin" : "a member"} once they sign in with the link.
             </>
           )}
         </p>
@@ -105,10 +101,14 @@ export const InviteMemberModal = ({
       size="md"
       onClose={onClose}
       dismissible={!isPending}
-      primaryAction={{ label: "Send invite", onClick: handleInvite, loading: isPending, disabled: !email.trim() }}
+      primaryAction={{
+        label: "Send invite",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-4">
+      <Form methods={methods} onSubmit={onSubmit}>
         <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
           {claiming ? (
             <>
@@ -122,53 +122,24 @@ export const InviteMemberModal = ({
             </>
           )}
         </p>
-        <Input
+        <FormInput
+          inputName="email"
           label="Email address"
           type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
           placeholder="member@example.com"
         />
-
-        <div>
-          <div className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">Role</div>
-          <div className="flex gap-2.5">
-            {ROLE_OPTIONS.map((opt) => {
-              const selected = role === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setRole(opt.value)}
-                  className={cn(
-                    "flex-1 cursor-pointer rounded-xl border-[1.5px] px-3.5 py-3 text-left font-inherit transition-all duration-150",
-                    selected ? "border-primary bg-card" : "border-input bg-muted",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "mb-1 text-sm font-semibold",
-                      selected ? "text-primary" : "text-foreground",
-                    )}
-                  >
-                    {opt.label}
-                  </div>
-                  <div
-                    className={cn(
-                      "text-[12px] leading-snug",
-                      selected ? "text-primary" : "text-muted-foreground",
-                    )}
-                  >
-                    {opt.description}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        <FormOptionGroup
+          inputName="role"
+          label="Role"
+          variant="card"
+          options={ROLE_OPTIONS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            description: o.description,
+          }))}
+        />
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
   );
 };

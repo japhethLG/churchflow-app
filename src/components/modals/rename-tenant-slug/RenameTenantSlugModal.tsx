@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/primitives/Input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormInput } from "@/components/formElements";
 import { useRenameTenantSlug } from "@/lib/api/tenants";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
+import {
+  renameTenantSlugSchema,
+  type RenameTenantSlugFormValues,
+} from "./formHelpers";
 
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
@@ -22,18 +28,28 @@ export const RenameTenantSlugModal = ({
   currentSlug,
   onClose,
 }: RenameTenantSlugProps & ModalBaseProps) => {
-  const [slug, setSlug] = useState(currentSlug);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useRenameTenantSlug();
 
-  const handleRename = async () => {
-    if (!slug.trim() || slug === currentSlug) return;
-    setError(null);
+  const methods = useForm<RenameTenantSlugFormValues>({
+    defaultValues: { slug: currentSlug },
+    resolver: zodResolver(renameTenantSlugSchema),
+    mode: "onBlur",
+  });
+
+  const slug = methods.watch("slug");
+  const unchanged = slug === currentSlug;
+
+  const onSubmit = async (values: RenameTenantSlugFormValues) => {
+    setSubmitError(null);
     try {
-      await mutateAsync({ params: { path: { tenantId } }, body: { slug: slug.trim() } });
+      await mutateAsync({
+        params: { path: { tenantId } },
+        body: { slug: values.slug.trim() },
+      });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to rename");
+      setSubmitError(err instanceof Error ? err.message : "Failed to rename");
     }
   };
 
@@ -46,25 +62,21 @@ export const RenameTenantSlugModal = ({
       dismissible={!isPending}
       primaryAction={{
         label: "Rename",
-        onClick: handleRename,
+        onClick: methods.handleSubmit(onSubmit),
         loading: isPending,
-        disabled: !slug.trim() || slug === currentSlug,
+        disabled: unchanged,
         destructive: true,
       }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-4">
+      <Form methods={methods} onSubmit={onSubmit}>
         <div className="rounded-md bg-warning/10 px-4 py-3 text-[13px] leading-normal text-warning">
           Renaming the slug changes all public URLs for this church. Any existing links using the old slug will stop
           working.
         </div>
-        <Input
-          label="Slug"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-        />
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        <FormInput inputName="slug" label="Slug" />
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
   );
 };

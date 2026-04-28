@@ -1,13 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Avatar, Input, Select } from "@/components/primitives";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormInput,
+  FormMemberPicker,
+  FormSelect,
+} from "@/components/formElements";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { useCreatePledge } from "@/lib/api/pledges";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import type { components } from "@/lib/api";
+import {
+  buildCreatePledgeDefaults,
+  createPledgeSchema,
+  type CreatePledgeFormValues,
+} from "./formHelpers";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 type Item = components["schemas"]["CampaignItemResponseDto"];
@@ -36,54 +48,46 @@ export const CreatePledgeModal = ({
   defaultMemberId,
   onClose,
 }: CreatePledgeProps & ModalBaseProps) => {
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
   const { data: campaignsData } = useCampaigns(tenantSlug);
   const { mutateAsync, isPending } = useCreatePledge(tenantSlug);
 
-  const [memberId, setMemberId] = useState(defaultMemberId ?? "");
-  const [memberSearch, setMemberSearch] = useState("");
-  const [chosenCampaignId, setChosenCampaignId] = useState(campaignId);
-  const [chosenItemId, setChosenItemId] = useState<string | "">("");
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
   const members = membersData?.items ?? [];
   const campaigns: Campaign[] = campaignsData?.items ?? [];
-  const memberById = Object.fromEntries(members.map((m) => [m.id, m]));
-  const chosenMember = memberById[memberId];
 
-  const filteredMembers = useMemo(() => {
-    const q = memberSearch.trim().toLowerCase();
-    if (!q) return members.slice(0, 8);
-    return members
-      .filter((m) =>
-        `${m.firstName} ${m.lastName} ${m.email ?? ""}`.toLowerCase().includes(q)
-      )
-      .slice(0, 8);
-  }, [members, memberSearch]);
+  const methods = useForm<CreatePledgeFormValues>({
+    defaultValues: buildCreatePledgeDefaults(campaignId, defaultMemberId),
+    resolver: zodResolver(createPledgeSchema),
+    mode: "onBlur",
+  });
 
+  const chosenCampaignId = methods.watch("campaignId");
   const itemsForCampaign: Item[] = chosenCampaignId === campaignId ? items : [];
 
-  const canSubmit = Boolean(memberId) && Number(amount) > 0;
+  useEffect(() => {
+    const sub = methods.watch((_, { name }) => {
+      if (name === "campaignId") methods.setValue("itemId", "");
+    });
+    return () => sub.unsubscribe();
+  }, [methods]);
 
-  const handleCreate = async () => {
-    if (!canSubmit) return;
-    setError(null);
+  const onSubmit = async (values: CreatePledgeFormValues) => {
+    setSubmitError(null);
     try {
       await mutateAsync({
         params: { path: { tenantId: tenantSlug } },
         body: {
-          campaignId: chosenCampaignId,
-          campaignItemId: chosenItemId || undefined,
-          memberId,
-          pledgedAmount: Number(amount),
-          note: note.trim() || undefined,
+          campaignId: values.campaignId,
+          campaignItemId: values.itemId || undefined,
+          memberId: values.memberId,
+          pledgedAmount: Number(values.amount),
+          note: values.note.trim() || undefined,
         },
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create pledge");
+      setSubmitError(err instanceof Error ? err.message : "Could not create pledge");
     }
   };
 
@@ -94,27 +98,26 @@ export const CreatePledgeModal = ({
       size="md"
       onClose={onClose}
       dismissible={!isPending}
-      primaryAction={{ label: "Create pledge", onClick: handleCreate, loading: isPending, disabled: !canSubmit }}
+      primaryAction={{
+        label: "Create pledge",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-4">
+      <Form methods={methods} onSubmit={onSubmit}>
         {campaigns.length > 1 && (
-          <Select
+          <FormSelect
+            inputName="campaignId"
             label="Campaign"
-            value={chosenCampaignId}
-            onChange={(v) => {
-              setChosenCampaignId(v);
-              setChosenItemId("");
-            }}
             options={campaigns.map((c) => ({ value: c.id, label: c.title }))}
           />
         )}
 
         {itemsForCampaign.length > 0 && (
-          <Select
+          <FormSelect
+            inputName="itemId"
             label="Campaign item"
-            value={chosenItemId}
-            onChange={setChosenItemId}
             options={[
               { value: "", label: "Whole campaign" },
               ...itemsForCampaign.map((i) => ({ value: i.id, label: i.title })),
@@ -122,77 +125,30 @@ export const CreatePledgeModal = ({
           />
         )}
 
-        <div>
-          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Member</div>
-          {chosenMember ? (
-            <div className="flex items-center gap-3 rounded-xl bg-muted p-3">
-              <Avatar name={`${chosenMember.firstName} ${chosenMember.lastName}`} size={36} />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium">
-                  {chosenMember.firstName} {chosenMember.lastName}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {(chosenMember.email as string | null) ?? "no email"}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMemberId("")}
-                className="cursor-pointer border-none bg-transparent font-inherit text-[13px] text-primary hover:underline"
-              >
-                Change
-              </button>
-            </div>
-          ) : (
-            <>
-              <Input
-                icon="search"
-                placeholder="Search by name or email…"
-                value={memberSearch}
-                onChange={(e) => setMemberSearch(e.target.value)}
-              />
-              <div className="mt-2 max-h-[220px] overflow-y-auto rounded-xl border border-border">
-                {filteredMembers.length === 0 ? (
-                  <div className="p-4 text-center text-[13px] text-muted-foreground">No matches</div>
-                ) : (
-                  filteredMembers.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setMemberId(m.id)}
-                      className="flex w-full cursor-pointer items-center gap-2.5 border-none bg-transparent p-2.5 text-left font-inherit hover:bg-muted"
-                    >
-                      <Avatar name={`${m.firstName} ${m.lastName}`} size={28} />
-                      <span className="text-sm">{m.firstName} {m.lastName}</span>
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {(m.email as string | null) ?? ""}
-                      </span>
-                    </button>
-                  ))
-                )}
-              </div>
-            </>
-          )}
-        </div>
+        <FormMemberPicker
+          inputName="memberId"
+          label="Member"
+          members={members}
+          variant="inline"
+          placeholder="Search by name or email…"
+        />
 
-        <Input
+        <FormInput
+          inputName="amount"
           label="Pledged amount"
           type="number"
           placeholder="0.00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
           prefix={currency}
         />
 
-        <Input
+        <FormInput
+          inputName="note"
           label="Note (optional)"
           placeholder="e.g. paying over 6 months"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
         />
 
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
   );
 };

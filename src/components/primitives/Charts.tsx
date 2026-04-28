@@ -1,6 +1,29 @@
+"use client";
+
+import {
+  Bar,
+  BarChart as RechartsBarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { cn } from "@/lib/utils";
 
 export type BarDatum = { label: string; v: number; label2?: string; highlight?: boolean };
+
+const tooltipChrome = {
+  backgroundColor: "var(--input)",
+  border: "none",
+  borderRadius: 8,
+  fontSize: 12,
+} as const;
+
+const axisMuted = { fontSize: 11, fill: "var(--muted-foreground)" };
 
 export const BarChart = ({
   data,
@@ -12,43 +35,49 @@ export const BarChart = ({
   height?: number;
   gradient?: boolean;
   className?: string;
-}) => {
-  const max = Math.max(...data.map((d) => d.v));
-  return (
-    <div
-      className={cn("flex items-end gap-2.5 pt-5", className)}
-      style={{ height }}
-    >
-      {data.map((d, i) => {
-        const h = (d.v / max) * (height - 40);
-        return (
-          <div
-            key={i}
-            className="flex-1 flex flex-col items-center gap-2 min-w-0"
-          >
-            <div className="text-[10px] text-muted-foreground tabular-nums">
-              {d.label2 || ""}
-            </div>
-            <div
-              className={cn(
-                "w-full rounded-md transition-all duration-300",
+}) => (
+  <div className={cn("w-full", className)} style={{ height }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <RechartsBarChart data={data} barCategoryGap="20%">
+        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--input)" />
+        <XAxis dataKey="label" tick={axisMuted} axisLine={false} tickLine={false} />
+        <YAxis tick={axisMuted} axisLine={false} tickLine={false} width={48} />
+        <Tooltip
+          contentStyle={tooltipChrome}
+          cursor={{ fill: "color-mix(in srgb, var(--accent) 27%, transparent)" }}
+          labelFormatter={(_, payload) => {
+            const datum = payload?.[0]?.payload as BarDatum | undefined;
+            return datum?.label2 ?? datum?.label ?? "";
+          }}
+        />
+        <defs>
+          <linearGradient id="primitiveBarGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--ring)" stopOpacity={0.9} />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.7} />
+          </linearGradient>
+          <linearGradient id="primitiveBarGradientActive" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--ring)" />
+            <stop offset="100%" stopColor="var(--primary)" />
+          </linearGradient>
+        </defs>
+        <Bar dataKey="v" radius={[6, 6, 0, 0]}>
+          {data.map((d, idx) => (
+            <Cell
+              key={idx}
+              fill={
                 d.highlight
-                  ? "bg-linear-to-t from-primary to-ring shadow-sm"
+                  ? "url(#primitiveBarGradientActive)"
                   : gradient
-                    ? "bg-linear-to-t from-primary/40 to-ring/50"
-                    : "bg-input"
-              )}
-              style={{ height: h }}
+                    ? "url(#primitiveBarGradient)"
+                    : "var(--input)"
+              }
             />
-            <div className="text-[11px] text-muted-foreground font-medium truncate w-full text-center">
-              {d.label}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+          ))}
+        </Bar>
+      </RechartsBarChart>
+    </ResponsiveContainer>
+  </div>
+);
 
 export type DonutDatum = { v: number; color: string };
 
@@ -63,47 +92,40 @@ export const Donut = ({
   total: string;
   className?: string;
 }) => {
-  const radius = size / 2 - 20;
-  const circumference = 2 * Math.PI * radius;
   const sum = data.reduce((a, d) => a + d.v, 0);
-  let offset = 0;
-  
+  const pieData = data.map((d, i) => ({ name: `${i}`, value: d.v, color: d.color }));
+  const placeholder = [{ name: "empty", value: 1, color: "var(--input)" }];
+
   return (
     <div className={cn("relative inline-block", className)} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
-        {data.map((d, i) => {
-          const frac = d.v / sum;
-          const dash = frac * circumference;
-          const rot = (offset / circumference) * 360;
-          const el = (
-            <circle
-              key={i}
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              fill="none"
-              stroke={d.color}
-              strokeWidth={28}
-              strokeDasharray={`${dash} ${circumference - dash}`}
-              strokeDashoffset={0}
-              transform={`rotate(${rot} ${size / 2} ${size / 2})`}
-              className="transition-all duration-500 ease-in-out"
-            />
-          );
-          offset += dash;
-          return el;
-        })}
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center text-center pointer-events-none">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={sum > 0 ? pieData : placeholder}
+            dataKey="value"
+            innerRadius={size / 2 - 28}
+            outerRadius={size / 2 - 6}
+            paddingAngle={1}
+            stroke="none"
+            startAngle={90}
+            endAngle={-270}
+          >
+            {(sum > 0 ? pieData : placeholder).map((entry, idx) => (
+              <Cell key={idx} fill={entry.color} />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
         <div>
-          <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground">
+          <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
             Total
           </div>
-          <div className="text-2xl font-bold tracking-tight tabular-nums mt-1 text-foreground">
+          <div className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-foreground">
             {total}
           </div>
         </div>
       </div>
     </div>
   );
-}
+};

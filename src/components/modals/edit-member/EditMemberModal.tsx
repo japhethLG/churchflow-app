@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/primitives";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormInput, FormOptionGroup } from "@/components/formElements";
 import { useUpdateMember } from "@/lib/api/members";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import type { components } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import {
+  buildEditMemberDefaults,
+  editMemberSchema,
+  ROLE_OPTIONS,
+  STATUS_OPTIONS,
+  type EditMemberFormValues,
+} from "./formHelpers";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
@@ -21,42 +29,38 @@ export type EditMemberProps = {
   member: Member;
 };
 
-const asString = (v: unknown): string => {
-  return typeof v === "string" ? v : "";
-};
-
-export const EditMemberModal = ({ tenantSlug, member, onClose }: EditMemberProps & ModalBaseProps) => {
-  const [firstName, setFirstName] = useState(member.firstName);
-  const [lastName, setLastName] = useState(member.lastName);
-  const [email, setEmail] = useState(asString(member.email));
-  const [phone, setPhone] = useState(asString(member.phone));
-  const [address, setAddress] = useState(asString(member.address));
-  const [role, setRole] = useState<"USER" | "ADMIN">(member.role);
-  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE">(member.status);
-  const [error, setError] = useState<string | null>(null);
+export const EditMemberModal = ({
+  tenantSlug,
+  member,
+  onClose,
+}: EditMemberProps & ModalBaseProps) => {
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useUpdateMember(tenantSlug);
 
-  const canSubmit = firstName.trim().length > 0 && lastName.trim().length > 0;
+  const methods = useForm<EditMemberFormValues>({
+    defaultValues: buildEditMemberDefaults(member),
+    resolver: zodResolver(editMemberSchema),
+    mode: "onBlur",
+  });
 
-  const handleSave = async () => {
-    if (!canSubmit) return;
-    setError(null);
+  const onSubmit = async (values: EditMemberFormValues) => {
+    setSubmitError(null);
     try {
       await mutateAsync({
         params: { path: { tenantId: tenantSlug, id: member.id } },
         body: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim() || undefined,
-          phone: phone.trim() || undefined,
-          address: address.trim() || undefined,
-          role,
-          status,
+          firstName: values.firstName.trim(),
+          lastName: values.lastName.trim(),
+          email: values.email.trim() || undefined,
+          phone: values.phone.trim() || undefined,
+          address: values.address.trim() || undefined,
+          role: values.role,
+          status: values.status,
         },
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update");
+      setSubmitError(err instanceof Error ? err.message : "Failed to update");
     }
   };
 
@@ -67,54 +71,39 @@ export const EditMemberModal = ({ tenantSlug, member, onClose }: EditMemberProps
       size="md"
       onClose={onClose}
       dismissible={!isPending}
-      primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
+      primaryAction={{
+        label: "Save",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-3.5">
+      <Form methods={methods} onSubmit={onSubmit}>
         <div className="grid grid-cols-2 gap-3">
-          <Input label="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-          <Input label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          <FormInput inputName="firstName" label="First name" />
+          <FormInput inputName="lastName" label="Last name" />
         </div>
-        <Input label="Email" value={email} type="email" onChange={(e) => setEmail(e.target.value)} />
-        <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <Input label="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
+        <FormInput inputName="email" label="Email" type="email" />
+        <FormInput inputName="phone" label="Phone" />
+        <FormInput inputName="address" label="Address" />
 
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Role</div>
-            <div className="flex gap-2">
-              <PillChoice active={role === "USER"} onClick={() => setRole("USER")} label="Member" />
-              <PillChoice active={role === "ADMIN"} onClick={() => setRole("ADMIN")} label="Admin" />
-            </div>
-          </div>
-          <div>
-            <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Status</div>
-            <div className="flex gap-2">
-              <PillChoice active={status === "ACTIVE"} onClick={() => setStatus("ACTIVE")} label="Active" />
-              <PillChoice active={status === "INACTIVE"} onClick={() => setStatus("INACTIVE")} label="Inactive" />
-            </div>
-          </div>
+          <FormOptionGroup
+            inputName="role"
+            label="Role"
+            variant="pill"
+            options={ROLE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          />
+          <FormOptionGroup
+            inputName="status"
+            label="Status"
+            variant="pill"
+            options={STATUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          />
         </div>
 
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
-  );
-};
-
-const PillChoice = ({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex-1 cursor-pointer rounded-full border-[1.5px] px-3.5 py-2.5 font-inherit text-[13px] transition-colors",
-        active
-          ? "border-primary bg-accent font-semibold text-primary"
-          : "border-transparent bg-input font-medium text-foreground",
-      )}
-    >
-      {label}
-    </button>
   );
 };

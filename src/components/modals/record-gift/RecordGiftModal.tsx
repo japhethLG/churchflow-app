@@ -1,7 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Avatar, Chip, Icon, Input, Select, type IconName } from "@/components/primitives";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormAmountInput,
+  FormInput,
+  FormMemberPicker,
+  FormOptionGroup,
+  FormSelect,
+} from "@/components/formElements";
 import { cn } from "@/lib/utils";
 import { useCampaign, useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
@@ -10,10 +19,13 @@ import { useTenant } from "@/lib/api/tenants";
 import { useCreateTransaction } from "@/lib/api/transactions";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
-import type { components } from "@/lib/api";
-
-type TransactionType = components["schemas"]["TransactionResponseDto"]["type"];
-type PaymentMethod = components["schemas"]["TransactionResponseDto"]["paymentMethod"];
+import {
+  buildRecordGiftDefaults,
+  METHOD_OPTIONS,
+  recordGiftSchema,
+  TYPE_OPTIONS,
+  type RecordGiftFormValues,
+} from "./formHelpers";
 
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
@@ -28,29 +40,6 @@ export type RecordGiftProps = {
   defaultPledgeId?: string;
 };
 
-const TYPE_OPTIONS: { value: TransactionType; label: string }[] = [
-  { value: "TITHE", label: "Tithe" },
-  { value: "OFFERING", label: "Offering" },
-  { value: "MISSION_GIVING", label: "Mission" },
-  { value: "FIRST_FRUIT", label: "First Fruit" },
-  { value: "COMMITMENT", label: "Commitment" },
-  { value: "DONATION", label: "Donation" },
-  { value: "OTHER", label: "Other" },
-];
-
-const METHOD_OPTIONS: { value: PaymentMethod; label: string; icon: IconName }[] = [
-  { value: "CASH", label: "Cash", icon: "cash" },
-  { value: "CHECK", label: "Check", icon: "check_rect" },
-  { value: "BANK_TRANSFER", label: "Bank", icon: "bank" },
-  { value: "MOBILE_MONEY", label: "Mobile", icon: "phone" },
-  { value: "ONLINE", label: "Online", icon: "link" },
-  { value: "OTHER", label: "Other", icon: "dots" },
-];
-
-const todayInputValue = (): string => {
-  return new Date().toISOString().slice(0, 10);
-};
-
 export const RecordGiftModal = ({
   tenantSlug,
   defaultMemberId,
@@ -58,28 +47,31 @@ export const RecordGiftModal = ({
   defaultPledgeId,
   onClose,
 }: RecordGiftProps & ModalBaseProps) => {
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { data: tenant } = useTenant(tenantSlug);
   const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
   const { data: campaignsData } = useCampaigns(tenantSlug);
   const { mutateAsync, isPending } = useCreateTransaction(tenantSlug);
 
-  const [type, setType] = useState<TransactionType>("TITHE");
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(todayInputValue());
-  const [memberId, setMemberId] = useState(defaultMemberId ?? "");
-  const [memberSearch, setMemberSearch] = useState("");
-  const [campaignId, setCampaignId] = useState<string | "">(defaultCampaignId ?? "");
-  const [campaignItemId, setCampaignItemId] = useState<string | "">("");
-  const [pledgeId, setPledgeId] = useState<string | "">(defaultPledgeId ?? "");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
-  const [referenceNumber, setReferenceNumber] = useState("");
-  const [note, setNote] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const methods = useForm<RecordGiftFormValues>({
+    defaultValues: buildRecordGiftDefaults({
+      defaultMemberId,
+      defaultCampaignId,
+      defaultPledgeId,
+    }),
+    resolver: zodResolver(recordGiftSchema),
+    mode: "onBlur",
+  });
+
+  const memberId = methods.watch("memberId");
+  const campaignId = methods.watch("campaignId");
+  const campaignItemId = methods.watch("campaignItemId");
+  const pledgeId = methods.watch("pledgeId");
 
   const members = membersData?.items ?? [];
-  const campaigns = (campaignsData?.items ?? []).filter((c) => c.status === "ACTIVE" || c.id === campaignId);
-  const memberById = Object.fromEntries(members.map((m) => [m.id, m]));
-  const chosenMember = memberById[memberId];
+  const campaigns = (campaignsData?.items ?? []).filter(
+    (c) => c.status === "ACTIVE" || c.id === campaignId,
+  );
   const chosenCampaign = campaigns.find((c) => c.id === campaignId);
 
   const { data: campaignDetail } = useCampaign(tenantSlug, campaignId, Boolean(campaignId));
@@ -92,51 +84,55 @@ export const RecordGiftModal = ({
   );
   const pledges = pledgesData?.items ?? [];
 
+  // When campaign changes, drop dependent fields.
+  useEffect(() => {
+    const sub = methods.watch((_, { name }) => {
+      if (name === "campaignId") {
+        methods.setValue("campaignItemId", "");
+        methods.setValue("pledgeId", "");
+      }
+      if (name === "memberId") {
+        methods.setValue("pledgeId", "");
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [methods]);
+
+  // When a pledge is selected, sync the campaign + item to match it.
   useEffect(() => {
     if (!pledgeId) return;
     const p = pledges.find((x) => x.id === pledgeId);
     if (!p) return;
-    if (p.campaignId !== campaignId) setCampaignId(p.campaignId);
+    if (p.campaignId !== campaignId) {
+      methods.setValue("campaignId", p.campaignId);
+    }
     const itemId = typeof p.campaignItemId === "string" ? p.campaignItemId : "";
-    if (itemId !== campaignItemId) setCampaignItemId(itemId);
-  }, [pledgeId, pledges, campaignId, campaignItemId]);
+    if (itemId !== campaignItemId) {
+      methods.setValue("campaignItemId", itemId);
+    }
+  }, [pledgeId, pledges, campaignId, campaignItemId, methods]);
 
-  const filteredMembers = useMemo(() => {
-    const q = memberSearch.trim().toLowerCase();
-    if (!q) return members.slice(0, 8);
-    return members
-      .filter((m) =>
-        `${m.firstName} ${m.lastName} ${typeof m.email === "string" ? m.email : ""}`
-          .toLowerCase()
-          .includes(q),
-      )
-      .slice(0, 8);
-  }, [members, memberSearch]);
-
-  const canSubmit = Number(amount) > 0 && Boolean(date) && Boolean(paymentMethod);
-
-  const handleSave = async () => {
-    if (!canSubmit) return;
-    setError(null);
+  const onSubmit = async (values: RecordGiftFormValues) => {
+    setSubmitError(null);
     try {
       await mutateAsync({
         params: { path: { tenantId: tenantSlug } },
         body: {
-          type,
-          amount: Number(amount),
-          date: new Date(date).toISOString(),
-          paymentMethod,
-          memberId: memberId || undefined,
-          campaignId: campaignId || undefined,
-          campaignItemId: campaignItemId || undefined,
-          pledgeId: pledgeId || undefined,
-          note: note.trim() || undefined,
-          referenceNumber: referenceNumber.trim() || undefined,
+          type: values.type,
+          amount: Number(values.amount),
+          date: new Date(values.date).toISOString(),
+          paymentMethod: values.paymentMethod,
+          memberId: values.memberId || undefined,
+          campaignId: values.campaignId || undefined,
+          campaignItemId: values.campaignItemId || undefined,
+          pledgeId: values.pledgeId || undefined,
+          note: values.note.trim() || undefined,
+          referenceNumber: values.referenceNumber.trim() || undefined,
         },
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not record gift");
+      setSubmitError(err instanceof Error ? err.message : "Could not record gift");
     }
   };
 
@@ -150,92 +146,37 @@ export const RecordGiftModal = ({
       onClose={onClose}
       dismissible={!isPending}
       footerHint="⌘ Enter to record · Esc to cancel"
-      primaryAction={{ label: "Record gift", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
+      primaryAction={{
+        label: "Record gift",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-5">
-        <div>
-          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Amount</div>
-          <div className="flex items-baseline gap-1.5 rounded-xl bg-input px-[18px] py-3.5">
-            <span className="text-[22px] font-medium text-muted-foreground">{currency}</span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              autoFocus
-              className="min-w-0 flex-1 border-none bg-transparent font-inherit text-[32px] font-semibold tracking-tight text-foreground outline-none tabular-nums placeholder:text-muted-foreground"
-            />
-          </div>
-        </div>
+      <Form methods={methods} onSubmit={onSubmit} className="gap-5">
+        <FormAmountInput
+          inputName="amount"
+          label="Amount"
+          currency={currency}
+          autoFocus
+        />
 
-        <div>
-          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Type</div>
-          <div className="flex flex-wrap gap-1.5">
-            {TYPE_OPTIONS.map((opt) => (
-              <span key={opt.value} onClick={() => setType(opt.value)}>
-                <Chip active={type === opt.value}>{opt.label}</Chip>
-              </span>
-            ))}
-          </div>
-        </div>
+        <FormOptionGroup
+          inputName="type"
+          label="Type"
+          variant="chip"
+          options={TYPE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+        />
 
         <div className="grid grid-cols-2 gap-3.5">
-          <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          <div>
-            <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Member</div>
-            {chosenMember ? (
-              <div className="flex h-11 items-center gap-2.5 rounded-xl bg-input p-2.5">
-                <Avatar name={`${chosenMember.firstName} ${chosenMember.lastName}`} size={28} />
-                <span className="min-w-0 flex-1 truncate text-sm">{chosenMember.firstName} {chosenMember.lastName}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMemberId("");
-                    setPledgeId("");
-                  }}
-                  className="cursor-pointer border-none bg-transparent font-inherit text-xs text-primary hover:underline"
-                >
-                  Change
-                </button>
-              </div>
-            ) : (
-              <div className="relative">
-                <Input
-                  icon="search"
-                  placeholder="Search or leave blank for anonymous"
-                  value={memberSearch}
-                  onChange={(e) => setMemberSearch(e.target.value)}
-                />
-                {memberSearch.trim().length > 0 && (
-                  <div className="absolute left-0 right-0 top-full z-[1] mt-1 max-h-[200px] overflow-y-auto rounded-xl border border-border bg-card shadow-md">
-                    {filteredMembers.length === 0 ? (
-                      <div className="p-3 text-center text-xs text-muted-foreground">No matches</div>
-                    ) : (
-                      filteredMembers.map((m) => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => {
-                            setMemberId(m.id);
-                            setMemberSearch("");
-                          }}
-                          className="flex w-full cursor-pointer items-center gap-2 border-none bg-transparent p-2 text-left font-inherit hover:bg-muted"
-                        >
-                          <Avatar name={`${m.firstName} ${m.lastName}`} size={24} />
-                          <span className="text-[13px]">
-                            {m.firstName} {m.lastName}
-                          </span>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <FormInput inputName="date" label="Date" type="date" />
+          <FormMemberPicker
+            inputName="memberId"
+            label="Member"
+            members={members}
+            variant="dropdown"
+            placeholder="Search or leave blank for anonymous"
+          />
         </div>
 
         {campaigns.length > 0 && (
@@ -245,24 +186,18 @@ export const RecordGiftModal = ({
               campaignId && campaignItems.length > 0 ? "grid-cols-2" : "grid-cols-1",
             )}
           >
-            <Select
+            <FormSelect
+              inputName="campaignId"
               label="Campaign (optional)"
-              value={campaignId}
-              onChange={(v) => {
-                setCampaignId(v);
-                setCampaignItemId("");
-                setPledgeId("");
-              }}
               options={[
                 { value: "", label: "None" },
                 ...campaigns.map((c) => ({ value: c.id, label: c.title })),
               ]}
             />
             {campaignId && campaignItems.length > 0 && (
-              <Select
+              <FormSelect
+                inputName="campaignItemId"
                 label="Earmark (optional)"
-                value={campaignItemId}
-                onChange={setCampaignItemId}
                 disabled={Boolean(pledgeId)}
                 hint={pledgeId ? "Locked by pledge attribution" : undefined}
                 options={[
@@ -275,10 +210,9 @@ export const RecordGiftModal = ({
         )}
 
         {pledges.length > 0 && (
-          <Select
+          <FormSelect
+            inputName="pledgeId"
             label="Against pledge (optional)"
-            value={pledgeId}
-            onChange={setPledgeId}
             options={[
               { value: "", label: "Don't link a pledge" },
               ...pledges.map((p) => ({
@@ -291,45 +225,27 @@ export const RecordGiftModal = ({
           />
         )}
 
-        <div>
-          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Payment method</div>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-            {METHOD_OPTIONS.map((m) => {
-              const active = paymentMethod === m.value;
-              return (
-                <button
-                  key={m.value}
-                  type="button"
-                  onClick={() => setPaymentMethod(m.value)}
-                  className={cn(
-                    "cursor-pointer rounded-xl border-[1.5px] px-2 py-3 text-center font-inherit transition-colors",
-                    active
-                      ? "border-primary bg-accent text-primary"
-                      : "border-transparent bg-muted text-secondary-foreground",
-                  )}
-                >
-                  <div className="mb-1 grid place-items-center">
-                    <Icon name={m.icon} size={18} />
-                  </div>
-                  <div className="text-[11px] font-medium">{m.label}</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FormOptionGroup
+          inputName="paymentMethod"
+          label="Payment method"
+          variant="icon-card"
+          options={METHOD_OPTIONS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            icon: o.icon,
+          }))}
+        />
 
         <div className="grid grid-cols-2 gap-3.5">
-          <Input
+          <FormInput
+            inputName="referenceNumber"
             label="Reference # (optional)"
             placeholder="CHK-1402"
-            value={referenceNumber}
-            onChange={(e) => setReferenceNumber(e.target.value)}
           />
-          <Input
+          <FormInput
+            inputName="note"
             label="Note (optional)"
             placeholder="e.g. Sunday Worship"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
           />
         </div>
 
@@ -339,8 +255,8 @@ export const RecordGiftModal = ({
           </p>
         )}
 
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
   );
 };

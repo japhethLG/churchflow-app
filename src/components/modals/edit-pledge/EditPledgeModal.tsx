@@ -1,15 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/primitives";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormInput, FormOptionGroup } from "@/components/formElements";
 import { useUpdatePledge } from "@/lib/api/pledges";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
-import { nstr, type components } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import type { components } from "@/lib/api";
+import {
+  buildEditPledgeDefaults,
+  editPledgeSchema,
+  STATUS_OPTIONS,
+  type EditPledgeFormValues,
+} from "./formHelpers";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
-type PledgeStatus = Pledge["status"];
 
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
@@ -23,41 +29,35 @@ export type EditPledgeProps = {
   currency: string;
 };
 
-const STATUS_OPTIONS: { value: PledgeStatus; label: string; hint: string }[] = [
-  { value: "ACTIVE", label: "Active", hint: "Still owed" },
-  { value: "FULFILLED", label: "Fulfilled", hint: "Fully paid" },
-  { value: "CANCELLED", label: "Cancelled", hint: "Withdrawn" },
-];
-
 export const EditPledgeModal = ({
   tenantSlug,
   pledge,
   currency,
   onClose,
 }: EditPledgeProps & ModalBaseProps) => {
-  const [amount, setAmount] = useState(pledge.pledgedAmount.toString());
-  const [status, setStatus] = useState<PledgeStatus>(pledge.status);
-  const [note, setNote] = useState(nstr(pledge.note) ?? "");
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useUpdatePledge(tenantSlug);
 
-  const canSubmit = Number(amount) > 0;
+  const methods = useForm<EditPledgeFormValues>({
+    defaultValues: buildEditPledgeDefaults(pledge),
+    resolver: zodResolver(editPledgeSchema),
+    mode: "onBlur",
+  });
 
-  const handleSave = async () => {
-    if (!canSubmit) return;
-    setError(null);
+  const onSubmit = async (values: EditPledgeFormValues) => {
+    setSubmitError(null);
     try {
       await mutateAsync({
         params: { path: { tenantId: tenantSlug, id: pledge.id } },
         body: {
-          pledgedAmount: Number(amount),
-          status,
-          note: note.trim() || undefined,
+          pledgedAmount: Number(values.amount),
+          status: values.status,
+          note: values.note.trim() || undefined,
         },
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update pledge");
+      setSubmitError(err instanceof Error ? err.message : "Failed to update pledge");
     }
   };
 
@@ -68,44 +68,28 @@ export const EditPledgeModal = ({
       size="md"
       onClose={onClose}
       dismissible={!isPending}
-      primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
+      primaryAction={{
+        label: "Save",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-3.5">
-        <Input
-          label="Amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          prefix={currency}
+      <Form methods={methods} onSubmit={onSubmit}>
+        <FormInput inputName="amount" label="Amount" type="number" prefix={currency} />
+        <FormOptionGroup
+          inputName="status"
+          label="Status"
+          variant="card"
+          options={STATUS_OPTIONS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            description: o.description,
+          }))}
         />
-
-        <div>
-          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Status</div>
-          <div className="flex gap-2">
-            {STATUS_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setStatus(opt.value)}
-                className={cn(
-                  "flex-1 cursor-pointer rounded-xl border-[1.5px] px-3.5 py-2.5 text-left font-inherit transition-colors",
-                  status === opt.value
-                    ? "border-primary bg-accent text-foreground"
-                    : "border-transparent bg-input text-foreground",
-                )}
-              >
-                <div className="text-[13px] font-semibold">{opt.label}</div>
-                <div className="mt-0.5 text-[11px] text-muted-foreground">{opt.hint}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <Input label="Note" value={note} onChange={(e) => setNote(e.target.value)} />
-
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        <FormInput inputName="note" label="Note" />
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
   );
 };

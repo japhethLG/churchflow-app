@@ -1,11 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/primitives";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormInput } from "@/components/formElements";
 import { useUpdateCampaignItem } from "@/lib/api/campaigns";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
-import { nstr, type components } from "@/lib/api";
+import type { components } from "@/lib/api";
+import {
+  buildEditCampaignItemDefaults,
+  editCampaignItemSchema,
+  type EditCampaignItemFormValues,
+} from "./formHelpers";
 
 type Item = components["schemas"]["CampaignItemResponseDto"];
 
@@ -21,43 +28,36 @@ export type EditCampaignItemProps = {
   item: Item;
 };
 
-const toDateInput = (d: unknown): string => {
-  const s = nstr(d);
-  if (!s) return "";
-  return new Date(s).toISOString().slice(0, 10);
-};
-
 export const EditCampaignItemModal = ({
   tenantSlug,
   campaignId,
   item,
   onClose,
 }: EditCampaignItemProps & ModalBaseProps) => {
-  const [title, setTitle] = useState(item.title);
-  const [description, setDescription] = useState(nstr(item.description) ?? "");
-  const [target, setTarget] = useState(item.targetAmount.toString());
-  const [deadline, setDeadline] = useState(toDateInput(item.deadline));
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useUpdateCampaignItem(tenantSlug);
 
-  const canSubmit = title.trim().length > 0 && Number(target) > 0;
+  const methods = useForm<EditCampaignItemFormValues>({
+    defaultValues: buildEditCampaignItemDefaults(item),
+    resolver: zodResolver(editCampaignItemSchema),
+    mode: "onBlur",
+  });
 
-  const handleSave = async () => {
-    if (!canSubmit) return;
-    setError(null);
+  const onSubmit = async (values: EditCampaignItemFormValues) => {
+    setSubmitError(null);
     try {
       await mutateAsync({
         params: { path: { tenantId: tenantSlug, id: campaignId, itemId: item.id } },
         body: {
-          title: title.trim(),
-          description: description.trim() || undefined,
-          targetAmount: Number(target),
-          deadline: deadline ? new Date(deadline).toISOString() : undefined,
+          title: values.title.trim(),
+          description: values.description.trim() || undefined,
+          targetAmount: Number(values.target),
+          deadline: values.deadline ? new Date(values.deadline).toISOString() : undefined,
         },
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update item");
+      setSubmitError(err instanceof Error ? err.message : "Failed to update item");
     }
   };
 
@@ -68,22 +68,22 @@ export const EditCampaignItemModal = ({
       size="md"
       onClose={onClose}
       dismissible={!isPending}
-      primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
+      primaryAction={{
+        label: "Save",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-3.5">
-        <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <Input
-          label="Description (optional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+      <Form methods={methods} onSubmit={onSubmit}>
+        <FormInput inputName="title" label="Title" />
+        <FormInput inputName="description" label="Description (optional)" />
         <div className="grid grid-cols-2 gap-3">
-          <Input label="Target amount" type="number" value={target} onChange={(e) => setTarget(e.target.value)} />
-          <Input label="Deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+          <FormInput inputName="target" label="Target amount" type="number" />
+          <FormInput inputName="deadline" label="Deadline" type="date" />
         </div>
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
   );
 };

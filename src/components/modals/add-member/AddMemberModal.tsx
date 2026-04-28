@@ -1,10 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/primitives";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormInput } from "@/components/formElements";
 import { useCreateMember } from "@/lib/api/members";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
+import {
+  addMemberDefaults,
+  addMemberSchema,
+  type AddMemberFormValues,
+} from "./formHelpers";
 
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
@@ -17,36 +24,34 @@ export type AddMemberProps = {
 };
 
 export const AddMemberModal = ({ tenantSlug, onClose }: AddMemberProps & ModalBaseProps) => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync, isPending } = useCreateMember(tenantSlug);
 
-  const canSubmit = firstName.trim().length > 0 && lastName.trim().length > 0;
+  const methods = useForm<AddMemberFormValues>({
+    defaultValues: addMemberDefaults,
+    resolver: zodResolver(addMemberSchema),
+    mode: "onBlur",
+  });
 
-  const handleSave = async () => {
-    if (!canSubmit) return;
-    setError(null);
+  const onSubmit = async (values: AddMemberFormValues) => {
+    setSubmitError(null);
     try {
       await mutateAsync({
         params: { path: { tenantId: tenantSlug } },
         body: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim() || undefined,
-          phone: phone.trim() || undefined,
-          address: address.trim() || undefined,
+          firstName: values.firstName.trim(),
+          lastName: values.lastName.trim(),
+          email: values.email.trim() || undefined,
+          phone: values.phone.trim() || undefined,
+          address: values.address.trim() || undefined,
           role: "USER",
         },
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add member");
+      setSubmitError(err instanceof Error ? err.message : "Failed to add member");
     }
-  }
+  };
 
   return (
     <BaseModal
@@ -55,23 +60,27 @@ export const AddMemberModal = ({ tenantSlug, onClose }: AddMemberProps & ModalBa
       size="md"
       onClose={onClose}
       dismissible={!isPending}
-      primaryAction={{ label: "Add member", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
+      primaryAction={{
+        label: "Add member",
+        onClick: methods.handleSubmit(onSubmit),
+        loading: isPending,
+      }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div className="flex flex-col gap-3.5">
+      <Form methods={methods} onSubmit={onSubmit}>
         <p className="m-0 text-[13px] text-muted-foreground">
           Adds a temp member you can attribute giving to. They can claim the profile later — invite them with a
           sign-in link via <strong>Invite member</strong> instead if they should access ChurchFlow themselves.
         </p>
         <div className="grid grid-cols-2 gap-3">
-          <Input label="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-          <Input label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          <FormInput inputName="firstName" label="First name" />
+          <FormInput inputName="lastName" label="Last name" />
         </div>
-        <Input label="Email (optional)" value={email} type="email" onChange={(e) => setEmail(e.target.value)} />
-        <Input label="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <Input label="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} />
-        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
-      </div>
+        <FormInput inputName="email" label="Email (optional)" type="email" />
+        <FormInput inputName="phone" label="Phone (optional)" />
+        <FormInput inputName="address" label="Address (optional)" />
+        {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
+      </Form>
     </BaseModal>
   );
-}
+};
