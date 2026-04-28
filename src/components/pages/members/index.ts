@@ -4,3 +4,5 @@ export { MembersTable, type MemberRow, type MembersTableHandlers } from "./Membe
 export { MemberInfoCard } from "./MemberInfoCard";
 export { MemberRecentGiving } from "./MemberRecentGiving";
 export { MemberPledges } from "./MemberPledges";
+export { MembersListPage } from "./MembersListPage";
+export { MemberDetailPage } from "./MemberDetailPage";

@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import {
   Amount,
   Avatar,
@@ -23,10 +22,10 @@ const STATUS_LABEL: Record<PledgeRow["status"], Status> = {
   CANCELLED: "Cancelled",
 };
 
-const fullName = (m: Member | undefined): string  => {
+const fullName = (m: Member | undefined): string => {
   if (!m) return "Unknown member";
   return `${m.firstName} ${m.lastName}`.trim();
-}
+};
 
 export type PledgesTableHandlers = {
   onEdit: (p: PledgeRow) => void;
@@ -54,11 +53,9 @@ export const PledgesTable = ({
       key: "member",
       label: "Member",
       render: (p) => (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <span className="inline-flex min-w-0 items-center gap-2.5">
           <Avatar name={fullName(membersById[p.memberId])} size={28} />
-          <span style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {fullName(membersById[p.memberId])}
-          </span>
+          <span className="truncate font-medium">{fullName(membersById[p.memberId])}</span>
         </span>
       ),
     },
@@ -67,13 +64,22 @@ export const PledgesTable = ({
       label: "Campaign",
       render: (p) => {
         const c = campaignsById[p.campaignId];
-        if (!c) return <span style={{ color: S.onSurfaceMuted }}>—</span>;
+        if (!c) return <span className="text-muted-foreground">—</span>;
         return (
           <span
-            style={{ color: S.primary, cursor: "pointer", fontWeight: 500 }}
+            role="link"
+            className="cursor-pointer font-medium text-primary"
+            tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
               handlers.onOpenCampaign(c.id);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                handlers.onOpenCampaign(c.id);
+              }
             }}
           >
             {c.title}
@@ -99,7 +105,7 @@ export const PledgesTable = ({
       label: "Pledged on",
       width: "130px",
       render: (p) => (
-        <span style={{ fontSize: 13, color: S.onSurfaceMuted }}>
+        <span className="text-[13px] text-muted-foreground">
           {new Date(p.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
         </span>
       ),
@@ -133,4 +139,4 @@ export const PledgesTable = ({
       emptySubtitle="When members commit to a campaign, those pledges show up here."
     />
   );
-}
+};

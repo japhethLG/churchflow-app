@@ -1,4 +1,3 @@
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Wordmark } from "@/components/primitives/Wordmark";
 import { JournalIllustration } from "@/components/illustrations/JournalIllustration";
 import { LoginButton } from "./LoginButton";
@@ -6,43 +5,44 @@ import { LoginButton } from "./LoginButton";
 export default () => {
   return (
     <>
-      <div style={{ padding: "28px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="flex items-center justify-between px-10 py-7">
         <Wordmark size="md" />
       </div>
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "0 40px", gap: 40 }}>
-        <div style={{ justifySelf: "center", width: 440 }}>
-          <div style={{ background: S.surfaceContainerLowest, borderRadius: 24, padding: 40 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: S.onSurfaceMuted, marginBottom: 12 }}>
+      <div className="grid flex-1 grid-cols-2 items-center gap-10 px-10">
+        <div className="w-full max-w-[440px] justify-self-center">
+          <div className="rounded-3xl bg-card p-10">
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Sign in
             </div>
-            <h1 style={{ fontSize: 36, fontWeight: 600, letterSpacing: "-0.025em", color: S.onSurface, margin: 0, lineHeight: 1.1 }}>
+            <h1 className="m-0 text-4xl font-semibold tracking-tight text-foreground leading-tight">
               Welcome back.
             </h1>
-            <p style={{ fontSize: 15, color: S.onSurfaceVariant, marginTop: 12, lineHeight: 1.55 }}>
-              Sign in to your church&apos;s dashboard. Your giving history and upcoming services will be right where you left them.
+            <p className="mt-3 text-[15px] leading-relaxed text-secondary-foreground">
+              Sign in to your church&apos;s dashboard. Your giving history and upcoming services will be right where
+              you left them.
             </p>
 
-            <div style={{ marginTop: 32 }}>
+            <div className="mt-8">
               <LoginButton />
             </div>
 
-            <div style={{ fontSize: 12, color: S.onSurfaceMuted, marginTop: 20, lineHeight: 1.5, textAlign: "center" }}>
+            <div className="mt-5 text-center text-xs leading-normal text-muted-foreground">
               By continuing you agree to our{" "}
-              <span style={{ textDecoration: "underline", color: S.onSurfaceVariant }}>Terms</span> and{" "}
-              <span style={{ textDecoration: "underline", color: S.onSurfaceVariant }}>Privacy Policy</span>.
+              <span className="text-secondary-foreground underline">Terms</span> and{" "}
+              <span className="text-secondary-foreground underline">Privacy Policy</span>.
             </div>
           </div>
-          <div style={{ marginTop: 20, fontSize: 12, color: S.onSurfaceMuted, textAlign: "center" }}>
+          <div className="mt-5 text-center text-xs text-muted-foreground">
             New to ChurchFlow? Ask your church administrator for an invite.
           </div>
         </div>
-        <div style={{ justifySelf: "center", width: 440, height: 440, position: "relative" }}>
+        <div className="relative h-[440px] w-full max-w-[440px] justify-self-center">
           <JournalIllustration />
         </div>
       </div>
-      <div style={{ padding: "24px 40px", display: "flex", justifyContent: "space-between", fontSize: 12, color: S.onSurfaceMuted }}>
+      <div className="flex justify-between px-10 py-6 text-xs text-muted-foreground">
         <span>Built for churches.</span>
-        <span style={{ display: "flex", gap: 20 }}>
+        <span className="flex gap-5">
           <span>Privacy</span>
           <span>Terms</span>
           <span>Support</span>
@@ -50,4 +50,4 @@ export default () => {
       </div>
     </>
   );
-}
+};

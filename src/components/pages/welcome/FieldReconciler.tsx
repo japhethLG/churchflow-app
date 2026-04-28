@@ -1,18 +1,15 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives";
+import { cn } from "@/lib/utils";
 
 export type ReconcileChoice = "existing" | "sso" | "edit";
 
 export type FieldReconcilerProps = {
   label: string;
-  // The temp profile's value (admin-entered). Null/empty if missing.
   existing: string | null;
-  // The fresh value from SSO (Google). Null/empty if SSO didn't provide it.
   sso: string | null;
-  // What the user picked plus the editable buffer. Both controlled.
   choice: ReconcileChoice;
   edited: string;
   onChange: (next: { choice: ReconcileChoice; edited: string }) => void;
@@ -33,19 +30,9 @@ export const FieldReconciler = ({
   const hasSso = Boolean(sso && sso.length > 0);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color: S.onSurfaceMuted,
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+    <div className="flex flex-col gap-2">
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="grid grid-cols-2 gap-2">
         <Option
           name={id}
           label="Keep existing"
@@ -66,29 +53,20 @@ export const FieldReconciler = ({
       <button
         type="button"
         onClick={() => onChange({ choice: "edit", edited })}
-        style={{
-          background: "none",
-          border: "none",
-          padding: 0,
-          color: choice === "edit" ? S.primary : S.onSurfaceMuted,
-          fontSize: 12,
-          fontWeight: 500,
-          cursor: "pointer",
-          fontFamily: "inherit",
-          alignSelf: "flex-start",
-          textDecoration: "underline",
-          textDecorationStyle: "dotted",
-        }}
+        className={cn(
+          "cursor-pointer self-start border-none bg-transparent p-0 font-inherit text-xs font-medium underline decoration-dotted",
+          choice === "edit" ? "text-primary" : "text-muted-foreground",
+        )}
       >
         Or write something different
       </button>
       {choice === "edit" && (
         <Input value={edited} onChange={(e) => onChange({ choice: "edit", edited: e.target.value })} />
       )}
-      {hint && <div style={{ fontSize: 12, color: S.onSurfaceMuted }}>{hint}</div>}
+      {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
     </div>
   );
-}
+};
 
 const Option = ({
   name,
@@ -112,31 +90,14 @@ const Option = ({
       onClick={onSelect}
       aria-pressed={selected}
       data-name={name}
-      style={{
-        textAlign: "left",
-        padding: "10px 12px",
-        borderRadius: 12,
-        border: `1.5px solid ${selected ? S.primary : "transparent"}`,
-        background: selected ? S.primaryFixed : S.surfaceContainerHigh,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        fontFamily: "inherit",
-        minWidth: 0,
-      }}
+      className={cn(
+        "min-w-0 rounded-xl border-[1.5px] px-3 py-2.5 text-left font-inherit",
+        selected ? "border-primary bg-accent" : "border-transparent bg-input",
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+      )}
     >
-      <div style={{ fontSize: 11, color: S.onSurfaceMuted, marginBottom: 2 }}>{label}</div>
-      <div
-        style={{
-          fontSize: 14,
-          fontWeight: 500,
-          color: S.onSurface,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {value}
-      </div>
+      <div className="mb-0.5 text-[11px] text-muted-foreground">{label}</div>
+      <div className="truncate text-sm font-medium text-foreground">{value}</div>
     </button>
   );
-}
+};

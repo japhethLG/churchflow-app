@@ -1,3 +1,6 @@
+export { TransactionsListPage } from "./TransactionsListPage";
+export { TransactionDetailPage } from "./TransactionDetailPage";
+
 export {
   TransactionsFilters,
   resolveRange,

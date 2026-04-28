@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Amount, Button, Card, Icon, RowActionsMenu, SectionTitle } from "@/components/primitives";
 import { nstr, type components } from "@/lib/api";
 
@@ -40,10 +39,10 @@ export const CampaignItemsList = ({
         <div
           style={{
             padding: "32px 16px",
-            border: `1.5px dashed ${S.surfaceContainerHigh}`,
+            border: `1.5px dashed ${"var(--input)"}`,
             borderRadius: 12,
             textAlign: "center",
-            color: S.onSurfaceMuted,
+            color: "var(--muted-foreground)",
             fontSize: 13,
           }}
         >
@@ -70,20 +69,20 @@ export const CampaignItemsList = ({
                   gap: 16,
                   alignItems: "center",
                   padding: 16,
-                  background: S.surfaceContainerLow,
+                  background: "var(--muted)",
                   borderRadius: 12,
                 }}
               >
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>{item.title}</div>
                   {nstr(item.description) && (
-                    <div style={{ fontSize: 12, color: S.onSurfaceMuted, marginBottom: 8 }}>{nstr(item.description)}</div>
+                    <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginBottom: 8 }}>{nstr(item.description)}</div>
                   )}
                   <div
                     style={{
                       position: "relative",
                       height: 6,
-                      background: S.surfaceContainer,
+                      background: "var(--secondary)",
                       borderRadius: 9999,
                       overflow: "hidden",
                     }}
@@ -93,7 +92,7 @@ export const CampaignItemsList = ({
                         position: "absolute",
                         inset: 0,
                         width: `${pledgedPct}%`,
-                        background: S.surfaceContainerHigh,
+                        background: "var(--input)",
                       }}
                     />
                     <div
@@ -101,7 +100,7 @@ export const CampaignItemsList = ({
                         position: "absolute",
                         inset: 0,
                         width: `${raisedPct}%`,
-                        background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
+                        background: `linear-gradient(135deg, var(--ring), var(--primary))`,
                       }}
                     />
                   </div>
@@ -111,7 +110,7 @@ export const CampaignItemsList = ({
                       gap: 12,
                       marginTop: 6,
                       fontSize: 11,
-                      color: S.onSurfaceMuted,
+                      color: "var(--muted-foreground)",
                     }}
                   >
                     <span>
@@ -125,7 +124,7 @@ export const CampaignItemsList = ({
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 11, color: S.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <div style={{ fontSize: 11, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     Target
                   </div>
                   <Amount value={target.toString()} />

@@ -1,18 +1,9 @@
 import type { ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 
 export default ({ children }: { children: ReactNode }) => {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: `linear-gradient(135deg, ${S.primaryFixed} 0%, #FFFFFF 55%, ${S.tertiaryContainer} 120%)`,
-        display: "flex",
-        flexDirection: "column",
-        fontFamily: "Inter, system-ui, sans-serif",
-      }}
-    >
+    <div className="flex min-h-screen flex-col bg-[linear-gradient(135deg,var(--accent)_0%,#FFFFFF_55%,var(--tertiary-container)_120%)] font-sans antialiased">
       {children}
     </div>
   );
-}
+};

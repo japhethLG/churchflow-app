@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives";
 import { useUpdateCampaignItem } from "@/lib/api/campaigns";
 import { BaseModal } from "../BaseModal";
@@ -22,11 +21,11 @@ export type EditCampaignItemProps = {
   item: Item;
 };
 
-const toDateInput = (d: unknown): string  => {
+const toDateInput = (d: unknown): string => {
   const s = nstr(d);
   if (!s) return "";
   return new Date(s).toISOString().slice(0, 10);
-}
+};
 
 export const EditCampaignItemModal = ({
   tenantSlug,
@@ -60,7 +59,7 @@ export const EditCampaignItemModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update item");
     }
-  }
+  };
 
   return (
     <BaseModal
@@ -72,19 +71,19 @@ export const EditCampaignItemModal = ({
       primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="flex flex-col gap-3.5">
         <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Input
           label="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="grid grid-cols-2 gap-3">
           <Input label="Target amount" type="number" value={target} onChange={(e) => setTarget(e.target.value)} />
           <Input label="Deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
         </div>
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};

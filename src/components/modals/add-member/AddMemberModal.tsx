@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives";
 import { useCreateMember } from "@/lib/api/members";
 import { BaseModal } from "../BaseModal";
@@ -59,20 +58,19 @@ export const AddMemberModal = ({ tenantSlug, onClose }: AddMemberProps & ModalBa
       primaryAction={{ label: "Add member", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <p style={{ margin: 0, fontSize: 13, color: S.onSurfaceMuted }}>
-          Adds a temp member you can attribute giving to. They can claim the
-          profile later — invite them with a sign-in link via <strong>Invite member</strong> instead
-          if they should access ChurchFlow themselves.
+      <div className="flex flex-col gap-3.5">
+        <p className="m-0 text-[13px] text-muted-foreground">
+          Adds a temp member you can attribute giving to. They can claim the profile later — invite them with a
+          sign-in link via <strong>Invite member</strong> instead if they should access ChurchFlow themselves.
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="grid grid-cols-2 gap-3">
           <Input label="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           <Input label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
         </div>
         <Input label="Email (optional)" value={email} type="email" onChange={(e) => setEmail(e.target.value)} />
         <Input label="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
         <Input label="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} />
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );

@@ -1,67 +1,72 @@
 import type { ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
+import { Badge as ShadedBadge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export type BadgeColor =
-  | "neutral" | "indigo" | "green" | "blue" | "amber" | "purple"
-  | "teal" | "clay" | "red" | "gray";
-
-const PALETTES: Record<BadgeColor, { bg: string; fg: string }> = {
-  neutral: { bg: S.surfaceContainerHigh, fg: S.onSurfaceVariant },
-  indigo: { bg: "#E0E7FF", fg: "#3730A3" },
-  green: { bg: "#D1FAE5", fg: "#065F46" },
-  blue: { bg: "#DBEAFE", fg: "#1E40AF" },
-  amber: { bg: "#FEF3C7", fg: "#92400E" },
-  purple: { bg: "#EDE9FE", fg: "#5B21B6" },
-  teal: { bg: "#CCFBF1", fg: "#115E59" },
-  clay: { bg: S.tertiaryContainer, fg: S.tertiary },
-  red: { bg: S.errorContainer, fg: S.error },
-  gray: { bg: S.surfaceContainer, fg: S.onSurfaceMuted },
-};
+  | "neutral"
+  | "indigo"
+  | "green"
+  | "blue"
+  | "amber"
+  | "purple"
+  | "teal"
+  | "clay"
+  | "red"
+  | "gray";
 
 export const Badge = ({
   children,
   color = "neutral",
   dot,
+  className,
 }: {
   children: ReactNode;
   color?: BadgeColor;
   dot?: boolean;
+  className?: string;
 }) => {
-  const p = PALETTES[color];
+  const colorMap: Record<BadgeColor, any> = {
+    neutral: "outline",
+    indigo: "info",
+    green: "success",
+    blue: "blue",
+    amber: "warning",
+    purple: "purple",
+    teal: "teal",
+    clay: "tertiary",
+    red: "red",
+    gray: "gray",
+  };
+
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "3px 10px",
-        borderRadius: 9999,
-        background: p.bg,
-        color: p.fg,
-        fontSize: 12,
-        fontWeight: 500,
-        letterSpacing: "-0.005em",
-        whiteSpace: "nowrap",
-      }}
+    <ShadedBadge
+      variant={colorMap[color]}
+      className={cn(
+        "rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-tight",
+        className,
+      )}
     >
       {dot && (
         <span
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: p.fg,
-          }}
+          className={cn(
+            "mr-1.5 size-2 rounded-full",
+            color === "neutral" ? "bg-muted-foreground" : "bg-current",
+          )}
         />
       )}
       {children}
-    </span>
+    </ShadedBadge>
   );
-}
+};
 
 export type TransactionType =
-  | "Tithe" | "Offering" | "Mission" | "First Fruit"
-  | "Commitment" | "Donation" | "Other";
+  | "Tithe"
+  | "Offering"
+  | "Mission"
+  | "First Fruit"
+  | "Commitment"
+  | "Donation"
+  | "Other";
 
 export const TypeBadge = ({ type }: { type: TransactionType }) => {
   const map: Record<TransactionType, BadgeColor> = {
@@ -78,11 +83,16 @@ export const TypeBadge = ({ type }: { type: TransactionType }) => {
       {type}
     </Badge>
   );
-}
+};
 
 export type Status =
-  | "Active" | "Upcoming" | "Pending" | "Completed"
-  | "Cancelled" | "Inactive" | "Ongoing";
+  | "Active"
+  | "Upcoming"
+  | "Pending"
+  | "Completed"
+  | "Cancelled"
+  | "Inactive"
+  | "Ongoing";
 
 export const StatusBadge = ({ status }: { status: Status }) => {
   const map: Record<Status, { c: BadgeColor; label: string }> = {
@@ -100,4 +110,4 @@ export const StatusBadge = ({ status }: { status: Status }) => {
       {s.label}
     </Badge>
   );
-}
+};

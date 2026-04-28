@@ -1,8 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import type { components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
@@ -18,27 +19,34 @@ const TYPE_LABEL: Record<ByType["type"], string> = {
 };
 
 const TYPE_COLOR: Record<ByType["type"], string> = {
-  TITHE: S.txTithe,
-  OFFERING: S.txOffering,
-  MISSION_GIVING: S.txMission,
-  FIRST_FRUIT: S.txFirstFruit,
-  COMMITMENT: S.txCommitment,
-  DONATION: S.txDonation,
-  OTHER: S.txOther,
+  TITHE: "var(--tx-tithe)",
+  OFFERING: "var(--tx-offering)",
+  MISSION_GIVING: "var(--tx-mission)",
+  FIRST_FRUIT: "var(--tx-first-fruit)",
+  COMMITMENT: "var(--tx-commitment)",
+  DONATION: "var(--tx-donation)",
+  OTHER: "var(--tx-other)",
 };
 
-const fmtCompact = (value: number): string  => {
+const fmtCompact = (value: number): string => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 10_000) return `${(value / 1_000).toFixed(0)}k`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
   return value.toFixed(0);
-}
+};
 
 const PERIOD_OPTIONS = [
   { months: 1, label: "MTD" },
   { months: 3, label: "Last 3mo" },
   { months: 12, label: "Last 12mo" },
 ];
+
+const tooltipChrome = {
+  backgroundColor: "var(--input)",
+  border: "none",
+  borderRadius: 8,
+  fontSize: 12,
+} as const;
 
 export const TransactionsSummaryCard = ({
   summary,
@@ -53,21 +61,12 @@ export const TransactionsSummaryCard = ({
 }) => {
   if (loading || !summary) {
     return (
-      <div
-        style={{
-          background: S.surfaceContainerLowest,
-          borderRadius: 16,
-          padding: 24,
-          marginBottom: 16,
-          minHeight: 168,
-          border: `1px solid ${S.surfaceContainer}`,
-        }}
-      >
-        <div style={{ display: "flex", gap: 32 }}>
+      <div className="mb-4 min-h-[168px] rounded-2xl border border-secondary bg-card p-6">
+        <div className="flex gap-8">
           {[0, 1, 2].map((i) => (
             <div key={i}>
-              <div style={{ height: 12, width: 60, background: S.surfaceContainer, borderRadius: 4, marginBottom: 8 }} />
-              <div style={{ height: 28, width: 120, background: S.surfaceContainer, borderRadius: 6 }} />
+              <div className="mb-2 h-3 w-[60px] animate-pulse rounded bg-secondary" />
+              <div className="h-7 w-[120px] animate-pulse rounded-md bg-secondary" />
             </div>
           ))}
         </div>
@@ -78,11 +77,7 @@ export const TransactionsSummaryCard = ({
   const total = summary.total;
   const count = summary.count;
   const average = count > 0 ? total / count : 0;
-  const totalForChart = total > 0 ? total : 1; // avoid empty pie
-  const chartData = (summary.byType.length > 0
-    ? summary.byType
-    : ([{ type: "OTHER", total: 1, count: 0 }] as ByType[])
-  ).map((b) => ({
+  const chartData = (summary.byType.length > 0 ? summary.byType : ([{ type: "OTHER", total: 1, count: 0 }] as ByType[])).map((b) => ({
     name: TYPE_LABEL[b.type],
     value: b.total,
     color: TYPE_COLOR[b.type],
@@ -91,78 +86,35 @@ export const TransactionsSummaryCard = ({
   }));
 
   return (
-    <div
-      style={{
-        background: S.surfaceContainerLowest,
-        borderRadius: 16,
-        padding: 24,
-        marginBottom: 16,
-        border: `1px solid ${S.surfaceContainer}`,
-        display: "grid",
-        gridTemplateColumns: "1fr auto",
-        gap: 32,
-        alignItems: "center",
-      }}
-    >
-      {/* Left: KPIs + period switch */}
+    <div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-8 rounded-2xl border border-secondary bg-card p-6">
       <div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 18,
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: S.onSurfaceMuted,
-          }}
-        >
+        <div className="mb-[18px] flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           <span>Window</span>
-          <span style={{ display: "flex", gap: 4, background: S.surfaceContainerLow, padding: 3, borderRadius: 9999 }}>
+          <div className="flex gap-1 rounded-full bg-muted p-0.5">
             {PERIOD_OPTIONS.map((opt) => (
               <button
                 key={opt.months}
                 type="button"
                 onClick={() => onMonthsChange(opt.months)}
-                style={{
-                  border: "none",
-                  background: months === opt.months ? S.surfaceContainerLowest : "transparent",
-                  color: months === opt.months ? S.onSurface : S.onSurfaceMuted,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                  padding: "5px 12px",
-                  borderRadius: 9999,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  textTransform: "uppercase",
-                  boxShadow: months === opt.months ? "0 1px 2px rgba(0,0,0,0.04)" : "none",
-                }}
+                className={cn(
+                  "cursor-pointer rounded-full border-none px-3 py-1 font-inherit text-[11px] font-semibold uppercase tracking-wide",
+                  months === opt.months
+                    ? "bg-card text-foreground shadow-sm"
+                    : "bg-transparent text-muted-foreground",
+                )}
               >
                 {opt.label}
               </button>
             ))}
-          </span>
+          </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(140px, 1fr))", gap: 32 }}>
+        <div className="grid grid-cols-[repeat(3,minmax(140px,1fr))] gap-8">
           <Kpi
             label="Total received"
             value={
-              <span
-                style={{
-                  fontSize: 28,
-                  fontWeight: 600,
-                  letterSpacing: "-0.025em",
-                  fontVariantNumeric: "tabular-nums",
-                  background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                <span style={{ opacity: 0.6, marginRight: 2 }}>{summary.currency} </span>
+              <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[28px] font-semibold tabular-nums tracking-tight text-transparent">
+                <span className="opacity-60">{summary.currency} </span>
                 {Number(total).toFixed(2)}
               </span>
             }
@@ -170,17 +122,15 @@ export const TransactionsSummaryCard = ({
           <Kpi
             label="Gifts"
             value={
-              <span style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: S.onSurface }}>
-                {count}
-              </span>
+              <span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">{count}</span>
             }
             caption={count === 1 ? "transaction" : "transactions"}
           />
           <Kpi
             label="Average"
             value={
-              <span style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", color: S.onSurface }}>
-                <span style={{ opacity: 0.6, marginRight: 2 }}>{summary.currency} </span>
+              <span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
+                <span className="opacity-60">{summary.currency} </span>
                 {Number(average).toFixed(2)}
               </span>
             }
@@ -189,32 +139,21 @@ export const TransactionsSummaryCard = ({
         </div>
       </div>
 
-      {/* Right: donut + breakdown */}
-      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 160 }}>
+      <div className="flex items-center gap-6">
+        <div className="flex min-w-[160px] flex-col gap-2">
           {chartData.slice(0, 4).map((d) => (
-            <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color }} />
-              <span style={{ color: S.onSurfaceVariant, flex: 1 }}>{d.name}</span>
-              <span
-                style={{
-                  fontVariantNumeric: "tabular-nums",
-                  color: S.onSurfaceMuted,
-                  fontSize: 11,
-                }}
-              >
-                {d.pct.toFixed(0)}%
-              </span>
+            <div key={d.name} className="flex items-center gap-2 text-xs">
+              <span className="size-2 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
+              <span className="min-w-0 flex-1 text-secondary-foreground">{d.name}</span>
+              <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{d.pct.toFixed(0)}%</span>
             </div>
           ))}
           {chartData.length > 4 && (
-            <div style={{ fontSize: 11, color: S.onSurfaceMuted, marginTop: 2 }}>
-              + {chartData.length - 4} more
-            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">+ {chartData.length - 4} more</div>
           )}
         </div>
 
-        <div style={{ position: "relative", width: 140, height: 140 }}>
+        <div className="relative h-[140px] w-[140px] shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -237,49 +176,14 @@ export const TransactionsSummaryCard = ({
                   const num = typeof v === "number" ? v : 0;
                   return [`${Number(num).toFixed(2)} (${(payload?.pct ?? 0).toFixed(0)}%)`, payload?.name ?? ""];
                 }}
-                contentStyle={{
-                  background: S.surfaceContainerHigh,
-                  border: "none",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
+                contentStyle={tooltipChrome}
               />
             </PieChart>
           </ResponsiveContainer>
-          {/* Center label — recharts can't render a centered label without
-              custom wiring, so we overlay manually. */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "grid",
-              placeItems: "center",
-              pointerEvents: "none",
-              textAlign: "center",
-            }}
-          >
+          <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
             <div>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: S.onSurfaceMuted,
-                }}
-              >
-                Total
-              </div>
-              <div
-                style={{
-                  fontSize: 16,
-                  fontWeight: 600,
-                  letterSpacing: "-0.02em",
-                  fontVariantNumeric: "tabular-nums",
-                  color: S.onSurface,
-                  marginTop: 2,
-                }}
-              >
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</div>
+              <div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
                 {summary.currency} {fmtCompact(total)}
               </div>
             </div>
@@ -288,25 +192,14 @@ export const TransactionsSummaryCard = ({
       </div>
     </div>
   );
-}
+};
 
-const Kpi = ({ label, value, caption }: { label: string; value: React.ReactNode; caption?: string }) => {
+const Kpi = ({ label, value, caption }: { label: string; value: ReactNode; caption?: string }) => {
   return (
     <div>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color: S.onSurfaceMuted,
-          marginBottom: 6,
-        }}
-      >
-        {label}
-      </div>
+      <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
       <div>{value}</div>
-      {caption && <div style={{ fontSize: 11, color: S.onSurfaceMuted, marginTop: 4 }}>{caption}</div>}
+      {caption && <div className="mt-1 text-[11px] text-muted-foreground">{caption}</div>}
     </div>
   );
-}
+};

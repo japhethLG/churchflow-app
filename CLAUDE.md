@@ -24,7 +24,7 @@
 | Type generation | **openapi-typescript** | runs against backend's `/api-docs-json` |
 | Client state | **Zustand** | minimal — modals only |
 | Auth | `firebase` (client) + `firebase-admin` (server) | |
-| Styling | Tailwind 4 + inline styles via `SANCTUARY` tokens | |
+| Styling | Tailwind 4 + CSS variables (`globals.css`) | |
 
 **Commands:**
 
@@ -91,7 +91,7 @@ src/
     ├── firebase/
     │   ├── client.ts             # client SDK factory
     │   └── admin.ts              # Admin SDK factory (server-only)
-    └── design/tokens.ts          # SANCTUARY design tokens
+    └── design/                   # logo-gradient, etc.
 ```
 
 ---

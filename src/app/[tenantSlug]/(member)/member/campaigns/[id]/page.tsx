@@ -1,10 +1,3 @@
-import { ScaffoldPage } from "@/components/pages/ScaffoldPage";
+import { MemberCampaignDetailPage } from "@/components/pages/member-campaigns";
 
-export default async ({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) => {
-  const { id } = await params;
-  return <ScaffoldPage title="Campaign" subtitle={`id: ${id}`} />;
-}
+export default MemberCampaignDetailPage;

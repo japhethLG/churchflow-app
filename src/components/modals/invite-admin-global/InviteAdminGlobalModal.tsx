@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
-import { Input } from "@/components/primitives/Input";
+import { Input, Select } from "@/components/primitives";
 import { useTenants } from "@/lib/api/tenants";
 import { useIssueInvitation } from "@/lib/api/invitations";
 import { BaseModal } from "../BaseModal";
@@ -35,7 +34,7 @@ export const InviteAdminGlobalModal = ({ onClose }: InviteAdminGlobalProps & Mod
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send invite");
     }
-  }
+  };
 
   if (success) {
     return (
@@ -46,7 +45,7 @@ export const InviteAdminGlobalModal = ({ onClose }: InviteAdminGlobalProps & Mod
         onClose={onClose}
         primaryAction={{ label: "Done", onClick: onClose }}
       >
-        <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+        <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
           Invite sent to <strong>{email}</strong>.
         </p>
       </BaseModal>
@@ -68,36 +67,15 @@ export const InviteAdminGlobalModal = ({ onClose }: InviteAdminGlobalProps & Mod
       }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
-            Church
-          </div>
-          <select
-            value={tenantId}
-            onChange={(e) => setTenantId(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: S.radiusMd,
-              border: `1.5px solid ${S.outlineVariant}`,
-              fontSize: 14,
-              fontFamily: "inherit",
-              background: S.surfaceContainerLow,
-              color: tenantId ? S.onSurface : S.onSurfaceMuted,
-              boxSizing: "border-box",
-            }}
-          >
-            <option value="">Select a church…</option>
-            {tenants
-              .filter((t) => !t.deletedAt)
-              .map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-          </select>
-        </div>
+      <div className="flex flex-col gap-4">
+        <Select
+          label="Church"
+          value={tenantId}
+          onChange={setTenantId}
+          placeholder="Select a church…"
+          showEmptyOption
+          options={tenants.filter((t) => !t.deletedAt).map((t) => ({ value: t.id, label: t.name }))}
+        />
         <Input
           label="Email address"
           type="email"
@@ -105,8 +83,8 @@ export const InviteAdminGlobalModal = ({ onClose }: InviteAdminGlobalProps & Mod
           onChange={(e) => setEmail(e.target.value)}
           placeholder="admin@example.com"
         />
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};

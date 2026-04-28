@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import {
   Amount,
   Avatar,
@@ -79,10 +78,10 @@ export const CampaignPledgesList = ({
         const itemId = typeof p.campaignItemId === "string" ? p.campaignItemId : null;
         const itemTitle = itemId ? itemById[itemId]?.title : null;
         return (
-          <span style={{ fontSize: 13, color: S.onSurface }}>
+          <span style={{ fontSize: 13, color: "var(--foreground)" }}>
             {campaignTitle}
             {itemTitle && (
-              <span style={{ color: S.onSurfaceMuted, marginLeft: 4 }}>
+              <span style={{ color: "var(--muted-foreground)", marginLeft: 4 }}>
                 [{itemTitle}]
               </span>
             )}
@@ -108,7 +107,7 @@ export const CampaignPledgesList = ({
       label: "Pledged on",
       width: "130px",
       render: (p) => (
-        <span style={{ fontSize: 13, color: S.onSurfaceMuted }}>
+        <span style={{ fontSize: 13, color: "var(--muted-foreground)" }}>
           {new Date(p.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
         </span>
       ),

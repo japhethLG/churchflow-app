@@ -1,8 +1,7 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { DataTable, type DataTableColumn } from "@/components/primitives/DataTable";
-import { Badge, StatusBadge, type Status } from "@/components/primitives/Badge";
+import { StatusBadge, type Status } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
@@ -18,7 +17,7 @@ export const MemberPledgesTable = ({
   rows,
   loading,
   campaignMap,
-  campaignItemMap = {},
+  campaignItemMap,
   currencySymbol,
 }: {
   rows: Pledge[];
@@ -27,24 +26,23 @@ export const MemberPledgesTable = ({
   campaignItemMap?: Record<string, string>;
   currencySymbol: string;
 }) => {
+  const itemMap = campaignItemMap ?? {};
   const columns: DataTableColumn<Pledge>[] = [
     {
       key: "campaign",
       label: "Campaign",
       render: (row) => {
         const campaignTitle = campaignMap[row.campaignId]?.title ?? "Campaign";
-        const itemTitle = row.campaignItemId ? campaignItemMap[row.campaignItemId as any] : null;
+        const itemKey =
+          typeof row.campaignItemId === "string" ? row.campaignItemId : null;
+        const itemTitle = itemKey ? itemMap[itemKey] : null;
         return (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontWeight: 500, color: S.onSurface }}>
+          <div className="flex flex-col">
+            <span className="font-medium text-foreground">
               {campaignTitle}
-              {itemTitle && (
-                <span style={{ color: S.onSurfaceMuted, marginLeft: 4 }}>
-                  [{itemTitle}]
-                </span>
-              )}
+              {itemTitle && <span className="ml-1 text-muted-foreground">[{itemTitle}]</span>}
             </span>
-            <span style={{ fontSize: 12, color: S.onSurfaceMuted }}>
+            <span className="text-xs text-muted-foreground">
               Pledged {new Date(row.createdAt).toLocaleDateString()}
             </span>
           </div>
@@ -57,8 +55,9 @@ export const MemberPledgesTable = ({
       width: "140px",
       align: "right",
       render: (row) => (
-        <span style={{ fontWeight: 600, color: S.onSurface, fontVariantNumeric: "tabular-nums" }}>
-          {currencySymbol}{Number(row.pledgedAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        <span className="font-semibold tabular-nums text-foreground">
+          {currencySymbol}
+          {Number(row.pledgedAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </span>
       ),
     },
@@ -80,4 +79,4 @@ export const MemberPledgesTable = ({
       emptySubtitle="You haven't made any pledges to church campaigns yet."
     />
   );
-}
+};

@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { StatCard, Amount } from "@/components/primitives";
 import { TypeBadge } from "@/components/primitives/Badge";
 
@@ -35,7 +34,7 @@ export const MemberKpiStrip = ({
 }) => {
   if (loading) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+      <div className="mb-6 grid grid-cols-3 gap-4">
         {[0, 1, 2].map((i) => (
           <StatCard key={i} label="Loading…" value="" caption="" />
         ))}
@@ -67,7 +66,7 @@ export const MemberKpiStrip = ({
         const typeLabel = TYPE_LABEL[recent.type] ?? recent.type;
         const daysText = recentDays === 0 ? "Today" : recentDays === 1 ? "Yesterday" : `${recentDays}d ago`;
         return (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <span className="inline-flex items-center gap-2">
             <TypeBadge type={typeLabel as "Tithe"} /> {daysText}
           </span>
         );
@@ -75,7 +74,7 @@ export const MemberKpiStrip = ({
     : "No gifts yet";
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+    <div className="mb-6 grid grid-cols-3 gap-4">
       <StatCard
         label="Your giving this month"
         value={<Amount value={fmtCurrency(monthTotal)} size="display" gradient currency={currency} />}
@@ -92,7 +91,7 @@ export const MemberKpiStrip = ({
           recent ? (
             <Amount value={fmtCurrency(recent.amount)} size="display" currency={currency} />
           ) : (
-            <span style={{ fontSize: 48, fontWeight: 600, color: S.onSurfaceMuted }}>—</span>
+            <span className="text-5xl font-semibold text-muted-foreground">—</span>
           )
         }
         caption={recentCaption}

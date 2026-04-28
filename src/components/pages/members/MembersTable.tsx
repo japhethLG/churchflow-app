@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import {
   Avatar,
   Badge,
@@ -19,33 +18,30 @@ export type MembersTableHandlers = {
   onView: (m: MemberRow) => void;
   onEdit: (m: MemberRow) => void;
   onDelete: (m: MemberRow) => void;
-  // Send a sign-in invite that links to this temp member on accept.
-  // Only offered for unlinked rows.
   onClaimInvite: (m: MemberRow) => void;
-  // Open the merge modal with this member as the keeper.
   onMerge: (m: MemberRow) => void;
 };
 
-const fullName = (m: MemberRow): string  => {
+const fullName = (m: MemberRow): string => {
   return `${m.firstName} ${m.lastName}`.trim();
-}
+};
 
 const MemberCell = ({ m }: { m: MemberRow }) => {
   const isLinked = Boolean(m.userId);
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+    <span className="inline-flex min-w-0 items-center gap-2.5">
       <Avatar name={fullName(m)} size={32} />
-      <span style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {fullName(m)}
-      </span>
+      <span className="truncate font-medium">{fullName(m)}</span>
       {!isLinked && <Badge color="clay">temp</Badge>}
     </span>
   );
-}
+};
 
-const plainStr = (v: unknown): string | null  => {
+const plainStr = (v: unknown): string | null => {
   return typeof v === "string" && v.length > 0 ? v : null;
-}
+};
+
+const primary = "var(--primary)";
 
 export const MembersTable = ({
   rows,
@@ -68,7 +64,7 @@ export const MembersTable = ({
       width: "240px",
       render: (m) => {
         const v = plainStr(m.email);
-        return <span style={{ color: S.onSurfaceMuted }}>{v ?? "—"}</span>;
+        return <span className="text-muted-foreground">{v ?? "—"}</span>;
       },
     },
     {
@@ -77,7 +73,7 @@ export const MembersTable = ({
       width: "150px",
       render: (m) => {
         const v = plainStr(m.phone);
-        return <span style={{ color: S.onSurfaceMuted }}>{v ?? "—"}</span>;
+        return <span className="text-muted-foreground">{v ?? "—"}</span>;
       },
     },
     {
@@ -99,17 +95,9 @@ export const MembersTable = ({
       align: "center",
       render: (m) =>
         m.userId ? (
-          <Icon name="check" size={18} color={S.primary} />
+          <Icon name="check" size={18} color={primary} />
         ) : (
-          <span
-            style={{
-              width: 18,
-              height: 18,
-              borderRadius: "50%",
-              display: "inline-block",
-              background: S.surfaceContainerHigh,
-            }}
-          />
+          <span className="inline-block size-[18px] rounded-full bg-input" />
         ),
     },
     {
@@ -162,18 +150,9 @@ export const MembersTable = ({
       emptyAction={
         onAdd && (
           <button
+            type="button"
             onClick={onAdd}
-            style={{
-              padding: "10px 20px",
-              borderRadius: 9999,
-              background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            className="cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,var(--ring),var(--primary))] px-5 py-2.5 font-inherit text-sm font-medium text-primary-foreground"
           >
             + Add member
           </button>
@@ -181,4 +160,4 @@ export const MembersTable = ({
       }
     />
   );
-}
+};

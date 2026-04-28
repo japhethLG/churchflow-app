@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import type { ReactNode } from "react";
 import { nstr, type components } from "@/lib/api";
 
@@ -35,11 +34,11 @@ export const CampaignHero = ({
     <div
       style={{
         background: isActive
-          ? `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`
-          : S.surfaceContainerLow,
+          ? `linear-gradient(135deg, var(--ring), var(--primary))`
+          : "var(--muted)",
         borderRadius: 20,
         padding: "28px 32px",
-        color: isActive ? "#fff" : S.onSurface,
+        color: isActive ? "#fff" : "var(--foreground)",
         marginBottom: 24,
         display: "flex",
         justifyContent: "space-between",
@@ -49,10 +48,10 @@ export const CampaignHero = ({
     >
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <Pill bg={isActive ? "rgba(255,255,255,0.2)" : S.surfaceContainer}>
+          <Pill bg={isActive ? "rgba(255,255,255,0.2)" : "var(--secondary)"}>
             {STATUS_LABEL[campaign.status]}
           </Pill>
-          <Pill bg={isActive ? "rgba(255,255,255,0.2)" : S.surfaceContainer}>
+          <Pill bg={isActive ? "rgba(255,255,255,0.2)" : "var(--secondary)"}>
             {campaign.currency}
           </Pill>
         </div>
@@ -71,7 +70,7 @@ export const CampaignHero = ({
           style={{
             fontSize: 14,
             opacity: isActive ? 0.85 : 1,
-            color: isActive ? "#fff" : S.onSurfaceMuted,
+            color: isActive ? "#fff" : "var(--muted-foreground)",
             marginTop: 8,
           }}
         >
@@ -85,7 +84,7 @@ export const CampaignHero = ({
               lineHeight: 1.6,
               maxWidth: 640,
               opacity: isActive ? 0.9 : 1,
-              color: isActive ? "#fff" : S.onSurfaceVariant,
+              color: isActive ? "#fff" : "var(--secondary-foreground)",
             }}
           >
             {nstr(campaign.description)}

@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import {
   Amount,
   Badge,
@@ -29,7 +28,7 @@ const STATUS_LABEL: Record<CampaignRow["status"], Status> = {
   CANCELLED: "Cancelled",
 };
 
-const fmtDeadline = (d: string | null): string  => {
+const fmtDeadline = (d: string | null): string => {
   if (!d) return "Open-ended";
   const date = new Date(d);
   const now = Date.now();
@@ -39,7 +38,7 @@ const fmtDeadline = (d: string | null): string  => {
   if (days === 0) return `${fmt} · today`;
   if (days <= 30) return `${fmt} · ${days}d left`;
   return fmt;
-}
+};
 
 export const CampaignsTable = ({
   rows,
@@ -59,22 +58,10 @@ export const CampaignsTable = ({
       key: "title",
       label: "Campaign",
       render: (c) => (
-        <span style={{ display: "inline-flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-          <span style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {c.title}
-          </span>
+        <span className="inline-flex min-w-0 flex-col gap-1">
+          <span className="truncate font-medium">{c.title}</span>
           {nstr(c.description) && (
-            <span
-              style={{
-                fontSize: 12,
-                color: S.onSurfaceMuted,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {nstr(c.description)}
-            </span>
+            <span className="truncate text-xs text-muted-foreground">{nstr(c.description)}</span>
           )}
         </span>
       ),
@@ -90,7 +77,7 @@ export const CampaignsTable = ({
       label: "Deadline",
       width: "200px",
       render: (c) => (
-        <span style={{ fontSize: 13, color: S.onSurfaceMuted }}>{fmtDeadline(nstr(c.deadline))}</span>
+        <span className="text-[13px] text-muted-foreground">{fmtDeadline(nstr(c.deadline))}</span>
       ),
     },
     {
@@ -104,7 +91,7 @@ export const CampaignsTable = ({
       label: "Created",
       width: "130px",
       render: (c) => (
-        <span style={{ fontSize: 13, color: S.onSurfaceMuted }}>
+        <span className="text-[13px] text-muted-foreground">
           {new Date(c.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
         </span>
       ),
@@ -154,18 +141,9 @@ export const CampaignsTable = ({
       emptyAction={
         onCreate && (
           <button
+            type="button"
             onClick={onCreate}
-            style={{
-              padding: "10px 20px",
-              borderRadius: 9999,
-              background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            className="cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,var(--ring),var(--primary))] px-5 py-2.5 font-inherit text-sm font-medium text-primary-foreground"
           >
             + New campaign
           </button>
@@ -173,4 +151,4 @@ export const CampaignsTable = ({
       }
     />
   );
-}
+};

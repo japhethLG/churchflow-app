@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives/Input";
 import { useRenameTenantSlug } from "@/lib/api/tenants";
 import { BaseModal } from "../BaseModal";
@@ -36,7 +35,7 @@ export const RenameTenantSlugModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to rename");
     }
-  }
+  };
 
   return (
     <BaseModal
@@ -54,26 +53,18 @@ export const RenameTenantSlugModal = ({
       }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div
-          style={{
-            padding: "12px 16px",
-            borderRadius: S.radiusMd,
-            background: S.warningContainer,
-            fontSize: 13,
-            color: S.warning,
-            lineHeight: 1.5,
-          }}
-        >
-          Renaming the slug changes all public URLs for this church. Any existing links using the old slug will stop working.
+      <div className="flex flex-col gap-4">
+        <div className="rounded-md bg-warning/10 px-4 py-3 text-[13px] leading-normal text-warning">
+          Renaming the slug changes all public URLs for this church. Any existing links using the old slug will stop
+          working.
         </div>
         <Input
           label="Slug"
           value={slug}
           onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
         />
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};

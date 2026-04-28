@@ -11,3 +11,7 @@ export {
   type CampaignFormValue,
   type CampaignFormItemDraft,
 } from "./CampaignForm";
+export { CampaignDetailPage } from "./CampaignDetailPage";
+export { CampaignEditPage } from "./CampaignEditPage";
+export { CampaignsListPage } from "./CampaignsListPage";
+export { CampaignNewPage } from "./CampaignNewPage";

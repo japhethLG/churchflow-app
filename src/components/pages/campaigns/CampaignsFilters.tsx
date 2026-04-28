@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input, Chip } from "@/components/primitives";
 
 export type CampaignStatusFilter = "all" | "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
@@ -33,19 +32,8 @@ export const CampaignsFilters = ({
   onChange: (v: CampaignsFiltersValue) => void;
 }) => {
   return (
-    <div
-      style={{
-        background: S.surfaceContainerLow,
-        borderRadius: 16,
-        padding: 12,
-        display: "flex",
-        gap: 10,
-        alignItems: "center",
-        marginBottom: 16,
-        flexWrap: "wrap",
-      }}
-    >
-      <div style={{ flex: 1, maxWidth: 320, minWidth: 200 }}>
+    <div className="mb-4 flex flex-wrap items-center gap-2.5 rounded-2xl bg-muted p-3">
+      <div className="min-w-[200px] max-w-[320px] flex-1">
         <Input
           icon="search"
           placeholder="Search campaigns…"

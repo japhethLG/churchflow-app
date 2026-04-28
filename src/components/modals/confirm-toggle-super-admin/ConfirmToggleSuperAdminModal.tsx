@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useToggleSuperAdmin } from "@/lib/api/admin";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
@@ -55,15 +54,15 @@ export const ConfirmToggleSuperAdminModal = ({
       }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+      <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
         {promoting
           ? `${userName} will gain full platform access including all churches and admin controls.`
           : `${userName} will lose platform-wide admin access. Their existing church memberships are unchanged.`}
       </p>
-      <p style={{ margin: "12px 0 0", fontSize: 13, color: S.onSurfaceMuted, lineHeight: 1.5 }}>
+      <p className="mt-3 text-sm leading-normal text-muted-foreground">
         The user must sign out and back in for the change to take effect.
       </p>
-      {error && <p style={{ margin: "12px 0 0", fontSize: 13, color: S.error }}>{error}</p>}
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
     </BaseModal>
   );
 }

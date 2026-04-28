@@ -1,92 +1,45 @@
 import type { ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
+import { cn } from "@/lib/utils";
 
 export const PageHeader = ({
   overline,
   title,
   subtitle,
   action,
+  className,
 }: {
   overline?: string;
   title: ReactNode;
   subtitle?: ReactNode;
   action?: ReactNode;
+  className?: string;
 }) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "flex-end",
-        justifyContent: "space-between",
-        marginBottom: 32,
-        gap: 24,
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 0 }}>
+    <div className={cn("flex items-end justify-between mb-8 gap-6", className)}>
+      <div className="flex-1 min-w-0">
         {overline && (
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: S.onSurfaceMuted,
-              marginBottom: 10,
-            }}
-          >
+          <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground mb-2.5">
             {overline}
           </div>
         )}
-        <h1
-          style={{
-            fontSize: 36,
-            fontWeight: 600,
-            letterSpacing: "-0.025em",
-            color: S.onSurface,
-            margin: 0,
-            lineHeight: 1.1,
-          }}
-        >
+        <h1 className="text-4xl font-bold tracking-tight text-foreground leading-[1.1] m-0">
           {title}
         </h1>
         {subtitle && (
-          <div
-            style={{
-              fontSize: 15,
-              color: S.onSurfaceVariant,
-              marginTop: 10,
-              maxWidth: 640,
-              lineHeight: 1.5,
-            }}
-          >
+          <div className="text-[15px] font-medium text-muted-foreground mt-2.5 max-w-[640px] leading-relaxed">
             {subtitle}
           </div>
         )}
       </div>
-      {action && <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>{action}</div>}
+      {action && <div className="flex items-center gap-2.5 shrink-0">{action}</div>}
     </div>
   );
 }
 
-export const SectionTitle = ({ title, action }: { title: ReactNode; action?: ReactNode }) => {
+export const SectionTitle = ({ title, action, className }: { title: ReactNode; action?: ReactNode; className?: string }) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 16,
-      }}
-    >
-      <h3
-        style={{
-          fontSize: 18,
-          fontWeight: 600,
-          letterSpacing: "-0.02em",
-          color: S.onSurface,
-          margin: 0,
-        }}
-      >
+    <div className={cn("flex items-center justify-between mb-4", className)}>
+      <h3 className="text-[18px] font-bold tracking-tight text-foreground m-0">
         {title}
       </h3>
       {action}

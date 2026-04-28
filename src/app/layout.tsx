@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Geist } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { QueryProvider } from "@/lib/api/providers";
 import { ModalHost } from "@/lib/modals/host";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -16,20 +19,24 @@ export const metadata: Metadata = {
   description: "Record tithes, offerings, and giving for your church.",
 };
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 export default ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body>
-        <AuthProvider>
-          <QueryProvider>
-            {children}
-            <ModalHost />
-          </QueryProvider>
-        </AuthProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <QueryProvider>
+              {children}
+              <ModalHost />
+            </QueryProvider>
+          </AuthProvider>
+        </TooltipProvider>
       </body>
     </html>
   );

@@ -6,9 +6,6 @@
     {
       "path": "../../../../../../church-app-backend",
     },
-    {
-      "path": "../../../../../../../../../Desktop/dexio/griffin",
-    },
   ],
   "settings": {
     "liveServer.settings.multiRootWorkspaceName": "church-app",

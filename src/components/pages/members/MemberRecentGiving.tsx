@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Amount, Card, DataTable, SectionTitle, TypeBadge, type DataTableColumn } from "@/components/primitives";
 import type { TransactionType } from "@/components/primitives/Badge";
 import { useTransactions } from "@/lib/api/transactions";
@@ -19,9 +18,9 @@ const TYPE_LABEL: Record<Tx["type"], TransactionType> = {
   OTHER: "Other",
 };
 
-const formatDate = (d: string): string  => {
+const formatDate = (d: string): string => {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
+};
 
 export const MemberRecentGiving = ({ tenantSlug, memberId }: { tenantSlug: string; memberId: string }) => {
   const router = useRouter();
@@ -33,7 +32,7 @@ export const MemberRecentGiving = ({ tenantSlug, memberId }: { tenantSlug: strin
       key: "date",
       label: "Date",
       width: "140px",
-      render: (t) => <span style={{ color: S.onSurfaceMuted }}>{formatDate(t.date)}</span>,
+      render: (t) => <span className="text-muted-foreground">{formatDate(t.date)}</span>,
     },
     {
       key: "type",
@@ -64,4 +63,4 @@ export const MemberRecentGiving = ({ tenantSlug, memberId }: { tenantSlug: strin
       />
     </Card>
   );
-}
+};

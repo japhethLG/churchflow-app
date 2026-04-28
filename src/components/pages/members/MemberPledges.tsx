@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Amount, Card, DataTable, SectionTitle, StatusBadge, type DataTableColumn } from "@/components/primitives";
 import { usePledges } from "@/lib/api/pledges";
 import type { components } from "@/lib/api";
@@ -21,7 +20,7 @@ export const MemberPledges = ({ tenantSlug, memberId }: { tenantSlug: string; me
     {
       key: "campaign",
       label: "Campaign",
-      render: (p) => <span style={{ color: S.onSurface }}>{p.campaignId.slice(0, 8)}…</span>,
+      render: (p) => <span className="text-foreground">{p.campaignId.slice(0, 8)}…</span>,
     },
     {
       key: "amount",
@@ -52,4 +51,4 @@ export const MemberPledges = ({ tenantSlug, memberId }: { tenantSlug: string; me
       />
     </Card>
   );
-}
+};

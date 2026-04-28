@@ -1,39 +1,148 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ── shadcn core tokens ── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Sidebar ── */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ── Radii ── */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  /* ── Charts ── */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ── Sanctuary extended tokens ── */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  /* Transaction type tokens */
+  --color-tx-tithe: var(--tx-tithe);
+  --color-tx-offering: var(--tx-offering);
+  --color-tx-mission: var(--tx-mission);
+  --color-tx-first-fruit: var(--tx-first-fruit);
+  --color-tx-commitment: var(--tx-commitment);
+  --color-tx-donation: var(--tx-donation);
+  --color-tx-other: var(--tx-other);
+
+  /* Sanctuary clay / tertiary (auth accents, thank-you strip) */
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+}
 
 :root {
-  --sc-primary: #3525CD;
-  --sc-primary-container: #4F46E5;
-  --sc-primary-fixed: #E6E6FA;
-  --sc-on-primary: #FFFFFF;
-  --sc-tertiary: #7E3000;
-  --sc-tertiary-container: #FBE9DD;
+  --radius: 0.75rem;
 
-  --sc-surface: #F7F9FB;
-  --sc-surface-container-lowest: #FFFFFF;
-  --sc-surface-container-low: #F1F3F6;
-  --sc-surface-container: #ECEEF0;
-  --sc-surface-container-high: #E4E7EB;
-  --sc-surface-container-highest: #DCE0E5;
+  /* Map Sanctuary → shadcn core slots */
+  --background: #F7F9FB;       /* surface */
+  --foreground: #191C1E;       /* onSurface */
+  --card: #FFFFFF;             /* surfaceContainerLowest */
+  --card-foreground: #191C1E;
+  --popover: #FFFFFF;
+  --popover-foreground: #191C1E;
+  --primary: #3525CD;
+  --primary-foreground: #FFFFFF;
+  --secondary: #ECEEF0;        /* surfaceContainer */
+  --secondary-foreground: #191C1E;
+  --muted: #F1F3F6;            /* surfaceContainerLow */
+  --muted-foreground: #6B7280; /* onSurfaceMuted */
+  --accent: #E6E6FA;           /* primaryFixed */
+  --accent-foreground: #3525CD;
+  --destructive: #8C1D18;
+  --destructive-foreground: #FFFFFF;
+  --border: #C2C7CE;           /* outlineVariant */
+  --input: #E4E7EB;            /* surfaceContainerHigh */
+  --ring: #4F46E5;             /* primaryContainer */
 
-  --sc-on-surface: #191C1E;
-  --sc-on-surface-variant: #42474E;
-  --sc-on-surface-muted: #6B7280;
-  --sc-outline: #72787E;
-  --sc-outline-variant: #C2C7CE;
+  /* Sidebar */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #191C1E;
+  --sidebar-primary: #3525CD;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E6E6FA;
+  --sidebar-accent-foreground: #3525CD;
+  --sidebar-border: #C2C7CE22;
+  --sidebar-ring: #4F46E5;
 
-  --sc-error: #8C1D18;
-  --sc-error-container: #F9DEDC;
+  /* Charts */
+  --chart-1: #4F46E5;
+  --chart-2: #16A34A;
+  --chart-3: #2563EB;
+  --chart-4: #D97706;
+  --chart-5: #9333EA;
+
+  /* Semantic */
+  --success: #156B3D;
+  --success-foreground: #C8EFD4;
+  --warning: #8B5A00;
+  --warning-foreground: #FDE8B8;
+  --info: #1B4C8C;
+  --info-foreground: #D6E6FB;
+
+  /* Tertiary / clay */
+  --tertiary: #7E3000;
+  --tertiary-container: #FBE9DD;
+
+  /* Transaction types */
+  --tx-tithe: #4F46E5;
+  --tx-offering: #16A34A;
+  --tx-mission: #2563EB;
+  --tx-first-fruit: #D97706;
+  --tx-commitment: #9333EA;
+  --tx-donation: #0D9488;
+  --tx-other: #6B7280;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-inter), system-ui, sans-serif;
-  background: var(--sc-surface);
-  color: var(--sc-on-surface);
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-[var(--font-inter),system-ui,sans-serif];
+  }
 }
 
-* { box-sizing: border-box; }
-
+/* Scrollbar styles */
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }

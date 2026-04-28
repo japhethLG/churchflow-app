@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Amount, Card, SectionTitle, StatCard } from "@/components/primitives";
 import type { components } from "@/lib/api";
 
@@ -24,8 +23,8 @@ export const CampaignProgressCard = ({
     return (
       <Card padding={24}>
         <SectionTitle title="Progress" />
-        <div style={{ height: 16, background: S.surfaceContainer, borderRadius: 6, width: "60%", marginBottom: 12 }} />
-        <div style={{ height: 16, background: S.surfaceContainer, borderRadius: 6, width: "40%" }} />
+        <div style={{ height: 16, background: "var(--secondary)", borderRadius: 6, width: "60%", marginBottom: 12 }} />
+        <div style={{ height: 16, background: "var(--secondary)", borderRadius: 6, width: "40%" }} />
       </Card>
     );
   }
@@ -64,7 +63,7 @@ export const CampaignProgressCard = ({
           style={{
             position: "relative",
             height: 12,
-            background: S.surfaceContainer,
+            background: "var(--secondary)",
             borderRadius: 9999,
             overflow: "hidden",
           }}
@@ -74,7 +73,7 @@ export const CampaignProgressCard = ({
               position: "absolute",
               inset: 0,
               width: `${pledgedPct}%`,
-              background: S.surfaceContainerHigh,
+              background: "var(--input)",
             }}
           />
           <div
@@ -82,7 +81,7 @@ export const CampaignProgressCard = ({
               position: "absolute",
               inset: 0,
               width: `${raisedPct}%`,
-              background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
+              background: `linear-gradient(135deg, var(--ring), var(--primary))`,
             }}
           />
         </div>
@@ -92,21 +91,21 @@ export const CampaignProgressCard = ({
             justifyContent: "space-between",
             marginTop: 8,
             fontSize: 11,
-            color: S.onSurfaceMuted,
+            color: "var(--muted-foreground)",
             letterSpacing: "0.04em",
             textTransform: "uppercase",
           }}
         >
           <span>
-            <span style={{ display: "inline-block", width: 8, height: 8, background: S.primary, borderRadius: 9999, marginRight: 6 }} />
+            <span style={{ display: "inline-block", width: 8, height: 8, background: "var(--primary)", borderRadius: 9999, marginRight: 6 }} />
             Raised
           </span>
           <span>
-            <span style={{ display: "inline-block", width: 8, height: 8, background: S.surfaceContainerHigh, borderRadius: 9999, marginRight: 6 }} />
+            <span style={{ display: "inline-block", width: 8, height: 8, background: "var(--input)", borderRadius: 9999, marginRight: 6 }} />
             Pledged
           </span>
           <span>
-            <span style={{ display: "inline-block", width: 8, height: 8, background: S.surfaceContainer, borderRadius: 9999, marginRight: 6 }} />
+            <span style={{ display: "inline-block", width: 8, height: 8, background: "var(--secondary)", borderRadius: 9999, marginRight: 6 }} />
             Goal remaining
           </span>
         </div>

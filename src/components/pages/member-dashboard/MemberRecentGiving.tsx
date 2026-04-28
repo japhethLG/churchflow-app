@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Card, SectionTitle, Amount } from "@/components/primitives";
 import { TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
@@ -27,14 +27,14 @@ const METHOD_LABEL: Record<string, string> = {
   OTHER: "Other",
 };
 
-const fmtDate = (iso: string): string  => {
+const fmtDate = (iso: string): string => {
   const d = new Date(iso);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
+};
 
-const fmtCurrency = (v: number | string): string  => {
+const fmtCurrency = (v: number | string): string => {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+};
 
 export const MemberRecentGiving = ({
   transactions,
@@ -52,18 +52,12 @@ export const MemberRecentGiving = ({
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "70px 110px 1fr auto",
-              gap: 16,
-              alignItems: "center",
-              padding: "14px 12px",
-            }}
+            className="grid grid-cols-[70px_110px_1fr_auto] items-center gap-4 px-3 py-3.5"
           >
-            <div style={{ height: 14, width: 50, background: S.surfaceContainer, borderRadius: 4 }} />
-            <div style={{ height: 22, width: 80, background: S.surfaceContainer, borderRadius: 9999 }} />
-            <div style={{ height: 14, width: 100, background: S.surfaceContainer, borderRadius: 4 }} />
-            <div style={{ height: 14, width: 60, background: S.surfaceContainer, borderRadius: 4 }} />
+            <div className="h-3.5 w-[50px] rounded bg-secondary" />
+            <div className="h-5 w-20 rounded-full bg-secondary" />
+            <div className="h-3.5 w-[100px] rounded bg-secondary" />
+            <div className="h-3.5 w-[60px] rounded bg-secondary" />
           </div>
         ))}
       </Card>
@@ -79,43 +73,27 @@ export const MemberRecentGiving = ({
       <SectionTitle
         title="Recent giving"
         action={
-          <Link
-            href={`/${tenantSlug}/member/my-transactions`}
-            style={{ fontSize: 13, color: S.primary, fontWeight: 500, textDecoration: "none" }}
-          >
+          <Link href={`/${tenantSlug}/member/my-transactions`} className="text-[13px] font-medium text-primary">
             View all my giving →
           </Link>
         }
       />
       {recent.length === 0 ? (
-        <div style={{ padding: "32px 0", textAlign: "center", color: S.onSurfaceMuted, fontSize: 14 }}>
+        <div className="py-8 text-center text-sm text-muted-foreground">
           No giving history yet.
         </div>
       ) : (
         recent.map((t, i) => (
           <div
             key={t.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "70px 110px 1fr auto",
-              gap: 16,
-              alignItems: "center",
-              padding: "14px 12px",
-              borderRadius: 10,
-              background: i === 0 ? S.surfaceContainerLow : "transparent",
-            }}
+            className={cn(
+              "grid grid-cols-[70px_110px_1fr_auto] items-center gap-4 px-3 py-3.5",
+              i === 0 ? "rounded-[10px] bg-muted" : "",
+            )}
           >
-            <div
-              style={{
-                fontSize: 13,
-                color: S.onSurfaceMuted,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {fmtDate(t.date)}
-            </div>
+            <div className="text-[13px] tabular-nums text-muted-foreground">{fmtDate(t.date)}</div>
             <TypeBadge type={(TYPE_LABEL[t.type] ?? t.type) as "Tithe"} />
-            <div style={{ fontSize: 13, color: S.onSurfaceMuted }}>
+            <div className="text-[13px] text-muted-foreground">
               {METHOD_LABEL[t.paymentMethod] ?? t.paymentMethod}
             </div>
             <Amount value={fmtCurrency(t.amount)} currency={t.currency === "USD" ? "$" : t.currency} />
@@ -124,4 +102,4 @@ export const MemberRecentGiving = ({
       )}
     </Card>
   );
-}
+};

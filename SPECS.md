@@ -108,7 +108,7 @@ decisions.
 | HTTP client | **openapi-fetch** + **openapi-typescript** | Types generated from backend's OpenAPI spec |
 | Client state | **Zustand** | Modal store only |
 | Auth | Firebase client SDK + Firebase Admin (for session cookie minting in Next route) | |
-| Styling | **Tailwind 4** + inline styles using `SANCTUARY` design tokens | |
+| Styling | **Tailwind 4** + CSS variables from `globals.css` | |
 
 ---
 
@@ -193,7 +193,7 @@ src/
     ├── modals/                      # registry + Zustand store + ModalHost
     ├── auth/                        # AuthProvider, actions, server.ts (getSessionUser)
     ├── firebase/                    # client + admin SDK factories
-    └── design/tokens.ts             # SANCTUARY tokens
+    └── design/                      # Shared design helpers (e.g. logo-gradient)
 ```
 
 See `church-app/CLAUDE.md` and `church-app-backend/CLAUDE.md` for the

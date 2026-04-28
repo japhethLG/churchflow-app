@@ -12,9 +12,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Card, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
@@ -30,23 +30,24 @@ const TYPE_LABEL: Record<ByType["type"], string> = {
   OTHER: "Other",
 };
 
+/** CSS variables — Recharts consumes these in SVG / stroke */
 const TYPE_COLOR: Record<ByType["type"], string> = {
-  TITHE: S.txTithe,
-  OFFERING: S.txOffering,
-  MISSION_GIVING: S.txMission,
-  FIRST_FRUIT: S.txFirstFruit,
-  COMMITMENT: S.txCommitment,
-  DONATION: S.txDonation,
-  OTHER: S.txOther,
+  TITHE: "var(--tx-tithe)",
+  OFFERING: "var(--tx-offering)",
+  MISSION_GIVING: "var(--tx-mission)",
+  FIRST_FRUIT: "var(--tx-first-fruit)",
+  COMMITMENT: "var(--tx-commitment)",
+  DONATION: "var(--tx-donation)",
+  OTHER: "var(--tx-other)",
 };
 
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const fmtCompact = (value: number): string  => {
+const fmtCompact = (value: number): string => {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}k`;
   return `$${value.toFixed(0)}`;
-}
+};
 
 type PeriodOption = { months: number; label: string };
 const PERIOD_OPTIONS: PeriodOption[] = [
@@ -55,7 +56,15 @@ const PERIOD_OPTIONS: PeriodOption[] = [
   { months: 12, label: "YTD" },
 ];
 
-// Monthly trend recharts bar chart + income breakdown donut side-by-side
+const tooltipChrome = {
+  backgroundColor: "var(--input)",
+  border: "none",
+  borderRadius: 8,
+  fontSize: 12,
+} as const;
+
+const axisMuted = { fontSize: 11, fill: "var(--muted-foreground)" };
+
 export const DashboardCharts = ({
   summary,
   loading,
@@ -69,11 +78,11 @@ export const DashboardCharts = ({
 }) => {
   if (loading || !summary) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }}>
+      <div className="mb-6 grid gap-4 [grid-template-columns:1.5fr_1fr]">
         {[0, 1].map((i) => (
           <Card key={i}>
-            <div style={{ height: 16, width: 120, background: S.surfaceContainer, borderRadius: 4, marginBottom: 16 }} />
-            <div style={{ height: 200, background: S.surfaceContainer, borderRadius: 8, opacity: 0.5 }} />
+            <div className="mb-4 h-4 w-[120px] animate-pulse rounded bg-secondary" />
+            <div className="h-[200px] animate-pulse rounded-lg bg-secondary opacity-50" />
           </Card>
         ))}
       </div>
@@ -84,7 +93,6 @@ export const DashboardCharts = ({
   const byMonth: ByMonth[] = summary.byMonth ?? [];
   const byType: ByType[] = summary.byType ?? [];
 
-  // Build bar-chart data from byMonth
   const now = new Date();
   const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
   const barData = byMonth.map((m) => {
@@ -97,7 +105,6 @@ export const DashboardCharts = ({
     };
   });
 
-  // Build donut data from byType
   const donutData = byType
     .filter((b) => b.total > 0)
     .map((b) => ({
@@ -107,38 +114,27 @@ export const DashboardCharts = ({
       pct: total > 0 ? (b.total / total) * 100 : 0,
     }));
 
+  const donutPlaceholder = [
+    { name: "No data", value: 1, color: "var(--input)" },
+  ];
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }}>
-      {/* Monthly Trend */}
+    <div className="mb-6 grid gap-4 [grid-template-columns:1.5fr_1fr]">
       <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div className="mb-2 flex items-center justify-between">
           <SectionTitle title="Monthly trend" />
-          <div
-            style={{
-              display: "flex",
-              gap: 4,
-              background: S.surfaceContainerLow,
-              padding: 4,
-              borderRadius: 9999,
-            }}
-          >
+          <div className="flex gap-1 rounded-full bg-muted p-1">
             {PERIOD_OPTIONS.map((opt) => (
               <button
                 key={opt.months}
                 type="button"
                 onClick={() => onMonthsChange(opt.months)}
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: 9999,
-                  fontSize: 12,
-                  fontWeight: 500,
-                  background: months === opt.months ? S.surfaceContainerLowest : "transparent",
-                  color: months === opt.months ? S.onSurface : S.onSurfaceMuted,
-                  border: "none",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  boxShadow: months === opt.months ? "0 1px 2px rgba(0,0,0,0.04)" : "none",
-                }}
+                className={cn(
+                  "cursor-pointer rounded-full px-3 py-1 font-inherit text-xs font-medium transition-[box-shadow,background,color]",
+                  months === opt.months
+                    ? "bg-card text-foreground shadow-sm"
+                    : "border-none bg-transparent text-muted-foreground",
+                )}
               >
                 {opt.label}
               </button>
@@ -146,18 +142,13 @@ export const DashboardCharts = ({
           </div>
         </div>
         {barData.length > 0 ? (
-          <div style={{ width: "100%", height: 240 }}>
+          <div className="h-[240px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsBarChart data={barData} barCategoryGap="20%">
-                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={S.surfaceContainerHigh} />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: S.onSurfaceMuted }}
-                  axisLine={false}
-                  tickLine={false}
-                />
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--input)" />
+                <XAxis dataKey="label" tick={axisMuted} axisLine={false} tickLine={false} />
                 <YAxis
-                  tick={{ fontSize: 11, fill: S.onSurfaceMuted }}
+                  tick={axisMuted}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => fmtCompact(v)}
@@ -165,29 +156,26 @@ export const DashboardCharts = ({
                 />
                 <Tooltip
                   formatter={(v) => [`${fmtCompact(Number(v))}`, "Total"]}
-                  contentStyle={{
-                    background: S.surfaceContainerHigh,
-                    border: "none",
-                    borderRadius: 8,
-                    fontSize: 12,
+                  contentStyle={tooltipChrome}
+                  cursor={{
+                    fill: "color-mix(in srgb, var(--accent) 27%, transparent)",
                   }}
-                  cursor={{ fill: `${S.primaryFixed}44` }}
                 />
                 <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={S.primaryContainer} stopOpacity={0.9} />
-                    <stop offset="100%" stopColor={S.primary} stopOpacity={0.7} />
+                  <linearGradient id="dashBarGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--ring)" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.7} />
                   </linearGradient>
-                  <linearGradient id="barGradientActive" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={S.primaryContainer} />
-                    <stop offset="100%" stopColor={S.primary} />
+                  <linearGradient id="dashBarGradientActive" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--ring)" />
+                    <stop offset="100%" stopColor="var(--primary)" />
                   </linearGradient>
                 </defs>
                 <Bar dataKey="total" radius={[6, 6, 0, 0]}>
                   {barData.map((entry, idx) => (
                     <Cell
                       key={idx}
-                      fill={entry.isCurrent ? "url(#barGradientActive)" : "url(#barGradient)"}
+                      fill={entry.isCurrent ? "url(#dashBarGradientActive)" : "url(#dashBarGradient)"}
                     />
                   ))}
                 </Bar>
@@ -195,30 +183,20 @@ export const DashboardCharts = ({
             </ResponsiveContainer>
           </div>
         ) : (
-          <div
-            style={{
-              height: 220,
-              display: "grid",
-              placeItems: "center",
-              color: S.onSurfaceMuted,
-              fontSize: 14,
-            }}
-          >
+          <div className="grid h-[220px] place-items-center text-sm text-muted-foreground">
             No data for this period
           </div>
         )}
       </Card>
 
-      {/* Income Breakdown Donut */}
       <Card>
         <SectionTitle title="Income breakdown" />
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          {/* Recharts donut */}
-          <div style={{ position: "relative", width: 200, height: 200, flexShrink: 0 }}>
+        <div className="flex items-center gap-5">
+          <div className="relative h-[200px] w-[200px] shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={donutData.length > 0 ? donutData : [{ name: "No data", value: 1, color: S.surfaceContainerHigh }]}
+                  data={donutData.length > 0 ? donutData : donutPlaceholder}
                   dataKey="value"
                   cx="50%"
                   cy="50%"
@@ -227,70 +205,46 @@ export const DashboardCharts = ({
                   paddingAngle={1}
                   stroke="none"
                 >
-                  {(donutData.length > 0 ? donutData : [{ name: "No data", value: 1, color: S.surfaceContainerHigh }]).map((d) => (
+                  {(donutData.length > 0 ? donutData : donutPlaceholder).map((d) => (
                     <Cell key={d.name} fill={d.color} />
                   ))}
                 </Pie>
                 <Tooltip
                   formatter={(v, _name, ctx) => {
-                    const payload = (ctx as { payload?: { name?: string; pct?: number } } | undefined)?.payload;
+                    const payload = (
+                      ctx as { payload?: { name?: string; pct?: number } } | undefined
+                    )?.payload;
                     const num = typeof v === "number" ? v : 0;
-                    return [`${Number(num).toFixed(2)} (${(payload?.pct ?? 0).toFixed(0)}%)`, payload?.name ?? ""];
+                    return [
+                      `${Number(num).toFixed(2)} (${(payload?.pct ?? 0).toFixed(0)}%)`,
+                      payload?.name ?? "",
+                    ];
                   }}
-                  contentStyle={{
-                    background: S.surfaceContainerHigh,
-                    border: "none",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
+                  contentStyle={tooltipChrome}
                 />
               </PieChart>
             </ResponsiveContainer>
-            {/* Center label */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                display: "grid",
-                placeItems: "center",
-                pointerEvents: "none",
-                textAlign: "center",
-              }}
-            >
+            <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
               <div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: S.onSurfaceMuted,
-                  }}
-                >
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Total
                 </div>
-                <div
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 600,
-                    letterSpacing: "-0.02em",
-                    fontVariantNumeric: "tabular-nums",
-                    marginTop: 2,
-                  }}
-                >
+                <div className="mt-0.5 text-lg font-semibold tracking-tight tabular-nums">
                   {fmtCompact(total)}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Legend */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
             {donutData.map((x) => (
-              <div key={x.name} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 3, background: x.color, flexShrink: 0 }} />
-                <span style={{ flex: 1, color: S.onSurfaceVariant }}>{x.name}</span>
-                <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{x.pct.toFixed(0)}%</span>
+              <div key={x.name} className="flex items-center gap-2.5 text-[13px]">
+                <span
+                  className="size-2.5 shrink-0 rounded-sm"
+                  style={{ backgroundColor: x.color }}
+                />
+                <span className="min-w-0 flex-1 text-secondary-foreground">{x.name}</span>
+                <span className="shrink-0 font-semibold tabular-nums">{x.pct.toFixed(0)}%</span>
               </div>
             ))}
           </div>
@@ -298,4 +252,4 @@ export const DashboardCharts = ({
       </Card>
     </div>
   );
-}
+};

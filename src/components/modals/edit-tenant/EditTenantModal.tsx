@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives/Input";
 import { useUpdateTenant } from "@/lib/api/tenants";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
+import { cn } from "@/lib/utils";
 
 declare module "@/lib/modals/registry" {
   interface ModalPropsMap {
@@ -39,7 +39,7 @@ export const EditTenantModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update");
     }
-  }
+  };
 
   return (
     <BaseModal
@@ -51,32 +51,22 @@ export const EditTenantModal = ({
       primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !name.trim() }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="flex flex-col gap-4">
         <Input label="Church name" value={name} onChange={(e) => setName(e.target.value)} />
         <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
-            Description
-          </div>
+          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Description</div>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            style={{
-              width: "100%",
-              padding: "12px 16px",
-              borderRadius: S.radiusMd,
-              border: `1.5px solid ${S.outlineVariant}`,
-              fontSize: 14,
-              fontFamily: "inherit",
-              color: S.onSurface,
-              background: S.surfaceContainerLow,
-              resize: "vertical",
-              boxSizing: "border-box",
-            }}
+            className={cn(
+              "box-border w-full resize-y rounded-md border-[1.5px] border-border bg-muted px-4 py-3 font-inherit text-sm text-foreground",
+              "focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+            )}
           />
         </div>
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives";
 import { useUpdateMember } from "@/lib/api/members";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import type { components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
@@ -21,9 +21,9 @@ export type EditMemberProps = {
   member: Member;
 };
 
-const asString = (v: unknown): string  => {
+const asString = (v: unknown): string => {
   return typeof v === "string" ? v : "";
-}
+};
 
 export const EditMemberModal = ({ tenantSlug, member, onClose }: EditMemberProps & ModalBaseProps) => {
   const [firstName, setFirstName] = useState(member.firstName);
@@ -58,7 +58,7 @@ export const EditMemberModal = ({ tenantSlug, member, onClose }: EditMemberProps
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update");
     }
-  }
+  };
 
   return (
     <BaseModal
@@ -70,8 +70,8 @@ export const EditMemberModal = ({ tenantSlug, member, onClose }: EditMemberProps
       primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="flex flex-col gap-3.5">
+        <div className="grid grid-cols-2 gap-3">
           <Input label="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           <Input label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
         </div>
@@ -79,48 +79,42 @@ export const EditMemberModal = ({ tenantSlug, member, onClose }: EditMemberProps
         <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
         <Input label="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>Role</div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Role</div>
+            <div className="flex gap-2">
               <PillChoice active={role === "USER"} onClick={() => setRole("USER")} label="Member" />
               <PillChoice active={role === "ADMIN"} onClick={() => setRole("ADMIN")} label="Admin" />
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>Status</div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Status</div>
+            <div className="flex gap-2">
               <PillChoice active={status === "ACTIVE"} onClick={() => setStatus("ACTIVE")} label="Active" />
               <PillChoice active={status === "INACTIVE"} onClick={() => setStatus("INACTIVE")} label="Inactive" />
             </div>
           </div>
         </div>
 
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};
 
 const PillChoice = ({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) => {
   return (
     <button
       type="button"
       onClick={onClick}
-      style={{
-        flex: 1,
-        padding: "10px 14px",
-        borderRadius: 9999,
-        border: `1.5px solid ${active ? S.primary : "transparent"}`,
-        background: active ? S.primaryFixed : S.surfaceContainerHigh,
-        color: active ? S.primary : S.onSurface,
-        fontWeight: active ? 600 : 500,
-        cursor: "pointer",
-        fontFamily: "inherit",
-        fontSize: 13,
-      }}
+      className={cn(
+        "flex-1 cursor-pointer rounded-full border-[1.5px] px-3.5 py-2.5 font-inherit text-[13px] transition-colors",
+        active
+          ? "border-primary bg-accent font-semibold text-primary"
+          : "border-transparent bg-input font-medium text-foreground",
+      )}
     >
       {label}
     </button>
   );
-}
+};

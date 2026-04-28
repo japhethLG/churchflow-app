@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useCancelInvitation } from "@/lib/api/invitations";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
@@ -53,12 +52,12 @@ export const CancelInvitationModal = ({
       }}
       secondaryAction={{ label: "Keep it", onClick: onClose, disabled: isPending }}
     >
-      <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+      <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
         The invitation to <strong>{email}</strong> will be cancelled immediately.
         The invite link they received will no longer work. You can always send a
         new invitation later.
       </p>
-      {error && <p style={{ margin: 0, fontSize: 13, color: S.error, marginTop: 8 }}>{error}</p>}
+      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
     </BaseModal>
   );
 }

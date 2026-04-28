@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives";
 import { useUpdatePledge } from "@/lib/api/pledges";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import { nstr, type components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 type PledgeStatus = Pledge["status"];
@@ -35,8 +35,6 @@ export const EditPledgeModal = ({
   currency,
   onClose,
 }: EditPledgeProps & ModalBaseProps) => {
-  // campaignId / campaignItemId / memberId are immutable per SPECS §10.4 —
-  // we only let the user edit amount, status, note.
   const [amount, setAmount] = useState(pledge.pledgedAmount.toString());
   const [status, setStatus] = useState<PledgeStatus>(pledge.status);
   const [note, setNote] = useState(nstr(pledge.note) ?? "");
@@ -61,7 +59,7 @@ export const EditPledgeModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update pledge");
     }
-  }
+  };
 
   return (
     <BaseModal
@@ -73,30 +71,32 @@ export const EditPledgeModal = ({
       primaryAction={{ label: "Save", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <Input label="Amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} prefix={currency} />
+      <div className="flex flex-col gap-3.5">
+        <Input
+          label="Amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          prefix={currency}
+        />
 
         <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>Status</div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Status</div>
+          <div className="flex gap-2">
             {STATUS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setStatus(opt.value)}
-                style={{
-                  flex: 1,
-                  textAlign: "left",
-                  padding: "10px 14px",
-                  borderRadius: 12,
-                  border: `1.5px solid ${status === opt.value ? S.primary : "transparent"}`,
-                  background: status === opt.value ? S.primaryFixed : S.surfaceContainerHigh,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
+                className={cn(
+                  "flex-1 cursor-pointer rounded-xl border-[1.5px] px-3.5 py-2.5 text-left font-inherit transition-colors",
+                  status === opt.value
+                    ? "border-primary bg-accent text-foreground"
+                    : "border-transparent bg-input text-foreground",
+                )}
               >
-                <div style={{ fontSize: 13, fontWeight: 600, color: S.onSurface }}>{opt.label}</div>
-                <div style={{ fontSize: 11, color: S.onSurfaceMuted, marginTop: 2 }}>{opt.hint}</div>
+                <div className="text-[13px] font-semibold">{opt.label}</div>
+                <div className="mt-0.5 text-[11px] text-muted-foreground">{opt.hint}</div>
               </button>
             ))}
           </div>
@@ -104,8 +104,8 @@ export const EditPledgeModal = ({
 
         <Input label="Note" value={note} onChange={(e) => setNote(e.target.value)} />
 
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};

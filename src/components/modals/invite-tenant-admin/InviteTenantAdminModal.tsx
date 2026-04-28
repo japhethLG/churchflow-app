@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives/Input";
 import { useIssueInvitation } from "@/lib/api/invitations";
 import { BaseModal } from "../BaseModal";
@@ -37,7 +36,7 @@ export const InviteTenantAdminModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send invite");
     }
-  }
+  };
 
   if (success) {
     return (
@@ -48,8 +47,9 @@ export const InviteTenantAdminModal = ({
         onClose={onClose}
         primaryAction={{ label: "Done", onClick: onClose }}
       >
-        <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
-          An invitation has been sent to <strong>{email}</strong>. They&apos;ll join {tenantName} as an admin once they accept.
+        <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
+          An invitation has been sent to <strong>{email}</strong>. They&apos;ll join {tenantName} as an admin once they
+          accept.
         </p>
       </BaseModal>
     );
@@ -65,8 +65,8 @@ export const InviteTenantAdminModal = ({
       primaryAction={{ label: "Send invite", onClick: handleInvite, loading: isPending, disabled: !email.trim() }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+      <div className="flex flex-col gap-4">
+        <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
           The invited user will receive a link to join {tenantName} as an admin.
         </p>
         <Input
@@ -76,8 +76,8 @@ export const InviteTenantAdminModal = ({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="admin@example.com"
         />
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};

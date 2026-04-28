@@ -1,21 +1,20 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { StatCard } from "@/components/primitives";
 import type { components } from "@/lib/api";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 
-const fmtCurrency = (value: number, currency: string): string  => {
+const fmtCurrency = (value: number, currency: string): string => {
   return `${currency} ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
+};
 
-const fmtCompact = (value: number): string  => {
+const fmtCompact = (value: number): string => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 10_000) return `${(value / 1_000).toFixed(0)}k`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
   return value.toFixed(0);
-}
+};
 
 export const DashboardKpiStrip = ({
   summary,
@@ -34,19 +33,11 @@ export const DashboardKpiStrip = ({
 }) => {
   if (loading || !summary) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+      <div className="mb-6 grid grid-cols-4 gap-4">
         {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            style={{
-              background: S.surfaceContainerLowest,
-              borderRadius: 16,
-              padding: 24,
-              minHeight: 120,
-            }}
-          >
-            <div style={{ height: 12, width: 80, background: S.surfaceContainer, borderRadius: 4, marginBottom: 16 }} />
-            <div style={{ height: 32, width: 120, background: S.surfaceContainer, borderRadius: 6 }} />
+          <div key={i} className="min-h-[120px] rounded-2xl bg-card p-6">
+            <div className="mb-4 h-3 w-20 animate-pulse rounded bg-secondary" />
+            <div className="h-8 w-[120px] animate-pulse rounded-md bg-secondary" />
           </div>
         ))}
       </div>
@@ -56,35 +47,24 @@ export const DashboardKpiStrip = ({
   const total = summary.total;
   const count = summary.count;
 
-  // Delta computation
   const prevTotal = previousSummary?.total ?? 0;
-  const delta = prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : undefined;
+  const delta = prevTotal > 0 ? ((total - prevTotal) / prevTotal) * 100 : undefined;
   const deltaStr = delta !== undefined ? `${Math.abs(delta).toFixed(0)}%` : undefined;
   const deltaDir = delta !== undefined ? (delta > 0 ? "up" : delta < 0 ? "down" : "flat") : undefined;
 
   const prevCount = previousSummary?.count ?? 0;
-  const countDelta = prevCount > 0 ? ((count - prevCount) / prevCount * 100) : undefined;
+  const countDelta = prevCount > 0 ? ((count - prevCount) / prevCount) * 100 : undefined;
   const countDeltaStr = countDelta !== undefined ? `${Math.abs(countDelta).toFixed(0)}%` : undefined;
-  const countDeltaDir = countDelta !== undefined ? (countDelta > 0 ? "up" : countDelta < 0 ? "down" : "flat") : undefined;
+  const countDeltaDir =
+    countDelta !== undefined ? (countDelta > 0 ? "up" : countDelta < 0 ? "down" : "flat") : undefined;
 
-  // Unique givers estimate (we use count as proxy — actual unique would need backend)
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+    <div className="mb-6 grid grid-cols-4 gap-4">
       <StatCard
         label="Total this month"
         value={
-          <span
-            style={{
-              fontSize: 32,
-              fontWeight: 600,
-              letterSpacing: "-0.03em",
-              fontVariantNumeric: "tabular-nums",
-              background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            <span style={{ opacity: 0.6, marginRight: 2 }}>{summary.currency} </span>
+          <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[32px] font-semibold tabular-nums tracking-tighter text-transparent">
+            <span className="opacity-60">{summary.currency} </span>
             {fmtCompact(total)}
           </span>
         }
@@ -107,8 +87,10 @@ export const DashboardKpiStrip = ({
       <StatCard
         label="Active campaigns"
         value={activeCampaignCount.toString()}
-        caption={activeCampaignCount === 0 ? "No active campaigns" : `${activeCampaignCount} in progress`}
+        caption={
+          activeCampaignCount === 0 ? "No active campaigns" : `${activeCampaignCount} in progress`
+        }
       />
     </div>
   );
-}
+};

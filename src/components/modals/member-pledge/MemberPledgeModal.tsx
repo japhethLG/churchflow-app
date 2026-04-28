@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Input } from "@/components/primitives";
 import { useCreatePledge } from "@/lib/api/pledges";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import type { components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Item = components["schemas"]["CampaignItemResponseDto"];
 
@@ -61,7 +61,7 @@ export const MemberPledgeModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create pledge");
     }
-  }
+  };
 
   const currencySymbol =
     currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : currency;
@@ -81,70 +81,44 @@ export const MemberPledgeModal = ({
       }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {/* Item picker (if campaign has items) */}
+      <div className="flex flex-col gap-4">
         {items.length > 0 && (
           <div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: S.onSurfaceVariant,
-                marginBottom: 8,
-              }}
-            >
-              Pledge toward
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Pledge toward</div>
+            <div className="flex flex-col gap-1.5">
               <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  background: chosenItemId === "" ? S.primaryFixed : S.surfaceContainerLow,
-                  cursor: "pointer",
-                  transition: "background 0.15s",
-                }}
+                className={cn(
+                  "flex cursor-pointer items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 transition-colors duration-150",
+                  chosenItemId === "" ? "bg-accent" : "bg-muted",
+                )}
               >
                 <input
                   type="radio"
                   name="pledgeItem"
                   checked={chosenItemId === ""}
                   onChange={() => setChosenItemId("")}
-                  style={{ accentColor: S.primary }}
+                  className="accent-primary"
                 />
-                <span style={{ fontSize: 14, fontWeight: 500, color: S.onSurface }}>
-                  Whole campaign
-                </span>
+                <span className="text-sm font-medium text-foreground">Whole campaign</span>
               </label>
               {items.map((item) => (
                 <label
                   key={item.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    background: chosenItemId === item.id ? S.primaryFixed : S.surfaceContainerLow,
-                    cursor: "pointer",
-                    transition: "background 0.15s",
-                  }}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 transition-colors duration-150",
+                    chosenItemId === item.id ? "bg-accent" : "bg-muted",
+                  )}
                 >
                   <input
                     type="radio"
                     name="pledgeItem"
                     checked={chosenItemId === item.id}
                     onChange={() => setChosenItemId(item.id)}
-                    style={{ accentColor: S.primary }}
+                    className="accent-primary"
                   />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: S.onSurface }}>
-                      {item.title}
-                    </div>
-                    <div style={{ fontSize: 12, color: S.onSurfaceMuted }}>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-foreground">{item.title}</div>
+                    <div className="text-xs text-muted-foreground">
                       Goal: {currencySymbol}
                       {Number(item.targetAmount).toLocaleString("en-US", {
                         minimumFractionDigits: 2,
@@ -173,8 +147,8 @@ export const MemberPledgeModal = ({
           onChange={(e) => setNote(e.target.value)}
         />
 
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
+};

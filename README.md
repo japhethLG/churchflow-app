@@ -15,7 +15,7 @@ Backend lives in [../church-app-backend](../church-app-backend).
 - **Zustand** — tiny client state (modals)
 - **Firebase** (client SDK) — Google SSO; ID tokens sent to the backend,
   session cookies minted for Next SSR
-- **Tailwind 4** + inline styles via `SANCTUARY` design tokens
+- **Tailwind 4** + CSS variables (`globals.css` / `@theme inline`)
 
 ## Setup
 
@@ -74,7 +74,7 @@ src/
     ├── modals/           # registry + Zustand store + ModalHost
     ├── auth/             # AuthProvider, signInWithGoogle, refreshSession
     ├── firebase/         # client + admin SDK factories
-    └── design/tokens.ts  # SANCTUARY tokens
+    └── design/           # Shared design helpers (e.g. logo gradient)
 ```
 
 ### Data layer

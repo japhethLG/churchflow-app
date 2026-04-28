@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useDeleteCampaign } from "@/lib/api/campaigns";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
@@ -49,11 +48,11 @@ export const ConfirmDeleteCampaignModal = ({
       primaryAction={{ label: "Delete campaign", onClick: handleDelete, loading: isPending, destructive: true }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+      <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
         Soft-deletes the campaign and all its items. Existing pledges and gifts attributed to it remain in giving
         history, but no new pledges can be made. To halt without deleting, cancel it instead.
       </p>
-      {error && <p style={{ margin: "12px 0 0", fontSize: 13, color: S.error }}>{error}</p>}
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
     </BaseModal>
   );
 }

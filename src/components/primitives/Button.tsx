@@ -1,6 +1,8 @@
-import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { Button as ShadedButton } from "@/components/ui/button";
 import { Icon, type IconName } from "./Icon";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 type ButtonProps = {
   children?: ReactNode;
@@ -23,72 +25,47 @@ export const Button = ({
   disabled,
   destructive,
   loading,
-  style,
+  className,
   ...rest
 }: ButtonProps) => {
   const isCurrentlyDisabled = disabled || loading;
-  const sizes: Record<NonNullable<ButtonProps["size"]>, CSSProperties> = {
-    sm: { padding: "6px 14px", fontSize: 13, height: 32, gap: 6 },
-    md: { padding: "10px 20px", fontSize: 14, height: 40, gap: 8 },
-    lg: { padding: "14px 24px", fontSize: 15, height: 48, gap: 10 },
+
+  const variantMap: Record<string, any> = {
+    primary: destructive ? "destructive" : "default",
+    secondary: "secondary",
+    tertiary: "ghost",
+    ghost: "ghost",
   };
-  const common: CSSProperties = {
-    ...sizes[size],
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 9999,
-    fontWeight: 500,
-    cursor: isCurrentlyDisabled ? "default" : "pointer",
-    border: "none",
-    letterSpacing: "-0.005em",
-    whiteSpace: "nowrap",
-    width: fullWidth ? "100%" : undefined,
-    opacity: isCurrentlyDisabled ? 0.5 : 1,
-    fontFamily: "inherit",
-    position: "relative",
+
+  const sizeMap: Record<string, any> = {
+    sm: "sm",
+    md: "default",
+    lg: "lg",
   };
-  const variants: Record<NonNullable<ButtonProps["variant"]>, CSSProperties> = {
-    primary: {
-      background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
-      color: "#fff",
-    },
-    secondary: {
-      background: S.surfaceContainer,
-      color: S.onSurface,
-    },
-    tertiary: {
-      background: "transparent",
-      color: destructive ? S.error : S.onSurfaceVariant,
-    },
-    ghost: {
-      background: "transparent",
-      color: S.onSurface,
-    },
-  };
+
   return (
-    <button style={{ ...common, ...variants[variant], ...style }} disabled={isCurrentlyDisabled} {...rest}>
-      {loading && (
-        <span
-          style={{
-            width: 14,
-            height: 14,
-            border: "2px solid currentColor",
-            borderRightColor: "transparent",
-            borderRadius: "50%",
-            animation: "spin 0.6s linear infinite",
-            marginRight: 8,
-          }}
-        />
+    <ShadedButton
+      variant={variantMap[variant]}
+      size={sizeMap[size]}
+      disabled={isCurrentlyDisabled}
+      className={cn(
+        "rounded-full font-medium transition-all duration-200 active:scale-[0.98]",
+        fullWidth && "w-full",
+        variant === "primary" && !destructive && [
+          "bg-linear-to-br from-ring to-primary",
+          "hover:shadow-[0_12px_20px_-8px_rgba(53,37,205,0.3)] hover:-translate-y-0.5 hover:scale-[1.01]",
+          "active:translate-y-0 active:scale-[0.98] active:shadow-sm",
+        ],
+        variant === "secondary" && "hover:bg-secondary/70 hover:-translate-y-0.5 active:translate-y-0",
+        (variant === "ghost" || variant === "tertiary") && "hover:bg-muted/80 hover:text-foreground",
+        className
       )}
-      {!loading && icon && <Icon name={icon} size={size === "sm" ? 14 : 16} />}
-      <span style={{ opacity: loading ? 0.7 : 1 }}>{children}</span>
-      {!loading && iconRight && <Icon name={iconRight} size={size === "sm" ? 14 : 16} />}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </button>
+      {...rest}
+    >
+      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {!loading && icon && <Icon name={icon} size={size === "sm" ? 14 : 16} className="mr-2" />}
+      <span className={cn(loading && "opacity-70")}>{children}</span>
+      {!loading && iconRight && <Icon name={iconRight} size={size === "sm" ? 14 : 16} className="ml-2" />}
+    </ShadedButton>
   );
-}
+};

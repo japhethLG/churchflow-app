@@ -1,8 +1,15 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
-import { Icon } from "./Icon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type RowAction = {
   label: string;
@@ -11,95 +18,41 @@ export type RowAction = {
   separatorBefore?: boolean;
 };
 
-const item: CSSProperties = {
-  padding: "8px 16px",
-  fontSize: 13,
-  cursor: "pointer",
-  display: "block",
-  width: "100%",
-  textAlign: "left",
-  background: "none",
-  border: "none",
-  fontFamily: "inherit",
-  color: S.onSurface,
-  borderRadius: 8,
-};
-
 export const RowActionsMenu = ({ actions, label = "Row actions" }: { actions: RowAction[]; label?: string }) => {
-  const [open, setOpen] = useState(false);
-
   return (
-    <div style={{ position: "relative", display: "inline-block" }} onClick={(e) => e.stopPropagation()}>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        aria-label={label}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          padding: 4,
-          color: S.onSurfaceMuted,
-          display: "grid",
-          placeItems: "center",
-          borderRadius: 8,
-          transition: "background 80ms, color 80ms",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = S.surfaceContainerLow;
-          e.currentTarget.style.color = S.onSurface;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "none";
-          e.currentTarget.style.color = S.onSurfaceMuted;
-        }}
-      >
-        <Icon name="dots" size={18} />
-      </button>
-      {open && (
-        <>
-          <div 
-            style={{ position: "fixed", inset: 0, zIndex: 9 }} 
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen(false);
-            }} 
-          />
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen(false);
-            }}
-            style={{
-              position: "absolute",
-              right: 0,
-              top: "calc(100% + 4px)",
-              background: S.surfaceContainerLowest,
-              borderRadius: 12,
-              boxShadow: "0 8px 32px rgba(17,24,39,0.18)",
-              padding: 6,
-              minWidth: 180,
-              zIndex: 10,
-            }}
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            onClick={(e) => e.stopPropagation()}
           >
-            {actions.map((a, i) => (
-              <span key={i}>
-                {a.separatorBefore && (
-                  <hr style={{ margin: "4px 0", border: "none", borderTop: `1px solid ${S.surfaceContainer}` }} />
-                )}
-                <button
-                  style={{ ...item, color: a.destructive ? S.error : S.onSurface }}
-                  onClick={a.onClick}
-                >
-                  {a.label}
-                </button>
-              </span>
-            ))}
+            <span className="sr-only">{label}</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-[180px] p-1.5" onClick={(e) => e.stopPropagation()}>
+        {actions.map((a, i) => (
+          <div key={i}>
+            {a.separatorBefore && <DropdownMenuSeparator className="my-1" />}
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                a.onClick();
+              }}
+              className={cn(
+                "cursor-pointer rounded-lg px-3 py-2 text-sm",
+                a.destructive && "text-destructive focus:bg-destructive/10 focus:text-destructive"
+              )}
+            >
+              {a.label}
+            </DropdownMenuItem>
           </div>
-        </>
-      )}
-    </div>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

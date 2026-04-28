@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useDeleteMember } from "@/lib/api/members";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
@@ -49,11 +48,11 @@ export const ConfirmDeleteMemberModal = ({
       primaryAction={{ label: "Remove member", onClick: handleDelete, loading: isPending, destructive: true }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+      <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
         Removes this member from the church. Their giving history is preserved on the
         underlying user account but they will no longer appear in this directory.
       </p>
-      {error && <p style={{ margin: "12px 0 0", fontSize: 13, color: S.error }}>{error}</p>}
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
     </BaseModal>
   );
 }

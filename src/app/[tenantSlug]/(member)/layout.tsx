@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/layout/AppShell";
+import { AppShell } from "@/components/layout";
 import { getSessionUser } from "@/lib/auth/server";
 
 // Member-perspective gate. Any membership (USER or ADMIN) passes — an

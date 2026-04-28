@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Card, SectionTitle, Avatar, TypeBadge, Amount } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { nstr } from "@/lib/api/coerce";
+import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 type Member = components["schemas"]["MemberResponseDto"];
@@ -19,7 +19,7 @@ const TYPE_UI: Record<Transaction["type"], string> = {
   OTHER: "Other",
 };
 
-const relativeDate = (iso: string): string  => {
+const relativeDate = (iso: string): string => {
   const d = new Date(iso);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
@@ -35,7 +35,7 @@ const relativeDate = (iso: string): string  => {
   if (hours < 48) return "Yesterday";
   if (hours < 24 * 7) return `${Math.floor(hours / 24)} days ago`;
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
+};
 
 export const DashboardRecentGifts = ({
   transactions,
@@ -55,21 +55,15 @@ export const DashboardRecentGifts = ({
         {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "36px 1fr auto auto",
-              gap: 12,
-              alignItems: "center",
-              padding: "10px 8px",
-            }}
+            className="grid grid-cols-[36px_1fr_auto_auto] items-center gap-3 px-2 py-2.5"
           >
-            <div style={{ width: 32, height: 32, borderRadius: "50%", background: S.surfaceContainer }} />
+            <div className="size-8 rounded-full bg-secondary" />
             <div>
-              <div style={{ height: 14, width: 120, background: S.surfaceContainer, borderRadius: 4, marginBottom: 4 }} />
-              <div style={{ height: 10, width: 80, background: S.surfaceContainer, borderRadius: 3 }} />
+              <div className="mb-1 h-3.5 w-[120px] rounded bg-secondary" />
+              <div className="h-2.5 w-20 rounded bg-secondary" />
             </div>
-            <div style={{ height: 20, width: 50, background: S.surfaceContainer, borderRadius: 9999 }} />
-            <div style={{ height: 14, width: 60, background: S.surfaceContainer, borderRadius: 4 }} />
+            <div className="h-5 w-[50px] rounded-full bg-secondary" />
+            <div className="h-3.5 w-[60px] rounded bg-secondary" />
           </div>
         ))}
       </Card>
@@ -83,16 +77,13 @@ export const DashboardRecentGifts = ({
       <SectionTitle
         title="Recent gifts"
         action={
-          <Link
-            href={`/${tenantSlug}/admin/transactions`}
-            style={{ fontSize: 13, color: S.primary, fontWeight: 500, textDecoration: "none" }}
-          >
+          <Link href={`/${tenantSlug}/admin/transactions`} className="text-[13px] font-medium text-primary">
             View all →
           </Link>
         }
       />
       {recent.length === 0 ? (
-        <div style={{ padding: "32px 0", textAlign: "center", color: S.onSurfaceMuted, fontSize: 14 }}>
+        <div className="py-8 text-center text-sm text-muted-foreground">
           No transactions recorded yet.
         </div>
       ) : (
@@ -104,36 +95,24 @@ export const DashboardRecentGifts = ({
             ? `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() || "Unnamed"
             : "Anonymous";
           const typeLabel = TYPE_UI[t.type] as
-            | "Tithe" | "Offering" | "Mission" | "First Fruit"
-            | "Commitment" | "Donation" | "Other";
+            | "Tithe"
+            | "Offering"
+            | "Mission"
+            | "First Fruit"
+            | "Commitment"
+            | "Donation"
+            | "Other";
 
           return (
             <div
               key={t.id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "36px 1fr auto auto",
-                gap: 12,
-                alignItems: "center",
-                padding: "10px 8px",
-                borderRadius: 10,
-                background: i === 0 ? S.surfaceContainerLow : "transparent",
-                transition: "background 0.15s",
-              }}
+              className={cn(
+                "grid grid-cols-[36px_1fr_auto_auto] items-center gap-3 rounded-[10px] px-2 py-2.5 transition-colors duration-150",
+                i === 0 ? "bg-muted" : "bg-transparent",
+              )}
             >
               {isAnon ? (
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    background: S.surfaceContainer,
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 12,
-                    color: S.onSurfaceMuted,
-                  }}
-                >
+                <div className="grid size-8 place-items-center rounded-full bg-secondary text-xs text-muted-foreground">
                   ?
                 </div>
               ) : (
@@ -141,16 +120,14 @@ export const DashboardRecentGifts = ({
               )}
               <div>
                 <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: isAnon ? S.onSurfaceMuted : S.onSurface,
-                    fontStyle: isAnon ? "italic" : "normal",
-                  }}
+                  className={cn(
+                    "text-[13px] font-medium",
+                    isAnon ? "italic text-muted-foreground" : "text-foreground",
+                  )}
                 >
                   {name}
                 </div>
-                <div style={{ fontSize: 11, color: S.onSurfaceMuted }}>{relativeDate(t.date)}</div>
+                <div className="text-[11px] text-muted-foreground">{relativeDate(t.date)}</div>
               </div>
               <TypeBadge type={typeLabel} />
               <Amount value={Number(t.amount).toFixed(2)} currency={t.currency} />
@@ -160,4 +137,4 @@ export const DashboardRecentGifts = ({
       )}
     </Card>
   );
-}
+};

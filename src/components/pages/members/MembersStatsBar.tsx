@@ -1,7 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
-
 export const MembersStatsBar = ({
   total,
   active,
@@ -12,16 +10,16 @@ export const MembersStatsBar = ({
   unregistered: number;
 }) => {
   return (
-    <div style={{ display: "flex", gap: 32, padding: "8px 24px 20px", fontSize: 13, color: S.onSurfaceVariant }}>
+    <div className="flex gap-8 px-6 pb-5 pt-2 text-[13px] text-secondary-foreground">
       <span>
-        <strong style={{ color: S.onSurface }}>{total}</strong> total
+        <strong className="font-bold text-foreground">{total}</strong> total
       </span>
       <span>
-        <strong style={{ color: S.onSurface }}>{active}</strong> active
+        <strong className="font-bold text-foreground">{active}</strong> active
       </span>
       <span>
-        <strong style={{ color: S.onSurface }}>{unregistered}</strong> unregistered (temp)
+        <strong className="font-bold text-foreground">{unregistered}</strong> unregistered (temp)
       </span>
     </div>
   );
-}
+};

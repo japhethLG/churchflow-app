@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Button, Card, Icon, Input, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
 
@@ -129,7 +128,7 @@ export const CampaignForm = ({
 
           {showStatus && (
             <div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: "var(--secondary-foreground)", marginBottom: 8 }}>
                 Status
               </div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -143,14 +142,14 @@ export const CampaignForm = ({
                       textAlign: "left",
                       padding: "12px 14px",
                       borderRadius: 12,
-                      border: `1.5px solid ${value.status === opt.value ? S.primary : "transparent"}`,
-                      background: value.status === opt.value ? S.primaryFixed : S.surfaceContainerHigh,
+                      border: `1.5px solid ${value.status === opt.value ? "var(--primary)" : "transparent"}`,
+                      background: value.status === opt.value ? "var(--accent)" : "var(--input)",
                       cursor: "pointer",
                       fontFamily: "inherit",
                     }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 600, color: S.onSurface }}>{opt.label}</div>
-                    <div style={{ fontSize: 11, color: S.onSurfaceMuted, marginTop: 2 }}>{opt.hint}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)" }}>{opt.label}</div>
+                    <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>{opt.hint}</div>
                   </button>
                 ))}
               </div>
@@ -168,7 +167,7 @@ export const CampaignForm = ({
             </Button>
           )}
         </div>
-        <p style={{ margin: "0 0 16px", fontSize: 12, color: S.onSurfaceMuted }}>
+        <p style={{ margin: "0 0 16px", fontSize: 12, color: "var(--muted-foreground)" }}>
           The campaign goal is the sum of these items&apos; targets. Members can pledge to a single item or to the
           campaign as a whole.
         </p>
@@ -177,10 +176,10 @@ export const CampaignForm = ({
           <div
             style={{
               padding: "24px 16px",
-              border: `1.5px dashed ${S.surfaceContainerHigh}`,
+              border: `1.5px dashed ${"var(--input)"}`,
               borderRadius: 12,
               textAlign: "center",
-              color: S.onSurfaceMuted,
+              color: "var(--muted-foreground)",
               fontSize: 13,
             }}
           >
@@ -193,7 +192,7 @@ export const CampaignForm = ({
                 key={item.tempId}
                 style={{
                   padding: 16,
-                  background: S.surfaceContainerLow,
+                  background: "var(--muted)",
                   borderRadius: 12,
                   display: "grid",
                   gridTemplateColumns: "1fr auto",
@@ -240,11 +239,11 @@ export const CampaignForm = ({
                     style={{
                       width: 36,
                       height: 36,
-                      background: S.surfaceContainer,
+                      background: "var(--secondary)",
                       borderRadius: 9999,
                       border: "none",
                       cursor: "pointer",
-                      color: S.onSurfaceMuted,
+                      color: "var(--muted-foreground)",
                       display: "grid",
                       placeItems: "center",
                     }}
@@ -259,7 +258,7 @@ export const CampaignForm = ({
       </Card>
 
       {error && (
-        <div style={{ padding: "12px 16px", background: S.errorContainer, color: S.error, borderRadius: 12, fontSize: 13 }}>
+        <div style={{ padding: "12px 16px", background: "color-mix(in srgb, var(--destructive) 12%, transparent)", color: "var(--destructive)", borderRadius: 12, fontSize: 13 }}>
           {error}
         </div>
       )}

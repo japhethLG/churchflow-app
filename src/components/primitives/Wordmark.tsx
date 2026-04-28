@@ -1,46 +1,22 @@
-import { SANCTUARY as S } from "@/lib/design/tokens";
+import { cn } from "@/lib/utils";
+import { Church } from "lucide-react";
 
-export const Wordmark = ({ size = "md", color }: { size?: "sm" | "md" | "lg"; color?: string }) => {
+export const Wordmark = ({ size = "md", color, className }: { size?: "sm" | "md" | "lg"; color?: string; className?: string }) => {
   const sizes = { sm: 14, md: 18, lg: 22 } as const;
   const fs = sizes[size];
+  
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        color: color || S.primary,
-        fontWeight: 600,
-        letterSpacing: "-0.02em",
-        fontSize: fs,
-      }}
+      className={cn("flex items-center gap-2.5 font-bold tracking-tight", className)}
+      style={{ fontSize: fs, color: color || "var(--primary)" }}
     >
       <div
-        style={{
-          width: fs + 6,
-          height: fs + 6,
-          borderRadius: 8,
-          background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
-          display: "grid",
-          placeItems: "center",
-          color: "#fff",
-        }}
+        className="rounded-lg bg-linear-to-br from-ring to-primary grid place-items-center text-white shrink-0"
+        style={{ width: fs + 6, height: fs + 6 }}
       >
-        <svg
-          width={fs - 2}
-          height={fs - 2}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20V10l8-6 8 6v10" />
-          <path d="M10 20v-6h4v6" />
-        </svg>
+        <Church size={fs - 2} strokeWidth={2.5} />
       </div>
-      <span>ChurchFlow</span>
+      <span className="text-foreground">ChurchFlow</span>
     </div>
   );
 }

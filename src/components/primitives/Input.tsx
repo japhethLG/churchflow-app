@@ -1,6 +1,8 @@
-import type { CSSProperties, ChangeEventHandler, HTMLInputTypeAttribute } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
+import type { ChangeEventHandler, HTMLInputTypeAttribute } from "react";
+import { Input as ShadedInput } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Icon, type IconName } from "./Icon";
+import { cn } from "@/lib/utils";
 
 export const Input = ({
   label,
@@ -12,7 +14,7 @@ export const Input = ({
   prefix,
   suffix,
   fullWidth = true,
-  style,
+  className,
   onChange,
   type = "text",
   disabled,
@@ -27,75 +29,55 @@ export const Input = ({
   prefix?: string;
   suffix?: string;
   fullWidth?: boolean;
-  style?: CSSProperties;
+  className?: string;
   onChange?: ChangeEventHandler<HTMLInputElement>;
   type?: HTMLInputTypeAttribute;
   disabled?: boolean;
   readOnly?: boolean;
 }) => {
   const interactive = Boolean(onChange);
+
   return (
-    <div style={{ width: fullWidth ? "100%" : undefined }}>
+    <div className={cn("flex flex-col gap-2", fullWidth ? "w-full" : "w-fit")}>
       {label && (
-        <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
+        <Label className="text-[13px] font-medium text-muted-foreground ml-1">
           {label}
-        </div>
+        </Label>
       )}
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          background: disabled ? S.surfaceContainer : S.surfaceContainerHigh,
-          borderRadius: 12,
-          padding: "0 14px",
-          height: 44,
-          color: S.onSurface,
-          border: error ? `1.5px solid ${S.error}` : "1.5px solid transparent",
-          opacity: disabled ? 0.6 : 1,
-          ...style,
-        }}
+        className={cn(
+          "flex h-11 items-center gap-2.5 rounded-xl border-1.5 px-3.5 transition-all focus-within:ring-2 focus-within:ring-ring/20",
+          disabled ? "bg-secondary opacity-60" : "bg-input",
+          error ? "border-destructive ring-destructive/10" : "border-transparent",
+          className
+        )}
       >
-        {icon && <Icon name={icon} size={16} color={S.onSurfaceMuted} />}
-        {prefix && <span style={{ color: S.onSurfaceMuted, fontSize: 14, flexShrink: 0 }}>{prefix}</span>}
+        {icon && <Icon name={icon} size={16} className="text-muted-foreground shrink-0" />}
+        {prefix && <span className="text-sm text-muted-foreground shrink-0">{prefix}</span>}
+        
         {interactive ? (
-          <input
+          <ShadedInput
             type={type}
             value={value ?? ""}
             placeholder={placeholder}
             onChange={onChange}
             disabled={disabled}
             readOnly={readOnly}
-            style={{
-              flex: 1,
-              border: "none",
-              outline: "none",
-              background: "transparent",
-              fontSize: 14,
-              color: S.onSurface,
-              fontFamily: "inherit",
-              fontVariantNumeric: "tabular-nums",
-              minWidth: 0,
-            }}
+            className="h-full border-none bg-transparent p-0 text-[14.5px] shadow-none focus-visible:ring-0 tabular-nums"
           />
         ) : (
-          <span
-            style={{
-              flex: 1,
-              fontSize: 14,
-              color: value ? S.onSurface : S.onSurfaceMuted,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
+          <span className={cn("flex-1 text-[14.5px] tabular-nums", value ? "text-foreground" : "text-muted-foreground")}>
             {value || placeholder}
           </span>
         )}
-        {suffix && <span style={{ color: S.onSurfaceMuted, fontSize: 13, flexShrink: 0 }}>{suffix}</span>}
+
+        {suffix && <span className="text-[13px] text-muted-foreground shrink-0">{suffix}</span>}
       </div>
+      
       {helper && !error && (
-        <div style={{ fontSize: 12, color: S.onSurfaceMuted, marginTop: 6 }}>{helper}</div>
+        <p className="ml-1 text-[12px] text-muted-foreground">{helper}</p>
       )}
-      {error && <div style={{ fontSize: 12, color: S.error, marginTop: 6 }}>{error}</div>}
+      {error && <p className="ml-1 text-[12px] text-destructive">{error}</p>}
     </div>
   );
 }

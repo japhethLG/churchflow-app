@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, type CSSProperties, type ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
+import { useEffect, type ReactNode } from "react";
 import { Button } from "@/components/primitives/Button";
+import { cn } from "@/lib/utils";
 
 // Shell every modal renders inside. Owns the overlay, ESC-to-close,
 // backdrop click, header (overline + title + close), body, and footer.
-// Individual modals only configure the body and action buttons.
 
 type Size = "sm" | "md" | "lg" | "xl";
 
@@ -24,17 +23,20 @@ type BaseModalProps = {
   title: string;
   showClose?: boolean;
   children: ReactNode;
-  // Footer — omit all three to render no footer at all
   primaryAction?: ModalAction;
   secondaryAction?: ModalAction;
   footerHint?: string;
-  // Shell
   size?: Size;
   onClose: () => void;
   dismissible?: boolean;
 };
 
-const WIDTHS: Record<Size, number> = { sm: 400, md: 560, lg: 720, xl: 920 };
+const SIZE_CLASS: Record<Size, string> = {
+  sm: "max-w-[400px]",
+  md: "max-w-[560px]",
+  lg: "max-w-[720px]",
+  xl: "max-w-[920px]",
+};
 
 export const BaseModal = ({
   overline,
@@ -64,105 +66,43 @@ export const BaseModal = ({
 
   const hasFooter = primaryAction || secondaryAction || footerHint;
 
-  const overlay: CSSProperties = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(53, 37, 205, 0.18)",
-    backdropFilter: "blur(8px)",
-    display: "grid",
-    placeItems: "center",
-    padding: 24,
-    zIndex: 1000,
-  };
-
-  const panel: CSSProperties = {
-    width: "100%",
-    maxWidth: WIDTHS[size],
-    background: S.surfaceContainerLowest,
-    borderRadius: S.radiusXl,
-    boxShadow: "0 30px 80px -20px rgba(79, 70, 229, 0.35)",
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-  };
-
-  const header: CSSProperties = {
-    padding: "24px 32px 0",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  };
-
-  const closeBtn: CSSProperties = {
-    width: 36,
-    height: 36,
-    borderRadius: "50%",
-    background: S.surfaceContainerLow,
-    border: "none",
-    cursor: "pointer",
-    display: "grid",
-    placeItems: "center",
-    flexShrink: 0,
-    color: S.onSurfaceMuted,
-    fontFamily: "inherit",
-  };
-
-  const body: CSSProperties = {
-    padding: "32px",
-    flex: 1,
-    overflowY: "auto",
-  };
-
-  const footer: CSSProperties = {
-    padding: "20px 32px",
-    borderTop: `1px solid ${S.surfaceContainer}`,
-    display: "flex",
-    justifyContent: hasFooter && (secondaryAction || primaryAction) ? "space-between" : "flex-end",
-    alignItems: "center",
-    gap: 8,
-    background: S.surfaceContainerLowest,
-  };
-
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label={title}
-      style={overlay}
+      className="fixed inset-0 z-[1000] grid place-items-center p-6"
+      style={{
+        background: "rgba(53, 37, 205, 0.18)",
+        backdropFilter: "blur(8px)",
+      }}
       onClick={dismissible ? onClose : undefined}
     >
-      <div style={panel} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div style={header}>
+      <div
+        className={cn(
+          "flex w-full flex-col overflow-hidden rounded-[24px] bg-card shadow-[0_30px_80px_-20px_rgba(79,70,229,0.35)]",
+          SIZE_CLASS[size],
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between px-8 pt-6">
           <div>
             {overline && (
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: S.onSurfaceMuted,
-                  marginBottom: 4,
-                }}
-              >
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 {overline}
               </div>
             )}
-            <h2
-              style={{
-                margin: 0,
-                fontSize: 22,
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
-                color: S.onSurface,
-              }}
-            >
+            <h2 className="m-0 text-[22px] font-semibold tracking-tight text-foreground">
               {title}
             </h2>
           </div>
           {showClose && (
-            <button style={closeBtn} onClick={onClose} aria-label="Close">
+            <button
+              type="button"
+              className="grid size-9 shrink-0 place-items-center rounded-full border-0 bg-muted text-muted-foreground hover:opacity-90"
+              onClick={onClose}
+              aria-label="Close"
+            >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path
                   d="M12 4L4 12M4 4l8 8"
@@ -175,18 +115,25 @@ export const BaseModal = ({
           )}
         </div>
 
-        {/* Body */}
-        <div style={body}>{children}</div>
+        <div className="flex-1 overflow-y-auto p-8">{children}</div>
 
-        {/* Footer */}
         {hasFooter && (
-          <div style={footer}>
+          <div
+            className={cn(
+              "flex items-center gap-2 border-t border-border bg-card px-8 py-5",
+              footerHint && (secondaryAction || primaryAction)
+                ? "justify-between"
+                : "justify-end",
+            )}
+          >
             {footerHint ? (
-              <span style={{ fontSize: 11, color: S.onSurfaceMuted }}>{footerHint}</span>
+              <span className="text-[11px] text-muted-foreground">
+                {footerHint}
+              </span>
             ) : (
               <span />
             )}
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="flex gap-2">
               {secondaryAction && (
                 <Button
                   variant={secondaryAction.variant ?? "tertiary"}
@@ -213,4 +160,4 @@ export const BaseModal = ({
       </div>
     </div>
   );
-}
+};

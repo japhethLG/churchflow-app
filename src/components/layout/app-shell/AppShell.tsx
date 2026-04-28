@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
-import { Sidebar, type Perspective, type TenantSummary } from "./Sidebar";
-import { TopBar } from "./TopBar";
+import { cn } from "@/lib/utils";
+import { Sidebar, type Perspective, type TenantSummary } from "../sidebar";
+import { TopBar } from "../top-bar";
 
 export const AppShell = ({
   perspective,
@@ -30,14 +30,11 @@ export const AppShell = ({
 }) => {
   return (
     <div
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-        display: "flex",
-        background: bg || S.surface,
-        fontFamily: "Inter, system-ui, sans-serif",
-        color: S.onSurface,
-      }}
+      className={cn(
+        "flex min-h-screen w-full font-sans text-foreground",
+        !bg && "bg-background",
+      )}
+      style={bg ? { background: bg } : undefined}
     >
       <Sidebar
         perspective={perspective}
@@ -48,22 +45,14 @@ export const AppShell = ({
         memberships={memberships}
         isSuperAdmin={isSuperAdmin}
       />
-      <div
-        style={{
-          flex: 1,
-          minWidth: 0,
-          display: "flex",
-          flexDirection: "column",
-          height: "100vh",
-          overflow: "hidden",
-        }}
-      >
+      <div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar breadcrumb={breadcrumb} />
         <div
+          className="flex-1 overflow-auto"
           style={{
-            flex: 1,
-            overflow: "auto",
-            padding: `0 ${contentPad}px ${contentPad}px`,
+            paddingLeft: contentPad,
+            paddingRight: contentPad,
+            paddingBottom: contentPad,
           }}
         >
           {children}
@@ -71,4 +60,4 @@ export const AppShell = ({
       </div>
     </div>
   );
-}
+};

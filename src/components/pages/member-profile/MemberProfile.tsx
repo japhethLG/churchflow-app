@@ -9,7 +9,6 @@ import {
   Card,
   Icon,
 } from "@/components/primitives";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useMyMembership, useUpdateMyMembership } from "@/lib/api/members";
 import { nstr } from "@/lib/api/coerce";
 
@@ -72,7 +71,7 @@ export const MemberProfile = ({
         subtitle="Manage your contact information and how the church office reaches you."
       />
 
-      <Card style={{ marginTop: 24 }}>
+      <Card className="mt-6">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <Input
             label="First name"
@@ -134,12 +133,12 @@ export const MemberProfile = ({
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  color: S.onSurfaceVariant,
+                  color: "var(--secondary-foreground)",
                   fontSize: 13,
                   fontWeight: 500,
                 }}
               >
-                <Icon name="check" size={16} color={S.primary} />
+                <Icon name="check" size={16} color={"var(--primary)"} />
                 Profile updated successfully
               </div>
             )}
@@ -158,7 +157,7 @@ export const MemberProfile = ({
         style={{
           marginTop: 40,
           padding: "24px",
-          background: S.surfaceContainerLow,
+          background: "var(--muted)",
           borderRadius: 16,
           display: "flex",
           gap: 16,
@@ -170,22 +169,22 @@ export const MemberProfile = ({
             width: 40,
             height: 40,
             borderRadius: 12,
-            background: S.surfaceContainerHighest,
+            background: "var(--input)",
             display: "grid",
             placeItems: "center",
             flexShrink: 0,
           }}
         >
-          <Icon name="bell" size={20} color={S.onSurfaceVariant} />
+          <Icon name="bell" size={20} color={"var(--secondary-foreground)"} />
         </div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: S.onSurface }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--foreground)" }}>
             Privacy Note
           </div>
           <div
             style={{
               fontSize: 13,
-              color: S.onSurfaceVariant,
+              color: "var(--secondary-foreground)",
               marginTop: 4,
               lineHeight: 1.5,
             }}

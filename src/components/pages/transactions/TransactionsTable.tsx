@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import {
   Amount,
   Avatar,
@@ -47,20 +46,22 @@ const METHOD_LABEL: Record<TransactionRow["paymentMethod"], string> = {
   OTHER: "Other",
 };
 
-const fmtDate = (iso: string): string  => {
+const fmtDate = (iso: string): string => {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
+};
 
-const fullName = (m: Member | undefined): string  => {
+const fullName = (m: Member | undefined): string => {
   if (!m) return "—";
   return `${m.firstName} ${m.lastName}`.trim();
-}
+};
 
 export type TransactionsTableHandlers = {
   onView: (t: TransactionRow) => void;
   onEdit: (t: TransactionRow) => void;
   onDelete: (t: TransactionRow) => void;
 };
+
+const muted = "var(--muted-foreground)";
 
 export const TransactionsTable = ({
   rows,
@@ -84,7 +85,7 @@ export const TransactionsTable = ({
       key: "date",
       label: "Date",
       width: "100px",
-      render: (t) => <span style={{ fontSize: 13 }}>{fmtDate(t.date)}</span>,
+      render: (t) => <span className="text-[13px]">{fmtDate(t.date)}</span>,
     },
     {
       key: "member",
@@ -92,15 +93,15 @@ export const TransactionsTable = ({
       render: (t) => {
         const memberId = nstr(t.memberId);
         if (!memberId) {
-          return <span style={{ color: S.onSurfaceMuted, fontStyle: "italic", fontSize: 13 }}>Anonymous</span>;
+          return (
+            <span className="text-[13px] italic text-muted-foreground">Anonymous</span>
+          );
         }
         const m = membersById[memberId];
         return (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          <span className="inline-flex min-w-0 items-center gap-2">
             <Avatar name={fullName(m)} size={26} />
-            <span style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {fullName(m)}
-            </span>
+            <span className="truncate text-sm">{fullName(m)}</span>
           </span>
         );
       },
@@ -117,9 +118,9 @@ export const TransactionsTable = ({
       width: "180px",
       render: (t) => {
         const cid = nstr(t.campaignId);
-        if (!cid) return <span style={{ color: S.onSurfaceMuted }}>—</span>;
+        if (!cid) return <span className="text-muted-foreground">—</span>;
         return (
-          <span style={{ color: S.primary, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>
+          <span className="block truncate text-[13px] text-primary">
             {campaignsById[cid]?.title ?? "Campaign"}
           </span>
         );
@@ -130,8 +131,8 @@ export const TransactionsTable = ({
       label: "Method",
       width: "120px",
       render: (t) => (
-        <span style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 13 }}>
-          <Icon name={METHOD_ICON[t.paymentMethod]} size={13} color={S.onSurfaceMuted} />
+        <span className="inline-flex items-center gap-1.5 text-[13px]">
+          <Icon name={METHOD_ICON[t.paymentMethod]} size={13} color={muted} />
           {METHOD_LABEL[t.paymentMethod]}
         </span>
       ),
@@ -143,9 +144,9 @@ export const TransactionsTable = ({
       render: (t) => {
         const r = nstr(t.referenceNumber);
         return r ? (
-          <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, color: S.onSurfaceMuted }}>{r}</span>
+          <span className="font-mono text-xs text-muted-foreground">{r}</span>
         ) : (
-          <span style={{ color: S.onSurfaceMuted }}>—</span>
+          <span className="text-muted-foreground">—</span>
         );
       },
     },
@@ -187,18 +188,9 @@ export const TransactionsTable = ({
       emptyAction={
         onCreate && (
           <button
+            type="button"
             onClick={onCreate}
-            style={{
-              padding: "10px 20px",
-              borderRadius: 9999,
-              background: `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})`,
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            className="cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,var(--ring),var(--primary))] px-5 py-2.5 font-inherit text-sm font-medium text-primary-foreground"
           >
             + Record gift
           </button>
@@ -206,4 +198,4 @@ export const TransactionsTable = ({
       }
     />
   );
-}
+};

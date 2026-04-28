@@ -42,7 +42,7 @@ export const LoginButton = () => {
         {loading ? "Signing in…" : "Continue with Google"}
       </Button>
       {error && (
-        <div style={{ marginTop: 12, fontSize: 12, color: "#8C1D18", textAlign: "center" }}>
+        <div className="mt-3 text-center text-xs text-destructive">
           {error}
         </div>
       )}

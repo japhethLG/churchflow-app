@@ -1,7 +1,6 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
-import { Icon } from "@/components/primitives/Icon";
+import { StatCard } from "@/components/primitives";
 
 type StatsProps = {
   total: number;
@@ -12,96 +11,31 @@ type StatsProps = {
 
 export const InvitationsStatsBar = ({ total, pending, accepted, cancelled }: StatsProps) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 12,
-        padding: "0 24px 24px",
-        overflowX: "auto",
-      }}
-    >
+    <div className="flex gap-3 overflow-x-auto px-6 pb-6">
       <StatCard
+        className="flex-1 min-w-[160px]"
         label="Total sent"
         value={total}
         icon="mail"
-        color={S.primary}
       />
       <StatCard
+        className="flex-1 min-w-[160px]"
         label="Pending"
         value={pending}
         icon="clock"
-        color={S.warning}
       />
       <StatCard
+        className="flex-1 min-w-[160px]"
         label="Accepted"
         value={accepted}
         icon="check"
-        color={S.success}
       />
       <StatCard
+        className="flex-1 min-w-[160px]"
         label="Expired/Cancelled"
         value={cancelled}
         icon="close"
-        color={S.error}
       />
-    </div>
-  );
-}
-
-const StatCard = ({
-  label,
-  value,
-  icon,
-  color,
-}: {
-  label: string;
-  value: number;
-  icon: any;
-  color: string;
-}) => {
-  return (
-    <div
-      style={{
-        flex: 1,
-        minWidth: 160,
-        background: S.surfaceContainerLowest,
-        borderRadius: 16,
-        padding: "16px 20px",
-        border: `1px solid ${S.surfaceContainer}`,
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          background: `${color}14`,
-          display: "grid",
-          placeItems: "center",
-          color: color,
-        }}
-      >
-        <Icon name={icon} size={20} />
-      </div>
-      <div>
-        <div style={{ fontSize: 13, color: S.onSurfaceVariant, fontWeight: 500 }}>
-          {label}
-        </div>
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: S.onSurface,
-            marginTop: 2,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {value}
-        </div>
-      </div>
     </div>
   );
 }

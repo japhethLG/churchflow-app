@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { AppShell } from "@/components/layout/AppShell";
+import { AppShell } from "@/components/layout";
 import { getSessionUser } from "@/lib/auth/server";
 
 // Admin-perspective gate. Lives under [tenantSlug] so TenantLayout has

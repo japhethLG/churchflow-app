@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
-import { Avatar, Chip, Icon, Input, type IconName } from "@/components/primitives";
+import { Avatar, Chip, Icon, Input, Select, type IconName } from "@/components/primitives";
+import { cn } from "@/lib/utils";
 import { useCampaign, useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
@@ -23,8 +23,6 @@ declare module "@/lib/modals/registry" {
 
 export type RecordGiftProps = {
   tenantSlug: string;
-  // Optional defaults so callers from a campaign / member detail can
-  // pre-fill context for the user.
   defaultMemberId?: string;
   defaultCampaignId?: string;
   defaultPledgeId?: string;
@@ -49,9 +47,9 @@ const METHOD_OPTIONS: { value: PaymentMethod; label: string; icon: IconName }[] 
   { value: "OTHER", label: "Other", icon: "dots" },
 ];
 
-const todayInputValue = (): string  => {
+const todayInputValue = (): string => {
   return new Date().toISOString().slice(0, 10);
-}
+};
 
 export const RecordGiftModal = ({
   tenantSlug,
@@ -84,23 +82,16 @@ export const RecordGiftModal = ({
   const chosenMember = memberById[memberId];
   const chosenCampaign = campaigns.find((c) => c.id === campaignId);
 
-  // Fetch the picked campaign's items so the user can earmark to a
-  // specific item. Only fires once a campaign is chosen.
   const { data: campaignDetail } = useCampaign(tenantSlug, campaignId, Boolean(campaignId));
   const campaignItems = campaignDetail?.items ?? [];
 
-  // Pull this member's active pledges against the chosen campaign so we
-  // can auto-attribute. If no campaign is set, also surface their other
-  // active pledges so the admin can pick one and infer the campaign.
   const { data: pledgesData } = usePledges(
     tenantSlug,
     { memberId, status: "ACTIVE", campaignId: campaignId || undefined, limit: 20 },
-    Boolean(memberId)
+    Boolean(memberId),
   );
   const pledges = pledgesData?.items ?? [];
 
-  // If a pledge is picked, the campaign + item are inherited. Keep them
-  // in sync visually so the form mirrors what the backend will store.
   useEffect(() => {
     if (!pledgeId) return;
     const p = pledges.find((x) => x.id === pledgeId);
@@ -117,7 +108,7 @@ export const RecordGiftModal = ({
       .filter((m) =>
         `${m.firstName} ${m.lastName} ${typeof m.email === "string" ? m.email : ""}`
           .toLowerCase()
-          .includes(q)
+          .includes(q),
       )
       .slice(0, 8);
   }, [members, memberSearch]);
@@ -147,7 +138,7 @@ export const RecordGiftModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not record gift");
     }
-  }
+  };
 
   const currency = tenant?.currency ?? "USD";
 
@@ -162,23 +153,11 @@ export const RecordGiftModal = ({
       primaryAction={{ label: "Record gift", onClick: handleSave, loading: isPending, disabled: !canSubmit }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {/* Amount — display-style input */}
+      <div className="flex flex-col gap-5">
         <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
-            Amount
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 6,
-              padding: "14px 18px",
-              background: S.surfaceContainerHigh,
-              borderRadius: 12,
-            }}
-          >
-            <span style={{ fontSize: 22, fontWeight: 500, color: S.onSurfaceMuted }}>{currency}</span>
+          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Amount</div>
+          <div className="flex items-baseline gap-1.5 rounded-xl bg-input px-[18px] py-3.5">
+            <span className="text-[22px] font-medium text-muted-foreground">{currency}</span>
             <input
               type="number"
               step="0.01"
@@ -187,30 +166,14 @@ export const RecordGiftModal = ({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               autoFocus
-              style={{
-                flex: 1,
-                background: "transparent",
-                border: "none",
-                outline: "none",
-                fontSize: 32,
-                fontWeight: 600,
-                letterSpacing: "-0.025em",
-                color: S.onSurface,
-                fontFamily: "inherit",
-                fontVariantNumeric: "tabular-nums",
-                width: "100%",
-                minWidth: 0,
-              }}
+              className="min-w-0 flex-1 border-none bg-transparent font-inherit text-[32px] font-semibold tracking-tight text-foreground outline-none tabular-nums placeholder:text-muted-foreground"
             />
           </div>
         </div>
 
-        {/* Type chips */}
         <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
-            Type
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Type</div>
+          <div className="flex flex-wrap gap-1.5">
             {TYPE_OPTIONS.map((opt) => (
               <span key={opt.value} onClick={() => setType(opt.value)}>
                 <Chip active={type === opt.value}>{opt.label}</Chip>
@@ -219,48 +182,27 @@ export const RecordGiftModal = ({
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="grid grid-cols-2 gap-3.5">
           <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
-              Member
-            </div>
+            <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Member</div>
             {chosenMember ? (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: 10,
-                  background: S.surfaceContainerHigh,
-                  borderRadius: 12,
-                  height: 44,
-                }}
-              >
+              <div className="flex h-11 items-center gap-2.5 rounded-xl bg-input p-2.5">
                 <Avatar name={`${chosenMember.firstName} ${chosenMember.lastName}`} size={28} />
-                <span style={{ flex: 1, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {chosenMember.firstName} {chosenMember.lastName}
-                </span>
+                <span className="min-w-0 flex-1 truncate text-sm">{chosenMember.firstName} {chosenMember.lastName}</span>
                 <button
                   type="button"
                   onClick={() => {
                     setMemberId("");
                     setPledgeId("");
                   }}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: S.primary,
-                    cursor: "pointer",
-                    fontSize: 12,
-                    fontFamily: "inherit",
-                  }}
+                  className="cursor-pointer border-none bg-transparent font-inherit text-xs text-primary hover:underline"
                 >
                   Change
                 </button>
               </div>
             ) : (
-              <div style={{ position: "relative" }}>
+              <div className="relative">
                 <Input
                   icon="search"
                   placeholder="Search or leave blank for anonymous"
@@ -268,26 +210,9 @@ export const RecordGiftModal = ({
                   onChange={(e) => setMemberSearch(e.target.value)}
                 />
                 {memberSearch.trim().length > 0 && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "100%",
-                      left: 0,
-                      right: 0,
-                      marginTop: 4,
-                      background: S.surfaceContainerLowest,
-                      border: `1px solid ${S.surfaceContainer}`,
-                      borderRadius: 12,
-                      maxHeight: 200,
-                      overflowY: "auto",
-                      zIndex: 1,
-                      boxShadow: "0 8px 24px -10px rgba(0,0,0,0.15)",
-                    }}
-                  >
+                  <div className="absolute left-0 right-0 top-full z-[1] mt-1 max-h-[200px] overflow-y-auto rounded-xl border border-border bg-card shadow-md">
                     {filteredMembers.length === 0 ? (
-                      <div style={{ padding: 12, fontSize: 12, color: S.onSurfaceMuted, textAlign: "center" }}>
-                        No matches
-                      </div>
+                      <div className="p-3 text-center text-xs text-muted-foreground">No matches</div>
                     ) : (
                       filteredMembers.map((m) => (
                         <button
@@ -297,21 +222,10 @@ export const RecordGiftModal = ({
                             setMemberId(m.id);
                             setMemberSearch("");
                           }}
-                          style={{
-                            width: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                            padding: 8,
-                            border: "none",
-                            background: "transparent",
-                            cursor: "pointer",
-                            textAlign: "left",
-                            fontFamily: "inherit",
-                          }}
+                          className="flex w-full cursor-pointer items-center gap-2 border-none bg-transparent p-2 text-left font-inherit hover:bg-muted"
                         >
                           <Avatar name={`${m.firstName} ${m.lastName}`} size={24} />
-                          <span style={{ fontSize: 13 }}>
+                          <span className="text-[13px]">
                             {m.firstName} {m.lastName}
                           </span>
                         </button>
@@ -324,9 +238,13 @@ export const RecordGiftModal = ({
           </div>
         </div>
 
-        {/* Campaign + (when picked) line item earmark */}
         {campaigns.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: campaignId && campaignItems.length > 0 ? "1fr 1fr" : "1fr", gap: 14 }}>
+          <div
+            className={cn(
+              "grid gap-3.5",
+              campaignId && campaignItems.length > 0 ? "grid-cols-2" : "grid-cols-1",
+            )}
+          >
             <Select
               label="Campaign (optional)"
               value={campaignId}
@@ -356,7 +274,6 @@ export const RecordGiftModal = ({
           </div>
         )}
 
-        {/* Pledge — only shown when the chosen member has active pledges. */}
         {pledges.length > 0 && (
           <Select
             label="Against pledge (optional)"
@@ -367,19 +284,16 @@ export const RecordGiftModal = ({
               ...pledges.map((p) => ({
                 value: p.id,
                 label: `${currency} ${Number(p.pledgedAmount).toFixed(2)} pledge${
-                  typeof p.campaignItemId === "string" ? " · earmarked" : ""
+                  p.campaignItemId ? " · earmarked" : ""
                 }`,
               })),
             ]}
           />
         )}
 
-        {/* Payment method grid */}
         <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
-            Payment method
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
+          <div className="mb-2 text-[13px] font-medium text-secondary-foreground">Payment method</div>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {METHOD_OPTIONS.map((m) => {
               const active = paymentMethod === m.value;
               return (
@@ -387,28 +301,24 @@ export const RecordGiftModal = ({
                   key={m.value}
                   type="button"
                   onClick={() => setPaymentMethod(m.value)}
-                  style={{
-                    padding: "12px 8px",
-                    borderRadius: 12,
-                    textAlign: "center",
-                    background: active ? S.primaryFixed : S.surfaceContainerLow,
-                    color: active ? S.primary : S.onSurfaceVariant,
-                    border: `1.5px solid ${active ? S.primary : "transparent"}`,
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                  }}
+                  className={cn(
+                    "cursor-pointer rounded-xl border-[1.5px] px-2 py-3 text-center font-inherit transition-colors",
+                    active
+                      ? "border-primary bg-accent text-primary"
+                      : "border-transparent bg-muted text-secondary-foreground",
+                  )}
                 >
-                  <div style={{ display: "grid", placeItems: "center", marginBottom: 4 }}>
+                  <div className="mb-1 grid place-items-center">
                     <Icon name={m.icon} size={18} />
                   </div>
-                  <div style={{ fontSize: 11, fontWeight: 500 }}>{m.label}</div>
+                  <div className="text-[11px] font-medium">{m.label}</div>
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="grid grid-cols-2 gap-3.5">
           <Input
             label="Reference # (optional)"
             placeholder="CHK-1402"
@@ -424,60 +334,13 @@ export const RecordGiftModal = ({
         </div>
 
         {chosenCampaign && chosenCampaign.currency !== currency && (
-          <p style={{ margin: 0, fontSize: 12, color: S.onSurfaceMuted }}>
+          <p className="m-0 text-xs text-muted-foreground">
             This campaign uses {chosenCampaign.currency}; recording in the church&apos;s currency ({currency}).
           </p>
         )}
 
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
       </div>
     </BaseModal>
   );
-}
-
-const Select = ({
-  label,
-  value,
-  onChange,
-  options,
-  disabled,
-  hint,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-  disabled?: boolean;
-  hint?: string;
-}) => {
-  return (
-    <div>
-      <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>{label}</div>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        style={{
-          width: "100%",
-          height: 44,
-          padding: "0 14px",
-          borderRadius: 12,
-          background: disabled ? S.surfaceContainer : S.surfaceContainerHigh,
-          border: "none",
-          fontFamily: "inherit",
-          fontSize: 14,
-          color: S.onSurface,
-          opacity: disabled ? 0.6 : 1,
-          cursor: disabled ? "not-allowed" : "pointer",
-        }}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      {hint && <div style={{ fontSize: 11, color: S.onSurfaceMuted, marginTop: 6 }}>{hint}</div>}
-    </div>
-  );
-}
+};

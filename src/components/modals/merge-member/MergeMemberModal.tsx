@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Avatar, Badge, Input } from "@/components/primitives";
 import { useMembers, useMergeMembers, useMergeMembersPreview } from "@/lib/api/members";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import type { components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
@@ -19,18 +19,16 @@ declare module "@/lib/modals/registry" {
 export type MergeMemberProps = {
   tenantSlug: string;
   keep: Member;
-  // Optional: pre-select the member to drop. Otherwise the admin picks
-  // from a search list inside the modal.
   initialDropId?: string;
 };
 
-const fullName = (m: Member): string  => {
+const fullName = (m: Member): string => {
   return `${m.firstName} ${m.lastName}`.trim();
-}
+};
 
-const asString = (v: unknown): string | null  => {
+const asString = (v: unknown): string | null => {
   return typeof v === "string" && v.length > 0 ? v : null;
-}
+};
 
 export const MergeMemberModal = ({
   tenantSlug,
@@ -67,7 +65,7 @@ export const MergeMemberModal = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to merge");
     }
-  }
+  };
 
   return (
     <BaseModal
@@ -85,7 +83,7 @@ export const MergeMemberModal = ({
       }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="flex flex-col gap-4">
         <KeeperRow keep={keep} />
 
         {!dropId ? (
@@ -100,8 +98,10 @@ export const MergeMemberModal = ({
           <>
             {previewing && <SkeletonPreview />}
             {previewError && (
-              <p style={{ margin: 0, fontSize: 13, color: S.error }}>
-                {previewError instanceof Error ? previewError.message : "Failed to load preview"}
+              <p className="m-0 text-sm text-destructive">
+                {previewError instanceof Error
+                  ? previewError.message
+                  : "Failed to load preview"}
               </p>
             )}
             {preview && (
@@ -117,40 +117,29 @@ export const MergeMemberModal = ({
           </>
         )}
 
-        {error && <p style={{ margin: 0, fontSize: 13, color: S.error }}>{error}</p>}
+        {error && <p className="m-0 text-sm text-destructive">{error}</p>}
 
-        <p style={{ margin: 0, fontSize: 12, color: S.onSurfaceMuted, lineHeight: 1.5 }}>
-          Merging is logged to the audit trail. The dropped profile is soft-deleted —
-          if anything looks wrong after, support can recover it.
+        <p className="m-0 text-xs leading-normal text-muted-foreground">
+          Merging is logged to the audit trail. The dropped profile is soft-deleted — if anything
+          looks wrong after, support can recover it.
         </p>
       </div>
     </BaseModal>
   );
-}
+};
 
 const KeeperRow = ({ keep }: { keep: Member }) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 14px",
-        borderRadius: 12,
-        background: S.surfaceContainerHigh,
-      }}
-    >
+    <div className="flex items-center gap-3 rounded-xl bg-input px-3.5 py-3">
       <Avatar name={fullName(keep)} size={40} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14 }}>{fullName(keep)}</div>
-        <div style={{ fontSize: 12, color: S.onSurfaceMuted }}>
-          Keeper — this profile stays
-        </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold">{fullName(keep)}</div>
+        <div className="text-xs text-muted-foreground">Keeper — this profile stays</div>
       </div>
       <Badge color={keep.userId ? "indigo" : "clay"}>{keep.userId ? "Linked" : "Temp"}</Badge>
     </div>
   );
-}
+};
 
 const PickDuplicate = ({
   search,
@@ -166,9 +155,9 @@ const PickDuplicate = ({
   onPick: (id: string) => void;
 }) => {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div className="flex flex-col gap-3">
       <div>
-        <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurfaceVariant, marginBottom: 8 }}>
+        <div className="mb-2 text-[13px] font-medium text-secondary-foreground">
           Pick the duplicate to merge
         </div>
         <Input
@@ -178,22 +167,12 @@ const PickDuplicate = ({
           onChange={(e) => onSearch(e.target.value)}
         />
       </div>
-      <div
-        style={{
-          background: S.surfaceContainerLow,
-          borderRadius: 12,
-          padding: 6,
-          maxHeight: 280,
-          overflow: "auto",
-        }}
-      >
+      <div className="max-h-[280px] overflow-auto rounded-xl bg-muted p-1.5">
         {loading && (
-          <div style={{ padding: 16, fontSize: 13, color: S.onSurfaceMuted, textAlign: "center" }}>
-            Loading…
-          </div>
+          <div className="p-4 text-center text-[13px] text-muted-foreground">Loading…</div>
         )}
         {!loading && candidates.length === 0 && (
-          <div style={{ padding: 16, fontSize: 13, color: S.onSurfaceMuted, textAlign: "center" }}>
+          <div className="p-4 text-center text-[13px] text-muted-foreground">
             No other members match.
           </div>
         )}
@@ -201,32 +180,16 @@ const PickDuplicate = ({
           candidates.map((m) => (
             <button
               key={m.id}
+              type="button"
               onClick={() => onPick(m.id)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                width: "100%",
-                padding: "10px 12px",
-                background: "transparent",
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-                textAlign: "left",
-                fontFamily: "inherit",
-                color: S.onSurface,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = S.surfaceContainerHigh;
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-              }}
+              className={cn(
+                "flex w-full cursor-pointer items-center gap-3 rounded-lg border-0 bg-transparent px-3 py-2.5 text-left font-inherit text-foreground transition-colors hover:bg-input",
+              )}
             >
               <Avatar name={fullName(m)} size={32} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 500, fontSize: 14 }}>{fullName(m)}</div>
-                <div style={{ fontSize: 12, color: S.onSurfaceMuted }}>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium">{fullName(m)}</div>
+                <div className="text-xs text-muted-foreground">
                   {asString(m.email) ?? asString(m.phone) ?? "—"}
                 </div>
               </div>
@@ -236,7 +199,7 @@ const PickDuplicate = ({
       </div>
     </div>
   );
-}
+};
 
 const Preview = ({
   drop,
@@ -254,60 +217,30 @@ const Preview = ({
   onPickAgain: () => void;
 }) => {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 14px",
-          borderRadius: 12,
-          background: S.surfaceContainerLow,
-          border: `1.5px solid ${S.error}33`,
-        }}
-      >
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3 rounded-xl border border-destructive/25 bg-muted px-3.5 py-3">
         <Avatar name={fullName(drop)} size={40} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 14 }}>{fullName(drop)}</div>
-          <div style={{ fontSize: 12, color: S.onSurfaceMuted }}>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold">{fullName(drop)}</div>
+          <div className="text-xs text-muted-foreground">
             Will be removed — data moves into {fullName(keep)}
           </div>
         </div>
         <button
+          type="button"
           onClick={onPickAgain}
-          style={{
-            background: "none",
-            border: "none",
-            color: S.primary,
-            cursor: "pointer",
-            fontSize: 13,
-            fontFamily: "inherit",
-            fontWeight: 500,
-          }}
+          className="cursor-pointer border-0 bg-transparent text-[13px] font-medium text-primary hover:underline"
         >
           Change
         </button>
       </div>
 
-      <div
-        style={{
-          background: S.surfaceContainerLowest,
-          border: `1.5px solid ${S.outlineVariant}`,
-          borderRadius: 12,
-          padding: 16,
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
-        <div style={{ fontSize: 13, fontWeight: 600, color: S.onSurfaceVariant }}>What will move</div>
+      <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-4">
+        <div className="text-[13px] font-semibold text-secondary-foreground">What will move</div>
         <Row label="Transactions" value={txCount.toString()} />
         <Row label="Pledges" value={pledgeCount.toString()} />
         {fields.length > 0 && (
-          <Row
-            label="Fields copied to keeper"
-            value={fields.join(", ")}
-          />
+          <Row label="Fields copied to keeper" value={fields.join(", ")} />
         )}
         {fields.length === 0 && (
           <Row label="Fields copied to keeper" value="None — keeper already has them" muted />
@@ -315,33 +248,24 @@ const Preview = ({
       </div>
     </div>
   );
-}
+};
 
 const Row = ({ label, value, muted }: { label: string; value: string; muted?: boolean }) => {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-      <span style={{ color: S.onSurfaceVariant }}>{label}</span>
+    <div className="flex justify-between text-[13px]">
+      <span className="text-secondary-foreground">{label}</span>
       <span
-        style={{
-          fontWeight: 500,
-          color: muted ? S.onSurfaceMuted : S.onSurface,
-          fontVariantNumeric: "tabular-nums",
-        }}
+        className={cn(
+          "font-medium tabular-nums",
+          muted ? "text-muted-foreground" : "text-foreground",
+        )}
       >
         {value}
       </span>
     </div>
   );
-}
+};
 
 const SkeletonPreview = () => {
-  return (
-    <div
-      style={{
-        height: 140,
-        borderRadius: 12,
-        background: S.surfaceContainer,
-      }}
-    />
-  );
-}
+  return <div className="h-[140px] rounded-xl bg-secondary" />;
+};

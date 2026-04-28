@@ -1,10 +1,10 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { DataTable, type DataTableColumn } from "@/components/primitives/DataTable";
 import { Badge, StatusBadge, type Status } from "@/components/primitives/Badge";
 import { Button } from "@/components/primitives/Button";
 import type { components } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type Invitation = components["schemas"]["InvitationResponseDto"];
 
@@ -18,7 +18,7 @@ const STATUS_MAP: Record<Invitation["status"], Status> = {
 export const InvitationsTable = ({
   rows,
   loading,
-  tenantId,
+  tenantId: _tenantId,
   onCancel,
 }: {
   rows: Invitation[];
@@ -26,14 +26,16 @@ export const InvitationsTable = ({
   tenantId: string;
   onCancel: (inv: Invitation) => void;
 }) => {
+
+
   const columns: DataTableColumn<Invitation>[] = [
     {
       key: "email",
       label: "Recipient",
       render: (row) => (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontWeight: 500, color: S.onSurface }}>{row.email}</span>
-          <span style={{ fontSize: 12, color: S.onSurfaceMuted }}>
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground">{row.email}</span>
+          <span className="text-xs text-muted-foreground">
             Sent {new Date(row.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -60,14 +62,16 @@ export const InvitationsTable = ({
       label: "Expires",
       width: "120px",
       render: (row) => {
-        if (row.status !== "PENDING") return <span style={{ color: S.onSurfaceMuted }}>—</span>;
+        if (row.status !== "PENDING") return <span className="text-muted-foreground">—</span>;
         const expires = new Date(row.expiresAt);
         const now = new Date();
         const diff = expires.getTime() - now.getTime();
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-        
+
         return (
-          <span style={{ color: days < 3 ? S.error : S.onSurfaceVariant }}>
+          <span
+            className={cn(days < 3 && days > 0 ? "text-destructive" : "text-secondary-foreground")}
+          >
             {days <= 0 ? "Expired" : `${days}d left`}
           </span>
         );
@@ -78,18 +82,12 @@ export const InvitationsTable = ({
       label: "",
       width: "100px",
       align: "right",
-      render: (row) => (
+      render: (row) =>
         row.status === "PENDING" ? (
-          <Button
-            variant="tertiary"
-            size="sm"
-            destructive
-            onClick={() => onCancel(row)}
-          >
+          <Button variant="tertiary" size="sm" destructive onClick={() => onCancel(row)}>
             Cancel
           </Button>
-        ) : null
-      ),
+        ) : null,
     },
   ];
 
@@ -103,4 +101,4 @@ export const InvitationsTable = ({
       emptySubtitle="Invite members or admins to join your church."
     />
   );
-}
+};

@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
+import {
+  Table as ShadedTable,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 export type TableColumn<Row = Record<string, ReactNode>> = {
   key: keyof Row & string;
@@ -10,60 +18,52 @@ export type TableColumn<Row = Record<string, ReactNode>> = {
 
 export type TableRow = Record<string, ReactNode> & { _hover?: boolean };
 
-export const Table = ({ columns, rows }: { columns: TableColumn[]; rows: TableRow[] }) => {
-  const gridTemplate = columns.map((c) => c.width || "1fr").join(" ");
+export const Table = ({ columns, rows, className }: { columns: TableColumn[]; rows: TableRow[]; className?: string }) => {
   return (
-    <div
-      style={{
-        background: S.surfaceContainerLowest,
-        borderRadius: 16,
-        padding: "8px 0",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: gridTemplate,
-          padding: "12px 24px",
-          gap: 16,
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color: S.onSurfaceMuted,
-        }}
-      >
-        {columns.map((c, i) => (
-          <div key={i} style={{ textAlign: c.align || "left" }}>
-            {c.label}
-          </div>
-        ))}
-      </div>
-      {rows.map((row, i) => (
-        <div
-          key={i}
-          style={{
-            display: "grid",
-            gridTemplateColumns: gridTemplate,
-            padding: "14px 24px",
-            gap: 16,
-            alignItems: "center",
-            borderRadius: 12,
-            margin: "2px 8px",
-            background: row._hover ? S.surfaceContainerLow : "transparent",
-            fontSize: 14,
-            color: S.onSurface,
-            minHeight: 40,
-          }}
-        >
-          {columns.map((c, j) => (
-            <div key={j} style={{ textAlign: c.align || "left", minWidth: 0 }}>
-              {row[c.key]}
-            </div>
+    <div className={cn("rounded-2xl bg-card p-2 overflow-hidden", className)}>
+      <ShadedTable>
+        <TableHeader className="border-none">
+          <TableRow className="border-none hover:bg-transparent">
+            {columns.map((c, i) => (
+              <TableHead
+                key={i}
+                className={cn(
+                  "h-10 px-6 text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground",
+                  c.align === "right" && "text-right",
+                  c.align === "center" && "text-center"
+                )}
+                style={{ width: c.width }}
+              >
+                {c.label}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row, i) => (
+            <TableRow
+              key={i}
+              className={cn(
+                "border-none transition-colors",
+                row._hover ? "bg-muted/50" : "hover:bg-muted/30"
+              )}
+            >
+              {columns.map((c, j) => (
+                <TableCell
+                  key={j}
+                  className={cn(
+                    "px-6 py-3.5 text-sm font-medium text-foreground",
+                    c.align === "right" && "text-right",
+                    c.align === "center" && "text-center"
+                  )}
+                >
+                  {row[c.key]}
+                </TableCell>
+              ))}
+            </TableRow>
           ))}
-        </div>
-      ))}
+        </TableBody>
+      </ShadedTable>
     </div>
   );
 }

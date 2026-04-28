@@ -1,7 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
-
 const MESSAGES = [
   "Thank you for your faithful giving, {name}. Your contributions this month are helping sustain our weekly ministries.",
   "Your generosity makes a real difference, {name}. Every gift supports the work of this community.",
@@ -10,39 +8,19 @@ const MESSAGES = [
 ];
 
 export const MemberThankYou = ({ name }: { name: string }) => {
-  // Rotate message based on day of month for variety
   const dayIndex = new Date().getDate() % MESSAGES.length;
   const message = MESSAGES[dayIndex].replace("{name}", name);
 
   return (
-    <div
-      style={{
-        padding: "20px 28px",
-        borderRadius: 16,
-        background: `linear-gradient(90deg, ${S.tertiaryContainer}, ${S.surfaceContainerLowest})`,
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
-        marginBottom: 16,
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          background: S.tertiary + "20",
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
+    <div className="mb-4 flex items-center gap-4 rounded-2xl bg-[linear-gradient(90deg,var(--tertiary-container),var(--card))] px-7 py-5">
+      <div className="grid size-10 shrink-0 place-items-center rounded-full bg-tertiary/20">
         <svg
           width="20"
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          stroke={S.tertiary}
+          className="text-tertiary"
+          stroke="currentColor"
           strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -50,19 +28,9 @@ export const MemberThankYou = ({ name }: { name: string }) => {
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       </div>
-      <div style={{ flex: 1 }}>
-        <div
-          style={{
-            fontSize: 15,
-            color: S.tertiary,
-            fontStyle: "italic",
-            letterSpacing: "-0.005em",
-            lineHeight: 1.5,
-          }}
-        >
-          &ldquo;{message}&rdquo;
-        </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[15px] italic leading-snug tracking-tight text-tertiary">&ldquo;{message}&rdquo;</div>
       </div>
     </div>
   );
-}
+};

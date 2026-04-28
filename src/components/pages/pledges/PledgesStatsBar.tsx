@@ -1,6 +1,5 @@
 "use client";
 
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Amount } from "@/components/primitives";
 
 export const PledgesStatsBar = ({
@@ -15,22 +14,22 @@ export const PledgesStatsBar = ({
   totalAmount: number;
 }) => {
   return (
-    <div style={{ display: "flex", gap: 32, padding: "8px 24px 20px", fontSize: 13, color: S.onSurfaceVariant }}>
+    <div className="flex gap-8 px-6 pb-5 pt-2 text-[13px] text-secondary-foreground">
       <span>
-        <strong style={{ color: S.onSurface }}>{total}</strong> pledges
+        <strong className="font-bold text-foreground">{total}</strong> pledges
       </span>
       <span>
-        <strong style={{ color: S.onSurface }}>{active}</strong> active
+        <strong className="font-bold text-foreground">{active}</strong> active
       </span>
       <span>
-        <strong style={{ color: S.onSurface }}>{fulfilled}</strong> fulfilled
+        <strong className="font-bold text-foreground">{fulfilled}</strong> fulfilled
       </span>
       <span>
-        <strong style={{ color: S.onSurface }}>
+        <strong className="font-bold text-foreground">
           <Amount value={totalAmount.toString()} />
         </strong>{" "}
         committed
       </span>
     </div>
   );
-}
+};

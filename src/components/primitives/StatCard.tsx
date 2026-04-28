@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
+import { Icon, type IconName } from "./Icon";
+import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 export const StatCard = ({
   label,
@@ -9,59 +11,56 @@ export const StatCard = ({
   caption,
   delta,
   deltaDirection,
+  icon,
   accent,
+  className,
 }: {
   label: string;
   value: ReactNode;
   caption?: ReactNode;
   delta?: string;
   deltaDirection?: "up" | "down" | "flat";
+  icon?: IconName;
   accent?: boolean;
+  className?: string;
 }) => {
+  const DeltaIcon = deltaDirection === "up" ? TrendingUp : deltaDirection === "down" ? TrendingDown : Minus;
+
   return (
-    <Card padding={24}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: 16,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: S.onSurfaceMuted,
-          }}
-        >
-          {label}
+    <Card padding={24} className={className}>
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center gap-2">
+          {icon && (
+            <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Icon name={icon} size={18} />
+            </div>
+          )}
+          <span className="text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground">
+            {label}
+          </span>
         </div>
         {delta && (
-          <Badge color={deltaDirection === "up" ? "green" : deltaDirection === "down" ? "red" : "neutral"}>
-            {deltaDirection === "up" ? "▲" : deltaDirection === "down" ? "▼" : ""} {delta}
+          <Badge 
+            color={deltaDirection === "up" ? "green" : deltaDirection === "down" ? "red" : "neutral"}
+            className="gap-1 px-2"
+          >
+            <DeltaIcon className="h-3 w-3" />
+            {delta}
           </Badge>
         )}
       </div>
-      <div
-        style={{
-          fontSize: 32,
-          fontWeight: 600,
-          letterSpacing: "-0.03em",
-          color: S.onSurface,
-          fontVariantNumeric: "tabular-nums",
-          lineHeight: 1,
-          background: accent ? `linear-gradient(135deg, ${S.primaryContainer}, ${S.primary})` : undefined,
-          WebkitBackgroundClip: accent ? "text" : undefined,
-          WebkitTextFillColor: accent ? "transparent" : undefined,
-        }}
-      >
+      
+      <div className={cn(
+        "text-3xl font-bold tracking-tight tabular-nums leading-none",
+        accent ? "bg-linear-to-br from-ring to-primary bg-clip-text text-transparent" : "text-foreground"
+      )}>
         {value}
       </div>
+      
       {caption && (
-        <div style={{ fontSize: 13, color: S.onSurfaceMuted, marginTop: 10 }}>{caption}</div>
+        <div className="mt-2.5 text-[13px] font-medium text-muted-foreground leading-relaxed">
+          {caption}
+        </div>
       )}
     </Card>
   );

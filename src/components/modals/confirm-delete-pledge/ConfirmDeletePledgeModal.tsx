@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useDeletePledge } from "@/lib/api/pledges";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
@@ -44,11 +43,11 @@ export const ConfirmDeletePledgeModal = ({
       primaryAction={{ label: "Delete pledge", onClick: handleDelete, loading: isPending, destructive: true }}
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
-      <p style={{ margin: 0, fontSize: 14, color: S.onSurfaceVariant, lineHeight: 1.6 }}>
+      <p className="m-0 text-sm leading-relaxed text-secondary-foreground">
         Removes this pledge from the campaign&apos;s totals. Use <strong>Edit → Cancelled</strong> instead if you
         want to keep the record visible.
       </p>
-      {error && <p style={{ margin: "12px 0 0", fontSize: 13, color: S.error }}>{error}</p>}
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
     </BaseModal>
   );
 }

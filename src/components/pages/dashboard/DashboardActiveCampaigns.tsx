@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SANCTUARY as S } from "@/lib/design/tokens";
-import { Card, SectionTitle, Badge, StatusBadge } from "@/components/primitives";
+import { Card, SectionTitle, StatusBadge } from "@/components/primitives";
 import type { components } from "@/lib/api";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -12,11 +11,11 @@ type CampaignWithProgress = Campaign & {
   raisedAmount?: number;
 };
 
-const fmtCompact = (value: number): string  => {
+const fmtCompact = (value: number): string => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
   return value.toFixed(0);
-}
+};
 
 const STATUS_MAP: Record<Campaign["status"], "Active" | "Upcoming" | "Completed" | "Cancelled"> = {
   DRAFT: "Upcoming",
@@ -41,11 +40,11 @@ export const DashboardActiveCampaigns = ({
       <Card>
         <SectionTitle title="Active campaigns" />
         {[0, 1, 2].map((i) => (
-          <div key={i} style={{ padding: "12px 8px", display: "flex", gap: 12, alignItems: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: S.surfaceContainer }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ height: 14, width: 140, background: S.surfaceContainer, borderRadius: 4, marginBottom: 6 }} />
-              <div style={{ height: 6, background: S.surfaceContainer, borderRadius: 3 }} />
+          <div key={i} className="flex items-center gap-3 px-2 py-3">
+            <div className="h-12 w-12 shrink-0 rounded-xl bg-secondary" />
+            <div className="min-w-0 flex-1">
+              <div className="mb-1.5 h-3.5 w-[140px] rounded bg-secondary" />
+              <div className="h-1.5 rounded bg-secondary" />
             </div>
           </div>
         ))}
@@ -53,26 +52,20 @@ export const DashboardActiveCampaigns = ({
     );
   }
 
-  // Show ACTIVE and DRAFT campaigns, sorted by status then createdAt
-  const visible = campaigns
-    .filter((c) => c.status === "ACTIVE" || c.status === "DRAFT")
-    .slice(0, 5);
+  const visible = campaigns.filter((c) => c.status === "ACTIVE" || c.status === "DRAFT").slice(0, 5);
 
   return (
     <Card>
       <SectionTitle
         title="Active campaigns"
         action={
-          <Link
-            href={`/${tenantSlug}/admin/campaigns`}
-            style={{ fontSize: 13, color: S.primary, fontWeight: 500, textDecoration: "none" }}
-          >
+          <Link href={`/${tenantSlug}/admin/campaigns`} className="text-[13px] font-medium text-primary">
             View all →
           </Link>
         }
       />
       {visible.length === 0 ? (
-        <div style={{ padding: "32px 0", textAlign: "center", color: S.onSurfaceMuted, fontSize: 14 }}>
+        <div className="py-8 text-center text-sm text-muted-foreground">
           No active campaigns.
         </div>
       ) : (
@@ -83,99 +76,31 @@ export const DashboardActiveCampaigns = ({
           const pct = goal > 0 ? Math.min((raised / goal) * 100, 100) : 0;
 
           return (
-            <Link
-              key={c.id}
-              href={`/${tenantSlug}/admin/campaigns/${c.id}`}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  gap: 14,
-                  alignItems: "center",
-                  padding: "12px 8px",
-                  borderRadius: 10,
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = S.surfaceContainerLow; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-              >
-                {/* Percentage badge */}
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 12,
-                    background: S.primaryFixed,
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: S.primary,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {pct.toFixed(0)}%
-                  </span>
+            <Link key={c.id} href={`/${tenantSlug}/admin/campaigns/${c.id}`} className="block text-inherit no-underline">
+              <div className="flex cursor-pointer items-center gap-3.5 rounded-[10px] px-2 py-3 transition-colors duration-150 hover:bg-muted">
+                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-accent">
+                  <span className="text-sm font-semibold tabular-nums text-primary">{pct.toFixed(0)}%</span>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      marginBottom: 6,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: S.onSurface,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {c.title}
-                    </span>
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1.5 flex items-center gap-2">
+                    <span className="truncate text-[13px] font-medium text-foreground">{c.title}</span>
                     <StatusBadge status={STATUS_MAP[c.status]} />
                   </div>
-                  {/* Progress bar */}
-                  <div
-                    style={{
-                      height: 6,
-                      borderRadius: 3,
-                      background: S.surfaceContainerLow,
-                      overflow: "hidden",
-                    }}
-                  >
+                  <div className="h-1.5 overflow-hidden rounded-[3px] bg-muted">
                     <div
-                      style={{
-                        width: `${pct}%`,
-                        height: "100%",
-                        borderRadius: 3,
-                        background: `linear-gradient(90deg, ${S.primaryContainer}, ${S.primary})`,
-                        transition: "width 0.5s ease-out",
-                      }}
+                      className="h-full rounded-[3px] bg-[linear-gradient(90deg,var(--ring),var(--primary))] transition-[width] duration-500 ease-out"
+                      style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: 11,
-                      color: S.onSurfaceMuted,
-                      marginTop: 4,
-                    }}
-                  >
-                    <span>{c.currency} {fmtCompact(raised)} raised</span>
-                    {goal > 0 && <span>Goal: {c.currency} {fmtCompact(goal)}</span>}
+                  <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
+                    <span>
+                      {c.currency} {fmtCompact(raised)} raised
+                    </span>
+                    {goal > 0 && (
+                      <span>
+                        Goal: {c.currency} {fmtCompact(goal)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -185,4 +110,4 @@ export const DashboardActiveCampaigns = ({
       )}
     </Card>
   );
-}
+};

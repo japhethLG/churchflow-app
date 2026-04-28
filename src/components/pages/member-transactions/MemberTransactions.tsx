@@ -10,7 +10,6 @@ import {
   Icon,
 } from "@/components/primitives";
 import { TypeBadge, type TransactionType } from "@/components/primitives/Badge";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { useMyMembership } from "@/lib/api/members";
 import { useTransactions } from "@/lib/api/transactions";
 import { useCampaigns } from "@/lib/api/campaigns";
@@ -114,7 +113,7 @@ export const MemberTransactions = ({
       label: "Date",
       width: "120px",
       render: (t: Transaction) => (
-        <span style={{ color: S.onSurfaceMuted }}>
+        <span style={{ color: "var(--muted-foreground)" }}>
           {new Date(t.date).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -136,10 +135,10 @@ export const MemberTransactions = ({
         const title = t.campaignId ? campaignMap[t.campaignId as any] : null;
         const itemTitle = t.campaignItemId ? campaignItemMap[t.campaignItemId as any] : null;
         return (
-          <span style={{ color: title ? S.onSurface : S.onSurfaceMuted }}>
+          <span style={{ color: title ? "var(--foreground)" : "var(--muted-foreground)" }}>
             {title || "\u2014"}
             {itemTitle && (
-              <span style={{ color: S.onSurfaceMuted, marginLeft: 4 }}>
+              <span style={{ color: "var(--muted-foreground)", marginLeft: 4 }}>
                 [{itemTitle}]
               </span>
             )}
@@ -166,9 +165,9 @@ export const MemberTransactions = ({
                       : "receipt"
             }
             size={16}
-            color={S.onSurfaceMuted}
+            color={"var(--muted-foreground)"}
           />
-          <span style={{ color: S.onSurfaceMuted, textTransform: "capitalize" }}>
+          <span style={{ color: "var(--muted-foreground)", textTransform: "capitalize" }}>
             {t.paymentMethod.toLowerCase().replace("_", " ")}
           </span>
         </div>
@@ -183,7 +182,7 @@ export const MemberTransactions = ({
           style={{
             fontFamily: "var(--font-mono, monospace)",
             fontSize: 12,
-            color: S.onSurfaceMuted,
+            color: "var(--muted-foreground)",
           }}
         >
           {nstr(t.note) ? (t.note as any).slice(0, 10) : "\u2014"}
@@ -220,7 +219,7 @@ export const MemberTransactions = ({
       {/* Filter bar */}
       <div
         style={{
-          background: S.surfaceContainerLow,
+          background: "var(--muted)",
           borderRadius: 16,
           padding: 12,
           display: "flex",
@@ -251,7 +250,7 @@ export const MemberTransactions = ({
           </Chip>
         </div>
 
-        <div style={{ width: 1, height: 24, background: S.surfaceContainer }} />
+        <div style={{ width: 1, height: 24, background: "var(--secondary)" }} />
 
         <div style={{ display: "flex", gap: 6 }}>
           {types.map((t) => (
@@ -266,7 +265,7 @@ export const MemberTransactions = ({
         </div>
 
         <div
-          style={{ marginLeft: "auto", fontSize: 12, color: S.onSurfaceMuted }}
+          style={{ marginLeft: "auto", fontSize: 12, color: "var(--muted-foreground)" }}
         >
           {transactions.length} gift{transactions.length !== 1 ? "s" : ""}
         </div>
@@ -288,7 +287,7 @@ export const MemberTransactions = ({
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: S.onSurfaceMuted,
+              color: "var(--muted-foreground)",
               marginBottom: 6,
             }}
           >
@@ -313,7 +312,7 @@ export const MemberTransactions = ({
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: S.onSurfaceMuted,
+              color: "var(--muted-foreground)",
               marginBottom: 6,
             }}
           >
@@ -337,7 +336,7 @@ export const MemberTransactions = ({
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: S.onSurfaceMuted,
+              color: "var(--muted-foreground)",
               marginBottom: 6,
             }}
           >

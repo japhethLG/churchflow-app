@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { SANCTUARY as S } from "@/lib/design/tokens";
 import { Card, SectionTitle, Badge, StatusBadge } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { nstr } from "@/lib/api/coerce";
@@ -9,15 +8,15 @@ import { nstr } from "@/lib/api/coerce";
 type Campaign = components["schemas"]["CampaignResponseDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
-const fmtCurrency = (v: number | string): string  => {
+const fmtCurrency = (v: number | string): string => {
   return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+};
 
-const fmtCompact = (v: number): string  => {
+const fmtCompact = (v: number): string => {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
   return v.toFixed(0);
-}
+};
 
 const PLEDGE_STATUS_MAP: Record<Pledge["status"], "Active" | "Completed" | "Cancelled"> = {
   ACTIVE: "Active",
@@ -31,7 +30,7 @@ export const MemberCampaignsPledges = ({
   progressMap,
   loading,
   tenantSlug,
-  memberId,
+  memberId: _memberId,
 }: {
   campaigns: Campaign[];
   pledges: Pledge[];
@@ -45,11 +44,11 @@ export const MemberCampaignsPledges = ({
       <Card>
         <SectionTitle title="Campaigns & pledges" />
         {[0, 1, 2].map((i) => (
-          <div key={i} style={{ display: "flex", gap: 14, padding: 12, marginBottom: 8 }}>
-            <div style={{ width: 58, height: 60, borderRadius: 10, background: S.surfaceContainer }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ height: 14, width: 160, background: S.surfaceContainer, borderRadius: 4, marginBottom: 8 }} />
-              <div style={{ height: 6, background: S.surfaceContainer, borderRadius: 3 }} />
+          <div key={i} className="mb-2 flex gap-3.5 p-3">
+            <div className="h-[60px] w-[58px] shrink-0 rounded-[10px] bg-secondary" />
+            <div className="flex-1">
+              <div className="mb-2 h-3.5 w-40 rounded bg-secondary" />
+              <div className="h-1.5 rounded bg-secondary" />
             </div>
           </div>
         ))}
@@ -57,11 +56,9 @@ export const MemberCampaignsPledges = ({
     );
   }
 
-  // Only show active campaigns
   const activeCampaigns = campaigns.filter((c) => c.status === "ACTIVE");
   const activePledges = pledges.filter((p) => p.status === "ACTIVE");
 
-  // Build a map: campaignId → user's pledges
   const pledgeByCampaign: Record<string, Pledge[]> = {};
   for (const p of activePledges) {
     if (!pledgeByCampaign[p.campaignId]) pledgeByCampaign[p.campaignId] = [];
@@ -73,22 +70,19 @@ export const MemberCampaignsPledges = ({
       <SectionTitle
         title="Campaigns & pledges"
         action={
-          <Link
-            href={`/${tenantSlug}/member/campaigns`}
-            style={{ fontSize: 13, color: S.primary, fontWeight: 500, textDecoration: "none" }}
-          >
+          <Link href={`/${tenantSlug}/member/campaigns`} className="text-[13px] font-medium text-primary">
             Browse campaigns →
           </Link>
         }
       />
 
       {activeCampaigns.length === 0 && activePledges.length === 0 ? (
-        <div style={{ padding: "32px 0", textAlign: "center", color: S.onSurfaceMuted, fontSize: 14 }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🎯</div>
+        <div className="py-8 text-center text-sm text-muted-foreground">
+          <div className="mb-2 text-[32px]">🎯</div>
           No active campaigns right now.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
           {activeCampaigns.map((c) => {
             const progress = progressMap[c.id];
             const goal = progress?.goalAmount ?? 0;
@@ -103,93 +97,40 @@ export const MemberCampaignsPledges = ({
               <Link
                 key={c.id}
                 href={`/${tenantSlug}/member/campaigns`}
-                style={{ textDecoration: "none", color: "inherit" }}
+                className="text-inherit no-underline"
               >
-                <div
-                  style={{
-                    padding: 14,
-                    background: S.surfaceContainerLow,
-                    borderRadius: 12,
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = S.surfaceContainer; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = S.surfaceContainerLow; }}
-                >
-                  {/* Title row */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: S.onSurface,
-                        letterSpacing: "-0.01em",
-                        flex: 1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
+                <div className="rounded-xl bg-muted p-3.5 transition-colors duration-150 hover:bg-secondary">
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold tracking-tight text-foreground">
                       {c.title}
                     </span>
                     <StatusBadge status="Active" />
                   </div>
 
-                  {/* Description snippet */}
                   {description && (
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: S.onSurfaceMuted,
-                        marginBottom: 10,
-                        lineHeight: 1.4,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {description}
-                    </div>
+                    <div className="mb-2.5 truncate text-xs leading-snug text-muted-foreground">{description}</div>
                   )}
 
-                  {/* Progress bar */}
                   {goal > 0 && (
                     <>
-                      <div
-                        style={{
-                          height: 6,
-                          borderRadius: 3,
-                          background: S.surfaceContainerLowest,
-                          overflow: "hidden",
-                          marginBottom: 6,
-                        }}
-                      >
+                      <div className="mb-1.5 h-1.5 overflow-hidden rounded-[3px] bg-card">
                         <div
-                          style={{
-                            width: `${pct}%`,
-                            height: "100%",
-                            borderRadius: 3,
-                            background: `linear-gradient(90deg, ${S.primaryContainer}, ${S.primary})`,
-                            transition: "width 0.5s ease-out",
-                          }}
+                          className="h-full rounded-[3px] bg-[linear-gradient(90deg,var(--ring),var(--primary))] transition-[width] duration-500 ease-out"
+                          style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          fontSize: 11,
-                          color: S.onSurfaceMuted,
-                          marginBottom: 6,
-                        }}
-                      >
-                        <span>{c.currency} {fmtCompact(raised)} raised</span>
-                        <span>Goal: {c.currency} {fmtCompact(goal)}</span>
+                      <div className="mb-1.5 flex justify-between text-[11px] text-muted-foreground">
+                        <span>
+                          {c.currency} {fmtCompact(raised)} raised
+                        </span>
+                        <span>
+                          Goal: {c.currency} {fmtCompact(goal)}
+                        </span>
                       </div>
                     </>
                   )}
 
-                  {/* User's pledge info */}
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
                     {myPledgeTotal > 0 ? (
                       <Badge color="indigo">
                         Your pledge: {c.currency} {fmtCurrency(myPledgeTotal)}
@@ -208,40 +149,22 @@ export const MemberCampaignsPledges = ({
             );
           })}
 
-          {/* Standalone pledges (not tied to an active campaign shown above) */}
           {activePledges
             .filter((p) => !activeCampaigns.some((c) => c.id === p.campaignId))
             .slice(0, 3)
             .map((p) => (
               <div
                 key={p.id}
-                style={{
-                  padding: "12px 14px",
-                  background: S.surfaceContainerLow,
-                  borderRadius: 10,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
+                className="flex items-center gap-2.5 rounded-[10px] bg-muted px-3.5 py-3"
               >
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    background: `${S.tertiary}15`,
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>📝</span>
+                <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-tertiary/10">
+                  <span className="text-base">📝</span>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: S.onSurface }}>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-medium text-foreground">
                     Pledge: {p.pledgedAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                   </div>
-                  <div style={{ fontSize: 11, color: S.onSurfaceMuted, marginTop: 2 }}>
+                  <div className="mt-0.5 text-[11px] text-muted-foreground">
                     Campaign ID: {p.campaignId.slice(0, 8)}…
                   </div>
                 </div>
@@ -252,4 +175,4 @@ export const MemberCampaignsPledges = ({
       )}
     </Card>
   );
-}
+};
