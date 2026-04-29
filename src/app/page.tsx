@@ -7,9 +7,13 @@ import { getSessionUser } from "@/lib/auth/server";
 export default async () => {
   const user = await getSessionUser();
 
-  if (!user) redirect("/login");
+  if (!user) {
+    redirect("/login");
+  }
 
-  if (user.isSuperAdmin) redirect("/super-admin/tenants");
+  if (user.isSuperAdmin) {
+    redirect("/super-admin/tenants");
+  }
 
   const memberships = Object.entries(user.tenantMemberships);
 
@@ -19,7 +23,9 @@ export default async () => {
     redirect("/select-church");
   }
 
-  if (memberships.length > 1) redirect("/select-church");
+  if (memberships.length > 1) {
+    redirect("/select-church");
+  }
 
   const [slug, membership] = memberships[0]!;
   redirect(
@@ -27,4 +33,4 @@ export default async () => {
       ? `/${slug}/admin/dashboard`
       : `/${slug}/member/dashboard`,
   );
-}
+};
