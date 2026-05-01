@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button, PageHeader } from "@/components/primitives";
-import { CampaignForm, type CampaignFormValue } from "./CampaignForm";
+import { CampaignForm } from "./CampaignForm";
+import { type CampaignFormValues } from "./formHelpers";
 import { useCampaign, useUpdateCampaign } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api";
 
@@ -19,13 +20,9 @@ export const CampaignEditPage = () => {
   const { data: campaign, isLoading } = useCampaign(tenantSlug, id);
   const updateCampaign = useUpdateCampaign(tenantSlug);
 
-  const [value, setValue] = useState<CampaignFormValue | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!campaign) return;
-    setValue({
+  const initialValues = useMemo(() => {
+    if (!campaign) return undefined;
+    return {
       title: campaign.title,
       description: nstr(campaign.description) ?? "",
       currency: campaign.currency,
@@ -36,34 +33,26 @@ export const CampaignEditPage = () => {
         id: i.id,
         title: i.title,
         description: nstr(i.description) ?? "",
-        targetAmount: i.targetAmount.toString(),
+        targetAmount: i.targetAmount,
         deadline: toDateInput(i.deadline),
       })),
-    });
+    } satisfies Partial<CampaignFormValues>;
   }, [campaign]);
 
-  const handleSubmit = async () => {
-    if (!value) return;
-    setError(null);
-    setSubmitting(true);
-    try {
-      await updateCampaign.mutateAsync({
-        params: { path: { tenantId: tenantSlug, id } },
-        body: {
-          title: value.title.trim(),
-          description: value.description.trim() || undefined,
-          deadline: value.deadline ? new Date(value.deadline).toISOString() : undefined,
-          status: value.status,
-        },
-      });
-      router.push(`/${tenantSlug}/admin/campaigns/${id}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update campaign");
-      setSubmitting(false);
-    }
+  const onSubmit = async (values: CampaignFormValues) => {
+    await updateCampaign.mutateAsync({
+      params: { path: { tenantId: tenantSlug, id } },
+      body: {
+        title: values.title.trim(),
+        description: values.description?.trim() || undefined,
+        deadline: values.deadline ? new Date(values.deadline).toISOString() : undefined,
+        status: values.status,
+      },
+    });
+    router.push(`/${tenantSlug}/admin/campaigns/${id}`);
   };
 
-  if (isLoading || !value) {
+  if (isLoading) {
     return (
       <div className="p-6">
         <p className="text-muted-foreground">Loading…</p>
@@ -84,16 +73,12 @@ export const CampaignEditPage = () => {
         }
       />
       <CampaignForm
-        value={value}
-        onChange={setValue}
-        onSubmit={handleSubmit}
+        onSubmit={onSubmit}
         onCancel={() => router.push(`/${tenantSlug}/admin/campaigns/${id}`)}
-        submitting={submitting}
+        initialValues={initialValues}
         submitLabel="Save changes"
         itemsEditable={false}
-        showStatus={true}
-        error={error}
       />
     </div>
   );
-}
+};

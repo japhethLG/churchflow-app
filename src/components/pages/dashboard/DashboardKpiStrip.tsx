@@ -2,19 +2,11 @@
 
 import { StatCard } from "@/components/primitives";
 import type { components } from "@/lib/api";
+import { formatCompact, getCurrencySymbol, formatCurrency } from "@/lib/format-currency";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 
-const fmtCurrency = (value: number, currency: string): string => {
-  return `${currency} ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
 
-const fmtCompact = (value: number): string => {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 10_000) return `${(value / 1_000).toFixed(0)}k`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return value.toFixed(0);
-};
 
 export const DashboardKpiStrip = ({
   summary,
@@ -63,14 +55,13 @@ export const DashboardKpiStrip = ({
       <StatCard
         label="Total this month"
         value={
-          <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[32px] font-semibold tabular-nums tracking-tighter text-transparent">
-            <span className="opacity-60">{summary.currency} </span>
-            {fmtCompact(total)}
+          <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[32px] font-semibold tabular-nums tracking-tighter">
+            {formatCurrency(total, { currency: summary.currency })}
           </span>
         }
         delta={deltaStr}
         deltaDirection={deltaDir as "up" | "down" | "flat" | undefined}
-        caption={prevTotal > 0 ? `vs. ${fmtCurrency(prevTotal, summary.currency)} last month` : undefined}
+        caption={prevTotal > 0 ? `vs. ${formatCurrency(prevTotal, { currency: summary.currency })} last month` : undefined}
       />
       <StatCard
         label="Gifts this month"

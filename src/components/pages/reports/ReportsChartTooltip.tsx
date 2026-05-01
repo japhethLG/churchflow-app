@@ -1,6 +1,6 @@
 "use client";
 
-import { fmtCurrency } from "./reports-shared";
+import { formatCurrency } from "@/lib/format-currency";
 
 type PiePayload = {
   name?: string;
@@ -36,7 +36,7 @@ export const ReportsPieTooltip = ({
   return (
     <div className="rounded-lg border-0 bg-input px-3 py-2 text-xs shadow-md">
       <div className="font-medium text-foreground">
-        ${fmtCurrency(value)} ({pct.toFixed(0)}%)
+        {formatCurrency(value)} ({pct.toFixed(0)}%)
       </div>
       {name ? (
         <div className="mt-0.5 text-muted-foreground">{name}</div>
@@ -68,7 +68,7 @@ export const ReportsBarTooltip = ({
   return (
     <div className="rounded-lg border-0 bg-input px-3 py-2 text-xs shadow-md">
       <div className="tabular-nums text-foreground">
-        ${fmtCurrency(row.total)} · {row.count} gifts
+        {formatCurrency(row.total)} · {row.count} gifts
       </div>
       {label ? (
         <div className="mt-0.5 text-muted-foreground">{label}</div>

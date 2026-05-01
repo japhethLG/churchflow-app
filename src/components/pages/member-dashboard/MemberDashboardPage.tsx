@@ -7,6 +7,7 @@ import { useTransactions } from "@/lib/api/transactions";
 import { useCampaigns, useCampaignProgress } from "@/lib/api/campaigns";
 import { usePledges } from "@/lib/api/pledges";
 import { useTenant } from "@/lib/api/tenants";
+import { getCurrencySymbol } from "@/lib/format-currency";
 import { MemberKpiStrip } from "./MemberKpiStrip";
 import { MemberRecentGiving } from "./MemberRecentGiving";
 import { MemberCampaignsPledges } from "./MemberCampaignsPledges";
@@ -17,15 +18,8 @@ export const MemberDashboardPage = () => {
 
   // Tenant info for currency
   const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "USD";
-  const currencySymbol =
-    currency === "USD"
-      ? "$"
-      : currency === "EUR"
-        ? "€"
-        : currency === "GBP"
-          ? "£"
-          : currency;
+  const currency = tenantQ.data?.currency ?? "PHP";
+  const currencySymbol = getCurrencySymbol(currency);
 
   // Current member
   const memberQ = useMyMembership(tenantSlug);

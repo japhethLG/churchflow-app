@@ -2,7 +2,8 @@
 
 import type { components } from "@/lib/api";
 import { Card, SectionTitle } from "@/components/primitives";
-import { CAMPAIGN_RANK_COLORS, fmtCurrency } from "./reports-shared";
+import { CAMPAIGN_RANK_COLORS } from "./reports-shared";
+import { formatCurrency } from "@/lib/format-currency";
 import {
   ReportsHorizontalLeaderBoard,
   type LeaderBoardRowData,
@@ -57,7 +58,7 @@ export const ReportsByCampaign = ({
         ? `${data.name} — not linked to a campaign`
         : data.name,
     metric: data.total,
-    amountDisplay: `${currency} ${fmtCurrency(data.total)}`,
+    amountDisplay: formatCurrency(data.total, { currency }),
     rank: idx + 1,
     fill: CAMPAIGN_RANK_COLORS[idx % CAMPAIGN_RANK_COLORS.length],
     countLabel: `${data.count} gifts`,

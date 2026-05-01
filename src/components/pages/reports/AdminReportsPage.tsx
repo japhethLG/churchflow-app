@@ -51,7 +51,7 @@ export const AdminReportsPage = () => {
     campaigns.map((c) => [c.id, c]),
   );
 
-  const currency = summary.data?.currency ?? "USD";
+  const currency = summary.data?.currency ?? "PHP";
 
   return (
     <div className="h-full overflow-auto">

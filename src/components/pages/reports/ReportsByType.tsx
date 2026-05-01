@@ -9,11 +9,11 @@ import {
 } from "recharts";
 import { Card, SectionTitle } from "@/components/primitives";
 import {
-  fmtCurrency,
   TYPE_COLOR,
   TYPE_LABEL,
   type SummaryDto,
 } from "./reports-shared";
+import { formatCurrency } from "@/lib/format-currency";
 import { ReportsHorizontalLeaderBoard } from "./ReportsHorizontalLeaderBoard";
 import { ReportsPieTooltip } from "./ReportsChartTooltip";
 import { ReportsLoadingPlaceholder } from "./ReportsLoadingPlaceholder";
@@ -55,7 +55,7 @@ export const ReportsByType = ({
     axisLabel: TYPE_LABEL[r.type],
     title: TYPE_LABEL[r.type],
     metric: r.total,
-    amountDisplay: `$${fmtCurrency(r.total)}`,
+    amountDisplay: formatCurrency(r.total),
     fill: TYPE_COLOR[r.type],
     rank: i + 1,
     countLabel: `${r.count} gifts`,
@@ -92,7 +92,7 @@ export const ReportsByType = ({
                   Total
                 </div>
                 <div className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight text-foreground">
-                  ${fmtCurrency(total)}
+                  {formatCurrency(total)}
                 </div>
               </div>
             </div>

@@ -12,12 +12,11 @@ import {
 } from "recharts";
 import { Card, SectionTitle } from "@/components/primitives";
 import {
-  fmtCompact,
-  fmtCurrency,
   MONTH_SHORT,
   type ByMonthDto,
   type SummaryDto,
 } from "./reports-shared";
+import { formatCompact } from "@/lib/format-currency";
 import { ReportsBarTooltip } from "./ReportsChartTooltip";
 import { ReportsLoadingPlaceholder } from "./ReportsLoadingPlaceholder";
 
@@ -70,7 +69,7 @@ export const ReportsByMonth = ({
                 tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => fmtCompact(Number(v))}
+                tickFormatter={(v) => formatCompact(Number(v))}
                 width={50}
               />
               <Tooltip

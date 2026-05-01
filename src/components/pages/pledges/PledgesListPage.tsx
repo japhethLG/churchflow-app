@@ -65,7 +65,7 @@ export const PledgesListPage = () => {
   };
 
   const askEdit = (p: PledgeRow) => {
-    const currency = campaignsById[p.campaignId]?.currency ?? "USD";
+    const currency = campaignsById[p.campaignId]?.currency ?? "PHP";
     openModal("edit-pledge", { tenantSlug, pledge: p, currency });
   };
   const askDelete = (p: PledgeRow) =>

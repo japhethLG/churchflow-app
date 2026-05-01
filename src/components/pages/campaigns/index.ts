@@ -5,12 +5,12 @@ export { CampaignHero } from "./CampaignHero";
 export { CampaignProgressCard } from "./CampaignProgressCard";
 export { CampaignItemsList } from "./CampaignItemsList";
 export { CampaignPledgesList } from "./CampaignPledgesList";
+export { CampaignForm } from "./CampaignForm";
 export {
-  CampaignForm,
   newItemDraft,
-  type CampaignFormValue,
-  type CampaignFormItemDraft,
-} from "./CampaignForm";
+  type CampaignFormValues,
+  type CampaignItemValues,
+} from "./formHelpers";
 export { CampaignDetailPage } from "./CampaignDetailPage";
 export { CampaignEditPage } from "./CampaignEditPage";
 export { CampaignsListPage } from "./CampaignsListPage";

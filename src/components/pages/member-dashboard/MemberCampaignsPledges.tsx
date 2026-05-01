@@ -4,19 +4,12 @@ import Link from "next/link";
 import { Card, SectionTitle, Badge, StatusBadge } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { nstr } from "@/lib/api/coerce";
+import { formatCompact, getCurrencySymbol, formatAmount, formatCurrency } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
-const fmtCurrency = (v: number | string): string => {
-  return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
 
-const fmtCompact = (v: number): string => {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
-  return v.toFixed(0);
-};
 
 const PLEDGE_STATUS_MAP: Record<Pledge["status"], "Active" | "Completed" | "Cancelled"> = {
   ACTIVE: "Active",
@@ -121,10 +114,10 @@ export const MemberCampaignsPledges = ({
                       </div>
                       <div className="mb-1.5 flex justify-between text-[11px] text-muted-foreground">
                         <span>
-                          {c.currency} {fmtCompact(raised)} raised
+                          {formatCompact(raised, { currency: c.currency })} raised
                         </span>
                         <span>
-                          Goal: {c.currency} {fmtCompact(goal)}
+                          Goal: {formatCompact(goal, { currency: c.currency })}
                         </span>
                       </div>
                     </>
@@ -133,7 +126,7 @@ export const MemberCampaignsPledges = ({
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {myPledgeTotal > 0 ? (
                       <Badge color="indigo">
-                        Your pledge: {c.currency} {fmtCurrency(myPledgeTotal)}
+                        Your pledge: {formatCurrency(myPledgeTotal, { currency: c.currency })}
                       </Badge>
                     ) : (
                       <Badge color="neutral">No pledge yet</Badge>
@@ -162,7 +155,7 @@ export const MemberCampaignsPledges = ({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[13px] font-medium text-foreground">
-                    Pledge: {p.pledgedAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    Pledge: {formatCurrency(p.pledgedAmount)}
                   </div>
                   <div className="mt-0.5 text-[11px] text-muted-foreground">
                     Campaign ID: {p.campaignId.slice(0, 8)}…

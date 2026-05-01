@@ -11,6 +11,7 @@ import {
   TypeBadge,
 } from "@/components/primitives";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format-currency";
 import { useCampaign } from "@/lib/api/campaigns";
 import { useMember } from "@/lib/api/members";
 import { usePledge } from "@/lib/api/pledges";
@@ -88,7 +89,7 @@ export const TransactionDetailPage = () => {
     <div className="h-full overflow-auto">
       <PageHeader
         overline="Ledger / Transactions"
-        title={`${tx.currency} ${Number(tx.amount).toFixed(2)}`}
+        title={formatCurrency(tx.amount, { currency: tx.currency })}
         subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${new Date(tx.date).toLocaleDateString(undefined, {
           weekday: "long",
           year: "numeric",
@@ -108,7 +109,7 @@ export const TransactionDetailPage = () => {
                 openModal("confirm-delete-transaction", {
                   tenantSlug,
                   transactionId: tx.id,
-                  amountLabel: `${tx.currency} ${Number(tx.amount).toFixed(2)}`,
+                  amountLabel: formatCurrency(tx.amount, { currency: tx.currency }),
                   onDeleted: () => router.push(`/${tenantSlug}/admin/transactions`),
                 })
               }
@@ -122,7 +123,7 @@ export const TransactionDetailPage = () => {
       <div className="grid grid-cols-[1.5fr_1fr] items-start gap-4">
         <Card padding={24}>
           <SectionTitle title="Details" />
-          <DetailRow label="Amount" value={<Amount value={Number(tx.amount).toFixed(2)} currency={`${tx.currency} `} />} />
+          <DetailRow label="Amount" value={<Amount value={tx.amount} currency={tx.currency} />} />
           <DetailRow label="Type" value={<TypeBadge type={TYPE_BADGE_LABEL[tx.type]} />} />
           <DetailRow label="Payment method" value={METHOD_LABEL[tx.paymentMethod]} />
           <DetailRow
@@ -215,7 +216,7 @@ export const TransactionDetailPage = () => {
               <Label>Pledge</Label>
               {pledge ? (
                 <span className="text-sm">
-                  {tx.currency} {Number(pledge.pledgedAmount).toFixed(2)} pledged · status{" "}
+                  {formatCurrency(pledge.pledgedAmount, { currency: tx.currency })} pledged · status{" "}
                   <strong>{pledge.status.toLowerCase()}</strong>
                 </span>
               ) : (

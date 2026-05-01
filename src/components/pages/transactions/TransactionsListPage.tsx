@@ -15,6 +15,7 @@ import { useMembers } from "@/lib/api/members";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import { nstr, type components } from "@/lib/api";
 import { openModal } from "@/lib/modals/store";
+import { getCurrencySymbol, formatCurrency } from "@/lib/format-currency";
 
 const PAGE_SIZE = 20;
 
@@ -91,7 +92,7 @@ export const TransactionsListPage = () => {
     openModal("confirm-delete-transaction", {
       tenantSlug,
       transactionId: t.id,
-      amountLabel: `${t.currency} ${t.amount.toFixed(2)}`,
+      amountLabel: formatCurrency(t.amount, { currency: t.currency }),
     });
 
   return (

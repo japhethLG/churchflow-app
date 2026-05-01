@@ -7,14 +7,11 @@ import { useTenants } from "@/lib/api/tenants";
 import { useAdminStats } from "@/lib/api/admin";
 import { tenantLogoGradient, tenantInitials } from "@/lib/design/logo-gradient";
 import type { components } from "@/lib/api/schema";
+import { formatCompact } from "@/lib/format-currency";
 
 type Tenant = components["schemas"]["TenantResponseDto"];
 
-const formatAmount = (n: number): string  => {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
-  return `$${n.toFixed(0)}`;
-}
+
 
 const formatMonthYear = (d: Date | string): string  => {
   return new Date(d).toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -90,7 +87,7 @@ export const TenantsPage = () => {
           <span className="mr-2 text-xs text-muted-foreground">
             {(t as any).giftsMtdCount} gifts
           </span>
-          {formatAmount((t as any).giftsMtdTotal ?? 0)}
+          {formatCompact((t as any).giftsMtdTotal ?? 0)}
         </span>
       ) : (
         <span className="text-muted-foreground">—</span>
@@ -156,7 +153,7 @@ export const TenantsPage = () => {
         />
         <StatCard
           label="Gifts (30d)"
-          value={stats?.giftsLast30dTotal != null ? formatAmount(stats.giftsLast30dTotal) : "—"}
+          value={stats?.giftsLast30dTotal != null ? formatCompact(stats.giftsLast30dTotal) : "—"}
           caption={stats?.giftsLast30dCount != null ? `${stats.giftsLast30dCount.toLocaleString()} gifts` : undefined}
           accent
         />

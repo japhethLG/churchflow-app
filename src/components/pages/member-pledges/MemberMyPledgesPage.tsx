@@ -6,27 +6,17 @@ import { usePledges } from "@/lib/api/pledges";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMyMembership } from "@/lib/api/members";
 import { useTenant } from "@/lib/api/tenants";
+import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 import { MemberPledgesTable } from "./MemberPledgesTable";
 
-const fmtCurrency = (v: number | string): string =>
-  Number(v).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+
 
 export const MemberMyPledgesPage = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "USD";
-  const currencySymbol =
-    currency === "USD"
-      ? "$"
-      : currency === "EUR"
-        ? "€"
-        : currency === "GBP"
-          ? "£"
-          : currency;
+  const currency = tenantQ.data?.currency ?? "PHP";
+  const currencySymbol = getCurrencySymbol(currency);
 
   const memberQ = useMyMembership(tenantSlug);
   const memberId = memberQ.data?.id;
@@ -72,7 +62,7 @@ export const MemberMyPledgesPage = () => {
             </div>
             <div className="text-2xl font-semibold tracking-tight tabular-nums">
               {currencySymbol}
-              {fmtCurrency(totalActive)}
+              {formatAmount(totalActive)}
             </div>
           </div>
         </div>

@@ -1,106 +1,88 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   PageHeader,
   Button,
-  Input,
   Card,
   SectionTitle,
-  Select,
 } from "@/components/primitives";
+import {
+  Form,
+  FormInput,
+  FormSelect,
+} from "@/components/formElements";
 import { useTenant, useUpdateTenant } from "@/lib/api/tenants";
 import { nstr } from "@/lib/api/coerce";
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const TIMEZONES = [
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Phoenix",
-  "America/Anchorage",
-  "Pacific/Honolulu",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Africa/Lagos",
-  "Africa/Nairobi",
-  "Africa/Johannesburg",
-  "Asia/Kolkata",
-  "Asia/Seoul",
-  "Asia/Tokyo",
-  "Australia/Sydney",
-  "Pacific/Auckland",
-  "UTC",
-];
+import {
+  getCurrencyOptions,
+  getTimezoneOptions,
+  getMonthOptions,
+} from "@/lib/intl-options";
+import {
+  settingsSchema,
+  type SettingsFormValues,
+} from "./formHelpers";
 
 export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
   const tenantQ = useTenant(tenantSlug);
   const tenant = tenantQ.data;
   const updateTenant = useUpdateTenant();
 
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [currency, setCurrency] = useState("USD");
-  const [timezone, setTimezone] = useState("UTC");
-  const [fiscalYearStart, setFiscalYearStart] = useState(1);
-  const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const currencyOptions = useMemo(() => getCurrencyOptions(), []);
+  const timezoneOptions = useMemo(() => getTimezoneOptions(), []);
+  const fiscalYearOptions = useMemo(() => getMonthOptions(), []);
+
+  const methods = useForm<SettingsFormValues>({
+    resolver: zodResolver(settingsSchema) as any,
+    defaultValues: {
+      name: "",
+      address: "",
+      phone: "",
+      email: "",
+      currency: "PHP",
+      timezone: "UTC",
+      fiscalYearStart: 1,
+    },
+  });
+
+  const { reset, handleSubmit, formState: { isDirty } } = methods;
+
   useEffect(() => {
-    if (!tenant) return;
-    setName(tenant.name);
-    setAddress(nstr(tenant.address) ?? "");
-    setPhone(nstr(tenant.phone) ?? "");
-    setEmail(nstr(tenant.email) ?? "");
-    setCurrency(tenant.currency);
-    setTimezone(tenant.timezone);
-    setFiscalYearStart(tenant.fiscalYearStart);
-    setDirty(false);
-  }, [tenant]);
+    if (tenant) {
+      reset({
+        name: tenant.name,
+        address: nstr(tenant.address) ?? "",
+        phone: nstr(tenant.phone) ?? "",
+        email: nstr(tenant.email) ?? "",
+        currency: tenant.currency,
+        timezone: tenant.timezone,
+        fiscalYearStart: tenant.fiscalYearStart,
+      });
+    }
+  }, [tenant, reset]);
 
-  const markDirty = () => {
-    setDirty(true);
-    setSaved(false);
-  };
-
-  const handleSave = async () => {
+  const onSubmit: SubmitHandler<SettingsFormValues> = async (values) => {
     if (!tenant) return;
     setError(null);
     try {
       await updateTenant.mutateAsync({
         params: { path: { tenantId: tenantSlug } },
         body: {
-          name: name.trim(),
-          address: address.trim() || undefined,
-          phone: phone.trim() || undefined,
-          email: email.trim() || undefined,
-          currency,
-          timezone,
-          fiscalYearStart,
+          ...values,
+          address: values.address?.trim() || undefined,
+          phone: values.phone?.trim() || undefined,
+          email: values.email?.trim() || undefined,
         },
       });
-      setDirty(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+      reset(values);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     }
@@ -140,8 +122,8 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
             )}
             <Button
               variant="primary"
-              onClick={handleSave}
-              disabled={!dirty || updateTenant.isPending}
+              onClick={handleSubmit(onSubmit)}
+              disabled={!isDirty || updateTenant.isPending}
             >
               {updateTenant.isPending ? "Saving…" : "Save changes"}
             </Button>
@@ -155,47 +137,31 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
         </div>
       )}
 
-      <div className="flex max-w-[720px] flex-col gap-5">
+      <Form<SettingsFormValues> methods={methods} onSubmit={onSubmit} className="w-2xl gap-5">
         <Card>
           <SectionTitle title="Church profile" />
           <div className="flex flex-col gap-4">
-            <Input
+            <FormInput
+              inputName="name"
               label="Church name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                markDirty();
-              }}
               placeholder="Grace Community Church"
             />
-            <Input
+            <FormInput
+              inputName="address"
               label="Address"
-              value={address}
-              onChange={(e) => {
-                setAddress(e.target.value);
-                markDirty();
-              }}
               placeholder="123 Main St, Anytown, CA"
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
+              <FormInput
+                inputName="phone"
                 label="Phone"
                 type="tel"
-                value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                  markDirty();
-                }}
                 placeholder="+1 555-555-0123"
               />
-              <Input
+              <FormInput
+                inputName="email"
                 label="Email"
                 type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  markDirty();
-                }}
                 placeholder="office@example.com"
               />
             </div>
@@ -206,37 +172,16 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
           <SectionTitle title="Financial settings" />
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Select
+              <FormSelect
+                inputName="currency"
                 label="Currency"
-                value={currency}
-                onChange={(v) => {
-                  setCurrency(v);
-                  markDirty();
-                }}
-                options={[
-                  "USD",
-                  "EUR",
-                  "GBP",
-                  "NGN",
-                  "KES",
-                  "ZAR",
-                  "GHS",
-                  "CAD",
-                  "AUD",
-                  "INR",
-                  "BRL",
-                  "KRW",
-                ].map((c) => ({ value: c, label: c }))}
+                options={currencyOptions}
               />
 
-              <Select
+              <FormSelect
+                inputName="fiscalYearStart"
                 label="Fiscal year starts"
-                value={String(fiscalYearStart)}
-                onChange={(v) => {
-                  setFiscalYearStart(Number(v));
-                  markDirty();
-                }}
-                options={MONTHS.map((m, i) => ({ value: String(i + 1), label: m }))}
+                options={fiscalYearOptions}
               />
             </div>
           </div>
@@ -244,17 +189,10 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 
         <Card>
           <SectionTitle title="Timezone" />
-          <Select
+          <FormSelect
+            inputName="timezone"
             label="IANA Timezone"
-            value={timezone}
-            onChange={(v) => {
-              setTimezone(v);
-              markDirty();
-            }}
-            options={TIMEZONES.map((tz) => ({
-              value: tz,
-              label: tz.replace(/_/g, " "),
-            }))}
+            options={timezoneOptions}
             hint="Used for transaction date bucketing and fiscal year calculations."
           />
         </Card>
@@ -283,7 +221,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
             </div>
           </div>
         </Card>
-      </div>
+      </Form>
     </div>
   );
 }

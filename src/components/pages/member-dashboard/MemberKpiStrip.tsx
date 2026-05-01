@@ -2,6 +2,7 @@
 
 import { StatCard, Amount } from "@/components/primitives";
 import { TypeBadge } from "@/components/primitives/Badge";
+import { formatCurrency, getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 
 type Transaction = {
   type: string;
@@ -9,9 +10,7 @@ type Transaction = {
   date: string;
 };
 
-const fmtCurrency = (v: number | string): string  => {
-  return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+
 
 const TYPE_LABEL: Record<string, string> = {
   TITHE: "Tithe",
@@ -26,7 +25,7 @@ const TYPE_LABEL: Record<string, string> = {
 export const MemberKpiStrip = ({
   transactions,
   loading,
-  currency = "$",
+  currency = getCurrencySymbol("PHP"),
 }: {
   transactions: Transaction[];
   loading?: boolean;
@@ -77,19 +76,19 @@ export const MemberKpiStrip = ({
     <div className="mb-6 grid grid-cols-3 gap-4">
       <StatCard
         label="Your giving this month"
-        value={<Amount value={fmtCurrency(monthTotal)} size="display" gradient currency={currency} />}
+        value={<Amount value={formatAmount(monthTotal)} size="display" gradient currency={currency} />}
         caption={`${thisMonth.length} gift${thisMonth.length !== 1 ? "s" : ""} recorded`}
       />
       <StatCard
         label="Your giving this year"
-        value={<Amount value={fmtCurrency(yearTotal)} size="display" currency={currency} />}
+        value={<Amount value={formatAmount(yearTotal)} size="display" currency={currency} />}
         caption={`Fiscal year started January`}
       />
       <StatCard
         label="Most recent gift"
         value={
           recent ? (
-            <Amount value={fmtCurrency(recent.amount)} size="display" currency={currency} />
+            <Amount value={formatAmount(recent.amount)} size="display" currency={currency} />
           ) : (
             <span className="text-5xl font-semibold text-muted-foreground">—</span>
           )

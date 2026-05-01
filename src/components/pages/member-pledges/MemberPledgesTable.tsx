@@ -3,6 +3,7 @@
 import { DataTable, type DataTableColumn } from "@/components/primitives/DataTable";
 import { StatusBadge, type Status } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
+import { formatAmount } from "@/lib/format-currency";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -57,7 +58,7 @@ export const MemberPledgesTable = ({
       render: (row) => (
         <span className="font-semibold tabular-nums text-foreground">
           {currencySymbol}
-          {Number(row.pledgedAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          {formatAmount(row.pledgedAmount)}
         </span>
       ),
     },

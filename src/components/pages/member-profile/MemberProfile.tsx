@@ -64,7 +64,7 @@ export const MemberProfile = ({
   };
 
   return (
-    <div style={{ maxWidth: 640 }}>
+    <div className="w-2xl">
       <PageHeader
         overline={overline}
         title={title}

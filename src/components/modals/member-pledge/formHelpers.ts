@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getCurrencySymbol } from "@/lib/format-currency";
 
 export const memberPledgeSchema = z.object({
   itemId: z.string(),
@@ -17,9 +18,5 @@ export const memberPledgeDefaults: MemberPledgeFormValues = {
   note: "",
 };
 
-export const currencySymbol = (currency: string): string => {
-  if (currency === "USD") return "$";
-  if (currency === "EUR") return "€";
-  if (currency === "GBP") return "£";
-  return currency;
-};
+export const currencySymbol = (currency: string): string =>
+  getCurrencySymbol(currency);

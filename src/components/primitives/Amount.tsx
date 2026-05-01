@@ -1,18 +1,26 @@
 import { cn } from "@/lib/utils";
+import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 
 export const Amount = ({
   value,
   size = "row",
-  currency = "$",
+  currency,
   gradient,
   className,
 }: {
-  value: string;
+  value: number | string;
   size?: "label" | "row" | "display";
+  /** Symbol (e.g. "₱") or ISO code (e.g. "PHP"). Defaults to PHP. */
   currency?: string;
   gradient?: boolean;
   className?: string;
 }) => {
+  const symbol = currency?.length === 3 
+    ? getCurrencySymbol(currency) 
+    : (currency ?? getCurrencySymbol());
+
+  const formattedValue = typeof value === "number" ? formatAmount(value) : value;
+
   return (
     <span
       className={cn(
@@ -26,8 +34,8 @@ export const Amount = ({
         className
       )}
     >
-      <span className="opacity-60 mr-0.5">{currency}</span>
-      {value}
+      <span className="opacity-60 mr-0.5">{symbol}</span>
+      {formattedValue}
     </span>
   );
 }

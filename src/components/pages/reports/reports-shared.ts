@@ -1,4 +1,5 @@
 import type { components } from "@/lib/api";
+import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 
 export type SummaryDto = components["schemas"]["TransactionSummaryResponseDto"];
 
@@ -39,19 +40,6 @@ export const MONTH_SHORT = [
   "Nov",
   "Dec",
 ];
-
-export const fmtCompact = (value: number): string => {
-  if (value >= 1_000_000)
-    return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}k`;
-  return `$${value.toFixed(0)}`;
-};
-
-export const fmtCurrency = (value: number): string =>
-  Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 
 export const MEMBER_RANK_COLORS = [
   "var(--tx-tithe)",

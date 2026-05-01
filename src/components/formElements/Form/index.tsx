@@ -6,11 +6,19 @@ import {
   type SubmitHandler,
   type UseFormReturn,
 } from "react-hook-form";
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+type FormInternalContextValue = {
+  onSubmit: SubmitHandler<any>;
+};
+
+const FormInternalContext = createContext<FormInternalContextValue | null>(null);
+
+export const useFormInternalContext = () => useContext(FormInternalContext);
+
 type FormProps<T extends FieldValues> = {
-  methods: UseFormReturn<T>;
+  methods: UseFormReturn<T, any, any>;
   onSubmit: SubmitHandler<T>;
   children: ReactNode;
   className?: string;
@@ -23,12 +31,14 @@ export const Form = <T extends FieldValues>({
   className,
 }: FormProps<T>) => (
   <FormProvider {...methods}>
-    <form
-      className={cn("flex w-full flex-col gap-4", className)}
-      onSubmit={methods.handleSubmit(onSubmit)}
-      noValidate
-    >
-      {children}
-    </form>
+    <FormInternalContext.Provider value={{ onSubmit: onSubmit as SubmitHandler<any> }}>
+      <form
+        className={cn("flex w-full flex-col gap-4", className)}
+        onSubmit={methods.handleSubmit(onSubmit)}
+        noValidate
+      >
+        {children}
+      </form>
+    </FormInternalContext.Provider>
   </FormProvider>
 );

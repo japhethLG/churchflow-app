@@ -155,7 +155,7 @@ export const TransactionsTable = ({
       label: "Amount",
       width: "120px",
       align: "right",
-      render: (t) => <Amount value={Number(t.amount).toFixed(2)} />,
+      render: (t) => <Amount value={t.amount} currency={t.currency} />,
     },
     {
       key: "actions",

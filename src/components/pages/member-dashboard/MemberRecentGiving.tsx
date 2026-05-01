@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Card, SectionTitle, Amount } from "@/components/primitives";
+import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 import { TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -32,9 +33,7 @@ const fmtDate = (iso: string): string => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const fmtCurrency = (v: number | string): string => {
-  return Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
+
 
 export const MemberRecentGiving = ({
   transactions,
@@ -96,7 +95,7 @@ export const MemberRecentGiving = ({
             <div className="text-[13px] text-muted-foreground">
               {METHOD_LABEL[t.paymentMethod] ?? t.paymentMethod}
             </div>
-            <Amount value={fmtCurrency(t.amount)} currency={t.currency === "USD" ? "$" : t.currency} />
+            <Amount value={formatAmount(t.amount)} currency={getCurrencySymbol(t.currency)} />
           </div>
         ))
       )}

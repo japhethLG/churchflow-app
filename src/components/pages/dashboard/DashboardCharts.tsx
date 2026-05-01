@@ -15,6 +15,7 @@ import {
 import { Card, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { formatCompact, formatCurrency } from "@/lib/format-currency";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
@@ -43,11 +44,7 @@ const TYPE_COLOR: Record<ByType["type"], string> = {
 
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const fmtCompact = (value: number): string => {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}k`;
-  return `$${value.toFixed(0)}`;
-};
+
 
 type PeriodOption = { months: number; label: string };
 const PERIOD_OPTIONS: PeriodOption[] = [
@@ -78,7 +75,7 @@ export const DashboardCharts = ({
 }) => {
   if (loading || !summary) {
     return (
-      <div className="mb-6 grid gap-4 [grid-template-columns:1.5fr_1fr]">
+      <div className="mb-6 grid grid-cols-[1.5fr_1fr] gap-4">
         {[0, 1].map((i) => (
           <Card key={i}>
             <div className="mb-4 h-4 w-[120px] animate-pulse rounded bg-secondary" />
@@ -119,7 +116,7 @@ export const DashboardCharts = ({
   ];
 
   return (
-    <div className="mb-6 grid gap-4 [grid-template-columns:1.5fr_1fr]">
+    <div className="mb-6 grid grid-cols-[1.5fr_1fr] gap-4">
       <Card>
         <div className="mb-2 flex items-center justify-between">
           <SectionTitle title="Monthly trend" />
@@ -151,11 +148,11 @@ export const DashboardCharts = ({
                   tick={axisMuted}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(v) => fmtCompact(v)}
+                   tickFormatter={(v) => formatCompact(v)}
                   width={50}
                 />
                 <Tooltip
-                  formatter={(v) => [`${fmtCompact(Number(v))}`, "Total"]}
+                  formatter={(v) => [`${formatCompact(Number(v))}`, "Total"]}
                   contentStyle={tooltipChrome}
                   cursor={{
                     fill: "color-mix(in srgb, var(--accent) 27%, transparent)",
@@ -216,7 +213,7 @@ export const DashboardCharts = ({
                     )?.payload;
                     const num = typeof v === "number" ? v : 0;
                     return [
-                      `${Number(num).toFixed(2)} (${(payload?.pct ?? 0).toFixed(0)}%)`,
+                      `${formatCurrency(num)} (${(payload?.pct ?? 0).toFixed(0)}%)`,
                       payload?.name ?? "",
                     ];
                   }}
@@ -230,7 +227,7 @@ export const DashboardCharts = ({
                   Total
                 </div>
                 <div className="mt-0.5 text-lg font-semibold tracking-tight tabular-nums">
-                  {fmtCompact(total)}
+                  {formatCompact(total)}
                 </div>
               </div>
             </div>

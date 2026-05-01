@@ -2,7 +2,8 @@
 
 import type { components } from "@/lib/api";
 import { Card, SectionTitle } from "@/components/primitives";
-import { fmtCurrency, MEMBER_RANK_COLORS } from "./reports-shared";
+import { MEMBER_RANK_COLORS } from "./reports-shared";
+import { formatCurrency } from "@/lib/format-currency";
 import { ReportsHorizontalLeaderBoard } from "./ReportsHorizontalLeaderBoard";
 import { ReportsLoadingPlaceholder } from "./ReportsLoadingPlaceholder";
 
@@ -54,7 +55,7 @@ export const ReportsByMember = ({
     axisLabel: ellipsize(data.name),
     title: data.name,
     metric: data.total,
-    amountDisplay: `${currency} ${fmtCurrency(data.total)}`,
+    amountDisplay: formatCurrency(data.total, { currency }),
     rank: idx + 1,
     fill: MEMBER_RANK_COLORS[idx % MEMBER_RANK_COLORS.length],
     countLabel: `${data.count} gifts`,

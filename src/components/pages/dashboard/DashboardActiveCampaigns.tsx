@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Card, SectionTitle, StatusBadge } from "@/components/primitives";
 import type { components } from "@/lib/api";
+import { formatCompact } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
@@ -11,11 +12,7 @@ type CampaignWithProgress = Campaign & {
   raisedAmount?: number;
 };
 
-const fmtCompact = (value: number): string => {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return value.toFixed(0);
-};
+
 
 const STATUS_MAP: Record<Campaign["status"], "Active" | "Upcoming" | "Completed" | "Cancelled"> = {
   DRAFT: "Upcoming",
@@ -94,11 +91,11 @@ export const DashboardActiveCampaigns = ({
                   </div>
                   <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
                     <span>
-                      {c.currency} {fmtCompact(raised)} raised
+                      {formatCompact(raised, { currency: c.currency })} raised
                     </span>
                     {goal > 0 && (
                       <span>
-                        Goal: {c.currency} {fmtCompact(goal)}
+                        Goal: {formatCompact(goal, { currency: c.currency })}
                       </span>
                     )}
                   </div>

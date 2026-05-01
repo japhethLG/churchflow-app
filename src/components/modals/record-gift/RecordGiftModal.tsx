@@ -12,6 +12,7 @@ import {
   FormSelect,
 } from "@/components/formElements";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format-currency";
 import { useCampaign, useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
@@ -136,7 +137,7 @@ export const RecordGiftModal = ({
     }
   };
 
-  const currency = tenant?.currency ?? "USD";
+  const currency = tenant?.currency ?? "PHP";
 
   return (
     <BaseModal
@@ -217,7 +218,7 @@ export const RecordGiftModal = ({
               { value: "", label: "Don't link a pledge" },
               ...pledges.map((p) => ({
                 value: p.id,
-                label: `${currency} ${Number(p.pledgedAmount).toFixed(2)} pledge${
+                label: `${formatCurrency(p.pledgedAmount, { currency })} pledge${
                   p.campaignItemId ? " · earmarked" : ""
                 }`,
               })),

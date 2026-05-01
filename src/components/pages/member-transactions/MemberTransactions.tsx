@@ -16,15 +16,11 @@ import { useCampaigns } from "@/lib/api/campaigns";
 import { useTenant } from "@/lib/api/tenants";
 import { nstr } from "@/lib/api/coerce";
 import type { components } from "@/lib/api";
+import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
-const fmtCurrency = (v: number | string): string  => {
-  return Number(v).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+
 
 const TYPE_MAP: Record<string, TransactionType> = {
   TITHE: "Tithe",
@@ -47,15 +43,8 @@ export const MemberTransactions = ({
 
   // Tenant info for currency
   const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "USD";
-  const currencySymbol =
-    currency === "USD"
-      ? "$"
-      : currency === "EUR"
-        ? "€"
-        : currency === "GBP"
-          ? "£"
-          : currency;
+  const currency = tenantQ.data?.currency ?? "PHP";
+  const currencySymbol = getCurrencySymbol(currency);
 
   // Current member
   const memberQ = useMyMembership(tenantSlug);
@@ -195,7 +184,7 @@ export const MemberTransactions = ({
       width: "120px",
       align: "right" as const,
       render: (t: Transaction) => (
-        <Amount value={fmtCurrency(t.amount)} currency={currencySymbol} />
+        <Amount value={formatAmount(t.amount)} currency={currencySymbol} />
       ),
     },
   ];
@@ -302,7 +291,7 @@ export const MemberTransactions = ({
             }}
           >
             {currencySymbol}
-            {fmtCurrency(stats.total)}
+            {formatAmount(stats.total)}
           </div>
         </div>
         <div>
@@ -351,7 +340,7 @@ export const MemberTransactions = ({
             }}
           >
             {currencySymbol}
-            {fmtCurrency(stats.avg)}
+            {formatAmount(stats.avg)}
           </div>
         </div>
       </div>

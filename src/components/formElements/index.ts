@@ -6,3 +6,4 @@ export { FormOptionGroup } from "./FormOptionGroup";
 export { FormMemberPicker } from "./FormMemberPicker";
 export { FormAmountInput } from "./FormAmountInput";
 export { FormSubmit } from "./FormSubmit";
+export { FormButton } from "./FormButton";

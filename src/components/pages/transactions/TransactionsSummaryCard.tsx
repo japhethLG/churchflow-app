@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { formatCompact, formatCurrency } from "@/lib/format-currency";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
@@ -28,12 +29,7 @@ const TYPE_COLOR: Record<ByType["type"], string> = {
   OTHER: "var(--tx-other)",
 };
 
-const fmtCompact = (value: number): string => {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 10_000) return `${(value / 1_000).toFixed(0)}k`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return value.toFixed(0);
-};
+
 
 const PERIOD_OPTIONS = [
   { months: 1, label: "MTD" },
@@ -113,9 +109,8 @@ export const TransactionsSummaryCard = ({
           <Kpi
             label="Total received"
             value={
-              <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[28px] font-semibold tabular-nums tracking-tight text-transparent">
-                <span className="opacity-60">{summary.currency} </span>
-                {Number(total).toFixed(2)}
+              <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[28px] font-semibold tabular-nums tracking-tight">
+                {formatCurrency(total, { currency: summary.currency })}
               </span>
             }
           />
@@ -130,8 +125,7 @@ export const TransactionsSummaryCard = ({
             label="Average"
             value={
               <span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
-                <span className="opacity-60">{summary.currency} </span>
-                {Number(average).toFixed(2)}
+                {formatCurrency(average, { currency: summary.currency })}
               </span>
             }
             caption="per gift"
@@ -174,7 +168,7 @@ export const TransactionsSummaryCard = ({
                 formatter={(v, _name, ctx) => {
                   const payload = (ctx as { payload?: { name?: string; pct?: number } } | undefined)?.payload;
                   const num = typeof v === "number" ? v : 0;
-                  return [`${Number(num).toFixed(2)} (${(payload?.pct ?? 0).toFixed(0)}%)`, payload?.name ?? ""];
+                  return [`${formatCurrency(num, { currency: summary.currency })} (${(payload?.pct ?? 0).toFixed(0)}%)`, payload?.name ?? ""];
                 }}
                 contentStyle={tooltipChrome}
               />
@@ -184,7 +178,7 @@ export const TransactionsSummaryCard = ({
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</div>
               <div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
-                {summary.currency} {fmtCompact(total)}
+                {formatCurrency(total, { currency: summary.currency })}
               </div>
             </div>
           </div>

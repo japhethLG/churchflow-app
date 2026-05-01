@@ -18,6 +18,7 @@ import {
   memberPledgeSchema,
   type MemberPledgeFormValues,
 } from "./formHelpers";
+import { formatAmount } from "@/lib/format-currency";
 
 type Item = components["schemas"]["CampaignItemResponseDto"];
 
@@ -61,9 +62,7 @@ export const MemberPledgeModal = ({
     ...items.map((item) => ({
       value: item.id,
       label: item.title,
-      description: `Goal: ${symbol}${Number(item.targetAmount).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-      })}`,
+      description: `Goal: ${symbol}${formatAmount(item.targetAmount)}`,
     })),
   ];
 

@@ -17,6 +17,7 @@ import { nstr } from "@/lib/api/coerce";
 import type { components } from "@/lib/api";
 import type { MemberPledgeProps } from "@/components/modals/member-pledge";
 import { cn } from "@/lib/utils";
+import { formatCompact, getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
@@ -30,33 +31,14 @@ const STATUS_MAP: Record<
   CANCELLED: "Cancelled",
 };
 
-const fmtCompact = (v: number): string => {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
-  return Number(v).toFixed(0);
-};
-
-const fmtCurrency = (v: number | string): string => {
-  return Number(v).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-};
 
 export const MemberCampaignsPage = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const open = useModalStore((s) => s.open);
 
   const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "USD";
-  const currencySymbol =
-    currency === "USD"
-      ? "$"
-      : currency === "EUR"
-        ? "€"
-        : currency === "GBP"
-          ? "£"
-          : currency;
+  const currency = tenantQ.data?.currency ?? "PHP";
+  const currencySymbol = getCurrencySymbol(currency);
 
   const memberQ = useMyMembership(tenantSlug);
   const memberId = memberQ.data?.id;
@@ -219,7 +201,7 @@ const CampaignCard = ({
           <div
             className={cn(
               "h-full rounded transition-[width] duration-500 ease-out",
-              past ? "bg-muted-foreground" : "bg-gradient-to-r from-ring to-primary",
+              past ? "bg-muted-foreground" : "bg-linear-to-r from-ring to-primary",
             )}
             style={{ width: goal > 0 ? `${pct}%` : "0%" }}
           />
@@ -227,13 +209,13 @@ const CampaignCard = ({
         <div className="flex justify-between text-xs tabular-nums text-muted-foreground">
           <span>
             {currencySymbol}
-            {fmtCompact(raised)} raised
+            {formatCompact(raised, { currency }).replace(/^[^\d]+/, "")} raised
             {pledged > 0 &&
-              ` · ${currencySymbol}${fmtCompact(pledged)} pledged`}
+              ` · ${currencySymbol}${formatCompact(pledged, { currency }).replace(/^[^\d]+/, "")} pledged`}
           </span>
           <span>
             {goal > 0
-              ? `Goal: ${currencySymbol}${fmtCompact(goal)}`
+              ? `Goal: ${currencySymbol}${formatCompact(goal, { currency }).replace(/^[^\d]+/, "")}`
               : "No goal set"}
           </span>
         </div>
@@ -263,8 +245,8 @@ const CampaignCard = ({
                       </span>
                       <span className="tabular-nums text-muted-foreground">
                         {currencySymbol}
-                        {fmtCompact(Number(item.raisedAmount))} / {currencySymbol}
-                        {fmtCompact(Number(item.targetAmount))}
+                        {formatCompact(Number(item.raisedAmount), { currency }).replace(/^[^\d]+/, "")} / {currencySymbol}
+                        {formatCompact(Number(item.targetAmount), { currency }).replace(/^[^\d]+/, "")}
                       </span>
                     </div>
                     <div className="h-1 rounded-sm bg-muted">
@@ -289,7 +271,7 @@ const CampaignCard = ({
         {myActivePledges.length > 0 ? (
           <Badge color="indigo">
             Your pledge: {currencySymbol}
-            {fmtCurrency(myPledgeTotal)}
+            {formatAmount(myPledgeTotal)}
           </Badge>
         ) : (
           !past && <Badge color="neutral">No pledge yet</Badge>
