@@ -25,7 +25,6 @@ export const CampaignEditPage = () => {
     return {
       title: campaign.title,
       description: nstr(campaign.description) ?? "",
-      currency: campaign.currency,
       deadline: toDateInput(campaign.deadline),
       status: campaign.status,
       items: campaign.items.map((i, idx) => ({

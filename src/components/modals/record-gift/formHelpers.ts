@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { IconName } from "@/components/primitives/Icon";
 
 const TRANSACTION_TYPES = [
   "TITHE",
@@ -8,15 +7,6 @@ const TRANSACTION_TYPES = [
   "FIRST_FRUIT",
   "COMMITMENT",
   "DONATION",
-  "OTHER",
-] as const;
-
-const PAYMENT_METHODS = [
-  "CASH",
-  "CHECK",
-  "BANK_TRANSFER",
-  "MOBILE_MONEY",
-  "ONLINE",
   "OTHER",
 ] as const;
 
@@ -31,7 +21,6 @@ export const recordGiftSchema = z.object({
   campaignId: z.string(),
   campaignItemId: z.string(),
   pledgeId: z.string(),
-  paymentMethod: z.enum(PAYMENT_METHODS),
   referenceNumber: z.string(),
   note: z.string(),
 });
@@ -52,7 +41,6 @@ export const buildRecordGiftDefaults = (overrides?: {
   campaignId: overrides?.defaultCampaignId ?? "",
   campaignItemId: "",
   pledgeId: overrides?.defaultPledgeId ?? "",
-  paymentMethod: "CASH",
   referenceNumber: "",
   note: "",
 });
@@ -65,17 +53,4 @@ export const TYPE_OPTIONS: { value: (typeof TRANSACTION_TYPES)[number]; label: s
   { value: "COMMITMENT", label: "Commitment" },
   { value: "DONATION", label: "Donation" },
   { value: "OTHER", label: "Other" },
-];
-
-export const METHOD_OPTIONS: {
-  value: (typeof PAYMENT_METHODS)[number];
-  label: string;
-  icon: IconName;
-}[] = [
-  { value: "CASH", label: "Cash", icon: "cash" },
-  { value: "CHECK", label: "Check", icon: "check_rect" },
-  { value: "BANK_TRANSFER", label: "Bank", icon: "bank" },
-  { value: "MOBILE_MONEY", label: "Mobile", icon: "phone" },
-  { value: "ONLINE", label: "Online", icon: "link" },
-  { value: "OTHER", label: "Other", icon: "dots" },
 ];

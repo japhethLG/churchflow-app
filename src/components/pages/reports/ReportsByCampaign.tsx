@@ -21,12 +21,10 @@ const ellipsize = (s: string, max = 42) => {
 export const ReportsByCampaign = ({
   transactions,
   campaignsById,
-  currency,
   loading,
 }: {
   transactions: Transaction[];
   campaignsById: Record<string, Campaign>;
-  currency: string;
   loading?: boolean;
 }) => {
   if (loading) {
@@ -58,7 +56,7 @@ export const ReportsByCampaign = ({
         ? `${data.name} — not linked to a campaign`
         : data.name,
     metric: data.total,
-    amountDisplay: formatCurrency(data.total, { currency }),
+    amountDisplay: formatCurrency(data.total),
     rank: idx + 1,
     fill: CAMPAIGN_RANK_COLORS[idx % CAMPAIGN_RANK_COLORS.length],
     countLabel: `${data.count} gifts`,

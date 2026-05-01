@@ -51,7 +51,6 @@ export const AdminReportsPage = () => {
     campaigns.map((c) => [c.id, c]),
   );
 
-  const currency = summary.data?.currency ?? "PHP";
 
   return (
     <div className="h-full overflow-auto">
@@ -97,7 +96,6 @@ export const AdminReportsPage = () => {
           })}
           , {new Date().getFullYear()}
         </Chip>
-        <Chip>{currency}</Chip>
       </div>
 
       {/* Tab content */}
@@ -112,7 +110,6 @@ export const AdminReportsPage = () => {
         <ReportsByMember
           transactions={txQuery.data?.items ?? []}
           membersById={membersById}
-          currency={currency}
           loading={txQuery.isLoading || membersQ.isLoading}
         />
       )}
@@ -121,7 +118,6 @@ export const AdminReportsPage = () => {
         <ReportsByCampaign
           transactions={txQuery.data?.items ?? []}
           campaignsById={campaignsById}
-          currency={currency}
           loading={txQuery.isLoading || campaignsQ.isLoading}
         />
       )}

@@ -51,9 +51,6 @@ export const CampaignHero = ({
           <Pill bg={isActive ? "rgba(255,255,255,0.2)" : "var(--secondary)"}>
             {STATUS_LABEL[campaign.status]}
           </Pill>
-          <Pill bg={isActive ? "rgba(255,255,255,0.2)" : "var(--secondary)"}>
-            {campaign.currency}
-          </Pill>
         </div>
         <h1
           style={{

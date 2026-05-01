@@ -23,7 +23,6 @@ export const STATUS_CONFIG: Record<CampaignStatus, { label: string; hint: string
 export const campaignSchema = z.object({
   title: z.string().min(1, "Campaign title is required"),
   description: z.string().optional(),
-  currency: z.string().length(3, "Must be a 3-letter currency code"),
   deadline: z.string().optional(),
   status: z.enum(Object.keys(STATUS_CONFIG) as [CampaignStatus, ...CampaignStatus[]]),
   items: z.array(campaignItemSchema).min(1, "At least one item is required"),

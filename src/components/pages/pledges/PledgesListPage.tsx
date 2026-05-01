@@ -65,8 +65,7 @@ export const PledgesListPage = () => {
   };
 
   const askEdit = (p: PledgeRow) => {
-    const currency = campaignsById[p.campaignId]?.currency ?? "PHP";
-    openModal("edit-pledge", { tenantSlug, pledge: p, currency });
+    openModal("edit-pledge", { tenantSlug, pledge: p });
   };
   const askDelete = (p: PledgeRow) =>
     openModal("confirm-delete-pledge", { tenantSlug, pledgeId: p.id });
@@ -78,7 +77,6 @@ export const PledgesListPage = () => {
       tenantSlug,
       campaignId: c.id,
       campaignTitle: c.title,
-      currency: c.currency,
       items: [],
     });
   };

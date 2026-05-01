@@ -133,8 +133,6 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
           {(
             [
               ["Slug", `/${tenant.slug}`, true],
-              ["Currency", tenant.currency, false],
-              ["Timezone", tenant.timezone, false],
               [
                 "Created",
                 new Date(tenant.createdAt).toLocaleDateString("en-US", {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormInput } from "@/components/formElements";
+import { Form, FormInput, FormDatePicker } from "@/components/formElements";
 import { useAddCampaignItem } from "@/lib/api/campaigns";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
@@ -22,14 +22,12 @@ declare module "@/lib/modals/registry" {
 export type AddCampaignItemProps = {
   tenantSlug: string;
   campaignId: string;
-  currency: string;
   defaultSortOrder?: number;
 };
 
 export const AddCampaignItemModal = ({
   tenantSlug,
   campaignId,
-  currency,
   defaultSortOrder,
   onClose,
 }: AddCampaignItemProps & ModalBaseProps) => {
@@ -84,12 +82,10 @@ export const AddCampaignItemModal = ({
             label="Target amount"
             type="number"
             placeholder="0.00"
-            prefix={currency}
           />
-          <FormInput
+          <FormDatePicker
             inputName="deadline"
             label="Deadline (optional)"
-            type="date"
             helper="Inherits campaign deadline if blank"
           />
         </div>

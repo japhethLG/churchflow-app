@@ -130,7 +130,7 @@ export const DashboardRecentGifts = ({
                 <div className="text-[11px] text-muted-foreground">{relativeDate(t.date)}</div>
               </div>
               <TypeBadge type={typeLabel} />
-              <Amount value={t.amount} currency={t.currency} />
+              <Amount value={t.amount} />
             </div>
           );
         })

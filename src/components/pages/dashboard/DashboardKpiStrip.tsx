@@ -2,7 +2,7 @@
 
 import { StatCard } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { formatCompact, getCurrencySymbol, formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/lib/format-currency";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 
@@ -56,12 +56,12 @@ export const DashboardKpiStrip = ({
         label="Total this month"
         value={
           <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[32px] font-semibold tabular-nums tracking-tighter">
-            {formatCurrency(total, { currency: summary.currency })}
+            {formatCurrency(total)}
           </span>
         }
         delta={deltaStr}
         deltaDirection={deltaDir as "up" | "down" | "flat" | undefined}
-        caption={prevTotal > 0 ? `vs. ${formatCurrency(prevTotal, { currency: summary.currency })} last month` : undefined}
+        caption={prevTotal > 0 ? `vs. ${formatCurrency(prevTotal)} last month` : undefined}
       />
       <StatCard
         label="Gifts this month"

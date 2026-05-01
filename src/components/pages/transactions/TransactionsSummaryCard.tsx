@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { formatCompact, formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/lib/format-currency";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
@@ -110,7 +110,7 @@ export const TransactionsSummaryCard = ({
             label="Total received"
             value={
               <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[28px] font-semibold tabular-nums tracking-tight">
-                {formatCurrency(total, { currency: summary.currency })}
+                {formatCurrency(total)}
               </span>
             }
           />
@@ -125,7 +125,7 @@ export const TransactionsSummaryCard = ({
             label="Average"
             value={
               <span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
-                {formatCurrency(average, { currency: summary.currency })}
+                {formatCurrency(average)}
               </span>
             }
             caption="per gift"
@@ -168,7 +168,7 @@ export const TransactionsSummaryCard = ({
                 formatter={(v, _name, ctx) => {
                   const payload = (ctx as { payload?: { name?: string; pct?: number } } | undefined)?.payload;
                   const num = typeof v === "number" ? v : 0;
-                  return [`${formatCurrency(num, { currency: summary.currency })} (${(payload?.pct ?? 0).toFixed(0)}%)`, payload?.name ?? ""];
+                  return [`${formatCurrency(num)} (${(payload?.pct ?? 0).toFixed(0)}%)`, payload?.name ?? ""];
                 }}
                 contentStyle={tooltipChrome}
               />
@@ -178,7 +178,7 @@ export const TransactionsSummaryCard = ({
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</div>
               <div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
-                {formatCurrency(total, { currency: summary.currency })}
+                {formatCurrency(total)}
               </div>
             </div>
           </div>

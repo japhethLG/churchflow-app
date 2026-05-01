@@ -4,12 +4,10 @@ import {
   Amount,
   Avatar,
   DataTable,
-  Icon,
   RowActionsMenu,
   TypeBadge,
   type DataTableColumn,
   type DataTablePagination,
-  type IconName,
   type TransactionType as BadgeType,
 } from "@/components/primitives";
 import { nstr, type components } from "@/lib/api";
@@ -28,23 +26,6 @@ const TYPE_BADGE_LABEL: Record<TransactionRow["type"], BadgeType> = {
   OTHER: "Other",
 };
 
-const METHOD_ICON: Record<TransactionRow["paymentMethod"], IconName> = {
-  CASH: "cash",
-  CHECK: "check_rect",
-  BANK_TRANSFER: "bank",
-  ONLINE: "link",
-  MOBILE_MONEY: "phone",
-  OTHER: "dots",
-};
-
-const METHOD_LABEL: Record<TransactionRow["paymentMethod"], string> = {
-  CASH: "Cash",
-  CHECK: "Check",
-  BANK_TRANSFER: "Bank",
-  ONLINE: "Online",
-  MOBILE_MONEY: "Mobile",
-  OTHER: "Other",
-};
 
 const fmtDate = (iso: string): string => {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -127,17 +108,6 @@ export const TransactionsTable = ({
       },
     },
     {
-      key: "method",
-      label: "Method",
-      width: "120px",
-      render: (t) => (
-        <span className="inline-flex items-center gap-1.5 text-[13px]">
-          <Icon name={METHOD_ICON[t.paymentMethod]} size={13} color={muted} />
-          {METHOD_LABEL[t.paymentMethod]}
-        </span>
-      ),
-    },
-    {
       key: "ref",
       label: "Ref #",
       width: "100px",
@@ -155,7 +125,7 @@ export const TransactionsTable = ({
       label: "Amount",
       width: "120px",
       align: "right",
-      render: (t) => <Amount value={t.amount} currency={t.currency} />,
+      render: (t) => <Amount value={t.amount} />,
     },
     {
       key: "actions",

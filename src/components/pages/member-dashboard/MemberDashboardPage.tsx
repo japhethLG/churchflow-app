@@ -7,7 +7,6 @@ import { useTransactions } from "@/lib/api/transactions";
 import { useCampaigns, useCampaignProgress } from "@/lib/api/campaigns";
 import { usePledges } from "@/lib/api/pledges";
 import { useTenant } from "@/lib/api/tenants";
-import { getCurrencySymbol } from "@/lib/format-currency";
 import { MemberKpiStrip } from "./MemberKpiStrip";
 import { MemberRecentGiving } from "./MemberRecentGiving";
 import { MemberCampaignsPledges } from "./MemberCampaignsPledges";
@@ -16,10 +15,8 @@ import { MemberThankYou } from "./MemberThankYou";
 export const MemberDashboardPage = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-  // Tenant info for currency
+  // Tenant name for greeting
   const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "PHP";
-  const currencySymbol = getCurrencySymbol(currency);
 
   // Current member
   const memberQ = useMyMembership(tenantSlug);
@@ -105,7 +102,6 @@ export const MemberDashboardPage = () => {
       <MemberKpiStrip
         transactions={transactions}
         loading={loading}
-        currency={currencySymbol}
       />
 
       {/* Row 2: Recent giving + Campaigns & Pledges */}

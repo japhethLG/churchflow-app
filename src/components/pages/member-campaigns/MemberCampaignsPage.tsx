@@ -11,13 +11,12 @@ import {
 import { useCampaigns, useCampaignProgress } from "@/lib/api/campaigns";
 import { usePledges } from "@/lib/api/pledges";
 import { useMyMembership } from "@/lib/api/members";
-import { useTenant } from "@/lib/api/tenants";
 import { useModalStore } from "@/lib/modals/store";
 import { nstr } from "@/lib/api/coerce";
 import type { components } from "@/lib/api";
 import type { MemberPledgeProps } from "@/components/modals/member-pledge";
 import { cn } from "@/lib/utils";
-import { formatCompact, getCurrencySymbol, formatAmount } from "@/lib/format-currency";
+import { formatCompact } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
@@ -36,9 +35,6 @@ export const MemberCampaignsPage = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const open = useModalStore((s) => s.open);
 
-  const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "PHP";
-  const currencySymbol = getCurrencySymbol(currency);
 
   const memberQ = useMyMembership(tenantSlug);
   const memberId = memberQ.data?.id;
@@ -110,8 +106,6 @@ export const MemberCampaignsPage = () => {
                     myPledges={pledgeByCampaign[c.id] ?? []}
                     tenantSlug={tenantSlug}
                     memberId={memberId}
-                    currency={currency}
-                    currencySymbol={currencySymbol}
                     onPledge={open}
                   />
                 ))}
@@ -132,8 +126,6 @@ export const MemberCampaignsPage = () => {
                     myPledges={pledgeByCampaign[c.id] ?? []}
                     tenantSlug={tenantSlug}
                     memberId={memberId}
-                    currency={currency}
-                    currencySymbol={currencySymbol}
                     onPledge={open}
                     past
                   />
@@ -152,8 +144,6 @@ const CampaignCard = ({
   myPledges,
   tenantSlug,
   memberId,
-  currency,
-  currencySymbol,
   onPledge,
   past,
 }: {
@@ -161,8 +151,6 @@ const CampaignCard = ({
   myPledges: components["schemas"]["PledgeResponseDto"][];
   tenantSlug: string;
   memberId?: string;
-  currency: string;
-  currencySymbol: string;
   onPledge: (name: "member-pledge", props: MemberPledgeProps) => void;
   past?: boolean;
 }) => {
@@ -208,14 +196,13 @@ const CampaignCard = ({
         </div>
         <div className="flex justify-between text-xs tabular-nums text-muted-foreground">
           <span>
-            {currencySymbol}
-            {formatCompact(raised, { currency }).replace(/^[^\d]+/, "")} raised
+            {formatCompact(raised)} raised
             {pledged > 0 &&
-              ` · ${currencySymbol}${formatCompact(pledged, { currency }).replace(/^[^\d]+/, "")} pledged`}
+              ` · ${formatCompact(pledged)} pledged`}
           </span>
           <span>
             {goal > 0
-              ? `Goal: ${currencySymbol}${formatCompact(goal, { currency }).replace(/^[^\d]+/, "")}`
+              ? `Goal: ${formatCompact(goal)}`
               : "No goal set"}
           </span>
         </div>
@@ -244,9 +231,7 @@ const CampaignCard = ({
                         {item.title}
                       </span>
                       <span className="tabular-nums text-muted-foreground">
-                        {currencySymbol}
-                        {formatCompact(Number(item.raisedAmount), { currency }).replace(/^[^\d]+/, "")} / {currencySymbol}
-                        {formatCompact(Number(item.targetAmount), { currency }).replace(/^[^\d]+/, "")}
+                        {`${item.raisedAmount} / ${formatCompact(Number(item.targetAmount))}`}
                       </span>
                     </div>
                     <div className="h-1 rounded-sm bg-muted">
@@ -270,8 +255,7 @@ const CampaignCard = ({
       <div className="mb-3.5 flex flex-wrap gap-1.5">
         {myActivePledges.length > 0 ? (
           <Badge color="indigo">
-            Your pledge: {currencySymbol}
-            {formatAmount(myPledgeTotal)}
+          Your pledge: {formatCompact(myPledgeTotal)}
           </Badge>
         ) : (
           !past && <Badge color="neutral">No pledge yet</Badge>
@@ -302,7 +286,6 @@ const CampaignCard = ({
               tenantSlug,
               campaignId: c.id,
               campaignTitle: c.title,
-              currency,
               memberId,
               items: items.map((i) => ({
                 id: i.itemId,

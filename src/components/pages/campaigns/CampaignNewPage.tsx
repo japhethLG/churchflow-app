@@ -20,7 +20,6 @@ export const CampaignNewPage = () => {
       body: {
         title: values.title.trim(),
         description: values.description?.trim() || undefined,
-        currency: values.currency.trim().toUpperCase(),
         deadline: values.deadline ? new Date(values.deadline).toISOString() : undefined,
         status: values.status,
       },
@@ -59,7 +58,6 @@ export const CampaignNewPage = () => {
       <CampaignForm
         onSubmit={onSubmit}
         onCancel={() => router.push(`/${tenantSlug}/admin/campaigns`)}
-        initialValues={tenant?.currency ? { currency: tenant.currency } : undefined}
         submitLabel="Create campaign"
       />
     </div>

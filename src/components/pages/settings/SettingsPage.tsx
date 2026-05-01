@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -12,15 +12,9 @@ import {
 import {
   Form,
   FormInput,
-  FormSelect,
 } from "@/components/formElements";
 import { useTenant, useUpdateTenant } from "@/lib/api/tenants";
 import { nstr } from "@/lib/api/coerce";
-import {
-  getCurrencyOptions,
-  getTimezoneOptions,
-  getMonthOptions,
-} from "@/lib/intl-options";
 import {
   settingsSchema,
   type SettingsFormValues,
@@ -34,10 +28,6 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const currencyOptions = useMemo(() => getCurrencyOptions(), []);
-  const timezoneOptions = useMemo(() => getTimezoneOptions(), []);
-  const fiscalYearOptions = useMemo(() => getMonthOptions(), []);
-
   const methods = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema) as any,
     defaultValues: {
@@ -45,9 +35,6 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
       address: "",
       phone: "",
       email: "",
-      currency: "PHP",
-      timezone: "UTC",
-      fiscalYearStart: 1,
     },
   });
 
@@ -60,9 +47,6 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
         address: nstr(tenant.address) ?? "",
         phone: nstr(tenant.phone) ?? "",
         email: nstr(tenant.email) ?? "",
-        currency: tenant.currency,
-        timezone: tenant.timezone,
-        fiscalYearStart: tenant.fiscalYearStart,
       });
     }
   }, [tenant, reset]);
@@ -114,7 +98,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
       <PageHeader
         overline="Configuration"
         title="Settings"
-        subtitle="Manage your church profile, currency, and fiscal year."
+        subtitle="Manage your church profile."
         action={
           <div className="mr-2.5 flex items-center gap-2.5">
             {saved && (
@@ -166,35 +150,6 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
               />
             </div>
           </div>
-        </Card>
-
-        <Card>
-          <SectionTitle title="Financial settings" />
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormSelect
-                inputName="currency"
-                label="Currency"
-                options={currencyOptions}
-              />
-
-              <FormSelect
-                inputName="fiscalYearStart"
-                label="Fiscal year starts"
-                options={fiscalYearOptions}
-              />
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <SectionTitle title="Timezone" />
-          <FormSelect
-            inputName="timezone"
-            label="IANA Timezone"
-            options={timezoneOptions}
-            hint="Used for transaction date bucketing and fiscal year calculations."
-          />
         </Card>
 
         <Card>

@@ -72,7 +72,6 @@ export const CampaignDetailPage = () => {
     openModal("add-campaign-item", {
       tenantSlug,
       campaignId: campaign.id,
-      currency: campaign.currency,
       defaultSortOrder: items.length,
     });
   const openEditItem = (item: Item) =>
@@ -90,11 +89,10 @@ export const CampaignDetailPage = () => {
       tenantSlug,
       campaignId: campaign.id,
       campaignTitle: campaign.title,
-      currency: campaign.currency,
       items,
     });
   const openEditPledge = (pledge: Pledge) =>
-    openModal("edit-pledge", { tenantSlug, pledge, currency: campaign.currency });
+    openModal("edit-pledge", { tenantSlug, pledge });
   const openDeletePledge = (pledge: Pledge) =>
     openModal("confirm-delete-pledge", { tenantSlug, pledgeId: pledge.id });
 
@@ -131,7 +129,7 @@ export const CampaignDetailPage = () => {
       <CampaignHero campaign={campaign} />
 
       <div className="grid gap-4">
-        <CampaignProgressCard progress={progress} loading={progressLoading} currency={campaign.currency} />
+        <CampaignProgressCard progress={progress} loading={progressLoading} />
 
         <CampaignItemsList
           items={items}

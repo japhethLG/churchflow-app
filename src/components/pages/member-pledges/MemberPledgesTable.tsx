@@ -3,7 +3,7 @@
 import { DataTable, type DataTableColumn } from "@/components/primitives/DataTable";
 import { StatusBadge, type Status } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
-import { formatAmount } from "@/lib/format-currency";
+import { formatCurrency } from "@/lib/format-currency";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -19,13 +19,11 @@ export const MemberPledgesTable = ({
   loading,
   campaignMap,
   campaignItemMap,
-  currencySymbol,
 }: {
   rows: Pledge[];
   loading?: boolean;
   campaignMap: Record<string, Campaign>;
   campaignItemMap?: Record<string, string>;
-  currencySymbol: string;
 }) => {
   const itemMap = campaignItemMap ?? {};
   const columns: DataTableColumn<Pledge>[] = [
@@ -57,8 +55,7 @@ export const MemberPledgesTable = ({
       align: "right",
       render: (row) => (
         <span className="font-semibold tabular-nums text-foreground">
-          {currencySymbol}
-          {formatAmount(row.pledgedAmount)}
+          {formatCurrency(row.pledgedAmount)}
         </span>
       ),
     },

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Card, SectionTitle, Amount } from "@/components/primitives";
-import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
 import { TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -19,14 +18,6 @@ const TYPE_LABEL: Record<string, string> = {
   OTHER: "Other",
 };
 
-const METHOD_LABEL: Record<string, string> = {
-  CASH: "Cash",
-  CHECK: "Check",
-  BANK_TRANSFER: "Bank transfer",
-  ONLINE: "Online",
-  MOBILE_MONEY: "Mobile money",
-  OTHER: "Other",
-};
 
 const fmtDate = (iso: string): string => {
   const d = new Date(iso);
@@ -93,9 +84,9 @@ export const MemberRecentGiving = ({
             <div className="text-[13px] tabular-nums text-muted-foreground">{fmtDate(t.date)}</div>
             <TypeBadge type={(TYPE_LABEL[t.type] ?? t.type) as "Tithe"} />
             <div className="text-[13px] text-muted-foreground">
-              {METHOD_LABEL[t.paymentMethod] ?? t.paymentMethod}
+              {TYPE_LABEL[t.type] ?? t.type}
             </div>
-            <Amount value={formatAmount(t.amount)} currency={getCurrencySymbol(t.currency)} />
+            <Amount value={t.amount} />
           </div>
         ))
       )}

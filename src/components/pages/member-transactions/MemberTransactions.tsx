@@ -7,16 +7,14 @@ import {
   DataTable,
   Chip,
   Amount,
-  Icon,
 } from "@/components/primitives";
 import { TypeBadge, type TransactionType } from "@/components/primitives/Badge";
 import { useMyMembership } from "@/lib/api/members";
 import { useTransactions } from "@/lib/api/transactions";
 import { useCampaigns } from "@/lib/api/campaigns";
-import { useTenant } from "@/lib/api/tenants";
 import { nstr } from "@/lib/api/coerce";
 import type { components } from "@/lib/api";
-import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
+import { formatCurrency } from "@/lib/format-currency";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
@@ -41,10 +39,6 @@ export const MemberTransactions = ({
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [rangeFilter, setRangeFilter] = useState<string>("YEAR");
 
-  // Tenant info for currency
-  const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "PHP";
-  const currencySymbol = getCurrencySymbol(currency);
 
   // Current member
   const memberQ = useMyMembership(tenantSlug);
@@ -136,33 +130,6 @@ export const MemberTransactions = ({
       },
     },
     {
-      key: "method",
-      label: "Payment method",
-      width: "180px",
-      render: (t: Transaction) => (
-        <div style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-          <Icon
-            name={
-              t.paymentMethod === "CASH"
-                ? "cash"
-                : t.paymentMethod === "CHECK"
-                  ? "check_rect"
-                  : t.paymentMethod === "BANK_TRANSFER"
-                    ? "bank"
-                    : t.paymentMethod === "MOBILE_MONEY"
-                      ? "phone"
-                      : "receipt"
-            }
-            size={16}
-            color={"var(--muted-foreground)"}
-          />
-          <span style={{ color: "var(--muted-foreground)", textTransform: "capitalize" }}>
-            {t.paymentMethod.toLowerCase().replace("_", " ")}
-          </span>
-        </div>
-      ),
-    },
-    {
       key: "ref",
       label: "Reference #",
       width: "140px",
@@ -184,7 +151,7 @@ export const MemberTransactions = ({
       width: "120px",
       align: "right" as const,
       render: (t: Transaction) => (
-        <Amount value={formatAmount(t.amount)} currency={currencySymbol} />
+        <Amount value={t.amount} />
       ),
     },
   ];
@@ -290,8 +257,7 @@ export const MemberTransactions = ({
               fontVariantNumeric: "tabular-nums",
             }}
           >
-            {currencySymbol}
-            {formatAmount(stats.total)}
+            {formatCurrency(stats.total)}
           </div>
         </div>
         <div>
@@ -339,8 +305,7 @@ export const MemberTransactions = ({
               fontVariantNumeric: "tabular-nums",
             }}
           >
-            {currencySymbol}
-            {formatAmount(stats.avg)}
+            {formatCurrency(stats.avg)}
           </div>
         </div>
       </div>

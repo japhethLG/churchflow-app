@@ -5,8 +5,7 @@ import { PageHeader } from "@/components/primitives";
 import { usePledges } from "@/lib/api/pledges";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMyMembership } from "@/lib/api/members";
-import { useTenant } from "@/lib/api/tenants";
-import { getCurrencySymbol, formatAmount } from "@/lib/format-currency";
+import { formatCurrency } from "@/lib/format-currency";
 import { MemberPledgesTable } from "./MemberPledgesTable";
 
 
@@ -14,9 +13,6 @@ import { MemberPledgesTable } from "./MemberPledgesTable";
 export const MemberMyPledgesPage = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-  const tenantQ = useTenant(tenantSlug);
-  const currency = tenantQ.data?.currency ?? "PHP";
-  const currencySymbol = getCurrencySymbol(currency);
 
   const memberQ = useMyMembership(tenantSlug);
   const memberId = memberQ.data?.id;
@@ -61,8 +57,7 @@ export const MemberMyPledgesPage = () => {
               Total pledged (active)
             </div>
             <div className="text-2xl font-semibold tracking-tight tabular-nums">
-              {currencySymbol}
-              {formatAmount(totalActive)}
+              {formatCurrency(totalActive)}
             </div>
           </div>
         </div>
@@ -73,7 +68,6 @@ export const MemberMyPledgesPage = () => {
           rows={pledges}
           loading={loading}
           campaignMap={campaignMap}
-          currencySymbol={currencySymbol}
         />
       </div>
     </div>

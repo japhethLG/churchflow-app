@@ -91,11 +91,11 @@ export const DashboardActiveCampaigns = ({
                   </div>
                   <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
                     <span>
-                      {formatCompact(raised, { currency: c.currency })} raised
+                      {formatCompact(raised)} raised
                     </span>
                     {goal > 0 && (
                       <span>
-                        Goal: {formatCompact(goal, { currency: c.currency })}
+                        Goal: {formatCompact(goal)}
                       </span>
                     )}
                   </div>

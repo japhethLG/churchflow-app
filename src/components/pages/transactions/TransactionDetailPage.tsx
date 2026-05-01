@@ -31,14 +31,6 @@ const TYPE_BADGE_LABEL: Record<Tx["type"], "Tithe" | "Offering" | "Mission" | "F
   OTHER: "Other",
 };
 
-const METHOD_LABEL: Record<Tx["paymentMethod"], string> = {
-  CASH: "Cash",
-  CHECK: "Check",
-  BANK_TRANSFER: "Bank transfer",
-  ONLINE: "Online",
-  MOBILE_MONEY: "Mobile money",
-  OTHER: "Other",
-};
 
 export const TransactionDetailPage = () => {
   const router = useRouter();
@@ -89,7 +81,7 @@ export const TransactionDetailPage = () => {
     <div className="h-full overflow-auto">
       <PageHeader
         overline="Ledger / Transactions"
-        title={formatCurrency(tx.amount, { currency: tx.currency })}
+        title={formatCurrency(tx.amount)}
         subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${new Date(tx.date).toLocaleDateString(undefined, {
           weekday: "long",
           year: "numeric",
@@ -109,7 +101,7 @@ export const TransactionDetailPage = () => {
                 openModal("confirm-delete-transaction", {
                   tenantSlug,
                   transactionId: tx.id,
-                  amountLabel: formatCurrency(tx.amount, { currency: tx.currency }),
+                  amountLabel: formatCurrency(tx.amount),
                   onDeleted: () => router.push(`/${tenantSlug}/admin/transactions`),
                 })
               }
@@ -123,9 +115,8 @@ export const TransactionDetailPage = () => {
       <div className="grid grid-cols-[1.5fr_1fr] items-start gap-4">
         <Card padding={24}>
           <SectionTitle title="Details" />
-          <DetailRow label="Amount" value={<Amount value={tx.amount} currency={tx.currency} />} />
+          <DetailRow label="Amount" value={<Amount value={tx.amount} />} />
           <DetailRow label="Type" value={<TypeBadge type={TYPE_BADGE_LABEL[tx.type]} />} />
-          <DetailRow label="Payment method" value={METHOD_LABEL[tx.paymentMethod]} />
           <DetailRow
             label="Reference #"
             value={
@@ -216,7 +207,7 @@ export const TransactionDetailPage = () => {
               <Label>Pledge</Label>
               {pledge ? (
                 <span className="text-sm">
-                  {formatCurrency(pledge.pledgedAmount, { currency: tx.currency })} pledged · status{" "}
+                  {formatCurrency(pledge.pledgedAmount)} pledged · status{" "}
                   <strong>{pledge.status.toLowerCase()}</strong>
                 </span>
               ) : (

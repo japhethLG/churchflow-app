@@ -18,12 +18,10 @@ const ellipsize = (s: string, max = 36) => {
 export const ReportsByMember = ({
   transactions,
   membersById,
-  currency,
   loading,
 }: {
   transactions: Transaction[];
   membersById: Record<string, Member>;
-  currency: string;
   loading?: boolean;
 }) => {
   if (loading) {
@@ -55,7 +53,7 @@ export const ReportsByMember = ({
     axisLabel: ellipsize(data.name),
     title: data.name,
     metric: data.total,
-    amountDisplay: formatCurrency(data.total, { currency }),
+    amountDisplay: formatCurrency(data.total),
     rank: idx + 1,
     fill: MEMBER_RANK_COLORS[idx % MEMBER_RANK_COLORS.length],
     countLabel: `${data.count} gifts`,

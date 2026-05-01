@@ -34,7 +34,6 @@ export type CreatePledgeProps = {
   tenantSlug: string;
   campaignId: string;
   campaignTitle: string;
-  currency: string;
   items: Item[];
   defaultMemberId?: string;
 };
@@ -43,7 +42,6 @@ export const CreatePledgeModal = ({
   tenantSlug,
   campaignId,
   campaignTitle,
-  currency,
   items,
   defaultMemberId,
   onClose,
@@ -138,7 +136,6 @@ export const CreatePledgeModal = ({
           label="Pledged amount"
           type="number"
           placeholder="0.00"
-          prefix={currency}
         />
 
         <FormInput

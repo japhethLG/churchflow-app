@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormInput } from "@/components/formElements";
+import { Form, FormInput, FormDatePicker } from "@/components/formElements";
 import { useUpdateCampaignItem } from "@/lib/api/campaigns";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
@@ -80,7 +80,7 @@ export const EditCampaignItemModal = ({
         <FormInput inputName="description" label="Description (optional)" />
         <div className="grid grid-cols-2 gap-3">
           <FormInput inputName="target" label="Target amount" type="number" />
-          <FormInput inputName="deadline" label="Deadline" type="date" />
+          <FormDatePicker inputName="deadline" label="Deadline" />
         </div>
         {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
       </Form>

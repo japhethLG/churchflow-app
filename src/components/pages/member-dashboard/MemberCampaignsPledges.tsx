@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, SectionTitle, Badge, StatusBadge } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { nstr } from "@/lib/api/coerce";
-import { formatCompact, getCurrencySymbol, formatAmount, formatCurrency } from "@/lib/format-currency";
+import { formatCompact, formatCurrency } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
@@ -114,10 +114,10 @@ export const MemberCampaignsPledges = ({
                       </div>
                       <div className="mb-1.5 flex justify-between text-[11px] text-muted-foreground">
                         <span>
-                          {formatCompact(raised, { currency: c.currency })} raised
+                          {formatCompact(raised)} raised
                         </span>
                         <span>
-                          Goal: {formatCompact(goal, { currency: c.currency })}
+                          Goal: {formatCompact(goal)}
                         </span>
                       </div>
                     </>
@@ -126,7 +126,7 @@ export const MemberCampaignsPledges = ({
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {myPledgeTotal > 0 ? (
                       <Badge color="indigo">
-                        Your pledge: {formatCurrency(myPledgeTotal, { currency: c.currency })}
+                        Your pledge: {formatCurrency(myPledgeTotal)}
                       </Badge>
                     ) : (
                       <Badge color="neutral">No pledge yet</Badge>

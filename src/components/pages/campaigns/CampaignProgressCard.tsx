@@ -13,11 +13,9 @@ const pct = (n: number, d: number): number  => {
 export const CampaignProgressCard = ({
   progress,
   loading,
-  currency,
 }: {
   progress: Progress | undefined;
   loading?: boolean;
-  currency: string;
 }) => {
   if (loading || !progress) {
     return (
@@ -43,7 +41,7 @@ export const CampaignProgressCard = ({
         <StatCard
           label="Goal"
           value={<Amount value={goal.toString()} />}
-          caption={`${currency} · ${progress.items.length} items`}
+          caption={`${progress.items.length} items`}
         />
         <StatCard
           label="Pledged"

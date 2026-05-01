@@ -26,13 +26,11 @@ declare module "@/lib/modals/registry" {
 export type EditPledgeProps = {
   tenantSlug: string;
   pledge: Pledge;
-  currency: string;
 };
 
 export const EditPledgeModal = ({
   tenantSlug,
   pledge,
-  currency,
   onClose,
 }: EditPledgeProps & ModalBaseProps) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -76,7 +74,7 @@ export const EditPledgeModal = ({
       secondaryAction={{ label: "Cancel", onClick: onClose, disabled: isPending }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
-        <FormInput inputName="amount" label="Amount" type="number" prefix={currency} />
+        <FormInput inputName="amount" label="Amount" type="number" />
         <FormOptionGroup
           inputName="status"
           label="Status"

@@ -13,7 +13,6 @@ import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import type { components } from "@/lib/api";
 import {
-  currencySymbol,
   memberPledgeDefaults,
   memberPledgeSchema,
   type MemberPledgeFormValues,
@@ -32,7 +31,6 @@ export type MemberPledgeProps = {
   tenantSlug: string;
   campaignId: string;
   campaignTitle: string;
-  currency: string;
   memberId: string;
   items: Item[];
 };
@@ -41,7 +39,6 @@ export const MemberPledgeModal = ({
   tenantSlug,
   campaignId,
   campaignTitle,
-  currency,
   memberId,
   items,
   onClose,
@@ -55,14 +52,12 @@ export const MemberPledgeModal = ({
     mode: "onBlur",
   });
 
-  const symbol = currencySymbol(currency);
-
   const itemOptions = [
     { value: "", label: "Whole campaign" },
     ...items.map((item) => ({
       value: item.id,
       label: item.title,
-      description: `Goal: ${symbol}${formatAmount(item.targetAmount)}`,
+      description: `Goal: ${formatAmount(item.targetAmount)}`,
     })),
   ];
 
@@ -113,7 +108,6 @@ export const MemberPledgeModal = ({
           label="Pledged amount"
           type="number"
           placeholder="0.00"
-          prefix={symbol}
         />
         <FormInput
           inputName="note"

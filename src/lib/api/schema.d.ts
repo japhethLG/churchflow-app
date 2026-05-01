@@ -770,21 +770,6 @@ export interface components {
             /** @example https://example.com/image.png */
             logoUrl?: string;
             /**
-             * @description ISO 4217
-             * @example USD
-             */
-            currency?: string;
-            /**
-             * @description IANA timezone
-             * @example America/New_York
-             */
-            timezone?: string;
-            /**
-             * @description Month (1-12) the fiscal year starts
-             * @example 1
-             */
-            fiscalYearStart?: number;
-            /**
              * @example [
              *       "building_fund",
              *       "youth_ministry"
@@ -813,21 +798,6 @@ export interface components {
             email?: Record<string, never> | null;
             /** @example https://example.com/image.png */
             logoUrl?: Record<string, never> | null;
-            /**
-             * @description ISO 4217 currency code
-             * @example USD
-             */
-            currency: string;
-            /**
-             * @description IANA timezone
-             * @example America/New_York
-             */
-            timezone: string;
-            /**
-             * @description Fiscal year start month (1-12)
-             * @example 1
-             */
-            fiscalYearStart: number;
             /**
              * @description Tenant-defined custom transaction types
              * @example [
@@ -883,21 +853,6 @@ export interface components {
             email?: Record<string, never> | null;
             /** @example https://example.com/image.png */
             logoUrl?: Record<string, never> | null;
-            /**
-             * @description ISO 4217 currency code
-             * @example USD
-             */
-            currency: string;
-            /**
-             * @description IANA timezone
-             * @example America/New_York
-             */
-            timezone: string;
-            /**
-             * @description Fiscal year start month (1-12)
-             * @example 1
-             */
-            fiscalYearStart: number;
             /**
              * @description Tenant-defined custom transaction types
              * @example [
@@ -960,21 +915,6 @@ export interface components {
             email?: string;
             /** @example https://example.com/image.png */
             logoUrl?: string;
-            /**
-             * @description ISO 4217
-             * @example USD
-             */
-            currency?: string;
-            /**
-             * @description IANA timezone
-             * @example America/New_York
-             */
-            timezone?: string;
-            /**
-             * @description Month (1-12) the fiscal year starts
-             * @example 1
-             */
-            fiscalYearStart?: number;
             /**
              * @example [
              *       "building_fund",
@@ -1145,11 +1085,6 @@ export interface components {
             /** @example Raising funds for the new sanctuary construction, phased through 2027. */
             description?: string;
             /**
-             * @description ISO 4217. Defaults to the tenant currency when omitted.
-             * @example USD
-             */
-            currency?: string;
-            /**
              * Format: date-time
              * @description Omit for open-ended campaigns
              * @example 2026-01-01T00:00:00.000Z
@@ -1167,8 +1102,6 @@ export interface components {
             title: string;
             /** @example Raising funds for the new sanctuary construction, phased through 2027. */
             description?: Record<string, never> | null;
-            /** @example USD */
-            currency: string;
             /**
              * @description Null = open-ended campaign (no hard deadline)
              * @example 2026-01-01T00:00:00.000Z
@@ -1239,8 +1172,6 @@ export interface components {
             title: string;
             /** @example Raising funds for the new sanctuary construction, phased through 2027. */
             description?: Record<string, never> | null;
-            /** @example USD */
-            currency: string;
             /**
              * @description Null = open-ended campaign (no hard deadline)
              * @example 2026-01-01T00:00:00.000Z
@@ -1315,11 +1246,6 @@ export interface components {
             title?: string;
             /** @example Raising funds for the new sanctuary construction, phased through 2027. */
             description?: string;
-            /**
-             * @description ISO 4217. Defaults to the tenant currency when omitted.
-             * @example USD
-             */
-            currency?: string;
             /**
              * Format: date-time
              * @description Omit for open-ended campaigns
@@ -1466,20 +1392,10 @@ export interface components {
             /** @example 100.5 */
             amount: number;
             /**
-             * @description ISO 4217. Defaults to the tenant currency when omitted.
-             * @example USD
-             */
-            currency?: string;
-            /**
              * Format: date-time
              * @example 2026-01-01T00:00:00.000Z
              */
             date: string;
-            /**
-             * @example CASH
-             * @enum {string}
-             */
-            paymentMethod: "CASH" | "CHECK" | "BANK_TRANSFER" | "ONLINE" | "MOBILE_MONEY" | "OTHER";
             /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
             memberId?: string;
             /**
@@ -1544,8 +1460,6 @@ export interface components {
              * @example 100.5
              */
             amount: number;
-            /** @example USD */
-            currency: string;
             /**
              * Format: date-time
              * @example 2026-01-01T00:00:00.000Z
@@ -1553,11 +1467,6 @@ export interface components {
             date: string;
             /** @example string */
             note?: Record<string, never> | null;
-            /**
-             * @example CASH
-             * @enum {string}
-             */
-            paymentMethod: "CASH" | "CHECK" | "BANK_TRANSFER" | "ONLINE" | "MOBILE_MONEY" | "OTHER";
             /** @example CHK-000123 */
             referenceNumber?: Record<string, never> | null;
             /** @example xGqY3rtbiNa1z8VmOPqRsTuVwXy9 */
@@ -1619,8 +1528,6 @@ export interface components {
             count: number;
         };
         TransactionSummaryResponseDto: {
-            /** @example USD */
-            currency: string;
             /**
              * @description Total across the entire window
              * @example 100.5
@@ -1643,20 +1550,10 @@ export interface components {
             /** @example 100.5 */
             amount?: number;
             /**
-             * @description ISO 4217. Defaults to the tenant currency when omitted.
-             * @example USD
-             */
-            currency?: string;
-            /**
              * Format: date-time
              * @example 2026-01-01T00:00:00.000Z
              */
             date?: string;
-            /**
-             * @example CASH
-             * @enum {string}
-             */
-            paymentMethod?: "CASH" | "CHECK" | "BANK_TRANSFER" | "ONLINE" | "MOBILE_MONEY" | "OTHER";
             /** @example b3b3a2c2-9c4d-4a12-8f15-7e0a1d9a2c11 */
             memberId?: string;
             /**

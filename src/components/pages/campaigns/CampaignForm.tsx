@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -12,11 +12,10 @@ import {
 import {
   Form,
   FormInput,
-  FormSelect,
   FormOptionGroup,
   FormButton,
+  FormDatePicker,
 } from "@/components/formElements";
-import { getCurrencyOptions } from "@/lib/intl-options";
 import {
   STATUS_OPTIONS,
   newItemDraft,
@@ -44,7 +43,6 @@ export const CampaignForm = ({
     defaultValues: {
       title: "",
       description: "",
-      currency: "PHP",
       deadline: "",
       status: "DRAFT",
       items: [newItemDraft()],
@@ -66,16 +64,12 @@ export const CampaignForm = ({
     keyName: "fieldId",
   });
 
-  const currency = watch("currency");
-  const currencyOptions = useMemo(() => getCurrencyOptions(), []);
-
   // Update form when initialValues change (e.g. after data load)
   useEffect(() => {
     if (initialValues) {
       reset({
         title: "",
         description: "",
-        currency: "PHP",
         deadline: "",
         status: "DRAFT",
         items: [newItemDraft()],
@@ -110,17 +104,10 @@ export const CampaignForm = ({
             placeholder="What this campaign is raising for…"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormSelect
-              inputName="currency"
-              label="Currency"
-              options={currencyOptions}
-              hint="Inherited from your church on first save"
-            />
-            <FormInput
+            <FormDatePicker
               inputName="deadline"
               label="Deadline (optional)"
-              type="date"
-              placeholder="YYYY-MM-DD"
+              placeholder="Pick a date"
               helper="Leave blank for open-ended"
             />
           </div>
@@ -180,13 +167,11 @@ export const CampaignForm = ({
                       inputName={`items.${idx}.targetAmount`}
                       placeholder="0.00"
                       type="number"
-                      prefix={currency}
                       disabled={!itemsEditable}
                     />
-                    <FormInput
+                    <FormDatePicker
                       inputName={`items.${idx}.deadline`}
-                      placeholder="YYYY-MM-DD"
-                      type="date"
+                      placeholder="Pick a date"
                       disabled={!itemsEditable}
                     />
                   </div>

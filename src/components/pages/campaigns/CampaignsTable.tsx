@@ -67,12 +67,6 @@ export const CampaignsTable = ({
       ),
     },
     {
-      key: "currency",
-      label: "Currency",
-      width: "100px",
-      render: (c) => <Badge color="neutral">{c.currency}</Badge>,
-    },
-    {
       key: "deadline",
       label: "Deadline",
       width: "200px",

@@ -10,19 +10,18 @@ import {
   FormMemberPicker,
   FormOptionGroup,
   FormSelect,
+  FormDatePicker,
 } from "@/components/formElements";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format-currency";
 import { useCampaign, useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
-import { useTenant } from "@/lib/api/tenants";
 import { useCreateTransaction } from "@/lib/api/transactions";
 import { BaseModal } from "../BaseModal";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import {
   buildRecordGiftDefaults,
-  METHOD_OPTIONS,
   recordGiftSchema,
   TYPE_OPTIONS,
   type RecordGiftFormValues,
@@ -49,7 +48,6 @@ export const RecordGiftModal = ({
   onClose,
 }: RecordGiftProps & ModalBaseProps) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const { data: tenant } = useTenant(tenantSlug);
   const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
   const { data: campaignsData } = useCampaigns(tenantSlug);
   const { mutateAsync, isPending } = useCreateTransaction(tenantSlug);
@@ -73,7 +71,6 @@ export const RecordGiftModal = ({
   const campaigns = (campaignsData?.items ?? []).filter(
     (c) => c.status === "ACTIVE" || c.id === campaignId,
   );
-  const chosenCampaign = campaigns.find((c) => c.id === campaignId);
 
   const { data: campaignDetail } = useCampaign(tenantSlug, campaignId, Boolean(campaignId));
   const campaignItems = campaignDetail?.items ?? [];
@@ -122,7 +119,6 @@ export const RecordGiftModal = ({
           type: values.type,
           amount: Number(values.amount),
           date: new Date(values.date).toISOString(),
-          paymentMethod: values.paymentMethod,
           memberId: values.memberId || undefined,
           campaignId: values.campaignId || undefined,
           campaignItemId: values.campaignItemId || undefined,
@@ -136,8 +132,6 @@ export const RecordGiftModal = ({
       setSubmitError(err instanceof Error ? err.message : "Could not record gift");
     }
   };
-
-  const currency = tenant?.currency ?? "PHP";
 
   return (
     <BaseModal
@@ -158,7 +152,6 @@ export const RecordGiftModal = ({
         <FormAmountInput
           inputName="amount"
           label="Amount"
-          currency={currency}
           autoFocus
         />
 
@@ -170,7 +163,7 @@ export const RecordGiftModal = ({
         />
 
         <div className="grid grid-cols-2 gap-3.5">
-          <FormInput inputName="date" label="Date" type="date" />
+          <FormDatePicker inputName="date" label="Date" />
           <FormMemberPicker
             inputName="memberId"
             label="Member"
@@ -218,24 +211,13 @@ export const RecordGiftModal = ({
               { value: "", label: "Don't link a pledge" },
               ...pledges.map((p) => ({
                 value: p.id,
-                label: `${formatCurrency(p.pledgedAmount, { currency })} pledge${
+                label: `${formatCurrency(p.pledgedAmount)} pledge${
                   p.campaignItemId ? " · earmarked" : ""
                 }`,
               })),
             ]}
           />
         )}
-
-        <FormOptionGroup
-          inputName="paymentMethod"
-          label="Payment method"
-          variant="icon-card"
-          options={METHOD_OPTIONS.map((o) => ({
-            value: o.value,
-            label: o.label,
-            icon: o.icon,
-          }))}
-        />
 
         <div className="grid grid-cols-2 gap-3.5">
           <FormInput
@@ -249,12 +231,6 @@ export const RecordGiftModal = ({
             placeholder="e.g. Sunday Worship"
           />
         </div>
-
-        {chosenCampaign && chosenCampaign.currency !== currency && (
-          <p className="m-0 text-xs text-muted-foreground">
-            This campaign uses {chosenCampaign.currency}; recording in the church&apos;s currency ({currency}).
-          </p>
-        )}
 
         {submitError && <p className="m-0 text-sm text-destructive">{submitError}</p>}
       </Form>

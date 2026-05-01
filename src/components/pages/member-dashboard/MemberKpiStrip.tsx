@@ -2,7 +2,7 @@
 
 import { StatCard, Amount } from "@/components/primitives";
 import { TypeBadge } from "@/components/primitives/Badge";
-import { formatCurrency, getCurrencySymbol, formatAmount } from "@/lib/format-currency";
+
 
 type Transaction = {
   type: string;
@@ -25,11 +25,9 @@ const TYPE_LABEL: Record<string, string> = {
 export const MemberKpiStrip = ({
   transactions,
   loading,
-  currency = getCurrencySymbol("PHP"),
 }: {
   transactions: Transaction[];
   loading?: boolean;
-  currency?: string;
 }) => {
   if (loading) {
     return (
@@ -76,19 +74,19 @@ export const MemberKpiStrip = ({
     <div className="mb-6 grid grid-cols-3 gap-4">
       <StatCard
         label="Your giving this month"
-        value={<Amount value={formatAmount(monthTotal)} size="display" gradient currency={currency} />}
+        value={<Amount value={monthTotal} size="display" gradient />}
         caption={`${thisMonth.length} gift${thisMonth.length !== 1 ? "s" : ""} recorded`}
       />
       <StatCard
         label="Your giving this year"
-        value={<Amount value={formatAmount(yearTotal)} size="display" currency={currency} />}
+        value={<Amount value={yearTotal} size="display" />}
         caption={`Fiscal year started January`}
       />
       <StatCard
         label="Most recent gift"
         value={
           recent ? (
-            <Amount value={formatAmount(recent.amount)} size="display" currency={currency} />
+            <Amount value={recent.amount} size="display" />
           ) : (
             <span className="text-5xl font-semibold text-muted-foreground">—</span>
           )
