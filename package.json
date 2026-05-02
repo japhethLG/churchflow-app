@@ -14,7 +14,8 @@
 		"lint": "biome lint .",
 		"format": "biome format . --write",
 		"check": "node scripts/enforce-ui-primitives.mjs && biome check --write .",
-		"api:types": "openapi-typescript http://localhost:8000/api-docs-json -o src/lib/api/schema.d.ts"
+		"api:types": "openapi-typescript http://localhost:8000/api-docs-json -o src/lib/api/schema.d.ts",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.4.1",
@@ -47,6 +48,7 @@
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"dotenv-cli": "^11.0.0",
+		"husky": "^9.1.7",
 		"openapi-typescript": "^7.13.0",
 		"server-only": "^0.0.1",
 		"tailwindcss": "^4.2.4",
