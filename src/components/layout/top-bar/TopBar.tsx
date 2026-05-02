@@ -2,34 +2,34 @@ import { Icon } from "@/components/primitives/Icon";
 import { cn } from "@/lib/utils";
 
 export const TopBar = ({
-  breadcrumb = "Dashboard",
+	breadcrumb = "Dashboard",
 }: {
-  breadcrumb?: string;
+	breadcrumb?: string;
 }) => {
-  return (
-    <div className="flex h-[72px] items-center gap-4 bg-transparent px-8">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-        {breadcrumb}
-      </div>
-      <div className="flex-1" />
-      <div
-        className={cn(
-          "flex w-[280px] items-center gap-2.5 rounded-full bg-card py-2 px-4",
-          "border border-border/60",
-        )}
-      >
-        <Icon name="search" size={15} className="text-muted-foreground" />
-        <span className="text-[13px] text-muted-foreground">
-          Search members, events…
-        </span>
-        <span className="ml-auto rounded-md bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
-          ⌘K
-        </span>
-      </div>
-      <div className="relative grid size-10 shrink-0 place-items-center rounded-full bg-card">
-        <Icon name="bell" size={18} className="text-secondary-foreground" />
-        <span className="absolute right-2 top-2 size-2 rounded-full border-2 border-card bg-[var(--tertiary)]" />
-      </div>
-    </div>
-  );
+	return (
+		<div className="flex h-[72px] items-center gap-4 bg-transparent px-8">
+			<div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+				{breadcrumb}
+			</div>
+			<div className="flex-1" />
+			<div
+				className={cn(
+					"flex w-[280px] items-center gap-2.5 rounded-full bg-card py-2 px-4",
+					"border border-border/60",
+				)}
+			>
+				<Icon name="search" size={15} className="text-muted-foreground" />
+				<span className="text-[13px] text-muted-foreground">
+					Search members, events…
+				</span>
+				<span className="ml-auto rounded-md bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
+					⌘K
+				</span>
+			</div>
+			<div className="relative grid size-10 shrink-0 place-items-center rounded-full bg-card">
+				<Icon name="bell" size={18} className="text-secondary-foreground" />
+				<span className="absolute right-2 top-2 size-2 rounded-full border-2 border-card bg-[var(--tertiary)]" />
+			</div>
+		</div>
+	);
 };

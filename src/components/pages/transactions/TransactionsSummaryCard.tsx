@@ -3,197 +3,231 @@
 import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { components } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format-currency";
+import { cn } from "@/lib/utils";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
 
 const TYPE_LABEL: Record<ByType["type"], string> = {
-  TITHE: "Tithe",
-  OFFERING: "Offering",
-  MISSION_GIVING: "Mission",
-  FIRST_FRUIT: "First Fruit",
-  COMMITMENT: "Commitment",
-  DONATION: "Donation",
-  OTHER: "Other",
+	TITHE: "Tithe",
+	OFFERING: "Offering",
+	MISSION_GIVING: "Mission",
+	FIRST_FRUIT: "First Fruit",
+	COMMITMENT: "Commitment",
+	DONATION: "Donation",
+	OTHER: "Other",
 };
 
 const TYPE_COLOR: Record<ByType["type"], string> = {
-  TITHE: "var(--tx-tithe)",
-  OFFERING: "var(--tx-offering)",
-  MISSION_GIVING: "var(--tx-mission)",
-  FIRST_FRUIT: "var(--tx-first-fruit)",
-  COMMITMENT: "var(--tx-commitment)",
-  DONATION: "var(--tx-donation)",
-  OTHER: "var(--tx-other)",
+	TITHE: "var(--tx-tithe)",
+	OFFERING: "var(--tx-offering)",
+	MISSION_GIVING: "var(--tx-mission)",
+	FIRST_FRUIT: "var(--tx-first-fruit)",
+	COMMITMENT: "var(--tx-commitment)",
+	DONATION: "var(--tx-donation)",
+	OTHER: "var(--tx-other)",
 };
 
-
-
 const PERIOD_OPTIONS = [
-  { months: 1, label: "MTD" },
-  { months: 3, label: "Last 3mo" },
-  { months: 12, label: "Last 12mo" },
+	{ months: 1, label: "MTD" },
+	{ months: 3, label: "Last 3mo" },
+	{ months: 12, label: "Last 12mo" },
 ];
 
 const tooltipChrome = {
-  backgroundColor: "var(--input)",
-  border: "none",
-  borderRadius: 8,
-  fontSize: 12,
+	backgroundColor: "var(--input)",
+	border: "none",
+	borderRadius: 8,
+	fontSize: 12,
 } as const;
 
 export const TransactionsSummaryCard = ({
-  summary,
-  loading,
-  months,
-  onMonthsChange,
+	summary,
+	loading,
+	months,
+	onMonthsChange,
 }: {
-  summary: Summary | undefined;
-  loading?: boolean;
-  months: number;
-  onMonthsChange: (m: number) => void;
+	summary: Summary | undefined;
+	loading?: boolean;
+	months: number;
+	onMonthsChange: (m: number) => void;
 }) => {
-  if (loading || !summary) {
-    return (
-      <div className="mb-4 min-h-[168px] rounded-2xl border border-secondary bg-card p-6">
-        <div className="flex gap-8">
-          {[0, 1, 2].map((i) => (
-            <div key={i}>
-              <div className="mb-2 h-3 w-[60px] animate-pulse rounded bg-secondary" />
-              <div className="h-7 w-[120px] animate-pulse rounded-md bg-secondary" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+	if (loading || !summary) {
+		return (
+			<div className="mb-4 min-h-[168px] rounded-2xl border border-secondary bg-card p-6">
+				<div className="flex gap-8">
+					{[0, 1, 2].map((i) => (
+						<div key={i}>
+							<div className="mb-2 h-3 w-[60px] animate-pulse rounded bg-secondary" />
+							<div className="h-7 w-[120px] animate-pulse rounded-md bg-secondary" />
+						</div>
+					))}
+				</div>
+			</div>
+		);
+	}
 
-  const total = summary.total;
-  const count = summary.count;
-  const average = count > 0 ? total / count : 0;
-  const chartData = (summary.byType.length > 0 ? summary.byType : ([{ type: "OTHER", total: 1, count: 0 }] as ByType[])).map((b) => ({
-    name: TYPE_LABEL[b.type],
-    value: b.total,
-    color: TYPE_COLOR[b.type],
-    pct: total > 0 ? (b.total / total) * 100 : 0,
-    count: b.count,
-  }));
+	const total = summary.total;
+	const count = summary.count;
+	const average = count > 0 ? total / count : 0;
+	const chartData = (
+		summary.byType.length > 0
+			? summary.byType
+			: ([{ type: "OTHER", total: 1, count: 0 }] as ByType[])
+	).map((b) => ({
+		name: TYPE_LABEL[b.type],
+		value: b.total,
+		color: TYPE_COLOR[b.type],
+		pct: total > 0 ? (b.total / total) * 100 : 0,
+		count: b.count,
+	}));
 
-  return (
-    <div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-8 rounded-2xl border border-secondary bg-card p-6">
-      <div>
-        <div className="mb-[18px] flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          <span>Window</span>
-          <div className="flex gap-1 rounded-full bg-muted p-0.5">
-            {PERIOD_OPTIONS.map((opt) => (
-              <button
-                key={opt.months}
-                type="button"
-                onClick={() => onMonthsChange(opt.months)}
-                className={cn(
-                  "cursor-pointer rounded-full border-none px-3 py-1 font-inherit text-[11px] font-semibold uppercase tracking-wide",
-                  months === opt.months
-                    ? "bg-card text-foreground shadow-sm"
-                    : "bg-transparent text-muted-foreground",
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
+	return (
+		<div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-8 rounded-2xl border border-secondary bg-card p-6">
+			<div>
+				<div className="mb-[18px] flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+					<span>Window</span>
+					<div className="flex gap-1 rounded-full bg-muted p-0.5">
+						{PERIOD_OPTIONS.map((opt) => (
+							<button
+								key={opt.months}
+								type="button"
+								onClick={() => onMonthsChange(opt.months)}
+								className={cn(
+									"cursor-pointer rounded-full border-none px-3 py-1 font-inherit text-[11px] font-semibold uppercase tracking-wide",
+									months === opt.months
+										? "bg-card text-foreground shadow-sm"
+										: "bg-transparent text-muted-foreground",
+								)}
+							>
+								{opt.label}
+							</button>
+						))}
+					</div>
+				</div>
 
-        <div className="grid grid-cols-[repeat(3,minmax(140px,1fr))] gap-8">
-          <Kpi
-            label="Total received"
-            value={
-              <span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[28px] font-semibold tabular-nums tracking-tight">
-                {formatCurrency(total)}
-              </span>
-            }
-          />
-          <Kpi
-            label="Gifts"
-            value={
-              <span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">{count}</span>
-            }
-            caption={count === 1 ? "transaction" : "transactions"}
-          />
-          <Kpi
-            label="Average"
-            value={
-              <span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
-                {formatCurrency(average)}
-              </span>
-            }
-            caption="per gift"
-          />
-        </div>
-      </div>
+				<div className="grid grid-cols-[repeat(3,minmax(140px,1fr))] gap-8">
+					<Kpi
+						label="Total received"
+						value={
+							<span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[28px] font-semibold tabular-nums tracking-tight">
+								{formatCurrency(total)}
+							</span>
+						}
+					/>
+					<Kpi
+						label="Gifts"
+						value={
+							<span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
+								{count}
+							</span>
+						}
+						caption={count === 1 ? "transaction" : "transactions"}
+					/>
+					<Kpi
+						label="Average"
+						value={
+							<span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
+								{formatCurrency(average)}
+							</span>
+						}
+						caption="per gift"
+					/>
+				</div>
+			</div>
 
-      <div className="flex items-center gap-6">
-        <div className="flex min-w-[160px] flex-col gap-2">
-          {chartData.slice(0, 4).map((d) => (
-            <div key={d.name} className="flex items-center gap-2 text-xs">
-              <span className="size-2 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
-              <span className="min-w-0 flex-1 text-secondary-foreground">{d.name}</span>
-              <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{d.pct.toFixed(0)}%</span>
-            </div>
-          ))}
-          {chartData.length > 4 && (
-            <div className="mt-0.5 text-[11px] text-muted-foreground">+ {chartData.length - 4} more</div>
-          )}
-        </div>
+			<div className="flex items-center gap-6">
+				<div className="flex min-w-[160px] flex-col gap-2">
+					{chartData.slice(0, 4).map((d) => (
+						<div key={d.name} className="flex items-center gap-2 text-xs">
+							<span
+								className="size-2 rounded-sm shrink-0"
+								style={{ backgroundColor: d.color }}
+							/>
+							<span className="min-w-0 flex-1 text-secondary-foreground">
+								{d.name}
+							</span>
+							<span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+								{d.pct.toFixed(0)}%
+							</span>
+						</div>
+					))}
+					{chartData.length > 4 && (
+						<div className="mt-0.5 text-[11px] text-muted-foreground">
+							+ {chartData.length - 4} more
+						</div>
+					)}
+				</div>
 
-        <div className="relative h-[140px] w-[140px] shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                dataKey="value"
-                cx="50%"
-                cy="50%"
-                innerRadius={48}
-                outerRadius={68}
-                paddingAngle={1}
-                stroke="none"
-              >
-                {chartData.map((d) => (
-                  <Cell key={d.name} fill={d.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(v, _name, ctx) => {
-                  const payload = (ctx as { payload?: { name?: string; pct?: number } } | undefined)?.payload;
-                  const num = typeof v === "number" ? v : 0;
-                  return [`${formatCurrency(num)} (${(payload?.pct ?? 0).toFixed(0)}%)`, payload?.name ?? ""];
-                }}
-                contentStyle={tooltipChrome}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</div>
-              <div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
-                {formatCurrency(total)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+				<div className="relative h-[140px] w-[140px] shrink-0">
+					<ResponsiveContainer width="100%" height="100%">
+						<PieChart>
+							<Pie
+								data={chartData}
+								dataKey="value"
+								cx="50%"
+								cy="50%"
+								innerRadius={48}
+								outerRadius={68}
+								paddingAngle={1}
+								stroke="none"
+							>
+								{chartData.map((d) => (
+									<Cell key={d.name} fill={d.color} />
+								))}
+							</Pie>
+							<Tooltip
+								formatter={(v, _name, ctx) => {
+									const payload = (
+										ctx as
+											| { payload?: { name?: string; pct?: number } }
+											| undefined
+									)?.payload;
+									const num = typeof v === "number" ? v : 0;
+									return [
+										`${formatCurrency(num)} (${(payload?.pct ?? 0).toFixed(0)}%)`,
+										payload?.name ?? "",
+									];
+								}}
+								contentStyle={tooltipChrome}
+							/>
+						</PieChart>
+					</ResponsiveContainer>
+					<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+						<div>
+							<div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+								Total
+							</div>
+							<div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
+								{formatCurrency(total)}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 };
 
-const Kpi = ({ label, value, caption }: { label: string; value: ReactNode; caption?: string }) => {
-  return (
-    <div>
-      <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div>{value}</div>
-      {caption && <div className="mt-1 text-[11px] text-muted-foreground">{caption}</div>}
-    </div>
-  );
+const Kpi = ({
+	label,
+	value,
+	caption,
+}: {
+	label: string;
+	value: ReactNode;
+	caption?: string;
+}) => {
+	return (
+		<div>
+			<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+				{label}
+			</div>
+			<div>{value}</div>
+			{caption && (
+				<div className="mt-1 text-[11px] text-muted-foreground">{caption}</div>
+			)}
+		</div>
+	);
 };

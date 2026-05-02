@@ -1,13 +1,13 @@
 {
-  "folders": [
-    {
-      "path": "../../../../..",
-    },
-    {
-      "path": "../../../../../../church-app-backend",
-    },
-  ],
-  "settings": {
-    "liveServer.settings.multiRootWorkspaceName": "church-app",
-  },
+	"folders": [
+		{
+			"path": "../../../../.."
+		},
+		{
+			"path": "../../../../../../church-app-backend"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "church-app"
+	}
 }

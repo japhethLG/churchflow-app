@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import { AppShell } from "@/components/layout";
 import { getSessionUser } from "@/lib/auth/server";
 
@@ -8,38 +8,40 @@ import { getSessionUser } from "@/lib/auth/server";
 // Super-admins without a Member row get redirected; they should act on
 // tenants through /admin/* instead.
 export default async ({
-  params,
-  children,
+	params,
+	children,
 }: {
-  params: Promise<{ tenantSlug: string }>;
-  children: ReactNode;
+	params: Promise<{ tenantSlug: string }>;
+	children: ReactNode;
 }) => {
-  const { tenantSlug } = await params;
-  const user = (await getSessionUser())!; // TenantLayout guaranteed non-null
+	const { tenantSlug } = await params;
+	const user = (await getSessionUser())!; // TenantLayout guaranteed non-null
 
-  const membership = user.tenantMemberships[tenantSlug];
-  if (!membership) {
-    // Super-admins should use /[slug]/admin/* for platform ops.
-    redirect("/");
-  }
+	const membership = user.tenantMemberships[tenantSlug];
+	if (!membership) {
+		// Super-admins should use /[slug]/admin/* for platform ops.
+		redirect("/");
+	}
 
-  const memberships = Object.entries(user.tenantMemberships).map(([slug, m]) => ({
-    slug,
-    name: m.name,
-    role: m.role,
-  }));
+	const memberships = Object.entries(user.tenantMemberships).map(
+		([slug, m]) => ({
+			slug,
+			name: m.name,
+			role: m.role,
+		}),
+	);
 
-  return (
-    <AppShell
-      perspective="member"
-      tenantSlug={tenantSlug}
-      churchName={membership.name}
-      userName={user.displayName ?? user.email ?? "You"}
-      userEmail={user.email ?? undefined}
-      memberships={memberships}
-      isSuperAdmin={user.isSuperAdmin}
-    >
-      {children}
-    </AppShell>
-  );
-}
+	return (
+		<AppShell
+			perspective="member"
+			tenantSlug={tenantSlug}
+			churchName={membership.name}
+			userName={user.displayName ?? user.email ?? "You"}
+			userEmail={user.email ?? undefined}
+			memberships={memberships}
+			isSuperAdmin={user.isSuperAdmin}
+		>
+			{children}
+		</AppShell>
+	);
+};

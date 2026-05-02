@@ -7,5 +7,5 @@ import { useApiQuery } from "../hooks";
 // undefined in the response. Multi-step flows (signInWithGoogle,
 // switchTenant) live in `@/lib/auth/actions` — this hook is a pure read.
 export const useAuthMe = () => {
-  return useApiQuery("/api/v1/auth/me");
-}
+	return useApiQuery("/api/v1/auth/me");
+};

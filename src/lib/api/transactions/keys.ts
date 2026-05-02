@@ -1,9 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 export const TRANSACTION_PATHS = [
-  "/api/v1/tenants/{tenantId}/transactions",
-  "/api/v1/tenants/{tenantId}/transactions/{id}",
-  "/api/v1/tenants/{tenantId}/transactions/summary",
+	"/api/v1/tenants/{tenantId}/transactions",
+	"/api/v1/tenants/{tenantId}/transactions/{id}",
+	"/api/v1/tenants/{tenantId}/transactions/summary",
 ] as const;
 
 // Transactions are always tenant-scoped, so invalidation is scoped too:
@@ -11,16 +11,16 @@ export const TRANSACTION_PATHS = [
 // had params.path.tenantId === tenantId. Pass undefined to invalidate
 // transactions for every tenant (rare — e.g. sign-out).
 export const invalidateTransactions = (qc: QueryClient, tenantId?: string) => {
-  const set = new Set<string>(TRANSACTION_PATHS);
-  return qc.invalidateQueries({
-    predicate: (q) => {
-      const [path, init] = q.queryKey as [
-        unknown,
-        { params?: { path?: { tenantId?: string } } } | undefined
-      ];
-      if (typeof path !== "string" || !set.has(path)) return false;
-      if (tenantId && init?.params?.path?.tenantId !== tenantId) return false;
-      return true;
-    },
-  });
-}
+	const set = new Set<string>(TRANSACTION_PATHS);
+	return qc.invalidateQueries({
+		predicate: (q) => {
+			const [path, init] = q.queryKey as [
+				unknown,
+				{ params?: { path?: { tenantId?: string } } } | undefined,
+			];
+			if (typeof path !== "string" || !set.has(path)) return false;
+			if (tenantId && init?.params?.path?.tenantId !== tenantId) return false;
+			return true;
+		},
+	});
+};

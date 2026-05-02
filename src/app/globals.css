@@ -72,77 +72,83 @@
 }
 
 :root {
-  --radius: 0.75rem;
+	--radius: 0.75rem;
 
-  /* Map Sanctuary → shadcn core slots */
-  --background: #F7F9FB;       /* surface */
-  --foreground: #191C1E;       /* onSurface */
-  --card: #FFFFFF;             /* surfaceContainerLowest */
-  --card-foreground: #191C1E;
-  --popover: #FFFFFF;
-  --popover-foreground: #191C1E;
-  --primary: #3525CD;
-  --primary-foreground: #FFFFFF;
-  --secondary: #ECEEF0;        /* surfaceContainer */
-  --secondary-foreground: #191C1E;
-  --muted: #F1F3F6;            /* surfaceContainerLow */
-  --muted-foreground: #6B7280; /* onSurfaceMuted */
-  --accent: #E6E6FA;           /* primaryFixed */
-  --accent-foreground: #3525CD;
-  --destructive: #8C1D18;
-  --destructive-foreground: #FFFFFF;
-  --border: #C2C7CE;           /* outlineVariant */
-  --input: #E4E7EB;            /* surfaceContainerHigh */
-  --ring: #4F46E5;             /* primaryContainer */
+	/* Map Sanctuary → shadcn core slots */
+	--background: #f7f9fb; /* surface */
+	--foreground: #191c1e; /* onSurface */
+	--card: #ffffff; /* surfaceContainerLowest */
+	--card-foreground: #191c1e;
+	--popover: #ffffff;
+	--popover-foreground: #191c1e;
+	--primary: #3525cd;
+	--primary-foreground: #ffffff;
+	--secondary: #eceef0; /* surfaceContainer */
+	--secondary-foreground: #191c1e;
+	--muted: #f1f3f6; /* surfaceContainerLow */
+	--muted-foreground: #6b7280; /* onSurfaceMuted */
+	--accent: #e6e6fa; /* primaryFixed */
+	--accent-foreground: #3525cd;
+	--destructive: #8c1d18;
+	--destructive-foreground: #ffffff;
+	--border: #c2c7ce; /* outlineVariant */
+	--input: #e4e7eb; /* surfaceContainerHigh */
+	--ring: #4f46e5; /* primaryContainer */
 
-  /* Sidebar */
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #191C1E;
-  --sidebar-primary: #3525CD;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E6E6FA;
-  --sidebar-accent-foreground: #3525CD;
-  --sidebar-border: #C2C7CE22;
-  --sidebar-ring: #4F46E5;
+	/* Sidebar */
+	--sidebar: #ffffff;
+	--sidebar-foreground: #191c1e;
+	--sidebar-primary: #3525cd;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #e6e6fa;
+	--sidebar-accent-foreground: #3525cd;
+	--sidebar-border: #c2c7ce22;
+	--sidebar-ring: #4f46e5;
 
-  /* Charts */
-  --chart-1: #4F46E5;
-  --chart-2: #16A34A;
-  --chart-3: #2563EB;
-  --chart-4: #D97706;
-  --chart-5: #9333EA;
+	/* Charts */
+	--chart-1: #4f46e5;
+	--chart-2: #16a34a;
+	--chart-3: #2563eb;
+	--chart-4: #d97706;
+	--chart-5: #9333ea;
 
-  /* Semantic */
-  --success: #156B3D;
-  --success-foreground: #C8EFD4;
-  --warning: #8B5A00;
-  --warning-foreground: #FDE8B8;
-  --info: #1B4C8C;
-  --info-foreground: #D6E6FB;
+	/* Semantic */
+	--success: #156b3d;
+	--success-foreground: #c8efd4;
+	--warning: #8b5a00;
+	--warning-foreground: #fde8b8;
+	--info: #1b4c8c;
+	--info-foreground: #d6e6fb;
 
-  /* Tertiary / clay */
-  --tertiary: #7E3000;
-  --tertiary-container: #FBE9DD;
+	/* Tertiary / clay */
+	--tertiary: #7e3000;
+	--tertiary-container: #fbe9dd;
 
-  /* Transaction types */
-  --tx-tithe: #4F46E5;
-  --tx-offering: #16A34A;
-  --tx-mission: #2563EB;
-  --tx-first-fruit: #D97706;
-  --tx-commitment: #9333EA;
-  --tx-donation: #0D9488;
-  --tx-other: #6B7280;
+	/* Transaction types */
+	--tx-tithe: #4f46e5;
+	--tx-offering: #16a34a;
+	--tx-mission: #2563eb;
+	--tx-first-fruit: #d97706;
+	--tx-commitment: #9333ea;
+	--tx-donation: #0d9488;
+	--tx-other: #6b7280;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground font-[var(--font-inter),system-ui,sans-serif];
-  }
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply bg-background text-foreground font-[var(--font-inter),system-ui,sans-serif];
+	}
 }
 
 /* Scrollbar styles */
-*::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
+*::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 4px;
+}

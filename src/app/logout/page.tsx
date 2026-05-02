@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { signOut } from "@/lib/auth/actions";
 
 export default () => {
-  const router = useRouter();
+	const router = useRouter();
 
-  useEffect(() => {
-    signOut().then(() => router.push("/login"));
-  }, [router]);
+	useEffect(() => {
+		signOut().then(() => router.push("/login"));
+	}, [router]);
 
-  return null;
-}
+	return null;
+};

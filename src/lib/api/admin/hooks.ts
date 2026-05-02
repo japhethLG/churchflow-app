@@ -2,37 +2,37 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation, useApiQuery } from "../hooks";
-import { invalidateAdmin } from "./keys";
 import { invalidateTenants } from "../tenants/keys";
+import { invalidateAdmin } from "./keys";
 
 export const useAdminStats = () => {
-  return useApiQuery("/api/v1/admin/stats");
-}
+	return useApiQuery("/api/v1/admin/stats");
+};
 
 export const useAdminUsers = (
-  filters?: {
-    search?: string;
-    tenantId?: string;
-    superAdminOnly?: boolean;
-    skip?: number;
-    take?: number;
-  },
-  enabled = true,
+	filters?: {
+		search?: string;
+		tenantId?: string;
+		superAdminOnly?: boolean;
+		skip?: number;
+		take?: number;
+	},
+	enabled = true,
 ) => {
-  return useApiQuery(
-    "/api/v1/admin/users",
-    { params: { query: filters ?? {} } },
-    { enabled },
-  );
-}
+	return useApiQuery(
+		"/api/v1/admin/users",
+		{ params: { query: filters ?? {} } },
+		{ enabled },
+	);
+};
 
 export const useToggleSuperAdmin = () => {
-  const qc = useQueryClient();
-  return useApiMutation("/api/v1/admin/users/{id}", "patch", {
-    onSuccess: () => {
-      invalidateAdmin(qc);
-      // Tenant list shows admin counts so must be invalidated too
-      invalidateTenants(qc);
-    },
-  });
-}
+	const qc = useQueryClient();
+	return useApiMutation("/api/v1/admin/users/{id}", "patch", {
+		onSuccess: () => {
+			invalidateAdmin(qc);
+			// Tenant list shows admin counts so must be invalidated too
+			invalidateTenants(qc);
+		},
+	});
+};

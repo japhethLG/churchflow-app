@@ -2,9 +2,9 @@ import type { QueryClient } from "@tanstack/react-query";
 import { invalidateByPaths } from "../hooks";
 
 export const INVITATION_PATHS: readonly string[] = [
-  "/api/v1/tenants/{tenantId}/invitations",
+	"/api/v1/tenants/{tenantId}/invitations",
 ];
 
 export const invalidateInvitations = (qc: QueryClient) => {
-  return invalidateByPaths(qc, INVITATION_PATHS);
-}
+	return invalidateByPaths(qc, INVITATION_PATHS);
+};

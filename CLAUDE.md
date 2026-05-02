@@ -32,6 +32,9 @@
 npm run dev               # Next dev server
 npm run build             # production build
 npm run typecheck         # tsc --noEmit
+npm run lint              # biome lint .
+npm run format            # biome format . --write
+npm run check             # biome check --write .
 npm run api:types         # regenerate src/lib/api/schema.d.ts from running backend
 ```
 

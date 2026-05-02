@@ -9,12 +9,12 @@
  */
 
 export type FormatCurrencyOptions = {
-  /** ISO 4217 currency code. @default "PHP" */
-  currency?: string;
-  /** Number of decimal places. When omitted, uses the currency's standard precision. */
-  decimals?: number;
-  /** Locale for number formatting. @default "en-PH" */
-  locale?: string;
+	/** ISO 4217 currency code. @default "PHP" */
+	currency?: string;
+	/** Number of decimal places. When omitted, uses the currency's standard precision. */
+	decimals?: number;
+	/** Locale for number formatting. @default "en-PH" */
+	locale?: string;
 };
 
 /**
@@ -26,29 +26,25 @@ export type FormatCurrencyOptions = {
  *   formatCurrency("5000", { decimals: 0 })     // "₱5,000"
  */
 export const formatCurrency = (
-  value: number | string,
-  options: FormatCurrencyOptions = {},
+	value: number | string,
+	options: FormatCurrencyOptions = {},
 ): string => {
-  const {
-    currency = "PHP",
-    decimals,
-    locale = "en-PH",
-  } = options;
+	const { currency = "PHP", decimals, locale = "en-PH" } = options;
 
-  const num = typeof value === "string" ? Number(value) : value;
+	const num = typeof value === "string" ? Number(value) : value;
 
-  if (Number.isNaN(num)) return "—";
+	if (Number.isNaN(num)) return "—";
 
-  const formatOptions: Intl.NumberFormatOptions = {
-    style: "currency",
-    currency,
-    ...(decimals !== undefined && {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    }),
-  };
+	const formatOptions: Intl.NumberFormatOptions = {
+		style: "currency",
+		currency,
+		...(decimals !== undefined && {
+			minimumFractionDigits: decimals,
+			maximumFractionDigits: decimals,
+		}),
+	};
 
-  return new Intl.NumberFormat(locale, formatOptions).format(num);
+	return new Intl.NumberFormat(locale, formatOptions).format(num);
 };
 
 /**
@@ -60,17 +56,19 @@ export const formatCurrency = (
  *   getCurrencySymbol("EUR") // "€"
  */
 export const getCurrencySymbol = (currency = "PHP"): string => {
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      currencyDisplay: "narrowSymbol",
-    })
-      .formatToParts(0)
-      .find((p) => p.type === "currency")?.value ?? currency;
-  } catch {
-    return currency;
-  }
+	try {
+		return (
+			new Intl.NumberFormat("en", {
+				style: "currency",
+				currency,
+				currencyDisplay: "narrowSymbol",
+			})
+				.formatToParts(0)
+				.find((p) => p.type === "currency")?.value ?? currency
+		);
+	} catch {
+		return currency;
+	}
 };
 
 /**
@@ -83,16 +81,16 @@ export const getCurrencySymbol = (currency = "PHP"): string => {
  *   formatCompact(800, { currency: "USD" }) // "$800"
  */
 export const formatCompact = (
-  value: number,
-  options: Pick<FormatCurrencyOptions, "currency"> = {},
+	value: number,
+	options: Pick<FormatCurrencyOptions, "currency"> = {},
 ): string => {
-  const { currency = "PHP" } = options;
-  const symbol = getCurrencySymbol(currency);
+	const { currency = "PHP" } = options;
+	const symbol = getCurrencySymbol(currency);
 
-  if (value >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 10_000) return `${symbol}${(value / 1_000).toFixed(0)}k`;
-  if (value >= 1_000) return `${symbol}${(value / 1_000).toFixed(1)}k`;
-  return `${symbol}${value.toFixed(0)}`;
+	if (value >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
+	if (value >= 10_000) return `${symbol}${(value / 1_000).toFixed(0)}k`;
+	if (value >= 1_000) return `${symbol}${(value / 1_000).toFixed(1)}k`;
+	return `${symbol}${value.toFixed(0)}`;
 };
 
 /**
@@ -103,14 +101,11 @@ export const formatCompact = (
  *   formatAmount(1234.5)  // "1,234.50"
  *   formatAmount("5000")  // "5,000.00"
  */
-export const formatAmount = (
-  value: number | string,
-  decimals = 2,
-): string => {
-  const num = typeof value === "string" ? Number(value) : value;
-  if (Number.isNaN(num)) return "—";
-  return num.toLocaleString("en-PH", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+export const formatAmount = (value: number | string, decimals = 2): string => {
+	const num = typeof value === "string" ? Number(value) : value;
+	if (Number.isNaN(num)) return "—";
+	return num.toLocaleString("en-PH", {
+		minimumFractionDigits: decimals,
+		maximumFractionDigits: decimals,
+	});
 };

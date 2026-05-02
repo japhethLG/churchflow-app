@@ -9,59 +9,59 @@ import { invalidateTenants } from "./keys";
 // slug, so most call sites pass the slug straight through.
 
 export const useTenants = () => {
-  return useApiQuery("/api/v1/tenants");
-}
+	return useApiQuery("/api/v1/tenants");
+};
 
 export const useTenant = (tenantId: string, enabled = true) => {
-  return useApiQuery(
-    "/api/v1/tenants/{tenantId}",
-    { params: { path: { tenantId } } },
-    { enabled: enabled && Boolean(tenantId) },
-  );
-}
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}",
+		{ params: { path: { tenantId } } },
+		{ enabled: enabled && Boolean(tenantId) },
+	);
+};
 
 export const useCreateTenant = () => {
-  const qc = useQueryClient();
-  return useApiMutation("/api/v1/tenants", "post", {
-    onSuccess: () => invalidateTenants(qc),
-  });
-}
+	const qc = useQueryClient();
+	return useApiMutation("/api/v1/tenants", "post", {
+		onSuccess: () => invalidateTenants(qc),
+	});
+};
 
 export const useUpdateTenant = () => {
-  const qc = useQueryClient();
-  return useApiMutation("/api/v1/tenants/{tenantId}", "patch", {
-    onSuccess: () => invalidateTenants(qc),
-  });
-}
+	const qc = useQueryClient();
+	return useApiMutation("/api/v1/tenants/{tenantId}", "patch", {
+		onSuccess: () => invalidateTenants(qc),
+	});
+};
 
 export const useDeleteTenant = () => {
-  const qc = useQueryClient();
-  return useApiMutation("/api/v1/tenants/{tenantId}", "delete", {
-    onSuccess: () => invalidateTenants(qc),
-  });
-}
+	const qc = useQueryClient();
+	return useApiMutation("/api/v1/tenants/{tenantId}", "delete", {
+		onSuccess: () => invalidateTenants(qc),
+	});
+};
 
 // Slug rename is super-admin only. Keep it separate from generic update
 // so the UI can ask for explicit confirmation (it invalidates URLs that
 // point at the old slug).
 export const useRenameTenantSlug = () => {
-  const qc = useQueryClient();
-  return useApiMutation("/api/v1/tenants/{tenantId}/slug", "patch", {
-    onSuccess: () => invalidateTenants(qc),
-  });
-}
+	const qc = useQueryClient();
+	return useApiMutation("/api/v1/tenants/{tenantId}/slug", "patch", {
+		onSuccess: () => invalidateTenants(qc),
+	});
+};
 
 export const useRestoreTenant = () => {
-  const qc = useQueryClient();
-  return useApiMutation("/api/v1/tenants/{tenantId}/restore", "post", {
-    onSuccess: () => invalidateTenants(qc),
-  });
-}
+	const qc = useQueryClient();
+	return useApiMutation("/api/v1/tenants/{tenantId}/restore", "post", {
+		onSuccess: () => invalidateTenants(qc),
+	});
+};
 
 export const useSlugSuggestion = (name: string, enabled = true) => {
-  return useApiQuery(
-    "/api/v1/tenants/slug-suggestion",
-    { params: { query: { name } } },
-    { enabled: enabled && name.length >= 3, staleTime: 30_000 },
-  );
-}
+	return useApiQuery(
+		"/api/v1/tenants/slug-suggestion",
+		{ params: { query: { name } } },
+		{ enabled: enabled && name.length >= 3, staleTime: 30_000 },
+	);
+};

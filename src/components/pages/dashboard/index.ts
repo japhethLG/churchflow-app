@@ -1,5 +1,5 @@
-export { DashboardKpiStrip } from "./DashboardKpiStrip";
-export { DashboardCharts } from "./DashboardCharts";
-export { DashboardRecentGifts } from "./DashboardRecentGifts";
-export { DashboardActiveCampaigns } from "./DashboardActiveCampaigns";
 export { AdminDashboardPage } from "./AdminDashboardPage";
+export { DashboardActiveCampaigns } from "./DashboardActiveCampaigns";
+export { DashboardCharts } from "./DashboardCharts";
+export { DashboardKpiStrip } from "./DashboardKpiStrip";
+export { DashboardRecentGifts } from "./DashboardRecentGifts";

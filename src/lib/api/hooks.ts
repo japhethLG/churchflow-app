@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  useMutation,
-  useQuery,
-  type QueryClient,
-  type UseMutationOptions,
-  type UseQueryOptions,
+	type QueryClient,
+	type UseMutationOptions,
+	type UseQueryOptions,
+	useMutation,
+	useQuery,
 } from "@tanstack/react-query";
 import { api } from "./client";
 import type { paths } from "./schema";
@@ -17,92 +17,98 @@ import type { paths } from "./schema";
 type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
 
 type PathsWithMethod<M extends HttpMethod> = {
-  [P in keyof paths]: paths[P] extends { [_ in M]: unknown } ? P : never;
+	[P in keyof paths]: paths[P] extends { [_ in M]: unknown } ? P : never;
 }[keyof paths];
 
 type GetInit<P, M extends HttpMethod> = P extends keyof paths
-  ? paths[P] extends { [_ in M]: infer Op }
-    ? Op extends { parameters: infer Params }
-      ? Op extends { requestBody: { content: { "application/json": infer Body } } }
-        ? { params: Params; body: Body }
-        : { params: Params }
-      : Record<string, never>
-    : never
-  : never;
+	? paths[P] extends { [_ in M]: infer Op }
+		? Op extends { parameters: infer Params }
+			? Op extends {
+					requestBody: { content: { "application/json": infer Body } };
+				}
+				? { params: Params; body: Body }
+				: { params: Params }
+			: Record<string, never>
+		: never
+	: never;
 
 type GetResponse<P, M extends HttpMethod> = P extends keyof paths
-  ? paths[P] extends { [_ in M]: infer Op }
-    ? Op extends {
-        responses: {
-          [code in 200 | 201]?: { content: { "application/json": infer R } };
-        };
-      }
-      ? R
-      : unknown
-    : unknown
-  : unknown;
+	? paths[P] extends { [_ in M]: infer Op }
+		? Op extends {
+				responses: {
+					[code in 200 | 201]?: { content: { "application/json": infer R } };
+				};
+			}
+			? R
+			: unknown
+		: unknown
+	: unknown;
 
 export const useApiQuery = <P extends PathsWithMethod<"get">>(
-  path: P,
-  init?: GetInit<P, "get">,
-  options?: Omit<
-    UseQueryOptions<GetResponse<P, "get">, Error>,
-    "queryKey" | "queryFn"
-  >
+	path: P,
+	init?: GetInit<P, "get">,
+	options?: Omit<
+		UseQueryOptions<GetResponse<P, "get">, Error>,
+		"queryKey" | "queryFn"
+	>,
 ) => {
-  return useQuery<GetResponse<P, "get">, Error>({
-    queryKey: [path, init],
-    queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (api as any).GET(path, init);
-      if (error) throw error;
-      return data as GetResponse<P, "get">;
-    },
-    ...options,
-  });
-}
+	return useQuery<GetResponse<P, "get">, Error>({
+		queryKey: [path, init],
+		queryFn: async () => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const { data, error } = await (api as any).GET(path, init);
+			if (error) throw error;
+			return data as GetResponse<P, "get">;
+		},
+		...options,
+	});
+};
 
 export const useApiMutation = <
-  M extends Exclude<HttpMethod, "get">,
-  P extends PathsWithMethod<M>
+	M extends Exclude<HttpMethod, "get">,
+	P extends PathsWithMethod<M>,
 >(
-  path: P,
-  method: M,
-  options?: Omit<
-    UseMutationOptions<GetResponse<P, M>, Error, GetInit<P, M>>,
-    "mutationFn"
-  >
+	path: P,
+	method: M,
+	options?: Omit<
+		UseMutationOptions<GetResponse<P, M>, Error, GetInit<P, M>>,
+		"mutationFn"
+	>,
 ) => {
-  return useMutation<GetResponse<P, M>, Error, GetInit<P, M>>({
-    mutationFn: async (init) => {
-      const verb = method.toUpperCase() as "POST" | "PUT" | "PATCH" | "DELETE";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (api as any)[verb](path, init);
-      if (error) throw error;
-      return data as GetResponse<P, M>;
-    },
-    ...options,
-  });
-}
+	return useMutation<GetResponse<P, M>, Error, GetInit<P, M>>({
+		mutationFn: async (init) => {
+			const verb = method.toUpperCase() as "POST" | "PUT" | "PATCH" | "DELETE";
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const { data, error } = await (api as any)[verb](path, init);
+			if (error) throw error;
+			return data as GetResponse<P, M>;
+		},
+		...options,
+	});
+};
 
 // Query keys are [path, init] — where path is the literal OpenAPI template
 // string ("/api/v1/tenants/{id}") and init is the request params/body. This
 // helper invalidates every cached query whose path is one of the given
 // template strings. Per-entity `keys.ts` files use this to define precise
 // invalidation scopes.
-export const invalidateByPaths = (qc: QueryClient, paths: readonly string[]) => {
-  const set = new Set<string>(paths);
-  return qc.invalidateQueries({
-    predicate: (q) => typeof q.queryKey[0] === "string" && set.has(q.queryKey[0] as string),
-  });
-}
+export const invalidateByPaths = (
+	qc: QueryClient,
+	paths: readonly string[],
+) => {
+	const set = new Set<string>(paths);
+	return qc.invalidateQueries({
+		predicate: (q) =>
+			typeof q.queryKey[0] === "string" && set.has(q.queryKey[0] as string),
+	});
+};
 
 // Nuclear: invalidate every API query. Use after operations that change the
 // caller's identity or permissions (sign-in, tenant switch, sign-out).
 export const invalidateAllApiQueries = (qc: QueryClient) => {
-  return qc.invalidateQueries({
-    predicate: (q) =>
-      typeof q.queryKey[0] === "string" &&
-      (q.queryKey[0] as string).startsWith("/api/v1/"),
-  });
-}
+	return qc.invalidateQueries({
+		predicate: (q) =>
+			typeof q.queryKey[0] === "string" &&
+			(q.queryKey[0] as string).startsWith("/api/v1/"),
+	});
+};

@@ -1,1 +1,4 @@
-export { ConfirmDeleteMemberModal, type ConfirmDeleteMemberProps } from "./ConfirmDeleteMemberModal";
+export {
+	ConfirmDeleteMemberModal,
+	type ConfirmDeleteMemberProps,
+} from "./ConfirmDeleteMemberModal";

@@ -1,2 +1,2 @@
-export { CreatePledgeModal } from "./CreatePledgeModal";
 export type { CreatePledgeProps } from "./CreatePledgeModal";
+export { CreatePledgeModal } from "./CreatePledgeModal";

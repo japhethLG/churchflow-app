@@ -8,10 +8,10 @@
 //
 // Once augmented, open("my-modal", { id }) is fully type-checked.
 
-export interface ModalPropsMap {}
+export type ModalPropsMap = {};
 
 export type ModalName = keyof ModalPropsMap;
 
 export type ModalBaseProps = {
-  onClose: () => void;
+	onClose: () => void;
 };

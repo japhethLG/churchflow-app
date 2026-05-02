@@ -16,26 +16,26 @@ import { getSessionUser } from "@/lib/auth/server";
 // Per-perspective role (admin vs member) is enforced by the inner
 // (admin) / (member) group layouts.
 export default async ({
-  params,
-  children,
+	params,
+	children,
 }: {
-  params: Promise<{ tenantSlug: string }>;
-  children: ReactNode;
+	params: Promise<{ tenantSlug: string }>;
+	children: ReactNode;
 }) => {
-  const { tenantSlug } = await params;
-  const user = await getSessionUser();
-  if (!user) {
-    redirect("/login");
-  }
+	const { tenantSlug } = await params;
+	const user = await getSessionUser();
+	if (!user) {
+		redirect("/login");
+	}
 
-  const isMember = Boolean(user.tenantMemberships[tenantSlug]);
-  if (!isMember && !user.isSuperAdmin) {
-    // Don't leak tenant existence to non-members — send them to landing
-    // so they can switch to a tenant they actually belong to. The
-    // not-found page is reserved for genuinely unknown slugs (caught
-    // by TenantGuard once the backend confirms 404).
-    redirect("/");
-  }
+	const isMember = Boolean(user.tenantMemberships[tenantSlug]);
+	if (!isMember && !user.isSuperAdmin) {
+		// Don't leak tenant existence to non-members — send them to landing
+		// so they can switch to a tenant they actually belong to. The
+		// not-found page is reserved for genuinely unknown slugs (caught
+		// by TenantGuard once the backend confirms 404).
+		redirect("/");
+	}
 
-  return <TenantGuard tenantSlug={tenantSlug}>{children}</TenantGuard>;
+	return <TenantGuard tenantSlug={tenantSlug}>{children}</TenantGuard>;
 };

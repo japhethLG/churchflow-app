@@ -1,8 +1,11 @@
 "use client";
 
-import { DataTable, type DataTableColumn } from "@/components/primitives/DataTable";
-import { Badge, StatusBadge, type Status } from "@/components/primitives/Badge";
+import { Badge, type Status, StatusBadge } from "@/components/primitives/Badge";
 import { Button } from "@/components/primitives/Button";
+import {
+	DataTable,
+	type DataTableColumn,
+} from "@/components/primitives/DataTable";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
@@ -10,94 +13,102 @@ import { cn } from "@/lib/utils";
 type Invitation = components["schemas"]["InvitationResponseDto"];
 
 const STATUS_MAP: Record<Invitation["status"], Status> = {
-  PENDING: "Pending",
-  ACCEPTED: "Completed",
-  EXPIRED: "Cancelled",
-  CANCELLED: "Cancelled",
+	PENDING: "Pending",
+	ACCEPTED: "Completed",
+	EXPIRED: "Cancelled",
+	CANCELLED: "Cancelled",
 };
 
 export const InvitationsTable = ({
-  rows,
-  loading,
-  tenantId: _tenantId,
-  onCancel,
+	rows,
+	loading,
+	tenantId: _tenantId,
+	onCancel,
 }: {
-  rows: Invitation[];
-  loading?: boolean;
-  tenantId: string;
-  onCancel: (inv: Invitation) => void;
+	rows: Invitation[];
+	loading?: boolean;
+	tenantId: string;
+	onCancel: (inv: Invitation) => void;
 }) => {
+	const columns: DataTableColumn<Invitation>[] = [
+		{
+			key: "email",
+			label: "Recipient",
+			render: (row) => (
+				<div className="flex flex-col">
+					<span className="font-medium text-foreground">{row.email}</span>
+					<span className="text-xs text-muted-foreground">
+						Sent {dayjs(row.createdAt).format("ll")}
+					</span>
+				</div>
+			),
+		},
+		{
+			key: "role",
+			label: "Role",
+			width: "120px",
+			render: (row) => (
+				<Badge color={row.role === "ADMIN" ? "indigo" : "neutral"}>
+					{row.role === "ADMIN" ? "Admin" : "Member"}
+				</Badge>
+			),
+		},
+		{
+			key: "status",
+			label: "Status",
+			width: "140px",
+			render: (row) => <StatusBadge status={STATUS_MAP[row.status]} />,
+		},
+		{
+			key: "expires",
+			label: "Expires",
+			width: "120px",
+			render: (row) => {
+				if (row.status !== "PENDING")
+					return <span className="text-muted-foreground">—</span>;
+				const diff = dayjs(row.expiresAt).diff(dayjs());
+				const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
+				return (
+					<span
+						className={cn(
+							days < 3 && days > 0
+								? "text-destructive"
+								: "text-secondary-foreground",
+						)}
+					>
+						{days <= 0 ? "Expired" : `${days}d left`}
+					</span>
+				);
+			},
+		},
+		{
+			key: "actions",
+			label: "",
+			width: "100px",
+			align: "right",
+			render: (row) =>
+				row.status === "PENDING" ? (
+					<Button
+						variant="tertiary"
+						size="sm"
+						destructive
+						onClick={() => onCancel(row)}
+					>
+						Cancel
+					</Button>
+				) : null,
+		},
+	];
 
-  const columns: DataTableColumn<Invitation>[] = [
-    {
-      key: "email",
-      label: "Recipient",
-      render: (row) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-foreground">{row.email}</span>
-          <span className="text-xs text-muted-foreground">
-            Sent {dayjs(row.createdAt).format("ll")}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "role",
-      label: "Role",
-      width: "120px",
-      render: (row) => (
-        <Badge color={row.role === "ADMIN" ? "indigo" : "neutral"}>
-          {row.role === "ADMIN" ? "Admin" : "Member"}
-        </Badge>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      width: "140px",
-      render: (row) => <StatusBadge status={STATUS_MAP[row.status]} />,
-    },
-    {
-      key: "expires",
-      label: "Expires",
-      width: "120px",
-      render: (row) => {
-        if (row.status !== "PENDING") return <span className="text-muted-foreground">—</span>;
-        const diff = dayjs(row.expiresAt).diff(dayjs());
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-        return (
-          <span
-            className={cn(days < 3 && days > 0 ? "text-destructive" : "text-secondary-foreground")}
-          >
-            {days <= 0 ? "Expired" : `${days}d left`}
-          </span>
-        );
-      },
-    },
-    {
-      key: "actions",
-      label: "",
-      width: "100px",
-      align: "right",
-      render: (row) =>
-        row.status === "PENDING" ? (
-          <Button variant="tertiary" size="sm" destructive onClick={() => onCancel(row)}>
-            Cancel
-          </Button>
-        ) : null,
-    },
-  ];
-
-  return (
-    <DataTable
-      columns={columns}
-      rows={rows}
-      rowKey={(r) => r.id}
-      loading={loading}
-      emptyTitle="No invitations"
-      emptySubtitle="Invite members or admins to join your church."
-    />
-  );
+	return (
+		<DataTable
+			columns={columns}
+			rows={rows}
+			rowKey={(r) => r.id}
+			loading={loading}
+			emptyTitle="No invitations"
+			emptySubtitle="Invite members or admins to join your church."
+		/>
+	);
 };

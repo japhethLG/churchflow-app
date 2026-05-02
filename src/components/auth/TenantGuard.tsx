@@ -15,17 +15,18 @@ import { useTenant } from "@/lib/api/tenants";
 // The session has no list of all tenants, so the existence check has to
 // hit the backend, and our backend client is currently client-only.
 export const TenantGuard = ({
-  tenantSlug,
-  children,
+	tenantSlug,
+	children,
 }: {
-  tenantSlug: string;
-  children: ReactNode;
+	tenantSlug: string;
+	children: ReactNode;
 }) => {
-  const { error } = useTenant(tenantSlug);
-  if (error) {
-    const status = (error as { statusCode?: number; status?: number }).statusCode
-      ?? (error as { status?: number }).status;
-    if (status === 404 || status === 403) notFound();
-  }
-  return <>{children}</>;
+	const { error } = useTenant(tenantSlug);
+	if (error) {
+		const status =
+			(error as { statusCode?: number; status?: number }).statusCode ??
+			(error as { status?: number }).status;
+		if (status === 404 || status === 403) notFound();
+	}
+	return <>{children}</>;
 };

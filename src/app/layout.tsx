@@ -1,43 +1,39 @@
 import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
-import { AuthProvider } from "@/lib/auth/AuthProvider";
+import { Geist, Inter } from "next/font/google";
 import { QueryProvider } from "@/lib/api/providers";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { ModalHost } from "@/lib/modals/host";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["400", "500", "600", "700"],
+	subsets: ["latin"],
+	variable: "--font-inter",
+	weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "ChurchFlow",
-  description: "Record tithes, offerings, and giving for your church.",
+	title: "ChurchFlow",
+	description: "Record tithes, offerings, and giving for your church.",
 };
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-export default ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body>
-        <TooltipProvider>
-          <AuthProvider>
-            <QueryProvider>
-              {children}
-              <ModalHost />
-            </QueryProvider>
-          </AuthProvider>
-        </TooltipProvider>
-      </body>
-    </html>
-  );
-}
+export default ({ children }: { children: React.ReactNode }) => {
+	return (
+		<html lang="en" className={cn("font-sans", geist.variable)}>
+			<body>
+				<TooltipProvider>
+					<AuthProvider>
+						<QueryProvider>
+							{children}
+							<ModalHost />
+						</QueryProvider>
+					</AuthProvider>
+				</TooltipProvider>
+			</body>
+		</html>
+	);
+};

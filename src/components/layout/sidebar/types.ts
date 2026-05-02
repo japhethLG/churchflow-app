@@ -9,7 +9,7 @@ export type NavItem = { icon: IconName; label: string; href: string };
 export type Perspective = "admin" | "member" | "super";
 
 export type TenantSummary = {
-  slug: string;
-  name: string;
-  role: "ADMIN" | "USER";
+	slug: string;
+	name: string;
+	role: "ADMIN" | "USER";
 };
