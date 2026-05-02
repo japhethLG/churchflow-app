@@ -67,7 +67,8 @@ export const MemberTransactions = ({
 		tenantSlug,
 		{
 			memberId,
-			type: typeFilter === "ALL" ? undefined : (typeFilter as any),
+			type:
+				typeFilter === "ALL" ? undefined : (typeFilter as Transaction["type"]),
 			dateFrom,
 			limit: 1000,
 		},
@@ -106,9 +107,11 @@ export const MemberTransactions = ({
 			key: "campaign",
 			label: "Campaign",
 			render: (t: Transaction) => {
-				const title = t.campaignId ? campaignMap[t.campaignId as any] : null;
+				const title = t.campaignId
+					? campaignMap[t.campaignId as unknown as string]
+					: null;
 				const itemTitle = t.campaignItemId
-					? campaignItemMap[t.campaignItemId as any]
+					? campaignItemMap[t.campaignItemId as unknown as string]
 					: null;
 				return (
 					<span
@@ -138,7 +141,7 @@ export const MemberTransactions = ({
 						color: "var(--muted-foreground)",
 					}}
 				>
-					{nstr(t.note) ? (t.note as any).slice(0, 10) : "\u2014"}
+					{nstr(t.note) ? (t.note as unknown as string).slice(0, 10) : "\u2014"}
 				</span>
 			),
 		},

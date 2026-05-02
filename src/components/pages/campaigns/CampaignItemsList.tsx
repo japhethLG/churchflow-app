@@ -4,7 +4,6 @@ import {
 	Amount,
 	Button,
 	Card,
-	Icon,
 	RowActionsMenu,
 	SectionTitle,
 } from "@/components/primitives";

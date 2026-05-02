@@ -30,14 +30,36 @@ export const Button = ({
 }: ButtonProps) => {
 	const isCurrentlyDisabled = disabled || loading;
 
-	const variantMap: Record<string, any> = {
+	const variantMap: Record<
+		string,
+		| "default"
+		| "destructive"
+		| "secondary"
+		| "ghost"
+		| "link"
+		| "outline"
+		| null
+		| undefined
+	> = {
 		primary: destructive ? "destructive" : "default",
 		secondary: "secondary",
 		tertiary: "ghost",
 		ghost: "ghost",
 	};
 
-	const sizeMap: Record<string, any> = {
+	const sizeMap: Record<
+		string,
+		| "default"
+		| "sm"
+		| "lg"
+		| "icon"
+		| "xs"
+		| "icon-xs"
+		| "icon-sm"
+		| "icon-lg"
+		| null
+		| undefined
+	> = {
 		sm: "sm",
 		md: "default",
 		lg: "lg",

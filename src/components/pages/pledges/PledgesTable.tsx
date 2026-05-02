@@ -69,24 +69,16 @@ export const PledgesTable = ({
 				const c = campaignsById[p.campaignId];
 				if (!c) return <span className="text-muted-foreground">—</span>;
 				return (
-					<span
-						role="link"
-						className="cursor-pointer font-medium text-primary"
-						tabIndex={0}
+					<button
+						type="button"
+						className="cursor-pointer font-medium text-primary hover:underline text-left"
 						onClick={(e) => {
 							e.stopPropagation();
 							handlers.onOpenCampaign(c.id);
 						}}
-						onKeyDown={(e) => {
-							if (e.key === "Enter" || e.key === " ") {
-								e.preventDefault();
-								e.stopPropagation();
-								handlers.onOpenCampaign(c.id);
-							}
-						}}
 					>
 						{c.title}
-					</span>
+					</button>
 				);
 			},
 		},

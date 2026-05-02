@@ -19,7 +19,6 @@ import type { components } from "@/lib/api/schema";
 import { useTenants } from "@/lib/api/tenants";
 import dayjs from "@/lib/dayjs";
 import { openModal } from "@/lib/modals/store";
-import { cn } from "@/lib/utils";
 
 type AdminUser = components["schemas"]["AdminUserDto"];
 

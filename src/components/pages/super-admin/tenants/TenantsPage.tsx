@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import {
-	Avatar,
 	AvatarStack,
 	Badge,
 	Button,
@@ -20,7 +19,7 @@ import { tenantInitials, tenantLogoGradient } from "@/lib/design/logo-gradient";
 import { formatCompact } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
 
-type Tenant = components["schemas"]["TenantResponseDto"];
+type Tenant = components["schemas"]["TenantListItemDto"];
 
 const formatMonthYear = (d: Date | string): string => {
 	return dayjs(d).format("MMM YYYY");
@@ -45,7 +44,7 @@ export const TenantsPage = () => {
 	const { data: tenantsData, isLoading } = useTenants();
 	const { data: stats } = useAdminStats();
 
-	const tenants = tenantsData?.items ?? [];
+	const tenants = (tenantsData?.items ?? []) as Tenant[];
 
 	const columns: DataTableColumn<Tenant>[] = [
 		{
@@ -57,7 +56,7 @@ export const TenantsPage = () => {
 					<div>
 						<div className="flex items-center gap-2 font-medium">
 							{t.name}
-							{(t as any).deletedAt && <Badge color="clay">Archived</Badge>}
+							{t.deletedAt && <Badge color="clay">Archived</Badge>}
 						</div>
 						<div className="text-[11px] text-muted-foreground">{t.slug}</div>
 					</div>
@@ -70,8 +69,13 @@ export const TenantsPage = () => {
 			width: "220px",
 			render: (t) => (
 				<AvatarStack
-					members={(t as any).adminsPreview ?? []}
-					count={(t as any).adminCount ?? 0}
+					members={
+						t.adminsPreview?.map((a) => ({
+							...a,
+							photoUrl: (a.photoUrl as unknown as string) ?? null,
+						})) ?? []
+					}
+					count={t.adminCount ?? 0}
 				/>
 			),
 		},
@@ -80,9 +84,7 @@ export const TenantsPage = () => {
 			label: "Members",
 			width: "100px",
 			align: "right",
-			render: (t) => (
-				<span className="tabular-nums">{(t as any).memberCount ?? 0}</span>
-			),
+			render: (t) => <span className="tabular-nums">{t.memberCount ?? 0}</span>,
 		},
 		{
 			key: "gifts",
@@ -90,12 +92,12 @@ export const TenantsPage = () => {
 			width: "180px",
 			align: "right",
 			render: (t) =>
-				(t as any).giftsMtdCount ? (
+				t.giftsMtdCount ? (
 					<span>
 						<span className="mr-2 text-xs text-muted-foreground">
-							{(t as any).giftsMtdCount} gifts
+							{t.giftsMtdCount} gifts
 						</span>
-						{formatCompact((t as any).giftsMtdTotal ?? 0)}
+						{formatCompact(t.giftsMtdTotal ?? 0)}
 					</span>
 				) : (
 					<span className="text-muted-foreground">—</span>
@@ -118,7 +120,7 @@ export const TenantsPage = () => {
 			align: "right",
 			overflow: "visible",
 			render: (t) => {
-				const isDeleted = Boolean((t as any).deletedAt);
+				const isDeleted = Boolean(t.deletedAt);
 				return (
 					<RowActionsMenu
 						actions={

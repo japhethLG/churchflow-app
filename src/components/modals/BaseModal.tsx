@@ -71,19 +71,31 @@ export const BaseModal = ({
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}
-			className="fixed inset-0 z-[1000] grid place-items-center p-6"
+			className="fixed inset-0 z-1000 grid place-items-center p-6"
 			style={{
 				background: "rgba(53, 37, 205, 0.18)",
 				backdropFilter: "blur(8px)",
 			}}
-			onClick={dismissible ? onClose : undefined}
+			onClick={(e) => {
+				if (e.target === e.currentTarget && dismissible) onClose();
+			}}
+			onKeyDown={
+				dismissible
+					? (e) => {
+							if (
+								e.target === e.currentTarget &&
+								(e.key === "Enter" || e.key === " ")
+							)
+								onClose();
+						}
+					: undefined
+			}
 		>
 			<div
 				className={cn(
 					"flex w-full flex-col overflow-hidden rounded-[24px] bg-card shadow-[0_30px_80px_-20px_rgba(79,70,229,0.35)]",
 					SIZE_CLASS[size],
 				)}
-				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex justify-between px-8 pt-6">
 					<div>
@@ -103,7 +115,13 @@ export const BaseModal = ({
 							onClick={onClose}
 							aria-label="Close"
 						>
-							<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+							<svg
+								width="16"
+								height="16"
+								viewBox="0 0 16 16"
+								fill="none"
+								aria-hidden="true"
+							>
 								<path
 									d="M12 4L4 12M4 4l8 8"
 									stroke="currentColor"

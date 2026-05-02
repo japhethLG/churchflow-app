@@ -40,7 +40,10 @@ export type IconName =
 	| "clock"
 	| "close";
 
-const LUCIDE_MAP: Record<Exclude<IconName, "google" | "logo">, any> = {
+const LUCIDE_MAP: Record<
+	Exclude<IconName, "google" | "logo">,
+	Lucide.LucideIcon
+> = {
 	home: Lucide.Home,
 	users: Lucide.Users,
 	user: Lucide.User,
@@ -99,6 +102,7 @@ export const Icon = ({
 				height={size}
 				viewBox="0 0 24 24"
 				className={cn("shrink-0", className)}
+				aria-hidden="true"
 				{...rest}
 			>
 				<path
@@ -129,7 +133,7 @@ export const Icon = ({
 				color={color}
 				strokeWidth={strokeWidth}
 				className={cn("shrink-0", className)}
-				{...(rest as any)}
+				{...rest}
 			/>
 		);
 	}
@@ -143,7 +147,7 @@ export const Icon = ({
 			color={color}
 			strokeWidth={strokeWidth}
 			className={cn("shrink-0", className)}
-			{...(rest as any)}
+			{...rest}
 		/>
 	);
 };

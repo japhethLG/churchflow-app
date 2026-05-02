@@ -1,8 +1,6 @@
 "use client";
 
 import {
-	Amount,
-	Badge,
 	DataTable,
 	type DataTableColumn,
 	type DataTablePagination,

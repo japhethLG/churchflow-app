@@ -48,7 +48,8 @@ export const MembersFilters = ({
 					onChange={(e) => onChange({ ...value, search: e.target.value })}
 				/>
 			</div>
-			<span
+			<button
+				type="button"
 				onClick={() =>
 					onChange({ ...value, status: next(STATUS_CYCLE, value.status) })
 				}
@@ -56,8 +57,9 @@ export const MembersFilters = ({
 				<Chip icon="chevronDown" active={value.status !== "all"}>
 					{STATUS_LABEL[value.status]}
 				</Chip>
-			</span>
-			<span
+			</button>
+			<button
+				type="button"
 				onClick={() =>
 					onChange({ ...value, linked: next(LINKED_CYCLE, value.linked) })
 				}
@@ -65,7 +67,7 @@ export const MembersFilters = ({
 				<Chip icon="chevronDown" active={value.linked !== "all"}>
 					{LINKED_LABEL[value.linked]}
 				</Chip>
-			</span>
+			</button>
 		</div>
 	);
 };

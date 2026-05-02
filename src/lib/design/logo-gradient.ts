@@ -23,12 +23,13 @@ const hash = (s: string): number => {
 export const tenantLogoGradient = (
 	slug: string,
 ): { from: string; to: string } => {
-	const [from, to] = PALETTES[hash(slug) % PALETTES.length]!;
+	const [from, to] = PALETTES[hash(slug) % PALETTES.length] ??
+		PALETTES[0] ?? ["", ""];
 	return { from, to };
 };
 
 export const tenantInitials = (name: string): string => {
 	const words = name.trim().split(/\s+/);
-	if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase();
-	return (words[0]![0]! + words[1]![0]!).toUpperCase();
+	if (words.length === 1) return words[0]?.slice(0, 2).toUpperCase();
+	return ((words[0]?.[0] ?? "") + (words[1]?.[0] ?? "")).toUpperCase();
 };

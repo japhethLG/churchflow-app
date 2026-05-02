@@ -1,6 +1,12 @@
 export const JournalIllustration = () => {
 	return (
-		<svg viewBox="0 0 400 400" width="100%" height="100%" fill="none">
+		<svg
+			viewBox="0 0 400 400"
+			width="100%"
+			height="100%"
+			fill="none"
+			aria-hidden="true"
+		>
 			<defs>
 				<linearGradient id="jGrad" x1="0" y1="0" x2="1" y2="1">
 					<stop offset="0" stopColor="#4F46E5" stopOpacity="0.12" />
@@ -41,7 +47,7 @@ export const JournalIllustration = () => {
 			/>
 			{[165, 185, 205, 225, 245].map((y, i) => (
 				<line
-					key={i}
+					key={y}
 					x1="108"
 					y1={y}
 					x2={180}
@@ -54,7 +60,7 @@ export const JournalIllustration = () => {
 			))}
 			{[165, 185, 205, 225].map((y, i) => (
 				<line
-					key={i}
+					key={y}
 					x1="220"
 					y1={y}
 					x2={290}

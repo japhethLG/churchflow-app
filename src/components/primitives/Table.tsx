@@ -16,7 +16,7 @@ export type TableColumn<Row = Record<string, ReactNode>> = {
 	align?: "left" | "right" | "center";
 };
 
-export type TableRow = Record<string, ReactNode> & { _hover?: boolean };
+export type TableDataRow = Record<string, ReactNode> & { _hover?: boolean };
 
 export const Table = ({
 	columns,
@@ -24,7 +24,7 @@ export const Table = ({
 	className,
 }: {
 	columns: TableColumn[];
-	rows: TableRow[];
+	rows: TableDataRow[];
 	className?: string;
 }) => {
 	return (

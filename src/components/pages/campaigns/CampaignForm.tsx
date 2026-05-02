@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { type Resolver, useFieldArray, useForm } from "react-hook-form";
 import {
 	Form,
 	FormButton,
@@ -34,7 +34,7 @@ export const CampaignForm = ({
 	itemsEditable?: boolean;
 }) => {
 	const methods = useForm<CampaignFormValues>({
-		resolver: zodResolver(campaignSchema) as any,
+		resolver: zodResolver(campaignSchema) as Resolver<CampaignFormValues>,
 		defaultValues: {
 			title: "",
 			description: "",
@@ -47,7 +47,6 @@ export const CampaignForm = ({
 
 	const {
 		control,
-		watch,
 		reset,
 		setError,
 		formState: { isSubmitting, errors },

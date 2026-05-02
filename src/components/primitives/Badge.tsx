@@ -25,7 +25,10 @@ export const Badge = ({
 	dot?: boolean;
 	className?: string;
 }) => {
-	const colorMap: Record<BadgeColor, any> = {
+	const colorMap: Record<
+		BadgeColor,
+		React.ComponentProps<typeof ShadedBadge>["variant"]
+	> = {
 		neutral: "outline",
 		indigo: "info",
 		green: "success",

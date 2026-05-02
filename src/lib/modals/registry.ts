@@ -8,7 +8,8 @@
 //
 // Once augmented, open("my-modal", { id }) is fully type-checked.
 
-export type ModalPropsMap = {};
+// biome-ignore lint/suspicious/noEmptyInterface: Intentional empty interface for module augmentation
+export interface ModalPropsMap {}
 
 export type ModalName = keyof ModalPropsMap;
 

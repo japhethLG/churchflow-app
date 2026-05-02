@@ -1,5 +1,4 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { invalidateByPaths } from "../hooks";
 
 // Campaigns own their items (nested routes). When anything about a
 // campaign or its items changes, invalidate the whole set for that

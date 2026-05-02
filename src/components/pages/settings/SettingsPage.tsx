@@ -23,7 +23,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 	const [error, setError] = useState<string | null>(null);
 
 	const methods = useForm<SettingsFormValues>({
-		resolver: zodResolver(settingsSchema) as any,
+		resolver: zodResolver(settingsSchema),
 		defaultValues: {
 			name: "",
 			address: "",
@@ -158,9 +158,9 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 					<SectionTitle title="Identifiers" />
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
-							<label className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+							<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
 								Slug
-							</label>
+							</span>
 							<div className="rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">
 								{tenant?.slug ?? tenantSlug}
 							</div>
@@ -169,9 +169,9 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 							</p>
 						</div>
 						<div>
-							<label className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+							<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
 								Tenant ID
-							</label>
+							</span>
 							<div className="truncate overflow-hidden rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">
 								{tenant?.id ?? "—"}
 							</div>

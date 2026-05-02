@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type FormInternalContextValue = {
-	onSubmit: SubmitHandler<any>;
+	onSubmit: SubmitHandler<FieldValues>;
 };
 
 const FormInternalContext = createContext<FormInternalContextValue | null>(
@@ -20,8 +20,10 @@ const FormInternalContext = createContext<FormInternalContextValue | null>(
 export const useFormInternalContext = () => useContext(FormInternalContext);
 
 type FormProps<T extends FieldValues> = {
+	// biome-ignore lint/suspicious/noExplicitAny: Required for React Hook Form's internal generic context
 	methods: UseFormReturn<T, any, any>;
-	onSubmit: SubmitHandler<T>;
+	// biome-ignore lint/suspicious/noExplicitAny: Required to prevent contravariance issues with Zod resolvers
+	onSubmit: SubmitHandler<any>;
 	children: ReactNode;
 	className?: string;
 };
@@ -34,7 +36,7 @@ export const Form = <T extends FieldValues>({
 }: FormProps<T>) => (
 	<FormProvider {...methods}>
 		<FormInternalContext.Provider
-			value={{ onSubmit: onSubmit as SubmitHandler<any> }}
+			value={{ onSubmit: onSubmit as unknown as SubmitHandler<FieldValues> }}
 		>
 			<form
 				className={cn("flex w-full flex-col gap-4", className)}

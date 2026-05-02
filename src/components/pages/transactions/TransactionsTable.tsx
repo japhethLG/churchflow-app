@@ -42,8 +42,6 @@ export type TransactionsTableHandlers = {
 	onDelete: (t: TransactionRow) => void;
 };
 
-const muted = "var(--muted-foreground)";
-
 export const TransactionsTable = ({
 	rows,
 	loading,

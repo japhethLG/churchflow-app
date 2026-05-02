@@ -93,7 +93,7 @@ export const AccountMenu = ({
 
 				{adminTenants.length > 0 && (
 					<TenantRoleSubmenu
-						role="admin"
+						accountType="admin"
 						tenants={adminTenants}
 						perspective={perspective}
 						tenantSlug={tenantSlug}
@@ -103,7 +103,7 @@ export const AccountMenu = ({
 
 				{memberTenants.length > 0 && (
 					<TenantRoleSubmenu
-						role="member"
+						accountType="member"
 						tenants={memberTenants}
 						perspective={perspective}
 						tenantSlug={tenantSlug}

@@ -50,6 +50,6 @@ export { type RowAction, RowActionsMenu } from "./RowActionsMenu";
 export { Select, type SelectOption, type SelectProps } from "./Select";
 export { StatCard } from "./StatCard";
 export { StatPill } from "./StatPill";
-export { Table, type TableColumn, type TableRow } from "./Table";
+export { Table, type TableColumn, type TableDataRow } from "./Table";
 export { Textarea } from "./Textarea";
 export { Wordmark } from "./Wordmark";

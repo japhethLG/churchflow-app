@@ -1,5 +1,4 @@
 import type { components } from "@/lib/api";
-import { formatAmount, getCurrencySymbol } from "@/lib/format-currency";
 
 export type SummaryDto = components["schemas"]["TransactionSummaryResponseDto"];
 

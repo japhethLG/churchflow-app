@@ -102,7 +102,8 @@ export const TransactionsFilters = ({
 					onChange={(e) => onChange({ ...value, search: e.target.value })}
 				/>
 			</div>
-			<span
+			<button
+				type="button"
 				onClick={() =>
 					onChange({ ...value, range: next(RANGE_CYCLE, value.range) })
 				}
@@ -110,8 +111,9 @@ export const TransactionsFilters = ({
 				<Chip icon="calendar" active={value.range !== "all"}>
 					{RANGE_LABEL[value.range]}
 				</Chip>
-			</span>
-			<span
+			</button>
+			<button
+				type="button"
 				onClick={() =>
 					onChange({ ...value, type: next(TYPE_CYCLE, value.type) })
 				}
@@ -119,19 +121,20 @@ export const TransactionsFilters = ({
 				<Chip icon="chevronDown" active={value.type !== "all"}>
 					{TYPE_LABEL[value.type]}
 				</Chip>
-			</span>
-			<span onClick={cycleCampaign}>
+			</button>
+			<button type="button" onClick={cycleCampaign}>
 				<Chip icon="chevronDown" active={value.campaignId !== "all"}>
 					{campaignLabel}
 				</Chip>
-			</span>
+			</button>
 			{isFiltered && (
-				<span
+				<button
+					type="button"
 					onClick={onReset}
 					className="ml-auto cursor-pointer px-2 text-xs text-muted-foreground"
 				>
 					Reset filters
-				</span>
+				</button>
 			)}
 		</div>
 	);

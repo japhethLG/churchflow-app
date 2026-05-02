@@ -18,6 +18,7 @@ export const MemberThankYou = ({ name }: { name: string }) => {
 			<div className="grid size-10 shrink-0 place-items-center rounded-full bg-tertiary/20">
 				<svg
 					width="20"
+					aria-hidden="true"
 					height="20"
 					viewBox="0 0 24 24"
 					fill="none"

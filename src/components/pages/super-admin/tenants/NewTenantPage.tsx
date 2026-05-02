@@ -67,8 +67,7 @@ const Step1Details = ({
 		if (!slugEdited && suggestion?.slug) {
 			setDraft({ ...draft, slug: suggestion.slug });
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [suggestion?.slug, slugEdited]);
+	}, [suggestion?.slug, slugEdited, setDraft, draft]);
 
 	return (
 		<>

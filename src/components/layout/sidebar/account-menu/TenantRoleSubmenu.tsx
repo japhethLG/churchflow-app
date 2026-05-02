@@ -20,20 +20,20 @@ const ROLE_CONFIG: Record<
 };
 
 export const TenantRoleSubmenu = ({
-	role,
+	accountType,
 	tenants,
 	perspective,
 	tenantSlug,
 	onPickTenant,
 }: {
-	role: Role;
+	accountType: Role;
 	tenants: TenantSummary[];
 	perspective: Perspective;
 	tenantSlug?: string;
 	onPickTenant: (slug: string, dash: "admin" | "member") => void;
 }) => {
-	const { icon, label, dash } = ROLE_CONFIG[role];
-	const isActivePerspective = perspective === role;
+	const { icon, label, dash } = ROLE_CONFIG[accountType];
+	const isActivePerspective = perspective === accountType;
 
 	return (
 		<DropdownMenuSub>
@@ -41,7 +41,7 @@ export const TenantRoleSubmenu = ({
 				className={cn(
 					"rounded-lg px-2.5 py-[9px] text-[13px] data-popup-open:bg-muted",
 					isActivePerspective &&
-						"!bg-accent font-semibold text-primary data-popup-open:bg-accent",
+						"bg-accent! font-semibold text-primary data-popup-open:bg-accent",
 				)}
 			>
 				<Icon
@@ -68,7 +68,7 @@ export const TenantRoleSubmenu = ({
 					const isCurrent = isActivePerspective && tenantSlug === m.slug;
 					return (
 						<DropdownMenuItem
-							key={`${role}-${m.slug}`}
+							key={`${accountType}-${m.slug}`}
 							className={cn(
 								"cursor-pointer gap-2 rounded-lg px-2.5 py-2 text-[13px]",
 								isCurrent && "bg-accent/40 font-semibold text-primary",

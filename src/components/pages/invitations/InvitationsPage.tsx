@@ -1,6 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import type { components } from "@/lib/api/schema";
+
+type Invitation = components["schemas"]["InvitationResponseDto"];
+
 import { Button, PageHeader } from "@/components/primitives";
 import { useInvitations } from "@/lib/api/invitations";
 import { useTenant } from "@/lib/api/tenants";
@@ -11,7 +15,7 @@ import { InvitationsTable } from "./InvitationsTable";
 export const InvitationsPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const tenantQ = useTenant(tenantSlug);
-	const tenantId = tenantQ.data?.id ?? tenantSlug;
+	const _tenantId = tenantQ.data?.id ?? tenantSlug;
 	const invitationsQ = useInvitations(tenantSlug);
 	const invitations = invitationsQ.data?.items ?? [];
 
@@ -26,7 +30,7 @@ export const InvitationsPage = () => {
 	const handleInvite = () =>
 		openModal("invite-member", { tenantId: tenantSlug });
 
-	const handleCancel = (inv: any) =>
+	const handleCancel = (inv: Invitation) =>
 		openModal("cancel-invitation", {
 			tenantId: tenantSlug,
 			invitationId: inv.id,

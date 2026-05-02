@@ -31,7 +31,7 @@ export const AdminReportsPage = () => {
 	const [tab, setTab] = useState<Tab>("by-type");
 
 	// Fetch YTD summary (up to 12 months)
-	const ytdMonths = dayjs().month() + 1;
+	const _ytdMonths = dayjs().month() + 1;
 	const summary = useTransactionSummary(tenantSlug, 12);
 
 	// For By Member and By Campaign tabs, we need raw transactions

@@ -55,7 +55,7 @@ export const useApiQuery = <P extends PathsWithMethod<"get">>(
 	return useQuery<GetResponse<P, "get">, Error>({
 		queryKey: [path, init],
 		queryFn: async () => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			// biome-ignore lint/suspicious/noExplicitAny: internal type dispatch
 			const { data, error } = await (api as any).GET(path, init);
 			if (error) throw error;
 			return data as GetResponse<P, "get">;
@@ -78,7 +78,7 @@ export const useApiMutation = <
 	return useMutation<GetResponse<P, M>, Error, GetInit<P, M>>({
 		mutationFn: async (init) => {
 			const verb = method.toUpperCase() as "POST" | "PUT" | "PATCH" | "DELETE";
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			// biome-ignore lint/suspicious/noExplicitAny: internal type dispatch
 			const { data, error } = await (api as any)[verb](path, init);
 			if (error) throw error;
 			return data as GetResponse<P, M>;
