@@ -1,63 +1,60 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Start Backend",
-      "type": "npm",
-      "script": "start:dev",
-      "options": {
-        "cwd": "${workspaceFolder}/../church-app-backend"
-      },
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "custom-backend",
-        "pattern": {
-          "regexp": "^$"
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "Running\\.\\.\\.|Starting Nest application",
-          "endsPattern": "Watching for file changes\\.|Nest application successfully started"
-        }
-      },
-      "presentation": {
-        "group": "start-app",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Start Frontend",
-      "type": "npm",
-      "script": "dev",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "custom-frontend",
-        "pattern": {
-          "regexp": "^$"
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "Waiting for backend",
-          "endsPattern": "Ready in|ready started server"
-        }
-      },
-      "presentation": {
-        "group": "start-app",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Start Full App",
-      "dependsOn": [
-        "Start Backend",
-        "Start Frontend"
-      ],
-      "dependsOrder": "sequence",
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Backend",
+			"type": "npm",
+			"script": "start:dev",
+			"options": {
+				"cwd": "${workspaceFolder}/../church-app-backend"
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "custom-backend",
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "Running\\.\\.\\.|Starting Nest application",
+					"endsPattern": "Watching for file changes\\.|Nest application successfully started"
+				}
+			},
+			"presentation": {
+				"group": "start-app",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Start Frontend",
+			"type": "npm",
+			"script": "dev",
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "custom-frontend",
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "Waiting for backend",
+					"endsPattern": "Ready in|ready started server"
+				}
+			},
+			"presentation": {
+				"group": "start-app",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Start Full App",
+			"dependsOn": ["Start Backend", "Start Frontend"],
+			"dependsOrder": "sequence",
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
 }
