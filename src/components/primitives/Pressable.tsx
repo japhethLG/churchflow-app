@@ -1,12 +1,12 @@
 "use client";
 
 import { Button as BaseButton } from "@base-ui/react/button";
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export type PressableProps = {
 	children: ReactNode;
-	onClick?: () => void;
+	onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 	disabled?: boolean;
 	className?: string;
 };

@@ -1,4 +1,8 @@
-import type { ChangeEventHandler, HTMLInputTypeAttribute } from "react";
+import type {
+	ChangeEventHandler,
+	HTMLInputTypeAttribute,
+	KeyboardEventHandler,
+} from "react";
 import { Input as ShadedInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -40,6 +44,7 @@ export const Input = ({
 	className,
 	inputClassName,
 	onChange,
+	onKeyDown,
 	onBlur,
 	type = "text",
 	step,
@@ -61,6 +66,7 @@ export const Input = ({
 	className?: string;
 	inputClassName?: string;
 	onChange?: ChangeEventHandler<HTMLInputElement>;
+	onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
 	onBlur?: () => void;
 	type?: HTMLInputTypeAttribute;
 	step?: string;
@@ -107,6 +113,7 @@ export const Input = ({
 						value={value ?? ""}
 						placeholder={placeholder}
 						onChange={onChange}
+						onKeyDown={onKeyDown}
 						onBlur={onBlur}
 						disabled={disabled}
 						readOnly={readOnly}

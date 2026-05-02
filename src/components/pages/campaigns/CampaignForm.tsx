@@ -10,7 +10,13 @@ import {
 	FormInput,
 	FormOptionGroup,
 } from "@/components/formElements";
-import { Button, Card, Icon, SectionTitle } from "@/components/primitives";
+import {
+	Button,
+	Card,
+	Icon,
+	Pressable,
+	SectionTitle,
+} from "@/components/primitives";
 import {
 	type CampaignFormValues,
 	campaignSchema,
@@ -176,14 +182,13 @@ export const CampaignForm = ({
 									/>
 								</div>
 								{itemsEditable && (
-									<button
-										type="button"
+									<Pressable
 										aria-label="Remove item"
 										onClick={() => remove(idx)}
 										className="grid size-9 place-items-center rounded-full bg-secondary text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
 									>
 										<Icon name="trash" size={14} />
-									</button>
+									</Pressable>
 								)}
 							</div>
 						))}

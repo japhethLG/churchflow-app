@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect } from "react";
 import { Button } from "@/components/primitives/Button";
+import { Pressable } from "@/components/primitives/Pressable";
 import { cn } from "@/lib/utils";
 
 // Shell every modal renders inside. Owns the overlay, ESC-to-close,
@@ -109,9 +110,8 @@ export const BaseModal = ({
 						</h2>
 					</div>
 					{showClose && (
-						<button
-							type="button"
-							className="grid size-9 shrink-0 place-items-center rounded-full border-0 bg-muted text-muted-foreground hover:opacity-90"
+						<Pressable
+							className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground hover:opacity-90"
 							onClick={onClose}
 							aria-label="Close"
 						>
@@ -129,7 +129,7 @@ export const BaseModal = ({
 									strokeLinecap="round"
 								/>
 							</svg>
-						</button>
+						</Pressable>
 					)}
 				</div>
 

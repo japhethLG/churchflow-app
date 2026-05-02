@@ -1,6 +1,6 @@
 "use client";
 
-import { Chip, Input } from "@/components/primitives";
+import { Chip, Input, Pressable } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 
@@ -102,39 +102,38 @@ export const TransactionsFilters = ({
 					onChange={(e) => onChange({ ...value, search: e.target.value })}
 				/>
 			</div>
-			<button
-				type="button"
+			<Chip
+				icon="calendar"
+				active={value.range !== "all"}
 				onClick={() =>
 					onChange({ ...value, range: next(RANGE_CYCLE, value.range) })
 				}
 			>
-				<Chip icon="calendar" active={value.range !== "all"}>
-					{RANGE_LABEL[value.range]}
-				</Chip>
-			</button>
-			<button
-				type="button"
+				{RANGE_LABEL[value.range]}
+			</Chip>
+			<Chip
+				icon="chevronDown"
+				active={value.type !== "all"}
 				onClick={() =>
 					onChange({ ...value, type: next(TYPE_CYCLE, value.type) })
 				}
 			>
-				<Chip icon="chevronDown" active={value.type !== "all"}>
-					{TYPE_LABEL[value.type]}
-				</Chip>
-			</button>
-			<button type="button" onClick={cycleCampaign}>
-				<Chip icon="chevronDown" active={value.campaignId !== "all"}>
-					{campaignLabel}
-				</Chip>
-			</button>
+				{TYPE_LABEL[value.type]}
+			</Chip>
+			<Chip
+				icon="chevronDown"
+				active={value.campaignId !== "all"}
+				onClick={cycleCampaign}
+			>
+				{campaignLabel}
+			</Chip>
 			{isFiltered && (
-				<button
-					type="button"
+				<Pressable
 					onClick={onReset}
-					className="ml-auto cursor-pointer px-2 text-xs text-muted-foreground"
+					className="ml-auto px-2 text-xs text-muted-foreground"
 				>
 					Reset filters
-				</button>
+				</Pressable>
 			)}
 		</div>
 	);

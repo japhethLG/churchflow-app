@@ -6,6 +6,7 @@ import {
 	DataTable,
 	type DataTableColumn,
 	type DataTablePagination,
+	Pressable,
 	RowActionsMenu,
 	type Status,
 	StatusBadge,
@@ -69,16 +70,15 @@ export const PledgesTable = ({
 				const c = campaignsById[p.campaignId];
 				if (!c) return <span className="text-muted-foreground">—</span>;
 				return (
-					<button
-						type="button"
-						className="cursor-pointer font-medium text-primary hover:underline text-left"
+					<Pressable
+						className="font-medium text-primary hover:underline text-left"
 						onClick={(e) => {
 							e.stopPropagation();
 							handlers.onOpenCampaign(c.id);
 						}}
 					>
 						{c.title}
-					</button>
+					</Pressable>
 				);
 			},
 		},

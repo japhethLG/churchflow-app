@@ -61,21 +61,22 @@ export const PledgesFilters = ({
 					onChange={(e) => onChange({ ...value, search: e.target.value })}
 				/>
 			</div>
-			<button type="button" onClick={cycleCampaign}>
-				<Chip icon="chevronDown" active={value.campaignId !== "all"}>
-					{campaignLabel}
-				</Chip>
-			</button>
-			<button
-				type="button"
+			<Chip
+				icon="chevronDown"
+				active={value.campaignId !== "all"}
+				onClick={cycleCampaign}
+			>
+				{campaignLabel}
+			</Chip>
+			<Chip
+				icon="chevronDown"
+				active={value.status !== "all"}
 				onClick={() =>
 					onChange({ ...value, status: next(STATUS_CYCLE, value.status) })
 				}
 			>
-				<Chip icon="chevronDown" active={value.status !== "all"}>
-					{STATUS_LABEL[value.status]}
-				</Chip>
-			</button>
+				{STATUS_LABEL[value.status]}
+			</Chip>
 		</div>
 	);
 };

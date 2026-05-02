@@ -12,7 +12,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { Card, SectionTitle } from "@/components/primitives";
+import { Card, Pressable, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
@@ -134,19 +134,18 @@ export const DashboardCharts = ({
 					<SectionTitle title="Monthly trend" />
 					<div className="flex gap-1 rounded-full bg-muted p-1">
 						{PERIOD_OPTIONS.map((opt) => (
-							<button
+							<Pressable
 								key={opt.months}
-								type="button"
 								onClick={() => onMonthsChange(opt.months)}
 								className={cn(
-									"cursor-pointer rounded-full px-3 py-1 font-inherit text-xs font-medium transition-[box-shadow,background,color]",
+									"rounded-full px-3 py-1 font-inherit text-xs font-medium transition-[box-shadow,background,color]",
 									months === opt.months
 										? "bg-card text-foreground shadow-sm"
 										: "border-none bg-transparent text-muted-foreground",
 								)}
 							>
 								{opt.label}
-							</button>
+							</Pressable>
 						))}
 					</div>
 				</div>

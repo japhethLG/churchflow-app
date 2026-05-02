@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useId } from "react";
-import { Input } from "@/components/primitives";
+import { Input, Pressable } from "@/components/primitives";
 import { cn } from "@/lib/utils";
 
 export type ReconcileChoice = "existing" | "sso" | "edit";
@@ -54,16 +54,15 @@ export const FieldReconciler = ({
 					onSelect={() => onChange({ choice: "sso", edited: sso ?? "" })}
 				/>
 			</div>
-			<button
-				type="button"
+			<Pressable
 				onClick={() => onChange({ choice: "edit", edited })}
 				className={cn(
-					"cursor-pointer self-start border-none bg-transparent p-0 font-inherit text-xs font-medium underline decoration-dotted",
+					"self-start border-none bg-transparent p-0 font-inherit text-xs font-medium underline decoration-dotted",
 					choice === "edit" ? "text-primary" : "text-muted-foreground",
 				)}
 			>
 				Or write something different
-			</button>
+			</Pressable>
 			{choice === "edit" && (
 				<Input
 					value={edited}
@@ -91,8 +90,7 @@ const Option = ({
 	onSelect: () => void;
 }) => {
 	return (
-		<button
-			type="button"
+		<Pressable
 			disabled={disabled}
 			onClick={onSelect}
 			aria-pressed={selected}
@@ -107,6 +105,6 @@ const Option = ({
 			<div className="truncate text-sm font-medium text-foreground">
 				{value}
 			</div>
-		</button>
+		</Pressable>
 	);
 };

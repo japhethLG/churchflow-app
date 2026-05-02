@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Pressable } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCurrency } from "@/lib/format-currency";
 import { cn } from "@/lib/utils";
@@ -90,19 +91,18 @@ export const TransactionsSummaryCard = ({
 					<span>Window</span>
 					<div className="flex gap-1 rounded-full bg-muted p-0.5">
 						{PERIOD_OPTIONS.map((opt) => (
-							<button
+							<Pressable
 								key={opt.months}
-								type="button"
 								onClick={() => onMonthsChange(opt.months)}
 								className={cn(
-									"cursor-pointer rounded-full border-none px-3 py-1 font-inherit text-[11px] font-semibold uppercase tracking-wide",
+									"rounded-full border-none px-3 py-1 font-inherit text-[11px] font-semibold uppercase tracking-wide",
 									months === opt.months
 										? "bg-card text-foreground shadow-sm"
 										: "bg-transparent text-muted-foreground",
 								)}
 							>
 								{opt.label}
-							</button>
+							</Pressable>
 						))}
 					</div>
 				</div>

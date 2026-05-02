@@ -52,16 +52,15 @@ export const CampaignsFilters = ({
 					onChange={(e) => onChange({ ...value, search: e.target.value })}
 				/>
 			</div>
-			<button
-				type="button"
+			<Chip
+				icon="chevronDown"
+				active={value.status !== "all"}
 				onClick={() =>
 					onChange({ ...value, status: next(STATUS_CYCLE, value.status) })
 				}
 			>
-				<Chip icon="chevronDown" active={value.status !== "all"}>
-					{STATUS_LABEL[value.status]}
-				</Chip>
-			</button>
+				{STATUS_LABEL[value.status]}
+			</Chip>
 		</div>
 	);
 };

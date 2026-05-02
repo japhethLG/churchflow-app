@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, Input } from "@/components/primitives";
+import { Button, Input, Pressable, Textarea } from "@/components/primitives";
 import { useIssueInvitation } from "@/lib/api/invitations";
 import { useCreateTenant, useSlugSuggestion } from "@/lib/api/tenants";
 import { cn } from "@/lib/utils";
@@ -116,14 +116,13 @@ const Step1Details = ({
 							(optional)
 						</span>
 					</div>
-					<textarea
+					<Textarea
 						value={draft.description}
 						onChange={(e) =>
 							setDraft({ ...draft, description: e.target.value })
 						}
 						rows={3}
 						placeholder="Brief description of this church…"
-						className="box-border w-full resize-y rounded-xl border-[1.5px] border-border bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
 					/>
 				</div>
 			</div>
@@ -216,7 +215,7 @@ const Step2Invites = ({
 
 			<div className="mt-8 flex flex-col gap-3">
 				<div className="flex gap-2">
-					<input
+					<Input
 						type="email"
 						value={input}
 						onChange={(e) => setInput(e.target.value)}
@@ -227,7 +226,6 @@ const Step2Invites = ({
 							}
 						}}
 						placeholder="admin@example.com"
-						className="flex-1 rounded-xl border-[1.5px] border-border bg-muted px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
 					/>
 					<Button
 						variant="secondary"
@@ -254,13 +252,12 @@ const Step2Invites = ({
 								{errors[email] && (
 									<span className="text-[11px]">({errors[email]})</span>
 								)}
-								<button
-									type="button"
+								<Pressable
 									onClick={() => removeEmail(email)}
-									className="ml-0.5 cursor-pointer border-0 bg-transparent p-0 text-inherit hover:opacity-80"
+									className="ml-0.5 border-0 bg-transparent p-0 text-inherit hover:opacity-80"
 								>
 									×
-								</button>
+								</Pressable>
 							</div>
 						))}
 					</div>

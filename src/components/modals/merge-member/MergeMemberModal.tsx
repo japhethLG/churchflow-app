@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Avatar, Badge, Input } from "@/components/primitives";
+import { Avatar, Badge, Input, Pressable } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import {
 	useMembers,
@@ -200,12 +200,11 @@ const PickDuplicate = ({
 				)}
 				{!loading &&
 					candidates.map((m) => (
-						<button
+						<Pressable
 							key={m.id}
-							type="button"
 							onClick={() => onPick(m.id)}
 							className={cn(
-								"flex w-full cursor-pointer items-center gap-3 rounded-lg border-0 bg-transparent px-3 py-2.5 text-left font-inherit text-foreground transition-colors hover:bg-input",
+								"flex w-full items-center gap-3 rounded-lg border-0 px-3 py-2.5 text-foreground transition-colors hover:bg-input",
 							)}
 						>
 							<Avatar name={fullName(m)} size={32} />
@@ -218,7 +217,7 @@ const PickDuplicate = ({
 							<Badge color={m.userId ? "indigo" : "clay"}>
 								{m.userId ? "Linked" : "Temp"}
 							</Badge>
-						</button>
+						</Pressable>
 					))}
 			</div>
 		</div>
@@ -250,13 +249,12 @@ const Preview = ({
 						Will be removed — data moves into {fullName(keep)}
 					</div>
 				</div>
-				<button
-					type="button"
+				<Pressable
 					onClick={onPickAgain}
-					className="cursor-pointer border-0 bg-transparent text-[13px] font-medium text-primary hover:underline"
+					className="text-[13px] font-medium text-primary hover:underline"
 				>
 					Change
-				</button>
+				</Pressable>
 			</div>
 
 			<div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-4">
