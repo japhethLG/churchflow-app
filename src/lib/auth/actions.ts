@@ -71,6 +71,28 @@ export const signOut = async (): Promise<void> => {
 	await fetch("/api/auth/session", { method: "DELETE" });
 };
 
+// Sign out from every device/tab, not just this one. Calls the backend to
+// revoke all refresh tokens for the user, then performs a normal local
+// signOut(). Other devices keep working until their next API call (their
+// session cookie's revocation check will then fail and the global 401
+// handler kicks them to /login).
+export const signOutEverywhere = async (): Promise<void> => {
+	const user = getClientAuth().currentUser;
+	if (user) {
+		const idToken = await user.getIdToken();
+		const baseUrl =
+			process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001";
+		const res = await fetch(`${baseUrl}/api/v1/auth/sign-out-everywhere`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${idToken}` },
+		});
+		if (!res.ok && res.status !== 204) {
+			throw new Error("Failed to revoke sessions on backend");
+		}
+	}
+	await signOut();
+};
+
 // Force-refresh the Firebase ID token then re-mint the Next session
 // cookie. Call after any operation that changes tenant memberships or
 // roles server-side (invite accepted, admin grants a role, member

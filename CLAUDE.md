@@ -149,8 +149,10 @@ Subsequent requests:
    `/invite`) bypass. Don't add public paths inline — update
    `PUBLIC_PATHS`.
 5. **Server Components read auth via `getSessionUser()`** — it verifies the
-   session cookie with Admin SDK and returns the decoded claims. It throws
-   if missing / invalid.
+   session cookie with Admin SDK and returns the decoded claims, or `null`
+   if the cookie is missing or fails verification. Verification failures
+   are logged distinctly from "no cookie" so revocation/JWKS incidents are
+   visible. Callers must check for `null` and `redirect("/login")`.
 
 ---
 

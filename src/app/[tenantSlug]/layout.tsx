@@ -1,17 +1,13 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { TenantGuard } from "@/components/auth/TenantGuard";
+import { serverApi } from "@/lib/api/server";
 import { getSessionUser } from "@/lib/auth/server";
 
-// Outer tenant gate. Applies to every /[tenantSlug]/* path. Two checks:
+// Outer tenant gate. Applies to every /[tenantSlug]/* path. Three checks:
 //   1. Caller is signed in.
 //   2. Caller is a member of this tenant OR a super-admin.
-//
-// A third check — does the tenant actually exist? — runs in <TenantGuard>
-// (a client component that calls the backend). It's not in this server
-// layout because the session has no list of all tenants and the backend
-// client is currently client-only; verifying existence here would require
-// wiring server-side data fetch with auth, which we haven't done yet.
+//   3. The tenant exists (only meaningful for super-admins — non-members
+//      get sent to / before this check, so they can't probe slugs).
 //
 // Per-perspective role (admin vs member) is enforced by the inner
 // (admin) / (member) group layouts.
@@ -30,12 +26,28 @@ export default async ({
 
 	const isMember = Boolean(user.tenantMemberships[tenantSlug]);
 	if (!isMember && !user.isSuperAdmin) {
-		// Don't leak tenant existence to non-members — send them to landing
-		// so they can switch to a tenant they actually belong to. The
-		// not-found page is reserved for genuinely unknown slugs (caught
-		// by TenantGuard once the backend confirms 404).
+		// Don't leak tenant existence to non-members — send them to
+		// landing so they can switch to a tenant they actually belong to.
 		redirect("/");
 	}
 
-	return <TenantGuard tenantSlug={tenantSlug}>{children}</TenantGuard>;
+	if (!isMember && user.isSuperAdmin) {
+		// Super-admin can hit any slug, including ones that don't exist.
+		// Verify before rendering so we 404 from the server instead of
+		// flickering through the page shell.
+		try {
+			await serverApi.GET("/api/v1/tenants/{tenantId}", {
+				params: { path: { tenantId: tenantSlug } },
+			});
+		} catch (err) {
+			const status =
+				err && typeof err === "object" && "status" in err
+					? (err as { status: number }).status
+					: 0;
+			if (status === 404 || status === 403) notFound();
+			throw err;
+		}
+	}
+
+	return <>{children}</>;
 };

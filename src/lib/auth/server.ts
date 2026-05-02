@@ -26,6 +26,11 @@ export type SessionUser = {
 	tenantMemberships: Record<string, TenantMembership>;
 };
 
+// Returns null in two distinct cases — distinguishable via server logs:
+//   - "no cookie": the visitor isn't signed in (expected on /login etc.).
+//   - "verification failed": the cookie exists but Admin SDK rejected it
+//     (expired, revoked, tampered, JWKS unreachable). Logged with the
+//     reason code so an incident is distinguishable from normal expiry.
 export const getSessionUser = async (): Promise<SessionUser | null> => {
 	const store = await cookies();
 	const cookie = store.get(SESSION_COOKIE_NAME)?.value;
@@ -47,7 +52,19 @@ export const getSessionUser = async (): Promise<SessionUser | null> => {
 			isSuperAdmin: Boolean(claims.isSuperAdmin),
 			tenantMemberships: normaliseMemberships(claims.tenantMemberships),
 		};
-	} catch {
+	} catch (err) {
+		const reason =
+			err && typeof err === "object" && "code" in err
+				? String((err as { code: unknown }).code)
+				: err instanceof Error
+					? err.message
+					: "unknown";
+		// Distinct log line from "no cookie" so spikes in verification
+		// failures (revocation lag, JWKS outage) are visible in logs.
+		console.warn(
+			`[auth] session-cookie verification failed: ${reason}. ` +
+				`The visitor will be redirected to /login.`,
+		);
 		return null;
 	}
 };

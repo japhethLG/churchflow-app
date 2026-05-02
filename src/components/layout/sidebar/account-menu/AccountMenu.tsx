@@ -12,7 +12,8 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { signOut } from "@/lib/auth/actions";
+import { signOut, signOutEverywhere } from "@/lib/auth/actions";
+import { openModal } from "@/lib/modals/store";
 import type { Perspective, TenantSummary } from "../types";
 import { AccountIdentityHeader } from "./AccountIdentityHeader";
 import { AccountMenuSectionLabel } from "./AccountMenuSectionLabel";
@@ -47,6 +48,19 @@ export const AccountMenu = ({
 	const handleSignOut = async () => {
 		await signOut();
 		router.push("/login");
+	};
+
+	const handleSignOutEverywhere = () => {
+		openModal("confirm-delete", {
+			title: "Sign out of all devices?",
+			message:
+				"This signs you out of every browser and device, including this one. You'll need to sign in again on each.",
+			confirmLabel: "Sign out everywhere",
+			onConfirm: async () => {
+				await signOutEverywhere();
+				router.push("/login");
+			},
+		});
 	};
 
 	const goTenant = (slug: string, dash: "admin" | "member") => {
@@ -112,6 +126,14 @@ export const AccountMenu = ({
 				)}
 
 				<DropdownMenuSeparator className="my-1" />
+
+				<DropdownMenuItem
+					className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-[13px]"
+					onClick={handleSignOutEverywhere}
+				>
+					<Icon name="logout" size={16} className="text-secondary-foreground" />
+					Sign out of all devices
+				</DropdownMenuItem>
 
 				<DropdownMenuItem
 					variant="destructive"

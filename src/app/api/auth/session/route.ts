@@ -3,9 +3,24 @@ import {
 	SESSION_COOKIE_NAME,
 	SESSION_MAX_AGE_SECONDS,
 } from "@/lib/auth/constants";
+import { checkRateLimit, getRateLimitKey } from "@/lib/auth/rate-limit";
 import { adminAuth } from "@/lib/firebase/admin";
 
 export const POST = async (req: NextRequest) => {
+	// verifyIdToken is RSA-bound and CPU-expensive. Limit per-IP before
+	// we even parse the body so a flood of garbage tokens can't pin a
+	// worker. See lib/auth/rate-limit.ts for the in-memory caveats.
+	const limit = checkRateLimit(getRateLimitKey(req));
+	if (!limit.allowed) {
+		return NextResponse.json(
+			{ error: "Too many requests" },
+			{
+				status: 429,
+				headers: { "Retry-After": String(limit.retryAfterSeconds) },
+			},
+		);
+	}
+
 	const { idToken } = (await req.json()) as { idToken?: string };
 	if (!idToken) {
 		return NextResponse.json({ error: "Missing idToken" }, { status: 400 });

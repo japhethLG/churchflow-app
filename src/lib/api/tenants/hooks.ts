@@ -4,9 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation, useApiQuery } from "../hooks";
 import { invalidateTenants } from "./keys";
 
-// Backend accepts either a UUID or a slug in :tenantId (see TenantGuard).
-// Callers pass whichever is more convenient — frontend URLs carry the
-// slug, so most call sites pass the slug straight through.
+// Backend accepts either a UUID or a slug in :tenantId. Callers pass
+// whichever is more convenient — frontend URLs carry the slug, so most
+// call sites pass the slug straight through.
 
 export const useTenants = () => {
 	return useApiQuery("/api/v1/tenants");
