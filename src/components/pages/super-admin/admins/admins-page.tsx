@@ -18,6 +18,7 @@ import { useAdminStats, useAdminUsers } from "@/lib/api/admin";
 import { useTenants } from "@/lib/api/tenants";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import dayjs from "@/lib/dayjs";
 
 import { components } from "@/lib/api/schema";
 
@@ -98,11 +99,7 @@ export const AdminsPage = () => {
       width: "130px",
       render: (u) => (
         <span className="text-sm text-muted-foreground">
-          {new Date(u.createdAt).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
+          {dayjs(u.createdAt).format("MMM D, YYYY")}
         </span>
       ),
     },

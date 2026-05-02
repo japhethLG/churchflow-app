@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dayjs from "@/lib/dayjs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -118,7 +119,7 @@ export const RecordGiftModal = ({
         body: {
           type: values.type,
           amount: Number(values.amount),
-          date: new Date(values.date).toISOString(),
+          date: dayjs(values.date).toISOString(),
           memberId: values.memberId || undefined,
           campaignId: values.campaignId || undefined,
           campaignItemId: values.campaignItemId || undefined,

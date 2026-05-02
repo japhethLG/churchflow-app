@@ -5,6 +5,7 @@ import { Amount, Card, DataTable, SectionTitle, TypeBadge, type DataTableColumn 
 import type { TransactionType } from "@/components/primitives/Badge";
 import { useTransactions } from "@/lib/api/transactions";
 import type { components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 type Tx = components["schemas"]["TransactionResponseDto"];
 
@@ -19,7 +20,7 @@ const TYPE_LABEL: Record<Tx["type"], TransactionType> = {
 };
 
 const formatDate = (d: string): string => {
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return dayjs(d).format("MMM D, YYYY");
 };
 
 export const MemberRecentGiving = ({ tenantSlug, memberId }: { tenantSlug: string; memberId: string }) => {

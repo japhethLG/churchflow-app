@@ -15,6 +15,7 @@ import {
 import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
 import type { components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 type Item = components["schemas"]["CampaignItemResponseDto"];
@@ -108,7 +109,7 @@ export const CampaignPledgesList = ({
       width: "130px",
       render: (p) => (
         <span style={{ fontSize: 13, color: "var(--muted-foreground)" }}>
-          {new Date(p.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+          {dayjs(p.createdAt).format("MMM D")}
         </span>
       ),
     },

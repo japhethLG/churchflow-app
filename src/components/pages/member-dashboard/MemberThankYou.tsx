@@ -1,5 +1,7 @@
 "use client";
 
+import dayjs from "@/lib/dayjs";
+
 const MESSAGES = [
   "Thank you for your faithful giving, {name}. Your contributions this month are helping sustain our weekly ministries.",
   "Your generosity makes a real difference, {name}. Every gift supports the work of this community.",
@@ -8,7 +10,7 @@ const MESSAGES = [
 ];
 
 export const MemberThankYou = ({ name }: { name: string }) => {
-  const dayIndex = new Date().getDate() % MESSAGES.length;
+  const dayIndex = dayjs().date() % MESSAGES.length;
   const message = MESSAGES[dayIndex].replace("{name}", name);
 
   return (

@@ -12,6 +12,7 @@ import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import dayjs from "@/lib/dayjs";
 
 type Tab = "by-type" | "by-member" | "by-campaign" | "by-month";
 
@@ -30,7 +31,7 @@ export const AdminReportsPage = () => {
   const [tab, setTab] = useState<Tab>("by-type");
 
   // Fetch YTD summary (up to 12 months)
-  const ytdMonths = new Date().getUTCMonth() + 1;
+  const ytdMonths = dayjs().month() + 1;
   const summary = useTransactionSummary(tenantSlug, 12);
 
   // For By Member and By Campaign tabs, we need raw transactions
@@ -90,11 +91,8 @@ export const AdminReportsPage = () => {
       <div className="mb-5 flex gap-2.5">
         <Chip icon="calendar">
           Jan 1 —{" "}
-          {new Date().toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          })}
-          , {new Date().getFullYear()}
+          {dayjs().format("MMM D")}
+          , {dayjs().year()}
         </Chip>
       </div>
 

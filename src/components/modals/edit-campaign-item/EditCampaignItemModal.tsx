@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dayjs from "@/lib/dayjs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormInput, FormDatePicker } from "@/components/formElements";
@@ -52,7 +53,7 @@ export const EditCampaignItemModal = ({
           title: values.title.trim(),
           description: values.description.trim() || undefined,
           targetAmount: Number(values.target),
-          deadline: values.deadline ? new Date(values.deadline).toISOString() : undefined,
+          deadline: values.deadline ? dayjs(values.deadline).toISOString() : undefined,
         },
       });
       onClose();

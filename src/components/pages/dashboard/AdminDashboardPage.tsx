@@ -12,12 +12,13 @@ import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { openModal } from "@/lib/modals/store";
+import dayjs from "@/lib/dayjs";
 import type { components } from "@/lib/api";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const getGreeting = (): string  => {
-  const h = new Date().getHours();
+  const h = dayjs().hour();
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";
@@ -58,7 +59,7 @@ export const AdminDashboardPage = () => {
   return (
     <div className="h-full overflow-auto pr-2">
       <PageHeader
-        overline={`Overview · ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}`}
+        overline={`Overview · ${dayjs().format("MMMM YYYY")}`}
         title={`${getGreeting()}, ${firstName}`}
         subtitle={`Here's how giving is trending at your church.`}
         action={

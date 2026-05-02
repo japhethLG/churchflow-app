@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState } from "react";
+import dayjs from "@/lib/dayjs";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/primitives/Avatar";
 import { Button } from "@/components/primitives/Button";
@@ -11,7 +12,7 @@ import { signInWithGoogle, signOut, refreshSession } from "@/lib/auth/actions";
 import { tenantLogoGradient, tenantInitials } from "@/lib/design/logo-gradient";
 
 const daysRemaining = (expiresAt: string): number => {
-  return Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86_400_000);
+  return Math.ceil(dayjs(expiresAt).diff(dayjs(), "day", true));
 };
 
 type Params = Promise<{ token: string }>;

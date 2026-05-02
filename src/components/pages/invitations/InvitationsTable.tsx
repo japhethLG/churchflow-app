@@ -4,6 +4,7 @@ import { DataTable, type DataTableColumn } from "@/components/primitives/DataTab
 import { Badge, StatusBadge, type Status } from "@/components/primitives/Badge";
 import { Button } from "@/components/primitives/Button";
 import type { components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
 
 type Invitation = components["schemas"]["InvitationResponseDto"];
@@ -36,7 +37,7 @@ export const InvitationsTable = ({
         <div className="flex flex-col">
           <span className="font-medium text-foreground">{row.email}</span>
           <span className="text-xs text-muted-foreground">
-            Sent {new Date(row.createdAt).toLocaleDateString()}
+            Sent {dayjs(row.createdAt).format("ll")}
           </span>
         </div>
       ),
@@ -63,9 +64,7 @@ export const InvitationsTable = ({
       width: "120px",
       render: (row) => {
         if (row.status !== "PENDING") return <span className="text-muted-foreground">—</span>;
-        const expires = new Date(row.expiresAt);
-        const now = new Date();
-        const diff = expires.getTime() - now.getTime();
+        const diff = dayjs(row.expiresAt).diff(dayjs());
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
         return (

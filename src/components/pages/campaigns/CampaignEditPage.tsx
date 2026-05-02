@@ -7,11 +7,12 @@ import { CampaignForm } from "./CampaignForm";
 import { type CampaignFormValues } from "./formHelpers";
 import { useCampaign, useUpdateCampaign } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 const toDateInput = (d: unknown): string => {
   const s = nstr(d);
   if (!s) return "";
-  return new Date(s).toISOString().slice(0, 10);
+  return dayjs(s).format("YYYY-MM-DD");
 };
 
 export const CampaignEditPage = () => {
@@ -44,7 +45,7 @@ export const CampaignEditPage = () => {
       body: {
         title: values.title.trim(),
         description: values.description?.trim() || undefined,
-        deadline: values.deadline ? new Date(values.deadline).toISOString() : undefined,
+        deadline: values.deadline ? dayjs(values.deadline).toISOString() : undefined,
         status: values.status,
       },
     });

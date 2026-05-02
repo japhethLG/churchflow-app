@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format, isValid, parse } from "date-fns";
+import dayjs from "@/lib/dayjs";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -51,15 +51,17 @@ export const DatePicker = ({
   // Parse the ISO string → Date for the calendar
   const selected = React.useMemo(() => {
     if (!value) return undefined;
-    const d = parse(value, "yyyy-MM-dd", new Date());
-    return isValid(d) ? d : undefined;
+    const parsed = dayjs(value, "YYYY-MM-DD", true);
+    return parsed.isValid() ? parsed.toDate() : undefined;
   }, [value]);
 
-  const displayLabel = selected ? format(selected, "MMM d, yyyy") : undefined;
+  const displayLabel = selected
+    ? dayjs(selected).format("MMM D, YYYY")
+    : undefined;
 
   const handleSelect = (day: Date | undefined) => {
     if (!day) return;
-    onChange?.(format(day, "yyyy-MM-dd"));
+    onChange?.(dayjs(day).format("YYYY-MM-DD"));
     setOpen(false);
     onBlur?.();
   };

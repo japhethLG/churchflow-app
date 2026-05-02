@@ -15,6 +15,7 @@ import { useCampaigns } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
 import type { components } from "@/lib/api";
 import { formatCurrency } from "@/lib/format-currency";
+import dayjs from "@/lib/dayjs";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
@@ -59,12 +60,12 @@ export const MemberTransactions = ({
 
   // Date range logic
   const dateFrom = useMemo(() => {
-    const now = new Date();
+    const now = dayjs();
     if (rangeFilter === "MONTH") {
-      return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      return now.startOf("month").toISOString();
     }
     if (rangeFilter === "YEAR") {
-      return new Date(now.getFullYear(), 0, 1).toISOString();
+      return now.startOf("year").toISOString();
     }
     return undefined;
   }, [rangeFilter]);
@@ -97,11 +98,7 @@ export const MemberTransactions = ({
       width: "120px",
       render: (t: Transaction) => (
         <span style={{ color: "var(--muted-foreground)" }}>
-          {new Date(t.date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
+          {dayjs(t.date).format("MMM D, YYYY")}
         </span>
       ),
     },

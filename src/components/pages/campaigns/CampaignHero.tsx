@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { nstr, type components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 type Campaign = components["schemas"]["CampaignWithItemsResponseDto"];
 
@@ -14,9 +15,9 @@ const STATUS_LABEL: Record<Campaign["status"], string> = {
 
 const fmtDeadline = (d: string | null): string  => {
   if (!d) return "Open-ended · no deadline";
-  const date = new Date(d);
-  const days = Math.ceil((date.getTime() - Date.now()) / 86_400_000);
-  const fmt = date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+  const date = dayjs(d);
+  const days = date.diff(dayjs(), "day");
+  const fmt = date.format("MMMM D, YYYY");
   if (days < 0) return `Deadline · ${fmt} (passed)`;
   if (days === 0) return `Deadline · ${fmt} (today)`;
   return `Deadline · ${fmt} (${days} days left)`;

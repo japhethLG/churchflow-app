@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format, isValid, parse } from "date-fns";
+import dayjs from "@/lib/dayjs";
 import { CalendarIcon } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -57,24 +57,23 @@ export const DateRangePicker = ({
   // Parse strings back to Dates for the calendar
   const selectedRange: DateRange | undefined = React.useMemo(() => {
     if (!value) return undefined;
-    const from = value.from ? parse(value.from, "yyyy-MM-dd", new Date()) : undefined;
-    const to = value.to ? parse(value.to, "yyyy-MM-dd", new Date()) : undefined;
-    
+    const fromParsed = value.from ? dayjs(value.from, "YYYY-MM-DD", true) : undefined;
+    const toParsed = value.to ? dayjs(value.to, "YYYY-MM-DD", true) : undefined;
+
     return {
-      from: from && isValid(from) ? from : undefined,
-      to: to && isValid(to) ? to : undefined,
+      from: fromParsed?.isValid() ? fromParsed.toDate() : undefined,
+      to: toParsed?.isValid() ? toParsed.toDate() : undefined,
     };
   }, [value]);
 
   const displayLabel = React.useMemo(() => {
     if (!selectedRange?.from) return undefined;
     if (selectedRange.to) {
-      return `${format(selectedRange.from, "MMM d")} – ${format(
+      return `${dayjs(selectedRange.from).format("MMM D")} – ${dayjs(
         selectedRange.to,
-        "MMM d, yyyy",
-      )}`;
+      ).format("MMM D, YYYY")}`;
     }
-    return format(selectedRange.from, "MMM d, yyyy");
+    return dayjs(selectedRange.from).format("MMM D, YYYY");
   }, [selectedRange]);
 
   const handleSelect = (range: DateRange | undefined) => {
@@ -84,12 +83,12 @@ export const DateRangePicker = ({
     }
 
     const newValue: DateRangeValue = {
-      from: range.from ? format(range.from, "yyyy-MM-dd") : undefined,
-      to: range.to ? format(range.to, "yyyy-MM-dd") : undefined,
+      from: range.from ? dayjs(range.from).format("YYYY-MM-DD") : undefined,
+      to: range.to ? dayjs(range.to).format("YYYY-MM-DD") : undefined,
     };
 
     onChange?.(newValue);
-    
+
     // Close only when both are picked or if it's a re-selection
     if (newValue.from && newValue.to) {
       setOpen(false);

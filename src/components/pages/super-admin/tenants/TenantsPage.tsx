@@ -7,6 +7,7 @@ import { useTenants } from "@/lib/api/tenants";
 import { useAdminStats } from "@/lib/api/admin";
 import { tenantLogoGradient, tenantInitials } from "@/lib/design/logo-gradient";
 import type { components } from "@/lib/api/schema";
+import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 
 type Tenant = components["schemas"]["TenantResponseDto"];
@@ -14,7 +15,7 @@ type Tenant = components["schemas"]["TenantResponseDto"];
 
 
 const formatMonthYear = (d: Date | string): string  => {
-  return new Date(d).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  return dayjs(d).format("MMM YYYY");
 }
 
 const TenantLogoTile = ({ name, slug }: { name: string; slug: string }) => {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import dayjs from "@/lib/dayjs";
 
 const TRANSACTION_TYPES = [
   "TITHE",
@@ -27,7 +28,7 @@ export const recordGiftSchema = z.object({
 
 export type RecordGiftFormValues = z.infer<typeof recordGiftSchema>;
 
-const todayInputValue = (): string => new Date().toISOString().slice(0, 10);
+const todayInputValue = (): string => dayjs().format("YYYY-MM-DD");
 
 export const buildRecordGiftDefaults = (overrides?: {
   defaultMemberId?: string;

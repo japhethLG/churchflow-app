@@ -16,6 +16,7 @@ import { nstr } from "@/lib/api/coerce";
 import type { components } from "@/lib/api";
 import type { MemberPledgeProps } from "@/components/modals/member-pledge";
 import { cn } from "@/lib/utils";
+import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -263,11 +264,7 @@ const CampaignCard = ({
         {deadline && (
           <Badge color="gray">
             {past ? "Ended" : "Ends"}{" "}
-            {new Date(deadline).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
+            {dayjs(deadline).format("MMM D, YYYY")}
           </Badge>
         )}
         {progress && (

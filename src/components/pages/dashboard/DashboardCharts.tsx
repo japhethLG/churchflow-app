@@ -15,6 +15,7 @@ import {
 import { Card, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
@@ -90,8 +91,8 @@ export const DashboardCharts = ({
   const byMonth: ByMonth[] = summary.byMonth ?? [];
   const byType: ByType[] = summary.byType ?? [];
 
-  const now = new Date();
-  const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  const now = dayjs();
+  const currentMonth = now.format("YYYY-MM");
   const barData = byMonth.map((m) => {
     const [, mm] = m.month.split("-");
     const monthIdx = parseInt(mm, 10) - 1;

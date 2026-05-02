@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card, SectionTitle, Badge, StatusBadge } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { nstr } from "@/lib/api/coerce";
+import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -133,7 +134,7 @@ export const MemberCampaignsPledges = ({
                     )}
                     {deadline && (
                       <Badge color="gray">
-                        Ends {new Date(deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        Ends {dayjs(deadline).format("MMM D")}
                       </Badge>
                     )}
                   </div>

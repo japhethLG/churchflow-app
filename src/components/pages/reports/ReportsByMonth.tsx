@@ -19,6 +19,7 @@ import {
 import { formatCompact } from "@/lib/format-currency";
 import { ReportsBarTooltip } from "./ReportsChartTooltip";
 import { ReportsLoadingPlaceholder } from "./ReportsLoadingPlaceholder";
+import dayjs from "@/lib/dayjs";
 
 export const ReportsByMonth = ({
   summary,
@@ -32,8 +33,8 @@ export const ReportsByMonth = ({
   }
 
   const byMonth: ByMonthDto[] = summary.byMonth ?? [];
-  const now = new Date();
-  const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  const now = dayjs();
+  const currentMonth = now.format("YYYY-MM");
 
   const barData = byMonth.map((m) => {
     const [, mm] = m.month.split("-");

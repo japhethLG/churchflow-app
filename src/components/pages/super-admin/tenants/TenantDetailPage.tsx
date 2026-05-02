@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { PageHeader, Badge, Button, Card } from "@/components/primitives";
 import { openModal } from "@/lib/modals/store";
 import { useTenant } from "@/lib/api/tenants";
+import dayjs from "@/lib/dayjs";
 import { tenantLogoGradient, tenantInitials } from "@/lib/design/logo-gradient";
 
 const TenantLogoTile = ({
@@ -135,24 +136,16 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
               ["Slug", `/${tenant.slug}`, true],
               [
                 "Created",
-                new Date(tenant.createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                }),
+                dayjs(tenant.createdAt).format("MMMM D, YYYY"),
                 false,
               ],
               ...(isDeleted
                 ? ([
                     [
                       "Archived",
-                      new Date(
+                      dayjs(
                         (tenant as unknown as { deletedAt: Date }).deletedAt,
-                      ).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }),
+                      ).format("MMMM D, YYYY"),
                       false,
                     ],
                   ] as const)

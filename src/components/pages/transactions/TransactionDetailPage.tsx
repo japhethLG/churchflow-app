@@ -18,6 +18,7 @@ import { usePledge } from "@/lib/api/pledges";
 import { useTransaction } from "@/lib/api/transactions";
 import { nstr, type components } from "@/lib/api";
 import { openModal } from "@/lib/modals/store";
+import dayjs from "@/lib/dayjs";
 
 type Tx = components["schemas"]["TransactionResponseDto"];
 
@@ -82,12 +83,7 @@ export const TransactionDetailPage = () => {
       <PageHeader
         overline="Ledger / Transactions"
         title={formatCurrency(tx.amount)}
-        subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${new Date(tx.date).toLocaleDateString(undefined, {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}`}
+        subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${dayjs(tx.date).format("dddd, MMMM D, YYYY")}`}
         action={
           <>
             <Button variant="secondary" onClick={() => router.push(`/${tenantSlug}/admin/transactions`)}>
@@ -131,13 +127,7 @@ export const TransactionDetailPage = () => {
           />
           <DetailRow
             label="Recorded on"
-            value={new Date(tx.createdAt).toLocaleString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
+            value={dayjs(tx.createdAt).format("MMM D, YYYY h:mm A")}
             last
           />
           {nstr(tx.note) && (

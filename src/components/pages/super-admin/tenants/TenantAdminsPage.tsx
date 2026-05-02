@@ -6,6 +6,7 @@ import { openModal } from "@/lib/modals/store";
 import { useTenant } from "@/lib/api/tenants";
 import { useMembers, useUpdateMember, useDeleteMember } from "@/lib/api/members";
 import type { components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
@@ -56,11 +57,7 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
       width: "140px",
       render: (m) => (
         <span className="text-[13px] text-muted-foreground">
-          {new Date(m.createdAt).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
+          {dayjs(m.createdAt).format("MMM D, YYYY")}
         </span>
       ),
     },

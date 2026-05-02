@@ -6,6 +6,7 @@ import { CampaignForm } from "./CampaignForm";
 import { type CampaignFormValues } from "./formHelpers";
 import { useAddCampaignItem, useCreateCampaign } from "@/lib/api/campaigns";
 import { useTenant } from "@/lib/api/tenants";
+import dayjs from "@/lib/dayjs";
 
 export const CampaignNewPage = () => {
   const router = useRouter();
@@ -20,7 +21,7 @@ export const CampaignNewPage = () => {
       body: {
         title: values.title.trim(),
         description: values.description?.trim() || undefined,
-        deadline: values.deadline ? new Date(values.deadline).toISOString() : undefined,
+        deadline: values.deadline ? dayjs(values.deadline).toISOString() : undefined,
         status: values.status,
       },
     });
@@ -34,7 +35,7 @@ export const CampaignNewPage = () => {
           title: item.title.trim(),
           description: item.description?.trim() || undefined,
           targetAmount: Number(item.targetAmount),
-          deadline: item.deadline ? new Date(item.deadline).toISOString() : undefined,
+          deadline: item.deadline ? dayjs(item.deadline).toISOString() : undefined,
           sortOrder: idx,
         },
       });

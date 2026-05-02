@@ -16,6 +16,7 @@ import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import { nstr, type components } from "@/lib/api";
 import { openModal } from "@/lib/modals/store";
 import { formatCurrency } from "@/lib/format-currency";
+import dayjs from "@/lib/dayjs";
 
 const PAGE_SIZE = 20;
 
@@ -39,7 +40,7 @@ const rangeToMonths = (range: TransactionsFiltersValue["range"]): number  => {
     case "last-month":
       return 2;
     case "ytd":
-      return new Date().getUTCMonth() + 1;
+      return dayjs().month() + 1;
     default:
       return 12;
   }

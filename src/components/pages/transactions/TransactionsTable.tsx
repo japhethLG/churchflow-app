@@ -11,6 +11,7 @@ import {
   type TransactionType as BadgeType,
 } from "@/components/primitives";
 import { nstr, type components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 export type TransactionRow = components["schemas"]["TransactionResponseDto"];
 type Member = components["schemas"]["MemberResponseDto"];
@@ -28,7 +29,7 @@ const TYPE_BADGE_LABEL: Record<TransactionRow["type"], BadgeType> = {
 
 
 const fmtDate = (iso: string): string => {
-  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return dayjs(iso).format("MMM D");
 };
 
 const fullName = (m: Member | undefined): string => {

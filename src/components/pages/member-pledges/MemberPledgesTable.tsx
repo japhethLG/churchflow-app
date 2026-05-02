@@ -2,6 +2,7 @@
 
 import { DataTable, type DataTableColumn } from "@/components/primitives/DataTable";
 import { StatusBadge, type Status } from "@/components/primitives/Badge";
+import dayjs from "@/lib/dayjs";
 import type { components } from "@/lib/api";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -42,7 +43,7 @@ export const MemberPledgesTable = ({
               {itemTitle && <span className="ml-1 text-muted-foreground">[{itemTitle}]</span>}
             </span>
             <span className="text-xs text-muted-foreground">
-              Pledged {new Date(row.createdAt).toLocaleDateString()}
+              Pledged {dayjs(row.createdAt).format("ll")}
             </span>
           </div>
         );

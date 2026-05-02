@@ -11,6 +11,7 @@ import {
   type Status,
 } from "@/components/primitives";
 import { nstr, type components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 export type CampaignRow = components["schemas"]["CampaignResponseDto"];
 
@@ -30,10 +31,9 @@ const STATUS_LABEL: Record<CampaignRow["status"], Status> = {
 
 const fmtDeadline = (d: string | null): string => {
   if (!d) return "Open-ended";
-  const date = new Date(d);
-  const now = Date.now();
-  const days = Math.ceil((date.getTime() - now) / 86_400_000);
-  const fmt = date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  const date = dayjs(d);
+  const days = date.diff(dayjs(), "day");
+  const fmt = date.format("MMM D, YYYY");
   if (days < 0) return `${fmt} · past`;
   if (days === 0) return `${fmt} · today`;
   if (days <= 30) return `${fmt} · ${days}d left`;
@@ -86,7 +86,7 @@ export const CampaignsTable = ({
       width: "130px",
       render: (c) => (
         <span className="text-[13px] text-muted-foreground">
-          {new Date(c.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+          {dayjs(c.createdAt).format("MMM D, YYYY")}
         </span>
       ),
     },

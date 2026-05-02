@@ -5,6 +5,7 @@ import { Card, SectionTitle, Amount } from "@/components/primitives";
 import { TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import dayjs from "@/lib/dayjs";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
@@ -20,8 +21,7 @@ const TYPE_LABEL: Record<string, string> = {
 
 
 const fmtDate = (iso: string): string => {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return dayjs(iso).format("MMM D");
 };
 
 
@@ -55,7 +55,7 @@ export const MemberRecentGiving = ({
   }
 
   const recent = [...transactions]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf())
     .slice(0, 5);
 
   return (

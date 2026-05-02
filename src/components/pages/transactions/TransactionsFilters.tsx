@@ -1,6 +1,7 @@
 "use client";
 
 import { Chip, Input } from "@/components/primitives";
+import dayjs from "@/lib/dayjs";
 import type { components } from "@/lib/api";
 
 type TransactionType = components["schemas"]["TransactionResponseDto"]["type"];
@@ -124,25 +125,22 @@ export const TransactionsFilters = ({
 
 // Resolve a `DateRangeFilter` to ISO strings the backend accepts.
 export const resolveRange = (range: DateRangeFilter): { dateFrom?: string; dateTo?: string } => {
-  const now = new Date();
-  const startOf = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  const startOfMonth = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
-  const startOfYear = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const now = dayjs();
 
   switch (range) {
     case "today": {
-      return { dateFrom: startOf(now).toISOString() };
+      return { dateFrom: now.startOf("day").toISOString() };
     }
     case "this-month": {
-      return { dateFrom: startOfMonth(now).toISOString() };
+      return { dateFrom: now.startOf("month").toISOString() };
     }
     case "last-month": {
-      const start = startOfMonth(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)));
-      const end = startOfMonth(now);
+      const start = now.subtract(1, "month").startOf("month");
+      const end = now.startOf("month");
       return { dateFrom: start.toISOString(), dateTo: end.toISOString() };
     }
     case "ytd": {
-      return { dateFrom: startOfYear(now).toISOString() };
+      return { dateFrom: now.startOf("year").toISOString() };
     }
     default:
       return {};

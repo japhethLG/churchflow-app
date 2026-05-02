@@ -1,4 +1,5 @@
 import { z } from "zod";
+import dayjs from "@/lib/dayjs";
 import { nstr, type components } from "@/lib/api";
 
 type Item = components["schemas"]["CampaignItemResponseDto"];
@@ -18,7 +19,7 @@ export type EditCampaignItemFormValues = z.infer<typeof editCampaignItemSchema>;
 const toDateInput = (d: unknown): string => {
   const s = nstr(d);
   if (!s) return "";
-  return new Date(s).toISOString().slice(0, 10);
+  return dayjs(s).format("YYYY-MM-DD");
 };
 
 export const buildEditCampaignItemDefaults = (item: Item): EditCampaignItemFormValues => ({

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card, SectionTitle, Avatar, TypeBadge, Amount } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { nstr } from "@/lib/api/coerce";
+import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
@@ -20,21 +21,16 @@ const TYPE_UI: Record<Transaction["type"], string> = {
 };
 
 const relativeDate = (iso: string): string => {
-  const d = new Date(iso);
-  const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  const hours = diff / (1000 * 60 * 60);
+  const d = dayjs(iso);
+  const now = dayjs();
+  const hours = now.diff(d, "hour", true);
 
   if (hours < 24) {
-    const h = d.getHours();
-    const m = d.getMinutes();
-    const ampm = h >= 12 ? "pm" : "am";
-    const hr = h % 12 || 12;
-    return `Today, ${hr}:${String(m).padStart(2, "0")}${ampm}`;
+    return `Today, ${d.format("h:mma")}`;
   }
   if (hours < 48) return "Yesterday";
   if (hours < 24 * 7) return `${Math.floor(hours / 24)} days ago`;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return d.format("MMM D");
 };
 
 export const DashboardRecentGifts = ({

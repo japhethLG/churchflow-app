@@ -11,6 +11,7 @@ import {
   type Status,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
+import dayjs from "@/lib/dayjs";
 
 export type PledgeRow = components["schemas"]["PledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -106,7 +107,7 @@ export const PledgesTable = ({
       width: "130px",
       render: (p) => (
         <span className="text-[13px] text-muted-foreground">
-          {new Date(p.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+          {dayjs(p.createdAt).format("MMM D, YYYY")}
         </span>
       ),
     },

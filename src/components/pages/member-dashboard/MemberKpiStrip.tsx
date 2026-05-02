@@ -2,6 +2,7 @@
 
 import { StatCard, Amount } from "@/components/primitives";
 import { TypeBadge } from "@/components/primitives/Badge";
+import dayjs from "@/lib/dayjs";
 
 
 type Transaction = {
@@ -39,23 +40,23 @@ export const MemberKpiStrip = ({
     );
   }
 
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const yearStart = new Date(now.getFullYear(), 0, 1);
+  const now = dayjs();
+  const monthStart = now.startOf("month");
+  const yearStart = now.startOf("year");
 
-  const thisMonth = transactions.filter((t) => new Date(t.date) >= monthStart);
-  const thisYear = transactions.filter((t) => new Date(t.date) >= yearStart);
+  const thisMonth = transactions.filter((t) => dayjs(t.date).isSameOrAfter(monthStart));
+  const thisYear = transactions.filter((t) => dayjs(t.date).isSameOrAfter(yearStart));
 
   const monthTotal = thisMonth.reduce((s, t) => s + Number(t.amount), 0);
   const yearTotal = thisYear.reduce((s, t) => s + Number(t.amount), 0);
 
   // Most recent gift
   const sorted = [...transactions].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    (a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf(),
   );
   const recent = sorted[0];
   const recentDays = recent
-    ? Math.floor((now.getTime() - new Date(recent.date).getTime()) / (1000 * 60 * 60 * 24))
+    ? now.diff(dayjs(recent.date), "day")
     : null;
 
   const recentCaption = recent
