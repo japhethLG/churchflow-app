@@ -145,7 +145,7 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 			<div className="overflow-auto flex-1 px-8 pb-8">
 				<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<Card>
-						<div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+						<div className="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 							About
 						</div>
 						{(
@@ -199,10 +199,10 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 					</Card>
 
 					<Card>
-						<div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+						<div className="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 							Recent activity
 						</div>
-						<div className="py-10 text-center text-[13px] text-muted-foreground">
+						<div className="py-10 text-center text-sm text-muted-foreground">
 							Audit log coming soon
 						</div>
 					</Card>

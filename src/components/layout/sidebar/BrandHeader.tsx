@@ -33,7 +33,7 @@ export const BrandHeader = ({
 				<div className="truncate text-sm font-bold tracking-tight text-foreground">
 					{isPlatform ? "Platform" : churchName}
 				</div>
-				<div className="text-[11px] font-medium text-muted-foreground">
+				<div className="text-xs font-medium text-muted-foreground">
 					{perspectiveLabel(perspective)}
 				</div>
 			</div>

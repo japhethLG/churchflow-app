@@ -17,17 +17,17 @@ const SHELL_BY_SIZE: Record<InputSize, string> = {
 
 const PREFIX_BY_SIZE: Record<InputSize, string> = {
 	md: "text-sm text-muted-foreground shrink-0",
-	lg: "text-[22px] font-medium text-muted-foreground shrink-0",
+	lg: "text-2xl font-medium text-muted-foreground shrink-0",
 };
 
 const FIELD_BY_SIZE: Record<InputSize, string> = {
-	md: "h-full text-[14.5px]",
-	lg: "text-[32px] font-semibold tracking-tight",
+	md: "h-full text-sm",
+	lg: "text-3xl font-semibold tracking-tight",
 };
 
 const READONLY_BY_SIZE: Record<InputSize, string> = {
-	md: "flex-1 text-[14.5px] tabular-nums",
-	lg: "flex-1 text-[32px] font-semibold tracking-tight tabular-nums",
+	md: "flex-1 text-sm tabular-nums",
+	lg: "flex-1 text-3xl font-semibold tracking-tight tabular-nums",
 };
 
 export const Input = ({
@@ -80,7 +80,7 @@ export const Input = ({
 	return (
 		<div className={cn("flex flex-col gap-2", fullWidth ? "w-full" : "w-fit")}>
 			{label && (
-				<Label className="text-[13px] font-medium text-muted-foreground ml-1">
+				<Label className="text-sm font-medium text-muted-foreground ml-1">
 					{label}
 				</Label>
 			)}
@@ -135,16 +135,16 @@ export const Input = ({
 				)}
 
 				{suffix && (
-					<span className="text-[13px] text-muted-foreground shrink-0">
+					<span className="text-sm text-muted-foreground shrink-0">
 						{suffix}
 					</span>
 				)}
 			</div>
 
 			{helper && !error && (
-				<p className="ml-1 text-[12px] text-muted-foreground">{helper}</p>
+				<p className="ml-1 text-sm text-muted-foreground">{helper}</p>
 			)}
-			{error && <p className="ml-1 text-[12px] text-destructive">{error}</p>}
+			{error && <p className="ml-1 text-sm text-destructive">{error}</p>}
 		</div>
 	);
 };

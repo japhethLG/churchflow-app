@@ -16,8 +16,8 @@ export const SuperAdminProfile = () => {
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
-				<div className="max-w-[640px]">
-					<Card className="mt-6">
+				<div className="w-xl">
+					<Card>
 						<div className="mb-4">
 							<Input
 								label="Display name"
@@ -41,7 +41,7 @@ export const SuperAdminProfile = () => {
 
 						<div className="mt-8 flex items-center gap-3 rounded-xl bg-muted p-4">
 							<Icon name="settings" size={20} className="text-primary" />
-							<div className="text-[13px] text-secondary-foreground">
+							<div className="text-sm text-secondary-foreground">
 								Super Admin profiles are currently managed via the platform
 								identity provider.
 							</div>

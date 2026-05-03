@@ -87,7 +87,7 @@ export const TransactionsSummaryCard = ({
 	return (
 		<div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-8 rounded-2xl border border-secondary bg-card p-6">
 			<div>
-				<div className="mb-[18px] flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+				<div className="mb-[18px] flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 					<span>Window</span>
 					<div className="flex gap-1 rounded-full bg-muted p-0.5">
 						{PERIOD_OPTIONS.map((opt) => (
@@ -95,7 +95,7 @@ export const TransactionsSummaryCard = ({
 								key={opt.months}
 								onClick={() => onMonthsChange(opt.months)}
 								className={cn(
-									"rounded-full border-none px-3 py-1 font-inherit text-[11px] font-semibold uppercase tracking-wide",
+									"rounded-full border-none px-3 py-1 font-inherit text-xs font-semibold uppercase tracking-wide",
 									months === opt.months
 										? "bg-card text-foreground shadow-sm"
 										: "bg-transparent text-muted-foreground",
@@ -111,7 +111,7 @@ export const TransactionsSummaryCard = ({
 					<Kpi
 						label="Total received"
 						value={
-							<span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[28px] font-semibold tabular-nums tracking-tight">
+							<span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-2xl font-semibold tabular-nums tracking-tight">
 								{formatCurrency(total)}
 							</span>
 						}
@@ -119,7 +119,7 @@ export const TransactionsSummaryCard = ({
 					<Kpi
 						label="Gifts"
 						value={
-							<span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
+							<span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
 								{count}
 							</span>
 						}
@@ -128,7 +128,7 @@ export const TransactionsSummaryCard = ({
 					<Kpi
 						label="Average"
 						value={
-							<span className="text-[26px] font-semibold tabular-nums tracking-tight text-foreground">
+							<span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
 								{formatCurrency(average)}
 							</span>
 						}
@@ -148,13 +148,13 @@ export const TransactionsSummaryCard = ({
 							<span className="min-w-0 flex-1 text-secondary-foreground">
 								{d.name}
 							</span>
-							<span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+							<span className="shrink-0 text-xs tabular-nums text-muted-foreground">
 								{d.pct.toFixed(0)}%
 							</span>
 						</div>
 					))}
 					{chartData.length > 4 && (
-						<div className="mt-0.5 text-[11px] text-muted-foreground">
+						<div className="mt-0.5 text-xs text-muted-foreground">
 							+ {chartData.length - 4} more
 						</div>
 					)}
@@ -196,7 +196,7 @@ export const TransactionsSummaryCard = ({
 					</ResponsiveContainer>
 					<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 						<div>
-							<div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+							<div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 								Total
 							</div>
 							<div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
@@ -221,12 +221,12 @@ const Kpi = ({
 }) => {
 	return (
 		<div>
-			<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+			<div className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 				{label}
 			</div>
 			<div>{value}</div>
 			{caption && (
-				<div className="mt-1 text-[11px] text-muted-foreground">{caption}</div>
+				<div className="mt-1 text-xs text-muted-foreground">{caption}</div>
 			)}
 		</div>
 	);

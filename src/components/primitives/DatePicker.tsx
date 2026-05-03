@@ -73,7 +73,7 @@ export const DatePicker = ({
 	return (
 		<div className={cn("flex flex-col gap-2", className)}>
 			{label && (
-				<Label className="ml-1 text-[13px] font-medium text-muted-foreground">
+				<Label className="ml-1 text-sm font-medium text-muted-foreground">
 					{label}
 				</Label>
 			)}
@@ -83,7 +83,7 @@ export const DatePicker = ({
 					disabled={disabled}
 					className={cn(
 						// Match Input shell styling exactly
-						"flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border-1.5 bg-input px-3.5 text-left text-[14.5px] transition-all",
+						"flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border-1.5 bg-input px-3.5 text-left text-sm transition-all",
 						"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20",
 						error
 							? "border-destructive ring-destructive/10"
@@ -134,9 +134,9 @@ export const DatePicker = ({
 			</Popover>
 
 			{helper && !error && (
-				<p className="ml-1 text-[12px] text-muted-foreground">{helper}</p>
+				<p className="ml-1 text-sm text-muted-foreground">{helper}</p>
 			)}
-			{error && <p className="ml-1 text-[12px] text-destructive">{error}</p>}
+			{error && <p className="ml-1 text-sm text-destructive">{error}</p>}
 		</div>
 	);
 };

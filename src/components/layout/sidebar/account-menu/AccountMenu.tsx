@@ -87,7 +87,7 @@ export const AccountMenu = ({
 				<AccountIdentityHeader userName={userName} userEmail={userEmail} />
 
 				<DropdownMenuItem
-					className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-[13px] font-medium text-primary [&_svg]:text-primary"
+					className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-sm font-medium text-primary [&_svg]:text-primary"
 					onClick={() => router.push(profileHref)}
 				>
 					<Icon name="user" size={16} className="shrink-0 text-primary" />
@@ -128,7 +128,7 @@ export const AccountMenu = ({
 				<DropdownMenuSeparator className="my-1" />
 
 				<DropdownMenuItem
-					className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-[13px]"
+					className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-sm"
 					onClick={handleSignOutEverywhere}
 				>
 					<Icon name="logout" size={16} className="text-secondary-foreground" />
@@ -137,7 +137,7 @@ export const AccountMenu = ({
 
 				<DropdownMenuItem
 					variant="destructive"
-					className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-[13px]"
+					className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-sm"
 					onClick={handleSignOut}
 				>
 					<Icon name="logout" size={16} className="text-destructive" />

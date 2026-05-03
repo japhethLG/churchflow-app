@@ -78,10 +78,10 @@ export const ReportsByType = ({
 						</ResponsiveContainer>
 						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 							<div>
-								<div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+								<div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 									Total
 								</div>
-								<div className="mt-1 text-[22px] font-semibold tabular-nums tracking-tight text-foreground">
+								<div className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
 									{formatCurrency(total)}
 								</div>
 							</div>

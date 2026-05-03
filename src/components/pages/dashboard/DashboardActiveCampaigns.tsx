@@ -64,7 +64,7 @@ export const DashboardActiveCampaigns = ({
 				action={
 					<Link
 						href={`/${tenantSlug}/admin/campaigns`}
-						className="text-[13px] font-medium text-primary"
+						className="text-sm font-medium text-primary"
 					>
 						View all →
 					</Link>
@@ -95,7 +95,7 @@ export const DashboardActiveCampaigns = ({
 								</div>
 								<div className="min-w-0 flex-1">
 									<div className="mb-1.5 flex items-center gap-2">
-										<span className="truncate text-[13px] font-medium text-foreground">
+										<span className="truncate text-sm font-medium text-foreground">
 											{c.title}
 										</span>
 										<StatusBadge status={STATUS_MAP[c.status]} />
@@ -106,7 +106,7 @@ export const DashboardActiveCampaigns = ({
 											style={{ width: `${pct}%` }}
 										/>
 									</div>
-									<div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
+									<div className="mt-1 flex justify-between text-xs text-muted-foreground">
 										<span>{formatCompact(raised)} raised</span>
 										{goal > 0 && <span>Goal: {formatCompact(goal)}</span>}
 									</div>

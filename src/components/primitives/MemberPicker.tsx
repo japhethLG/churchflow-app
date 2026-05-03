@@ -71,7 +71,7 @@ export const MemberPicker = ({
 	return (
 		<div className="flex flex-col gap-2">
 			{label && (
-				<Label className="text-[13px] font-medium text-muted-foreground ml-1">
+				<Label className="text-sm font-medium text-muted-foreground ml-1">
 					{label}
 				</Label>
 			)}
@@ -122,7 +122,7 @@ export const MemberPicker = ({
 										}}
 									>
 										<Avatar name={fullName(m)} size={24} />
-										<span className="text-[13px]">{fullName(m)}</span>
+										<span className="text-sm">{fullName(m)}</span>
 									</ListRow>
 								))
 							)}
@@ -132,7 +132,7 @@ export const MemberPicker = ({
 					{showInlineResults && (
 						<div className="mt-2 max-h-[220px] overflow-y-auto rounded-xl border border-border">
 							{filtered.length === 0 ? (
-								<div className="p-4 text-center text-[13px] text-muted-foreground">
+								<div className="p-4 text-center text-sm text-muted-foreground">
 									No matches
 								</div>
 							) : (
@@ -152,10 +152,10 @@ export const MemberPicker = ({
 			)}
 
 			{error ? (
-				<p className="ml-1 text-[12px] text-destructive">{error}</p>
+				<p className="ml-1 text-sm text-destructive">{error}</p>
 			) : (
 				(hint || emptyHint) && (
-					<p className="ml-1 text-[12px] text-muted-foreground">
+					<p className="ml-1 text-sm text-muted-foreground">
 						{hint ?? (chosen ? undefined : emptyHint)}
 					</p>
 				)

@@ -37,6 +37,6 @@ export const IconCard = ({
 				<Icon name={icon} size={18} />
 			</div>
 		)}
-		<div className="text-[11px] font-medium">{label}</div>
+		<div className="text-xs font-medium">{label}</div>
 	</Pressable>
 );

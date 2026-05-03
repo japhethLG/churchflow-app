@@ -155,7 +155,7 @@ export const TransactionDetailPage = () => {
 							label="Reference #"
 							value={
 								nstr(tx.referenceNumber) ? (
-									<span className="font-mono text-[13px] text-muted-foreground">
+									<span className="font-mono text-sm text-muted-foreground">
 										{nstr(tx.referenceNumber)}
 									</span>
 								) : (
@@ -170,7 +170,7 @@ export const TransactionDetailPage = () => {
 						/>
 						{nstr(tx.note) && (
 							<>
-								<div className="mb-1.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+								<div className="mb-1.5 mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 									Note
 								</div>
 								<p className="m-0 text-sm leading-relaxed text-secondary-foreground">
@@ -281,7 +281,7 @@ const DetailRow = ({
 				last && "border-b-0",
 			)}
 		>
-			<span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+			<span className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
 				{label}
 			</span>
 			<span className="text-right text-sm font-medium">{value}</span>
@@ -291,7 +291,7 @@ const DetailRow = ({
 
 const Label = ({ children }: { children: React.ReactNode }) => {
 	return (
-		<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+		<div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 			{children}
 		</div>
 	);

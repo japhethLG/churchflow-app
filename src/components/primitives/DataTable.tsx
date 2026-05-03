@@ -66,7 +66,7 @@ export const DataTable = <Row,>({
 							<TableHead
 								key={c.key}
 								className={cn(
-									"h-10 px-6 text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground",
+									"h-10 px-6 text-xs font-bold tracking-[0.08em] uppercase text-muted-foreground",
 									c.align === "right" && "text-right",
 									c.align === "center" && "text-center",
 								)}
@@ -168,7 +168,7 @@ const Pagination = ({
 
 	return (
 		<div className="flex items-center justify-between px-6 py-4 mt-2 border-t border-border/40">
-			<span className="text-[13px] font-medium text-muted-foreground">
+			<span className="text-sm font-medium text-muted-foreground">
 				Showing <span className="text-foreground">{offset + 1}</span>–
 				<span className="text-foreground">{last}</span> of{" "}
 				<span className="text-foreground">{total}</span>

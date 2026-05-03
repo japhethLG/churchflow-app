@@ -32,7 +32,7 @@ export const MemberThankYou = ({ name }: { name: string }) => {
 				</svg>
 			</div>
 			<div className="min-w-0 flex-1">
-				<div className="text-[15px] italic leading-snug tracking-tight text-tertiary">
+				<div className="text-sm italic leading-snug tracking-tight text-tertiary">
 					&ldquo;{message}&rdquo;
 				</div>
 			</div>

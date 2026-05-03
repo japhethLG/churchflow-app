@@ -32,7 +32,7 @@ export const Textarea = ({
 }) => (
 	<div className={cn("flex flex-col gap-2", fullWidth ? "w-full" : "w-fit")}>
 		{label && (
-			<Label className="text-[13px] font-medium text-muted-foreground ml-1">
+			<Label className="text-sm font-medium text-muted-foreground ml-1">
 				{label}
 			</Label>
 		)}
@@ -45,15 +45,15 @@ export const Textarea = ({
 			readOnly={readOnly}
 			rows={rows}
 			className={cn(
-				"box-border resize-y rounded-xl border-1.5 px-3.5 py-3 text-[14.5px] text-foreground transition-all focus-visible:ring-2 focus-visible:ring-ring/20",
+				"box-border resize-y rounded-xl border-1.5 px-3.5 py-3 text-sm text-foreground transition-all focus-visible:ring-2 focus-visible:ring-ring/20",
 				disabled ? "bg-secondary opacity-60" : "bg-input",
 				error ? "border-destructive ring-destructive/10" : "border-transparent",
 				className,
 			)}
 		/>
 		{helper && !error && (
-			<p className="ml-1 text-[12px] text-muted-foreground">{helper}</p>
+			<p className="ml-1 text-sm text-muted-foreground">{helper}</p>
 		)}
-		{error && <p className="ml-1 text-[12px] text-destructive">{error}</p>}
+		{error && <p className="ml-1 text-sm text-destructive">{error}</p>}
 	</div>
 );

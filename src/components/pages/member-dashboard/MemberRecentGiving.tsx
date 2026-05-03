@@ -62,7 +62,7 @@ export const MemberRecentGiving = ({
 				action={
 					<Link
 						href={`/${tenantSlug}/member/my-transactions`}
-						className="text-[13px] font-medium text-primary"
+						className="text-sm font-medium text-primary"
 					>
 						View all my giving →
 					</Link>
@@ -81,11 +81,11 @@ export const MemberRecentGiving = ({
 							i === 0 ? "rounded-[10px] bg-muted" : "",
 						)}
 					>
-						<div className="text-[13px] tabular-nums text-muted-foreground">
+						<div className="text-sm tabular-nums text-muted-foreground">
 							{fmtDate(t.date)}
 						</div>
 						<TypeBadge type={(TYPE_LABEL[t.type] ?? t.type) as "Tithe"} />
-						<div className="text-[13px] text-muted-foreground">
+						<div className="text-sm text-muted-foreground">
 							{TYPE_LABEL[t.type] ?? t.type}
 						</div>
 						<Amount value={t.amount} />

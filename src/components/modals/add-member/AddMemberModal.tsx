@@ -77,7 +77,7 @@ export const AddMemberModal = ({
 			}}
 		>
 			<Form methods={methods} onSubmit={onSubmit}>
-				<p className="m-0 text-[13px] text-muted-foreground">
+				<p className="m-0 text-sm text-muted-foreground">
 					Adds a temp member you can attribute giving to. They can claim the
 					profile later — invite them with a sign-in link via{" "}
 					<strong>Invite member</strong> instead if they should access

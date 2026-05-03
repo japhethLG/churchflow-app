@@ -52,7 +52,7 @@ export const AdminsPage = () => {
 					/>
 					<div>
 						<div className="text-sm font-medium">{u.displayName}</div>
-						<div className="text-[11px] text-muted-foreground">{u.email}</div>
+						<div className="text-xs text-muted-foreground">{u.email}</div>
 					</div>
 				</span>
 			),

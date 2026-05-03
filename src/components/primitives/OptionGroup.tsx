@@ -45,7 +45,7 @@ export const OptionGroup = ({
 }: OptionGroupProps) => (
 	<div className={cn("flex flex-col gap-2", className)}>
 		{label && (
-			<Label className="text-[13px] font-medium text-muted-foreground ml-1">
+			<Label className="text-sm font-medium text-muted-foreground ml-1">
 				{label}
 			</Label>
 		)}
@@ -136,9 +136,9 @@ export const OptionGroup = ({
 		)}
 
 		{error ? (
-			<p className="ml-1 text-[12px] text-destructive">{error}</p>
+			<p className="ml-1 text-sm text-destructive">{error}</p>
 		) : (
-			hint && <p className="ml-1 text-[12px] text-muted-foreground">{hint}</p>
+			hint && <p className="ml-1 text-sm text-muted-foreground">{hint}</p>
 		)}
 	</div>
 );

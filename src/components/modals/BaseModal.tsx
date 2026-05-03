@@ -108,11 +108,11 @@ export const BaseModal = ({
 				<div className="flex justify-between px-8 pt-6">
 					<div>
 						{overline && (
-							<div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+							<div className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 								{overline}
 							</div>
 						)}
-						<h2 className="m-0 text-[22px] font-semibold tracking-tight text-foreground">
+						<h2 className="m-0 text-2xl font-semibold tracking-tight text-foreground">
 							{title}
 						</h2>
 					</div>
@@ -152,7 +152,7 @@ export const BaseModal = ({
 						)}
 					>
 						{footerHint ? (
-							<span className="text-[11px] text-muted-foreground">
+							<span className="text-xs text-muted-foreground">
 								{footerHint}
 							</span>
 						) : (

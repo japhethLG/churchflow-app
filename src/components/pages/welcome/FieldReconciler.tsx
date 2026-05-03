@@ -31,7 +31,7 @@ export const FieldReconciler = ({
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+			<div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
 				{label}
 			</div>
 			<div className="grid grid-cols-2 gap-2">
@@ -101,7 +101,7 @@ const Option = ({
 				disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
 			)}
 		>
-			<div className="mb-0.5 text-[11px] text-muted-foreground">{label}</div>
+			<div className="mb-0.5 text-xs text-muted-foreground">{label}</div>
 			<div className="truncate text-sm font-medium text-foreground">
 				{value}
 			</div>

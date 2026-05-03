@@ -179,7 +179,7 @@ const PickDuplicate = ({
 	return (
 		<div className="flex flex-col gap-3">
 			<div>
-				<div className="mb-2 text-[13px] font-medium text-secondary-foreground">
+				<div className="mb-2 text-sm font-medium text-secondary-foreground">
 					Pick the duplicate to merge
 				</div>
 				<Input
@@ -191,12 +191,12 @@ const PickDuplicate = ({
 			</div>
 			<div className="max-h-[280px] overflow-auto rounded-xl bg-muted p-1.5">
 				{loading && (
-					<div className="p-4 text-center text-[13px] text-muted-foreground">
+					<div className="p-4 text-center text-sm text-muted-foreground">
 						Loading…
 					</div>
 				)}
 				{!loading && candidates.length === 0 && (
-					<div className="p-4 text-center text-[13px] text-muted-foreground">
+					<div className="p-4 text-center text-sm text-muted-foreground">
 						No other members match.
 					</div>
 				)}
@@ -253,14 +253,14 @@ const Preview = ({
 				</div>
 				<Pressable
 					onClick={onPickAgain}
-					className="text-[13px] font-medium text-primary hover:underline"
+					className="text-sm font-medium text-primary hover:underline"
 				>
 					Change
 				</Pressable>
 			</div>
 
 			<div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-4">
-				<div className="text-[13px] font-semibold text-secondary-foreground">
+				<div className="text-sm font-semibold text-secondary-foreground">
 					What will move
 				</div>
 				<Row label="Transactions" value={txCount.toString()} />
@@ -290,7 +290,7 @@ const Row = ({
 	muted?: boolean;
 }) => {
 	return (
-		<div className="flex justify-between text-[13px]">
+		<div className="flex justify-between text-sm">
 			<span className="text-secondary-foreground">{label}</span>
 			<span
 				className={cn(

@@ -72,10 +72,10 @@ const Step1Details = ({
 	return (
 		<>
 			<div className="mb-2">
-				<div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+				<div className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 					Platform
 				</div>
-				<h1 className="m-0 text-[28px] font-semibold tracking-tight">
+				<h1 className="m-0 text-2xl font-semibold tracking-tight">
 					New church.
 				</h1>
 				<p className="mt-2 text-sm text-secondary-foreground">
@@ -104,13 +104,13 @@ const Step1Details = ({
 						placeholder="grace-community"
 					/>
 					{draft.slug && (
-						<div className="mt-1 text-[11px] text-muted-foreground">
+						<div className="mt-1 text-xs text-muted-foreground">
 							URL: /{draft.slug}/admin/dashboard
 						</div>
 					)}
 				</div>
 				<div>
-					<div className="mb-2 text-[13px] font-medium text-secondary-foreground">
+					<div className="mb-2 text-sm font-medium text-secondary-foreground">
 						Description{" "}
 						<span className="font-normal text-muted-foreground">
 							(optional)
@@ -201,10 +201,10 @@ const Step2Invites = ({
 	return (
 		<>
 			<div className="mb-2">
-				<div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+				<div className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 					{tenantName}
 				</div>
-				<h1 className="m-0 text-[28px] font-semibold tracking-tight">
+				<h1 className="m-0 text-2xl font-semibold tracking-tight">
 					Invite admins.
 				</h1>
 				<p className="mt-2 text-sm text-secondary-foreground">
@@ -242,7 +242,7 @@ const Step2Invites = ({
 							<div
 								key={email}
 								className={cn(
-									"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px]",
+									"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm",
 									errors[email]
 										? "bg-destructive/10 text-destructive"
 										: "bg-input text-foreground",
@@ -250,7 +250,7 @@ const Step2Invites = ({
 							>
 								{email}
 								{errors[email] && (
-									<span className="text-[11px]">({errors[email]})</span>
+									<span className="text-xs">({errors[email]})</span>
 								)}
 								<Pressable
 									onClick={() => removeEmail(email)}
@@ -302,7 +302,7 @@ const Step3Success = ({
 	return (
 		<div className="py-6 text-center">
 			<div className="mb-4 text-5xl leading-none">✓</div>
-			<h2 className="m-0 text-[28px] font-semibold tracking-tight">
+			<h2 className="m-0 text-2xl font-semibold tracking-tight">
 				{tenantName} created.
 			</h2>
 			{invitesSent > 0 && (
@@ -376,11 +376,9 @@ export const NewTenantPage = () => {
 						onCancel={() => router.push("/super-admin/tenants")}
 					/>
 					{creating && (
-						<p className="mt-2 text-[13px] text-muted-foreground">Creating…</p>
+						<p className="mt-2 text-sm text-muted-foreground">Creating…</p>
 					)}
-					{error && (
-						<p className="mt-2 text-[13px] text-destructive">{error}</p>
-					)}
+					{error && <p className="mt-2 text-sm text-destructive">{error}</p>}
 				</>
 			)}
 

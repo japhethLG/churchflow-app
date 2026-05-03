@@ -67,7 +67,7 @@ export const TransactionsTable = ({
 			key: "date",
 			label: "Date",
 			width: "100px",
-			render: (t) => <span className="text-[13px]">{fmtDate(t.date)}</span>,
+			render: (t) => <span className="text-sm">{fmtDate(t.date)}</span>,
 		},
 		{
 			key: "member",
@@ -76,7 +76,7 @@ export const TransactionsTable = ({
 				const memberId = nstr(t.memberId);
 				if (!memberId) {
 					return (
-						<span className="text-[13px] italic text-muted-foreground">
+						<span className="text-sm italic text-muted-foreground">
 							Anonymous
 						</span>
 					);
@@ -106,7 +106,7 @@ export const TransactionsTable = ({
 					return <span className="text-muted-foreground">—</span>;
 				}
 				return (
-					<span className="block truncate text-[13px] text-primary">
+					<span className="block truncate text-sm text-primary">
 						{campaignsById[cid]?.title ?? "Campaign"}
 					</span>
 				);

@@ -13,7 +13,7 @@ export const PlatformMenuItem = ({
 }) => (
 	<DropdownMenuItem
 		className={cn(
-			"cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-[13px]",
+			"cursor-pointer gap-2.5 rounded-lg px-2.5 py-[9px] text-sm",
 			perspective === "super" && "bg-accent font-semibold",
 		)}
 		style={{ color: "var(--tertiary)" }}
@@ -27,9 +27,7 @@ export const PlatformMenuItem = ({
 		/>
 		<span className="flex-1">Platform</span>
 		{perspective === "super" && (
-			<span className="rounded bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[var(--tertiary)]">
-				Active
-			</span>
+			<Icon name="check" size={16} style={{ color: "var(--tertiary)" }} />
 		)}
 	</DropdownMenuItem>
 );

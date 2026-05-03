@@ -80,7 +80,7 @@ export const CampaignsTable = ({
 			label: "Deadline",
 			width: "200px",
 			render: (c) => (
-				<span className="text-[13px] text-muted-foreground">
+				<span className="text-sm text-muted-foreground">
 					{fmtDeadline(nstr(c.deadline))}
 				</span>
 			),
@@ -96,7 +96,7 @@ export const CampaignsTable = ({
 			label: "Created",
 			width: "130px",
 			render: (c) => (
-				<span className="text-[13px] text-muted-foreground">
+				<span className="text-sm text-muted-foreground">
 					{dayjs(c.createdAt).format("MMM D, YYYY")}
 				</span>
 			),

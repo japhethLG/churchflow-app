@@ -18,7 +18,7 @@ export const PageHeader = ({
 		<div className={cn("flex items-end justify-between mb-8 gap-6", className)}>
 			<div className="flex-1 min-w-0">
 				{overline && (
-					<div className="text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground mb-2.5">
+					<div className="text-xs font-bold tracking-[0.08em] uppercase text-muted-foreground mb-2.5">
 						{overline}
 					</div>
 				)}
@@ -26,7 +26,7 @@ export const PageHeader = ({
 					{title}
 				</h1>
 				{subtitle && (
-					<div className="text-[15px] font-medium text-muted-foreground mt-2.5 max-w-[640px] leading-relaxed">
+					<div className="text-sm font-medium text-muted-foreground mt-2.5 max-w-[640px] leading-relaxed">
 						{subtitle}
 					</div>
 				)}
@@ -49,7 +49,7 @@ export const SectionTitle = ({
 }) => {
 	return (
 		<div className={cn("flex items-center justify-between mb-4", className)}>
-			<h3 className="text-[18px] font-bold tracking-tight text-foreground m-0">
+			<h3 className="text-lg font-bold tracking-tight text-foreground m-0">
 				{title}
 			</h3>
 			{action}

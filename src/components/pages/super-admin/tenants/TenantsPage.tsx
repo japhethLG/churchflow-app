@@ -29,7 +29,7 @@ const TenantLogoTile = ({ name, slug }: { name: string; slug: string }) => {
 	const { from, to } = tenantLogoGradient(slug);
 	return (
 		<div
-			className="grid size-9 shrink-0 place-items-center rounded-xl text-[13px] font-semibold text-white"
+			className="grid size-9 shrink-0 place-items-center rounded-xl text-sm font-semibold text-white"
 			style={{
 				background: `linear-gradient(135deg, ${from}, ${to})`,
 			}}
@@ -58,7 +58,7 @@ export const TenantsPage = () => {
 							{t.name}
 							{t.deletedAt && <Badge color="clay">Archived</Badge>}
 						</div>
-						<div className="text-[11px] text-muted-foreground">{t.slug}</div>
+						<div className="text-xs text-muted-foreground">{t.slug}</div>
 					</div>
 				</span>
 			),

@@ -44,7 +44,7 @@ export const MemberMyPledgesPage = () => {
 				{!loading && pledges.length > 0 && (
 					<div className="flex gap-10 pb-6">
 						<div>
-							<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+							<div className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
 								Active pledges
 							</div>
 							<div className="text-2xl font-semibold tracking-tight tabular-nums">
@@ -52,7 +52,7 @@ export const MemberMyPledgesPage = () => {
 							</div>
 						</div>
 						<div>
-							<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+							<div className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
 								Total pledged (active)
 							</div>
 							<div className="text-2xl font-semibold tracking-tight tabular-nums">

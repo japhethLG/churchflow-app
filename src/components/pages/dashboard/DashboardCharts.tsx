@@ -271,7 +271,7 @@ export const DashboardCharts = ({
 						</ResponsiveContainer>
 						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 							<div>
-								<div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+								<div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 									Total
 								</div>
 								<div className="mt-0.5 text-lg font-semibold tracking-tight tabular-nums">
@@ -283,10 +283,7 @@ export const DashboardCharts = ({
 
 					<div className="flex min-w-0 flex-1 flex-col gap-2.5">
 						{donutData.map((x) => (
-							<div
-								key={x.name}
-								className="flex items-center gap-2.5 text-[13px]"
-							>
+							<div key={x.name} className="flex items-center gap-2.5 text-sm">
 								<span
 									className="size-2.5 shrink-0 rounded-sm"
 									style={{ backgroundColor: x.color }}

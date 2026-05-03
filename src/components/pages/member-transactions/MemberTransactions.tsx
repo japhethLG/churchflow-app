@@ -211,7 +211,7 @@ export const MemberTransactions = ({
 				{/* Summary strip */}
 				<div className="mb-6 flex gap-10 px-6 py-4">
 					<div>
-						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+						<div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 							Total in range
 						</div>
 						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
@@ -219,7 +219,7 @@ export const MemberTransactions = ({
 						</div>
 					</div>
 					<div>
-						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+						<div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 							Gifts in range
 						</div>
 						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
@@ -227,7 +227,7 @@ export const MemberTransactions = ({
 						</div>
 					</div>
 					<div>
-						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+						<div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 							Average per gift
 						</div>
 						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">

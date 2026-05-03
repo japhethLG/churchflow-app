@@ -39,7 +39,7 @@ export const TenantRoleSubmenu = ({
 		<DropdownMenuSub>
 			<DropdownMenuSubTrigger
 				className={cn(
-					"rounded-lg px-2.5 py-[9px] text-[13px] data-popup-open:bg-muted",
+					"rounded-lg px-2.5 py-[9px] text-sm data-popup-open:bg-muted",
 					isActivePerspective &&
 						"bg-accent! font-semibold text-primary data-popup-open:bg-accent",
 				)}
@@ -53,9 +53,7 @@ export const TenantRoleSubmenu = ({
 				/>
 				<span className="flex-1 font-medium text-foreground">{label}</span>
 				{isActivePerspective && (
-					<span className="rounded bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary">
-						Active
-					</span>
+					<Icon name="check" size={16} className="text-primary" />
 				)}
 			</DropdownMenuSubTrigger>
 			<DropdownMenuSubContent
@@ -70,7 +68,7 @@ export const TenantRoleSubmenu = ({
 						<DropdownMenuItem
 							key={`${accountType}-${m.slug}`}
 							className={cn(
-								"cursor-pointer gap-2 rounded-lg px-2.5 py-2 text-[13px]",
+								"cursor-pointer gap-2 rounded-lg px-2.5 py-2 text-sm",
 								isCurrent && "bg-accent/40 font-semibold text-primary",
 							)}
 							onClick={() => onPickTenant(m.slug, dash)}

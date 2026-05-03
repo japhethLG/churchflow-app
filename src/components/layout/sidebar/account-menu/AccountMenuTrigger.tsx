@@ -38,10 +38,10 @@ export const AccountMenuTrigger = forwardRef<
 		>
 			<Avatar name={userName} size={32} />
 			<div className="min-w-0 flex-1">
-				<div className="truncate text-[13px] font-semibold text-foreground">
+				<div className="truncate text-sm font-semibold text-foreground">
 					{userName}
 				</div>
-				<div className="text-[11px] text-muted-foreground">
+				<div className="text-xs text-muted-foreground">
 					{perspectiveLabel(perspective)}
 				</div>
 			</div>

@@ -99,7 +99,7 @@ export const MemberCampaignsPage = () => {
 					<>
 						{activeCampaigns.length > 0 && (
 							<>
-								<div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+								<div className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 									Active campaigns
 								</div>
 								<div className="mb-8 grid grid-cols-2 gap-4">
@@ -119,7 +119,7 @@ export const MemberCampaignsPage = () => {
 
 						{pastCampaigns.length > 0 && (
 							<>
-								<div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+								<div className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 									Past campaigns
 								</div>
 								<div className="mb-8 grid grid-cols-2 gap-4">
@@ -179,13 +179,13 @@ const CampaignCard = ({
 	return (
 		<Card padding={24} className="flex h-full flex-col">
 			<div className="mb-1.5 flex items-center gap-2">
-				<h3 className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-tight text-foreground">
+				<h3 className="min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-foreground">
 					{c.title}
 				</h3>
 				<StatusBadge status={STATUS_MAP[c.status]} />
 			</div>
 
-			<div className="mb-3.5 line-clamp-2 min-h-[2.8em] text-[13px] leading-snug text-secondary-foreground">
+			<div className="mb-3.5 line-clamp-2 min-h-[2.8em] text-sm leading-snug text-secondary-foreground">
 				{description || "\u00A0"}
 			</div>
 
@@ -214,7 +214,7 @@ const CampaignCard = ({
 
 			{items.length > 0 && (
 				<div className="mb-3.5">
-					<div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+					<div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 						Campaign items
 					</div>
 					<div className="flex flex-col gap-1.5">

@@ -31,7 +31,7 @@ export const MemberInfoCard = ({
 				<Avatar name={name} size={64} />
 				<div className="min-w-0 flex-1">
 					<div className="mb-1 flex flex-wrap items-center gap-2.5">
-						<h2 className="m-0 text-[22px] font-semibold tracking-tight">
+						<h2 className="m-0 text-2xl font-semibold tracking-tight">
 							{name}
 						</h2>
 						{!member.userId && <Badge color="clay">temp</Badge>}
@@ -69,7 +69,7 @@ const Field = ({
 }) => {
 	return (
 		<div className={cn(colspan && "col-span-full")}>
-			<div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+			<div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
 				{label}
 			</div>
 			<div

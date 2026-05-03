@@ -163,18 +163,18 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 						<SectionTitle title="Identifiers" />
 						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<div>
-								<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+								<span className="mb-1.5 block text-sm font-semibold uppercase tracking-wide text-muted-foreground">
 									Slug
 								</span>
 								<div className="rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">
 									{tenant?.slug ?? tenantSlug}
 								</div>
-								<p className="mt-1 text-[11px] text-muted-foreground">
+								<p className="mt-1 text-xs text-muted-foreground">
 									Only super-admins can change this.
 								</p>
 							</div>
 							<div>
-								<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+								<span className="mb-1.5 block text-sm font-semibold uppercase tracking-wide text-muted-foreground">
 									Tenant ID
 								</span>
 								<div className="truncate overflow-hidden rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">

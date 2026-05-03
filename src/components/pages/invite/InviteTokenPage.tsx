@@ -93,13 +93,13 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 	if (error || !inv) {
 		return (
 			<AuthMarketingShell>
-				<div className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-destructive">
+				<div className="mb-3 text-xs font-semibold uppercase tracking-wider text-destructive">
 					Invalid invitation
 				</div>
-				<h1 className="mb-3 text-[26px] font-semibold tracking-tight text-foreground">
+				<h1 className="mb-3 text-2xl font-semibold tracking-tight text-foreground">
 					This link is no longer valid.
 				</h1>
-				<p className="text-[15px] leading-relaxed text-secondary-foreground">
+				<p className="text-sm leading-relaxed text-secondary-foreground">
 					This invitation link has expired, been cancelled, or was already
 					accepted. Ask an admin to send you a new invitation.
 				</p>
@@ -121,14 +121,14 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 		const slug = inv.tenantSlug;
 		return (
 			<AuthMarketingShell>
-				<div className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-tertiary">
+				<div className="mb-3 text-xs font-semibold uppercase tracking-wider text-tertiary">
 					Already accepted
 				</div>
-				<h1 className="mb-3 text-[26px] font-semibold tracking-tight text-foreground">
+				<h1 className="mb-3 text-2xl font-semibold tracking-tight text-foreground">
 					You&apos;ve already joined{inv.tenantName ? ` ${inv.tenantName}` : ""}
 					.
 				</h1>
-				<p className="text-[15px] leading-relaxed text-secondary-foreground">
+				<p className="text-sm leading-relaxed text-secondary-foreground">
 					This invitation has already been accepted.
 				</p>
 				{slug && (
@@ -165,7 +165,7 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 	if (dismissed) {
 		return (
 			<AuthMarketingShell>
-				<p className="pt-4 text-center text-[15px] leading-relaxed text-secondary-foreground">
+				<p className="pt-4 text-center text-sm leading-relaxed text-secondary-foreground">
 					No problem — simply close this tab.
 				</p>
 				<div className="mt-5 text-center">
@@ -183,17 +183,17 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 
 	return (
 		<AuthMarketingShell>
-			<div className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-tertiary">
+			<div className="mb-3 text-xs font-semibold uppercase tracking-wider text-tertiary">
 				Invitation
 			</div>
-			<h1 className="m-0 text-[30px] font-semibold leading-tight tracking-tight text-foreground">
+			<h1 className="m-0 text-3xl font-semibold leading-tight tracking-tight text-foreground">
 				You&apos;ve been invited to{" "}
 				<span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-transparent">
 					{inv.tenantName ?? "a church"}
 				</span>
 				.
 			</h1>
-			<p className="mt-3.5 text-[15px] leading-relaxed text-secondary-foreground">
+			<p className="mt-3.5 text-sm leading-relaxed text-secondary-foreground">
 				{inv.inviterDisplayName ?? "An admin"} invited you to join as a{" "}
 				<strong className="text-foreground">
 					{inv.role === "ADMIN" ? "Admin" : "Member"}
@@ -205,16 +205,14 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 				<div className="flex min-w-0 flex-1 items-center gap-2.5">
 					{/* Tenant-specific palette — hex pair from tenantLogoGradient; Tailwind can't express runtime stops */}
 					<div
-						className="grid size-9 shrink-0 place-items-center rounded-lg text-[13px] font-semibold text-white"
+						className="grid size-9 shrink-0 place-items-center rounded-lg text-sm font-semibold text-white"
 						style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
 					>
 						{tenantInitials(inv.tenantName ?? "")}
 					</div>
 					<div className="min-w-0">
-						<div className="text-[13px] font-semibold">
-							{inv.tenantName ?? "—"}
-						</div>
-						<div className="text-[11px] text-muted-foreground">{inv.email}</div>
+						<div className="text-sm font-semibold">{inv.tenantName ?? "—"}</div>
+						<div className="text-xs text-muted-foreground">{inv.email}</div>
 					</div>
 				</div>
 				{inv.inviterDisplayName && (
@@ -223,10 +221,10 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 						<div className="flex min-w-0 flex-1 items-center gap-2.5">
 							<Avatar name={inv.inviterDisplayName} size={36} />
 							<div className="min-w-0">
-								<div className="text-[13px] font-semibold">
+								<div className="text-sm font-semibold">
 									{inv.inviterDisplayName}
 								</div>
-								<div className="text-[11px] text-muted-foreground">Admin</div>
+								<div className="text-xs text-muted-foreground">Admin</div>
 							</div>
 						</div>
 					</>
@@ -234,7 +232,7 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 			</div>
 
 			{firebaseUser && (
-				<div className="mt-4 flex items-center gap-2.5 rounded-[10px] bg-muted px-3.5 py-2.5 text-[13px]">
+				<div className="mt-4 flex items-center gap-2.5 rounded-[10px] bg-muted px-3.5 py-2.5 text-sm">
 					<Avatar
 						name={firebaseUser.displayName ?? firebaseUser.email ?? "?"}
 						src={firebaseUser.photoURL ?? undefined}
@@ -259,7 +257,7 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 			)}
 
 			{actionError && (
-				<p className="mt-3 text-[13px] text-destructive">{actionError}</p>
+				<p className="mt-3 text-sm text-destructive">{actionError}</p>
 			)}
 
 			<div className="mt-5">
@@ -279,7 +277,7 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 				type="button"
 				variant="ghost"
 				size="sm"
-				className="mt-4 h-auto w-full text-[13px] font-normal text-muted-foreground hover:text-foreground"
+				className="mt-4 h-auto w-full text-sm font-normal text-muted-foreground hover:text-foreground"
 				onClick={() => setDismissed(true)}
 			>
 				This wasn&apos;t meant for me

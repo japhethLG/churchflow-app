@@ -120,7 +120,7 @@ export const MemberProfile = ({
 						<div className="mt-8 flex items-center justify-between">
 							<div className="flex items-center gap-2">
 								{saved && (
-									<div className="flex items-center gap-1.5 text-[13px] font-medium text-secondary-foreground">
+									<div className="flex items-center gap-1.5 text-sm font-medium text-secondary-foreground">
 										<Icon name="check" size={16} className="text-primary" />
 										Profile updated successfully
 									</div>
@@ -148,7 +148,7 @@ export const MemberProfile = ({
 							<div className="text-sm font-semibold text-foreground">
 								Privacy Note
 							</div>
-							<div className="mt-1 text-[13px] leading-relaxed text-secondary-foreground">
+							<div className="mt-1 text-sm leading-relaxed text-secondary-foreground">
 								Your information is only visible to authorized church
 								administrators. We use this data to keep you informed about
 								campaigns and to provide accurate giving statements.

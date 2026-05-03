@@ -77,7 +77,7 @@ export const MemberCampaignsPledges = ({
 				action={
 					<Link
 						href={`/${tenantSlug}/member/campaigns`}
-						className="text-[13px] font-medium text-primary"
+						className="text-sm font-medium text-primary"
 					>
 						Browse campaigns →
 					</Link>
@@ -86,7 +86,7 @@ export const MemberCampaignsPledges = ({
 
 			{activeCampaigns.length === 0 && activePledges.length === 0 ? (
 				<div className="py-8 text-center text-sm text-muted-foreground">
-					<div className="mb-2 text-[32px]">🎯</div>
+					<div className="mb-2 text-3xl">🎯</div>
 					No active campaigns right now.
 				</div>
 			) : (
@@ -132,7 +132,7 @@ export const MemberCampaignsPledges = ({
 													style={{ width: `${pct}%` }}
 												/>
 											</div>
-											<div className="mb-1.5 flex justify-between text-[11px] text-muted-foreground">
+											<div className="mb-1.5 flex justify-between text-xs text-muted-foreground">
 												<span>{formatCompact(raised)} raised</span>
 												<span>Goal: {formatCompact(goal)}</span>
 											</div>
@@ -170,10 +170,10 @@ export const MemberCampaignsPledges = ({
 									<span className="text-base">📝</span>
 								</div>
 								<div className="min-w-0 flex-1">
-									<div className="text-[13px] font-medium text-foreground">
+									<div className="text-sm font-medium text-foreground">
 										Pledge: {formatCurrency(p.pledgedAmount)}
 									</div>
-									<div className="mt-0.5 text-[11px] text-muted-foreground">
+									<div className="mt-0.5 text-xs text-muted-foreground">
 										Campaign ID: {p.campaignId.slice(0, 8)}…
 									</div>
 								</div>

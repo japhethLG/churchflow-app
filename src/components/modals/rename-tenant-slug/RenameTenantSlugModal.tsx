@@ -74,7 +74,7 @@ export const RenameTenantSlugModal = ({
 			}}
 		>
 			<Form methods={methods} onSubmit={onSubmit}>
-				<div className="rounded-md bg-warning/10 px-4 py-3 text-[13px] leading-normal text-warning">
+				<div className="rounded-md bg-warning/10 px-4 py-3 text-sm leading-normal text-warning">
 					Renaming the slug changes all public URLs for this church. Any
 					existing links using the old slug will stop working.
 				</div>

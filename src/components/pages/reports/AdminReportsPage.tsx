@@ -76,7 +76,7 @@ export const AdminReportsPage = () => {
 							variant="ghost"
 							size="sm"
 							className={cn(
-								"h-9 px-[18px] py-2 font-inherit text-[13px] shadow-none hover:bg-transparent",
+								"h-9 px-[18px] py-2 font-inherit text-sm shadow-none hover:bg-transparent",
 								tab === t.key
 									? "bg-card text-foreground shadow-sm"
 									: "bg-transparent text-muted-foreground",

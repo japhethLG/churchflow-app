@@ -85,7 +85,7 @@ export const DashboardRecentGifts = ({
 				action={
 					<Link
 						href={`/${tenantSlug}/admin/transactions`}
-						className="text-[13px] font-medium text-primary"
+						className="text-sm font-medium text-primary"
 					>
 						View all →
 					</Link>
@@ -131,13 +131,13 @@ export const DashboardRecentGifts = ({
 							<div>
 								<div
 									className={cn(
-										"text-[13px] font-medium",
+										"text-sm font-medium",
 										isAnon ? "italic text-muted-foreground" : "text-foreground",
 									)}
 								>
 									{name}
 								</div>
-								<div className="text-[11px] text-muted-foreground">
+								<div className="text-xs text-muted-foreground">
 									{relativeDate(t.date)}
 								</div>
 							</div>

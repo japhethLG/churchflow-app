@@ -40,7 +40,7 @@ export const OptionCard = ({
 		{description && (
 			<div
 				className={cn(
-					"text-[12px] leading-snug",
+					"text-sm leading-snug",
 					active ? "text-primary" : "text-muted-foreground",
 				)}
 			>

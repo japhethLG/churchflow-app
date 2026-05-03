@@ -32,7 +32,10 @@ export const StatCard = ({
 				: Minus;
 
 	return (
-		<Card padding={24} className={className}>
+		<Card
+			padding={24}
+			className={cn("flex flex-col justify-between", className)}
+		>
 			<div className="flex justify-between items-start mb-4">
 				<div className="flex items-center gap-2">
 					{icon && (
@@ -40,7 +43,7 @@ export const StatCard = ({
 							<Icon name={icon} size={18} />
 						</div>
 					)}
-					<span className="text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground">
+					<span className="text-xs font-bold tracking-[0.08em] uppercase text-muted-foreground">
 						{label}
 					</span>
 				</div>
@@ -63,7 +66,7 @@ export const StatCard = ({
 
 			<div
 				className={cn(
-					"text-3xl font-bold tracking-tight tabular-nums leading-none",
+					"text-5xl font-bold tracking-tight tabular-nums leading-none flex-1",
 					accent
 						? "bg-linear-to-br from-ring to-primary bg-clip-text text-transparent"
 						: "text-foreground",
@@ -73,7 +76,7 @@ export const StatCard = ({
 			</div>
 
 			{caption && (
-				<div className="mt-2.5 text-[13px] font-medium text-muted-foreground leading-relaxed">
+				<div className="mt-2.5 text-sm font-medium text-muted-foreground leading-relaxed">
 					{caption}
 				</div>
 			)}

@@ -8,7 +8,7 @@ export const TopBar = ({
 }) => {
 	return (
 		<div className="flex h-[72px] items-center gap-4 bg-transparent px-8">
-			<div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+			<div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 				{breadcrumb}
 			</div>
 			<div className="flex-1" />
@@ -19,10 +19,10 @@ export const TopBar = ({
 				)}
 			>
 				<Icon name="search" size={15} className="text-muted-foreground" />
-				<span className="text-[13px] text-muted-foreground">
+				<span className="text-sm text-muted-foreground">
 					Search members, events…
 				</span>
-				<span className="ml-auto rounded-md bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
+				<span className="ml-auto rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
 					⌘K
 				</span>
 			</div>

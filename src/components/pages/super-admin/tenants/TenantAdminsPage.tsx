@@ -44,7 +44,7 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 						<div>
 							<div className="text-sm font-medium">{name}</div>
 							{m.email && (
-								<div className="text-[11px] text-muted-foreground">
+								<div className="text-xs text-muted-foreground">
 									{m.email as unknown as string}
 								</div>
 							)}
@@ -68,7 +68,7 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 			label: "Joined",
 			width: "140px",
 			render: (m) => (
-				<span className="text-[13px] text-muted-foreground">
+				<span className="text-sm text-muted-foreground">
 					{dayjs(m.createdAt).format("MMM D, YYYY")}
 				</span>
 			),

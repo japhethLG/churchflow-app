@@ -36,7 +36,7 @@ export const Table = ({
 							<TableHead
 								key={i}
 								className={cn(
-									"h-10 px-6 text-[11px] font-bold tracking-[0.08em] uppercase text-muted-foreground",
+									"h-10 px-6 text-xs font-bold tracking-[0.08em] uppercase text-muted-foreground",
 									c.align === "right" && "text-right",
 									c.align === "center" && "text-center",
 								)}

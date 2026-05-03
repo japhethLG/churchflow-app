@@ -157,13 +157,13 @@ export const WelcomePage = () => {
 	return (
 		<Shell>
 			<div className="mb-7">
-				<div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+				<div className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
 					Welcome
 				</div>
-				<h1 className="mb-2.5 mt-0 text-[28px] font-semibold leading-tight tracking-tight text-foreground">
+				<h1 className="mb-2.5 mt-0 text-2xl font-semibold leading-tight tracking-tight text-foreground">
 					Let&apos;s confirm your profile.
 				</h1>
-				<p className="m-0 text-[15px] leading-normal text-secondary-foreground">
+				<p className="m-0 text-sm leading-normal text-secondary-foreground">
 					Your church already has a profile for you. Pick which details to keep
 					or replace with the ones from your Google account.
 				</p>
@@ -177,10 +177,10 @@ export const WelcomePage = () => {
 						size={56}
 					/>
 					<div className="min-w-0 flex-1">
-						<div className="text-[15px] font-semibold text-foreground">
+						<div className="text-sm font-semibold text-foreground">
 							Signed in as {firebaseUser?.displayName ?? firebaseUser?.email}
 						</div>
-						<div className="text-[13px] text-muted-foreground">
+						<div className="text-sm text-muted-foreground">
 							{firebaseUser?.email} — used as your contact email going forward
 						</div>
 					</div>
@@ -224,7 +224,7 @@ export const WelcomePage = () => {
 				/>
 			</Card>
 
-			{error && <p className="mt-4 text-[13px] text-destructive">{error}</p>}
+			{error && <p className="mt-4 text-sm text-destructive">{error}</p>}
 
 			<div className="mt-6 flex gap-3">
 				<Button

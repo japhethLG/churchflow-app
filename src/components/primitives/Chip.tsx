@@ -19,7 +19,7 @@ export const Chip = ({
 	<Pressable
 		onClick={onClick}
 		className={cn(
-			"inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium",
+			"inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium",
 			active
 				? "bg-foreground text-background"
 				: "bg-card text-muted-foreground hover:bg-muted hover:text-foreground",

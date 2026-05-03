@@ -104,7 +104,7 @@ export const PledgesTable = ({
 			label: "Pledged on",
 			width: "130px",
 			render: (p) => (
-				<span className="text-[13px] text-muted-foreground">
+				<span className="text-sm text-muted-foreground">
 					{dayjs(p.createdAt).format("MMM D, YYYY")}
 				</span>
 			),

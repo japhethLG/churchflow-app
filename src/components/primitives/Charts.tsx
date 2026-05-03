@@ -147,7 +147,7 @@ export const Donut = ({
 			</ResponsiveContainer>
 			<div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
 				<div>
-					<div className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+					<div className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
 						Total
 					</div>
 					<div className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-foreground">
