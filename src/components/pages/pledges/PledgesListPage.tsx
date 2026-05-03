@@ -56,7 +56,9 @@ export const PledgesListPage = () => {
 	// would need its own query — not worth it for the scale we have.
 	const visible = useMemo<PledgeRow[]>(() => {
 		const q = filters.search.trim().toLowerCase();
-		if (!q) return allItems;
+		if (!q) {
+			return allItems;
+		}
 		return allItems.filter((p) => (p.note ?? "").toLowerCase().includes(q));
 	}, [allItems, filters.search]);
 
@@ -72,7 +74,9 @@ export const PledgesListPage = () => {
 		openModal("confirm-delete-pledge", { tenantSlug, pledgeId: p.id });
 
 	const openCreate = () => {
-		if (campaigns.length === 0) return;
+		if (campaigns.length === 0) {
+			return;
+		}
 		const c = campaigns.find((x) => x.status === "ACTIVE") ?? campaigns[0];
 		openModal("create-pledge", {
 			tenantSlug,

@@ -85,7 +85,9 @@ export const TransactionsListPage = () => {
 	// Search across note + reference number, client-side over the page.
 	const visible = useMemo<TransactionRow[]>(() => {
 		const q = filters.search.trim().toLowerCase();
-		if (!q) return allItems;
+		if (!q) {
+			return allItems;
+		}
 		return allItems.filter((t) =>
 			`${nstr(t.note) ?? ""} ${nstr(t.referenceNumber) ?? ""}`
 				.toLowerCase()

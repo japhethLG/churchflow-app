@@ -20,7 +20,9 @@ export const ReportsPieTooltip = ({
 		value?: number;
 	}[];
 }) => {
-	if (!active || !payload?.length) return null;
+	if (!active || !payload?.length) {
+		return null;
+	}
 	const entry = payload[0];
 	const full = (entry.payload ?? entry) as PiePayload;
 	const value =
@@ -58,9 +60,13 @@ export const ReportsBarTooltip = ({
 	active?: boolean;
 	payload?: readonly { payload?: BarRow }[];
 }) => {
-	if (!active || !payload?.length) return null;
+	if (!active || !payload?.length) {
+		return null;
+	}
 	const row = payload[0]?.payload as BarRow | undefined;
-	if (!row) return null;
+	if (!row) {
+		return null;
+	}
 	const label = `${row.label}${row.isCurrentLabel ?? ""}`;
 
 	return (

@@ -11,7 +11,9 @@ type Transaction = components["schemas"]["TransactionResponseDto"];
 type Member = components["schemas"]["MemberResponseDto"];
 
 const ellipsize = (s: string, max = 36) => {
-	if (s.length <= max) return s;
+	if (s.length <= max) {
+		return s;
+	}
 	return `${s.slice(0, Math.max(0, max - 1))}\u2026`;
 };
 
@@ -38,7 +40,9 @@ export const ReportsByMember = ({
 		const name = m
 			? `${m.firstName ?? ""} ${m.lastName ?? ""}`.trim() || "Unnamed"
 			: "Anonymous";
-		if (!byMember[mid]) byMember[mid] = { name, total: 0, count: 0 };
+		if (!byMember[mid]) {
+			byMember[mid] = { name, total: 0, count: 0 };
+		}
 		byMember[mid].total += t.amount;
 		byMember[mid].count += 1;
 	}

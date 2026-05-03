@@ -29,13 +29,21 @@ const STATUS_LABEL: Record<CampaignRow["status"], Status> = {
 };
 
 const fmtDeadline = (d: string | null): string => {
-	if (!d) return "Open-ended";
+	if (!d) {
+		return "Open-ended";
+	}
 	const date = dayjs(d);
 	const days = date.diff(dayjs(), "day");
 	const fmt = date.format("MMM D, YYYY");
-	if (days < 0) return `${fmt} · past`;
-	if (days === 0) return `${fmt} · today`;
-	if (days <= 30) return `${fmt} · ${days}d left`;
+	if (days < 0) {
+		return `${fmt} · past`;
+	}
+	if (days === 0) {
+		return `${fmt} · today`;
+	}
+	if (days <= 30) {
+		return `${fmt} · ${days}d left`;
+	}
 	return fmt;
 };
 

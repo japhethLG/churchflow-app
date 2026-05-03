@@ -161,7 +161,9 @@ const Pagination = ({
 
 	const visible: number[] = [];
 	for (let p = 1; p <= pages; p++) {
-		if (p === 1 || p === pages || Math.abs(p - page) <= 1) visible.push(p);
+		if (p === 1 || p === pages || Math.abs(p - page) <= 1) {
+			visible.push(p);
+		}
 	}
 
 	return (

@@ -33,7 +33,8 @@
 				"noArrayIndexKey": "warn"
 			},
 			"style": {
-				"noNonNullAssertion": "warn"
+				"noNonNullAssertion": "warn",
+				"useBlockStatements": "error"
 			},
 			"correctness": {
 				"noUnusedVariables": "warn"

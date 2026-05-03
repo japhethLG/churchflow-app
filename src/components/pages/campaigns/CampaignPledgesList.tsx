@@ -29,7 +29,9 @@ const STATUS_LABEL: Record<Pledge["status"], Status> = {
 const fullName = (
 	m: { firstName: string; lastName: string } | undefined,
 ): string => {
-	if (!m) return "Unknown member";
+	if (!m) {
+		return "Unknown member";
+	}
 	return `${m.firstName} ${m.lastName}`.trim();
 };
 

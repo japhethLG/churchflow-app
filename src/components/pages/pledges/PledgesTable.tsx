@@ -25,7 +25,9 @@ const STATUS_LABEL: Record<PledgeRow["status"], Status> = {
 };
 
 const fullName = (m: Member | undefined): string => {
-	if (!m) return "Unknown member";
+	if (!m) {
+		return "Unknown member";
+	}
 	return `${m.firstName} ${m.lastName}`.trim();
 };
 
@@ -68,7 +70,9 @@ export const PledgesTable = ({
 			label: "Campaign",
 			render: (p) => {
 				const c = campaignsById[p.campaignId];
-				if (!c) return <span className="text-muted-foreground">—</span>;
+				if (!c) {
+					return <span className="text-muted-foreground">—</span>;
+				}
 				return (
 					<Pressable
 						className="font-medium text-primary hover:underline text-left"

@@ -82,9 +82,13 @@ const LeaderBoardTooltip = ({
 	active?: boolean;
 	payload?: readonly { payload?: LeaderBoardRowData }[];
 }): JSX.Element | null => {
-	if (!active || !payload?.length) return null;
+	if (!active || !payload?.length) {
+		return null;
+	}
 	const row = payload[0]?.payload;
-	if (!row) return null;
+	if (!row) {
+		return null;
+	}
 	const title = row.title ?? row.axisLabel;
 
 	return (

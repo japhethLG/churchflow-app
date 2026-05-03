@@ -34,7 +34,9 @@ export type SessionUser = {
 export const getSessionUser = async (): Promise<SessionUser | null> => {
 	const store = await cookies();
 	const cookie = store.get(SESSION_COOKIE_NAME)?.value;
-	if (!cookie) return null;
+	if (!cookie) {
+		return null;
+	}
 
 	try {
 		const decoded = await adminAuth.verifySessionCookie(cookie, true);
@@ -72,10 +74,14 @@ export const getSessionUser = async (): Promise<SessionUser | null> => {
 const normaliseMemberships = (
 	raw: unknown,
 ): Record<string, TenantMembership> => {
-	if (!raw || typeof raw !== "object") return {};
+	if (!raw || typeof raw !== "object") {
+		return {};
+	}
 	const out: Record<string, TenantMembership> = {};
 	for (const [slug, value] of Object.entries(raw as Record<string, unknown>)) {
-		if (!value || typeof value !== "object") continue;
+		if (!value || typeof value !== "object") {
+			continue;
+		}
 		const entry = value as Record<string, unknown>;
 		const memberId =
 			typeof entry.memberId === "string" ? entry.memberId : undefined;

@@ -11,7 +11,9 @@ import type { CampaignFormValues } from "./formHelpers";
 
 const toDateInput = (d: unknown): string => {
 	const s = nstr(d);
-	if (!s) return "";
+	if (!s) {
+		return "";
+	}
 	return dayjs(s).format("YYYY-MM-DD");
 };
 
@@ -22,7 +24,9 @@ export const CampaignEditPage = () => {
 	const updateCampaign = useUpdateCampaign(tenantSlug);
 
 	const initialValues = useMemo(() => {
-		if (!campaign) return undefined;
+		if (!campaign) {
+			return undefined;
+		}
 		return {
 			title: campaign.title,
 			description: nstr(campaign.description) ?? "",

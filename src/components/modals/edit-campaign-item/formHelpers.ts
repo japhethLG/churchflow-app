@@ -18,7 +18,9 @@ export type EditCampaignItemFormValues = z.infer<typeof editCampaignItemSchema>;
 
 const toDateInput = (d: unknown): string => {
 	const s = nstr(d);
-	if (!s) return "";
+	if (!s) {
+		return "";
+	}
 	return dayjs(s).format("YYYY-MM-DD");
 };
 

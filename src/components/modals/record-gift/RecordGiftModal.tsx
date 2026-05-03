@@ -108,9 +108,13 @@ export const RecordGiftModal = ({
 
 	// When a pledge is selected, sync the campaign + item to match it.
 	useEffect(() => {
-		if (!pledgeId) return;
+		if (!pledgeId) {
+			return;
+		}
 		const p = pledges.find((x) => x.id === pledgeId);
-		if (!p) return;
+		if (!p) {
+			return;
+		}
 		if (p.campaignId !== campaignId) {
 			methods.setValue("campaignId", p.campaignId);
 		}

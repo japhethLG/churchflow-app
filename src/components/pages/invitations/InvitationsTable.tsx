@@ -64,8 +64,9 @@ export const InvitationsTable = ({
 			label: "Expires",
 			width: "120px",
 			render: (row) => {
-				if (row.status !== "PENDING")
+				if (row.status !== "PENDING") {
 					return <span className="text-muted-foreground">—</span>;
+				}
 				const diff = dayjs(row.expiresAt).diff(dayjs());
 				const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
 

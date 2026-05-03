@@ -50,7 +50,9 @@ export const DatePicker = ({
 
 	// Parse the ISO string → Date for the calendar
 	const selected = React.useMemo(() => {
-		if (!value) return undefined;
+		if (!value) {
+			return undefined;
+		}
 		const parsed = dayjs(value, "YYYY-MM-DD", true);
 		return parsed.isValid() ? parsed.toDate() : undefined;
 	}, [value]);
@@ -60,7 +62,9 @@ export const DatePicker = ({
 		: undefined;
 
 	const handleSelect = (day: Date | undefined) => {
-		if (!day) return;
+		if (!day) {
+			return;
+		}
 		onChange?.(dayjs(day).format("YYYY-MM-DD"));
 		setOpen(false);
 		onBlur?.();
@@ -116,8 +120,12 @@ export const DatePicker = ({
 						onSelect={handleSelect}
 						defaultMonth={selected}
 						disabled={(day) => {
-							if (minDate && day < minDate) return true;
-							if (maxDate && day > maxDate) return true;
+							if (minDate && day < minDate) {
+								return true;
+							}
+							if (maxDate && day > maxDate) {
+								return true;
+							}
 							return false;
 						}}
 						initialFocus

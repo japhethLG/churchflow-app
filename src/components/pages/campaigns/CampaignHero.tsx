@@ -14,12 +14,18 @@ const STATUS_LABEL: Record<Campaign["status"], string> = {
 };
 
 const fmtDeadline = (d: string | null): string => {
-	if (!d) return "Open-ended · no deadline";
+	if (!d) {
+		return "Open-ended · no deadline";
+	}
 	const date = dayjs(d);
 	const days = date.diff(dayjs(), "day");
 	const fmt = date.format("MMMM D, YYYY");
-	if (days < 0) return `Deadline · ${fmt} (passed)`;
-	if (days === 0) return `Deadline · ${fmt} (today)`;
+	if (days < 0) {
+		return `Deadline · ${fmt} (passed)`;
+	}
+	if (days === 0) {
+		return `Deadline · ${fmt} (today)`;
+	}
 	return `Deadline · ${fmt} (${days} days left)`;
 };
 

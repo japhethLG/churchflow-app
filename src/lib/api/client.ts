@@ -40,10 +40,16 @@ const UNAUTHENTICATED_PATHS = ["/login", "/invite", "/logout"];
 
 let signOutInFlight = false;
 const handleUnauthorized = async () => {
-	if (signOutInFlight) return;
-	if (typeof window === "undefined") return;
+	if (signOutInFlight) {
+		return;
+	}
+	if (typeof window === "undefined") {
+		return;
+	}
 	const path = window.location.pathname;
-	if (UNAUTHENTICATED_PATHS.some((p) => path.startsWith(p))) return;
+	if (UNAUTHENTICATED_PATHS.some((p) => path.startsWith(p))) {
+		return;
+	}
 	signOutInFlight = true;
 	try {
 		await getClientAuth().signOut();
@@ -63,9 +69,13 @@ const handleUnauthorized = async () => {
 // caller's custom claims just changed. Avoids the "did you forget to call
 // refreshSession()?" footgun on every claim-mutating endpoint.
 const handleClaimsRefreshed = async () => {
-	if (typeof window === "undefined") return;
+	if (typeof window === "undefined") {
+		return;
+	}
 	const user = getClientAuth().currentUser;
-	if (!user) return;
+	if (!user) {
+		return;
+	}
 	try {
 		const idToken = await user.getIdToken(true);
 		await fetch("/api/auth/session", {
@@ -110,7 +120,9 @@ const responseMiddleware: Middleware = {
 			throw toApiError(response.status, body);
 		}
 
-		if (!isJson) return response;
+		if (!isJson) {
+			return response;
+		}
 
 		try {
 			const body = await response.clone().json();

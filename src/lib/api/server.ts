@@ -46,7 +46,9 @@ const responseMiddleware: Middleware = {
 			throw toApiError(response.status, body);
 		}
 
-		if (!isJson) return response;
+		if (!isJson) {
+			return response;
+		}
 
 		try {
 			const body = await response.clone().json();

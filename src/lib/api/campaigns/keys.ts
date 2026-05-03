@@ -24,8 +24,12 @@ export const invalidateCampaigns = (qc: QueryClient, tenantId?: string) => {
 				unknown,
 				{ params?: { path?: { tenantId?: string } } } | undefined,
 			];
-			if (typeof path !== "string" || !set.has(path)) return false;
-			if (tenantId && init?.params?.path?.tenantId !== tenantId) return false;
+			if (typeof path !== "string" || !set.has(path)) {
+				return false;
+			}
+			if (tenantId && init?.params?.path?.tenantId !== tenantId) {
+				return false;
+			}
 			return true;
 		},
 	});

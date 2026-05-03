@@ -56,7 +56,9 @@ export const DateRangePicker = ({
 
 	// Parse strings back to Dates for the calendar
 	const selectedRange: DateRange | undefined = React.useMemo(() => {
-		if (!value) return undefined;
+		if (!value) {
+			return undefined;
+		}
 		const fromParsed = value.from
 			? dayjs(value.from, "YYYY-MM-DD", true)
 			: undefined;
@@ -69,7 +71,9 @@ export const DateRangePicker = ({
 	}, [value]);
 
 	const displayLabel = React.useMemo(() => {
-		if (!selectedRange?.from) return undefined;
+		if (!selectedRange?.from) {
+			return undefined;
+		}
 		if (selectedRange.to) {
 			return `${dayjs(selectedRange.from).format("MMM D")} – ${dayjs(
 				selectedRange.to,
@@ -147,8 +151,12 @@ export const DateRangePicker = ({
 						onSelect={handleSelect}
 						numberOfMonths={numberOfMonths}
 						disabled={(day) => {
-							if (minDate && day < minDate) return true;
-							if (maxDate && day > maxDate) return true;
+							if (minDate && day < minDate) {
+								return true;
+							}
+							if (maxDate && day > maxDate) {
+								return true;
+							}
 							return false;
 						}}
 						initialFocus

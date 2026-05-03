@@ -23,10 +23,14 @@ const buckets = new Map<string, Bucket>();
 let lastSweep = 0;
 
 const sweepStaleBuckets = (now: number) => {
-	if (now - lastSweep < SWEEP_INTERVAL_MS) return;
+	if (now - lastSweep < SWEEP_INTERVAL_MS) {
+		return;
+	}
 	lastSweep = now;
 	for (const [key, b] of buckets) {
-		if (now - b.lastRefill > STALE_AFTER_MS) buckets.delete(key);
+		if (now - b.lastRefill > STALE_AFTER_MS) {
+			buckets.delete(key);
+		}
 	}
 };
 
@@ -64,8 +68,12 @@ export const checkRateLimit = (key: string): RateLimitResult => {
 // stripped header the limiter still applies (just globally).
 export const getRateLimitKey = (req: Request): string => {
 	const xff = req.headers.get("x-forwarded-for");
-	if (xff) return (xff.split(",")[0] ?? xff).trim();
+	if (xff) {
+		return (xff.split(",")[0] ?? xff).trim();
+	}
 	const realIp = req.headers.get("x-real-ip");
-	if (realIp) return realIp.trim();
+	if (realIp) {
+		return realIp.trim();
+	}
 	return "global";
 };

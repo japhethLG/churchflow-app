@@ -30,7 +30,9 @@ export const CampaignNewPage = () => {
 
 		// Items are created sequentially
 		for (const [idx, item] of values.items.entries()) {
-			if (!item.title.trim()) continue;
+			if (!item.title.trim()) {
+				continue;
+			}
 			await addItem.mutateAsync({
 				params: { path: { tenantId: tenantSlug, id: created.id } },
 				body: {

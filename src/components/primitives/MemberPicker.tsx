@@ -58,7 +58,9 @@ export const MemberPicker = ({
 
 	const filtered = useMemo(() => {
 		const q = search.trim().toLowerCase();
-		if (!q) return members.slice(0, maxResults);
+		if (!q) {
+			return members.slice(0, maxResults);
+		}
 		return members.filter((m) => matchesQuery(m, q)).slice(0, maxResults);
 	}, [members, search, maxResults]);
 

@@ -19,8 +19,12 @@ type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const getGreeting = (): string => {
 	const h = dayjs().hour();
-	if (h < 12) return "Good morning";
-	if (h < 17) return "Good afternoon";
+	if (h < 12) {
+		return "Good morning";
+	}
+	if (h < 17) {
+		return "Good afternoon";
+	}
 	return "Good evening";
 };
 

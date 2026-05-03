@@ -39,9 +39,12 @@ export const MembersListPage = () => {
 
 	// `linked` filter is applied client-side because the backend doesn't expose it.
 	const visible = useMemo(() => {
-		if (filters.linked === "all") return allItems;
-		if (filters.linked === "linked")
+		if (filters.linked === "all") {
+			return allItems;
+		}
+		if (filters.linked === "linked") {
 			return allItems.filter((m) => Boolean(m.userId));
+		}
 		return allItems.filter((m) => !m.userId);
 	}, [allItems, filters.linked]);
 

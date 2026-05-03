@@ -57,7 +57,9 @@ export const useApiQuery = <P extends PathsWithMethod<"get">>(
 		queryFn: async () => {
 			// biome-ignore lint/suspicious/noExplicitAny: internal type dispatch
 			const { data, error } = await (api as any).GET(path, init);
-			if (error) throw error;
+			if (error) {
+				throw error;
+			}
 			return data as GetResponse<P, "get">;
 		},
 		...options,
@@ -80,7 +82,9 @@ export const useApiMutation = <
 			const verb = method.toUpperCase() as "POST" | "PUT" | "PATCH" | "DELETE";
 			// biome-ignore lint/suspicious/noExplicitAny: internal type dispatch
 			const { data, error } = await (api as any)[verb](path, init);
-			if (error) throw error;
+			if (error) {
+				throw error;
+			}
 			return data as GetResponse<P, M>;
 		},
 		...options,

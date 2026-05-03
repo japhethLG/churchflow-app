@@ -7,9 +7,13 @@ let _auth: Auth | null = null;
 let _db: Firestore | null = null;
 
 const firebaseApp = (): FirebaseApp => {
-	if (_app) return _app;
+	if (_app) {
+		return _app;
+	}
 	_app = getApps()[0] ?? null;
-	if (_app) return _app;
+	if (_app) {
+		return _app;
+	}
 
 	const config = {
 		apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -31,13 +35,17 @@ const firebaseApp = (): FirebaseApp => {
 };
 
 export const getClientAuth = (): Auth => {
-	if (_auth) return _auth;
+	if (_auth) {
+		return _auth;
+	}
 	_auth = getAuth(firebaseApp());
 	return _auth;
 };
 
 export const getClientDb = (): Firestore => {
-	if (_db) return _db;
+	if (_db) {
+		return _db;
+	}
 	_db = getFirestore(firebaseApp());
 	return _db;
 };

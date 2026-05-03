@@ -49,7 +49,9 @@ export const signInWithGoogle = async (): Promise<SignInResult> => {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ idToken: refreshedToken }),
 	});
-	if (!res.ok) throw new Error("Session cookie creation failed");
+	if (!res.ok) {
+		throw new Error("Session cookie creation failed");
+	}
 
 	// Global response interceptor wraps in { success, data }; unwrap.
 	const raw = backendData as unknown as {
@@ -100,12 +102,16 @@ export const signOutEverywhere = async (): Promise<void> => {
 // token to auto-refresh.
 export const refreshSession = async (): Promise<void> => {
 	const user = getClientAuth().currentUser;
-	if (!user) return;
+	if (!user) {
+		return;
+	}
 	const idToken = await user.getIdToken(true);
 	const res = await fetch("/api/auth/session", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ idToken }),
 	});
-	if (!res.ok) throw new Error("Session refresh failed");
+	if (!res.ok) {
+		throw new Error("Session refresh failed");
+	}
 };

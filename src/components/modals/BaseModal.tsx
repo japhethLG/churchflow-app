@@ -52,9 +52,13 @@ export const BaseModal = ({
 	dismissible = true,
 }: BaseModalProps) => {
 	useEffect(() => {
-		if (!dismissible) return;
+		if (!dismissible) {
+			return;
+		}
 		const onKey = (e: KeyboardEvent) => {
-			if (e.key === "Escape") onClose();
+			if (e.key === "Escape") {
+				onClose();
+			}
 		};
 		window.addEventListener("keydown", onKey);
 		const prevOverflow = document.body.style.overflow;
@@ -78,7 +82,9 @@ export const BaseModal = ({
 				backdropFilter: "blur(8px)",
 			}}
 			onClick={(e) => {
-				if (e.target === e.currentTarget && dismissible) onClose();
+				if (e.target === e.currentTarget && dismissible) {
+					onClose();
+				}
 			}}
 			onKeyDown={
 				dismissible
@@ -86,8 +92,9 @@ export const BaseModal = ({
 							if (
 								e.target === e.currentTarget &&
 								(e.key === "Enter" || e.key === " ")
-							)
+							) {
 								onClose();
+							}
 						}
 					: undefined
 			}

@@ -65,7 +65,9 @@ export const CreatePledgeModal = ({
 
 	useEffect(() => {
 		const sub = methods.watch((_, { name }) => {
-			if (name === "campaignId") methods.setValue("itemId", "");
+			if (name === "campaignId") {
+				methods.setValue("itemId", "");
+			}
 		});
 		return () => sub.unsubscribe();
 	}, [methods]);

@@ -8,8 +8,12 @@ import { getSessionUser } from "@/lib/auth/server";
 // to any one church.
 export default async ({ children }: { children: ReactNode }) => {
 	const user = await getSessionUser();
-	if (!user) redirect("/login");
-	if (!user.isSuperAdmin) redirect("/");
+	if (!user) {
+		redirect("/login");
+	}
+	if (!user.isSuperAdmin) {
+		redirect("/");
+	}
 
 	const memberships = Object.entries(user.tenantMemberships).map(
 		([slug, m]) => ({

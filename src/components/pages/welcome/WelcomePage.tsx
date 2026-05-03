@@ -22,8 +22,12 @@ const pick = (
 	existing: string | null,
 	sso: string | null,
 ): string => {
-	if (state.choice === "existing") return existing ?? "";
-	if (state.choice === "sso") return sso ?? "";
+	if (state.choice === "existing") {
+		return existing ?? "";
+	}
+	if (state.choice === "sso") {
+		return sso ?? "";
+	}
 	return state.edited;
 };
 
@@ -74,7 +78,9 @@ export const WelcomePage = () => {
 	const [saved, setSaved] = useState(false);
 
 	useEffect(() => {
-		if (saved || !member) return;
+		if (saved || !member) {
+			return;
+		}
 		const existingFirst = asString(member.firstName);
 		const existingLast = asString(member.lastName);
 		const existingPhone = asString(member.phone);

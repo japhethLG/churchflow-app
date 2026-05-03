@@ -34,8 +34,12 @@ const relativeDate = (iso: string): string => {
 	if (hours < 24) {
 		return `Today, ${d.format("h:mma")}`;
 	}
-	if (hours < 48) return "Yesterday";
-	if (hours < 24 * 7) return `${Math.floor(hours / 24)} days ago`;
+	if (hours < 48) {
+		return "Yesterday";
+	}
+	if (hours < 24 * 7) {
+		return `${Math.floor(hours / 24)} days ago`;
+	}
 	return d.format("MMM D");
 };
 

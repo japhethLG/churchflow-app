@@ -44,7 +44,9 @@ export default async ({
 				err && typeof err === "object" && "status" in err
 					? (err as { status: number }).status
 					: 0;
-			if (status === 404 || status === 403) notFound();
+			if (status === 404 || status === 403) {
+				notFound();
+			}
 			throw err;
 		}
 	}

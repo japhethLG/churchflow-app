@@ -6,7 +6,9 @@ import { getSessionUser } from "@/lib/auth/server";
 
 export default async () => {
 	const user = await getSessionUser();
-	if (!user) redirect("/login");
+	if (!user) {
+		redirect("/login");
+	}
 
 	const memberships = Object.entries(user.tenantMemberships).map(
 		([slug, m]) => ({

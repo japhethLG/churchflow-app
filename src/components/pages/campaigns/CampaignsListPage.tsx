@@ -30,10 +30,13 @@ export const CampaignsListPage = () => {
 
 	const filtered = useMemo<CampaignRow[]>(() => {
 		let out = allItems;
-		if (filters.status !== "all")
+		if (filters.status !== "all") {
 			out = out.filter((c) => c.status === filters.status);
+		}
 		const q = filters.search.trim().toLowerCase();
-		if (q) out = out.filter((c) => c.title.toLowerCase().includes(q));
+		if (q) {
+			out = out.filter((c) => c.title.toLowerCase().includes(q));
+		}
 		return out;
 	}, [allItems, filters]);
 

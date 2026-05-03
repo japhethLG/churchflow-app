@@ -33,7 +33,9 @@ const fmtDate = (iso: string): string => {
 };
 
 const fullName = (m: Member | undefined): string => {
-	if (!m) return "—";
+	if (!m) {
+		return "—";
+	}
 	return `${m.firstName} ${m.lastName}`.trim();
 };
 
@@ -100,7 +102,9 @@ export const TransactionsTable = ({
 			width: "180px",
 			render: (t) => {
 				const cid = nstr(t.campaignId);
-				if (!cid) return <span className="text-muted-foreground">—</span>;
+				if (!cid) {
+					return <span className="text-muted-foreground">—</span>;
+				}
 				return (
 					<span className="block truncate text-[13px] text-primary">
 						{campaignsById[cid]?.title ?? "Campaign"}

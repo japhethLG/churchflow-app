@@ -47,7 +47,9 @@ export const MemberCampaignsPage = () => {
 
 	const pledgeByCampaign: Record<string, typeof pledges> = {};
 	for (const p of pledges) {
-		if (!pledgeByCampaign[p.campaignId]) pledgeByCampaign[p.campaignId] = [];
+		if (!pledgeByCampaign[p.campaignId]) {
+			pledgeByCampaign[p.campaignId] = [];
+		}
 		pledgeByCampaign[p.campaignId].push(p);
 	}
 

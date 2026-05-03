@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import { QueryProvider } from "@/lib/api/providers";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { ModalHost } from "@/lib/modals/host";

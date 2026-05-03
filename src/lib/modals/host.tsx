@@ -64,12 +64,16 @@ const registry: Partial<Record<ModalName, AnyModal>> = {
 
 export const ModalHost = () => {
 	const { active, close } = useModalStore();
-	if (!active) return null;
+	if (!active) {
+		return null;
+	}
 	const { name, props } = active as {
 		name: ModalName;
 		props: Record<string, unknown>;
 	};
 	const Comp = registry[name];
-	if (!Comp) return null;
+	if (!Comp) {
+		return null;
+	}
 	return <Comp {...props} onClose={close} />;
 };

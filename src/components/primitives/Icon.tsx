@@ -139,7 +139,9 @@ export const Icon = ({
 	}
 
 	const LucideIcon = LUCIDE_MAP[name];
-	if (!LucideIcon) return null;
+	if (!LucideIcon) {
+		return null;
+	}
 
 	return (
 		<LucideIcon

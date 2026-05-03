@@ -33,7 +33,9 @@ export const formatCurrency = (
 
 	const num = typeof value === "string" ? Number(value) : value;
 
-	if (Number.isNaN(num)) return "—";
+	if (Number.isNaN(num)) {
+		return "—";
+	}
 
 	const formatOptions: Intl.NumberFormatOptions = {
 		style: "currency",
@@ -87,9 +89,15 @@ export const formatCompact = (
 	const { currency = "PHP" } = options;
 	const symbol = getCurrencySymbol(currency);
 
-	if (value >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
-	if (value >= 10_000) return `${symbol}${(value / 1_000).toFixed(0)}k`;
-	if (value >= 1_000) return `${symbol}${(value / 1_000).toFixed(1)}k`;
+	if (value >= 1_000_000) {
+		return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
+	}
+	if (value >= 10_000) {
+		return `${symbol}${(value / 1_000).toFixed(0)}k`;
+	}
+	if (value >= 1_000) {
+		return `${symbol}${(value / 1_000).toFixed(1)}k`;
+	}
 	return `${symbol}${value.toFixed(0)}`;
 };
 
@@ -103,7 +111,9 @@ export const formatCompact = (
  */
 export const formatAmount = (value: number | string, decimals = 2): string => {
 	const num = typeof value === "string" ? Number(value) : value;
-	if (Number.isNaN(num)) return "—";
+	if (Number.isNaN(num)) {
+		return "—";
+	}
 	return num.toLocaleString("en-PH", {
 		minimumFractionDigits: decimals,
 		maximumFractionDigits: decimals,

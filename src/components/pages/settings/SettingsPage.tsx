@@ -50,7 +50,9 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 	}, [tenant, reset]);
 
 	const onSubmit: SubmitHandler<SettingsFormValues> = async (values) => {
-		if (!tenant) return;
+		if (!tenant) {
+			return;
+		}
 		setError(null);
 		try {
 			await updateTenant.mutateAsync({

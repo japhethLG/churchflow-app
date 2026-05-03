@@ -13,7 +13,9 @@ type Item = components["schemas"]["CampaignItemResponseDto"];
 type ItemProgress = components["schemas"]["CampaignItemProgressDto"];
 
 const pct = (n: number, d: number): number => {
-	if (d <= 0) return 0;
+	if (d <= 0) {
+		return 0;
+	}
 	return Math.min(100, Math.round((n / d) * 100));
 };
 

@@ -14,7 +14,9 @@ type Transaction = components["schemas"]["TransactionResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const ellipsize = (s: string, max = 42) => {
-	if (s.length <= max) return s;
+	if (s.length <= max) {
+		return s;
+	}
 	return `${s.slice(0, Math.max(0, max - 1))}\u2026`;
 };
 
@@ -39,7 +41,9 @@ export const ReportsByCampaign = ({
 		const cid = typeof t.campaignId === "string" ? t.campaignId : "__none__";
 		const c = cid !== "__none__" ? campaignsById[cid] : null;
 		const name = c ? c.title : "Unattributed";
-		if (!byCampaign[cid]) byCampaign[cid] = { name, total: 0, count: 0 };
+		if (!byCampaign[cid]) {
+			byCampaign[cid] = { name, total: 0, count: 0 };
+		}
 		byCampaign[cid].total += t.amount;
 		byCampaign[cid].count += 1;
 	}

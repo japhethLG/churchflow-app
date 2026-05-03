@@ -351,11 +351,12 @@ export const NewTenantPage = () => {
 				params: {},
 				body: { name: draft.name.trim(), slug: draft.slug.trim() },
 			});
-			if (t)
+			if (t) {
 				setCreatedTenant({
 					id: (t as { id: string }).id,
 					slug: (t as { slug: string }).slug,
 				});
+			}
 			setStep(2);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to create church");

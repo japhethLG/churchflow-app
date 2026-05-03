@@ -66,7 +66,9 @@ export const MergeMemberModal = ({
 	}, [candidates, keep.id]);
 
 	const handleMerge = async () => {
-		if (!dropId) return;
+		if (!dropId) {
+			return;
+		}
 		setError(null);
 		try {
 			await mutateAsync({

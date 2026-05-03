@@ -6,9 +6,13 @@ import { type Firestore, getFirestore } from "firebase-admin/firestore";
 let _app: App | null = null;
 
 const getApp = (): App => {
-	if (_app) return _app;
+	if (_app) {
+		return _app;
+	}
 	_app = getApps()[0] ?? null;
-	if (_app) return _app;
+	if (_app) {
+		return _app;
+	}
 
 	const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
 	const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
