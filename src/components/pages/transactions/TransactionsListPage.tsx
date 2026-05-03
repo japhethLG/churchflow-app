@@ -107,8 +107,9 @@ export const TransactionsListPage = () => {
 		});
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Ledger"
 				title="Transactions"
 				subtitle="Every gift recorded at this church."
@@ -124,48 +125,50 @@ export const TransactionsListPage = () => {
 				}
 			/>
 
-			<TransactionsFilters
-				value={filters}
-				campaigns={campaigns}
-				onChange={(v) => {
-					setFilters(v);
-					setOffset(0);
-				}}
-				onReset={() => {
-					setFilters(DEFAULT_FILTERS);
-					setOffset(0);
-				}}
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<TransactionsFilters
+					value={filters}
+					campaigns={campaigns}
+					onChange={(v) => {
+						setFilters(v);
+						setOffset(0);
+					}}
+					onReset={() => {
+						setFilters(DEFAULT_FILTERS);
+						setOffset(0);
+					}}
+				/>
 
-			<TransactionsSummaryCard
-				summary={summary.data}
-				loading={summary.isLoading}
-				months={months}
-				onMonthsChange={(m) => {
-					// Period switch on the KPI bar updates the list filter so the
-					// numbers stay in sync with the table below.
-					const range: TransactionsFiltersValue["range"] =
-						m === 1
-							? "this-month"
-							: m === 2
-								? "last-month"
-								: m === 12
-									? "all"
-									: "ytd";
-					setFilters((f) => ({ ...f, range }));
-					setOffset(0);
-				}}
-			/>
+				<TransactionsSummaryCard
+					summary={summary.data}
+					loading={summary.isLoading}
+					months={months}
+					onMonthsChange={(m) => {
+						// Period switch on the KPI bar updates the list filter so the
+						// numbers stay in sync with the table below.
+						const range: TransactionsFiltersValue["range"] =
+							m === 1
+								? "this-month"
+								: m === 2
+									? "last-month"
+									: m === 12
+										? "all"
+										: "ytd";
+						setFilters((f) => ({ ...f, range }));
+						setOffset(0);
+					}}
+				/>
 
-			<TransactionsTable
-				rows={visible}
-				loading={list.isLoading}
-				pagination={{ total, offset, limit: PAGE_SIZE, onChange: setOffset }}
-				membersById={membersById}
-				campaignsById={campaignsById}
-				handlers={{ onView: openView, onEdit: openEdit, onDelete: openDelete }}
-				onCreate={openRecord}
-			/>
+				<TransactionsTable
+					rows={visible}
+					loading={list.isLoading}
+					pagination={{ total, offset, limit: PAGE_SIZE, onChange: setOffset }}
+					membersById={membersById}
+					campaignsById={campaignsById}
+					handlers={{ onView: openView, onEdit: openEdit, onDelete: openDelete }}
+					onCreate={openRecord}
+				/>
+			</div>
 		</div>
 	);
 };

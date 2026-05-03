@@ -53,8 +53,9 @@ export const AdminReportsPage = () => {
 	);
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Insights"
 				title="Reports"
 				subtitle="Income insights across members, types, campaigns, and time."
@@ -65,61 +66,63 @@ export const AdminReportsPage = () => {
 				}
 			/>
 
-			{/* Tab bar */}
-			<div className="mb-5 flex w-fit gap-1.5 rounded-full bg-muted p-1">
-				{TABS.map((t) => (
-					<Button
-						key={t.key}
-						type="button"
-						variant="ghost"
-						size="sm"
-						className={cn(
-							"h-9 px-[18px] py-2 font-inherit text-[13px] shadow-none hover:bg-transparent",
-							tab === t.key
-								? "bg-card text-foreground shadow-sm"
-								: "bg-transparent text-muted-foreground",
-						)}
-						onClick={() => setTab(t.key)}
-					>
-						{t.label}
-					</Button>
-				))}
-			</div>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{/* Tab bar */}
+				<div className="mb-5 flex w-fit gap-1.5 rounded-full bg-muted p-1">
+					{TABS.map((t) => (
+						<Button
+							key={t.key}
+							type="button"
+							variant="ghost"
+							size="sm"
+							className={cn(
+								"h-9 px-[18px] py-2 font-inherit text-[13px] shadow-none hover:bg-transparent",
+								tab === t.key
+									? "bg-card text-foreground shadow-sm"
+									: "bg-transparent text-muted-foreground",
+							)}
+							onClick={() => setTab(t.key)}
+						>
+							{t.label}
+						</Button>
+					))}
+				</div>
 
-			{/* Date range chips */}
-			<div className="mb-5 flex gap-2.5">
-				<Chip icon="calendar">
-					Jan 1 — {dayjs().format("MMM D")}, {dayjs().year()}
-				</Chip>
-			</div>
+				{/* Date range chips */}
+				<div className="mb-5 flex gap-2.5">
+					<Chip icon="calendar">
+						Jan 1 — {dayjs().format("MMM D")}, {dayjs().year()}
+					</Chip>
+				</div>
 
-			{/* Tab content */}
-			{tab === "by-type" && (
-				<>
-					<ReportsByType summary={summary.data} loading={summary.isLoading} />
+				{/* Tab content */}
+				{tab === "by-type" && (
+					<>
+						<ReportsByType summary={summary.data} loading={summary.isLoading} />
+						<ReportsByMonth summary={summary.data} loading={summary.isLoading} />
+					</>
+				)}
+
+				{tab === "by-member" && (
+					<ReportsByMember
+						transactions={txQuery.data?.items ?? []}
+						membersById={membersById}
+						loading={txQuery.isLoading || membersQ.isLoading}
+					/>
+				)}
+
+				{tab === "by-campaign" && (
+					<ReportsByCampaign
+						transactions={txQuery.data?.items ?? []}
+						campaignsById={campaignsById}
+						loading={txQuery.isLoading || campaignsQ.isLoading}
+					/>
+				)}
+
+				{tab === "by-month" && (
 					<ReportsByMonth summary={summary.data} loading={summary.isLoading} />
-				</>
-			)}
-
-			{tab === "by-member" && (
-				<ReportsByMember
-					transactions={txQuery.data?.items ?? []}
-					membersById={membersById}
-					loading={txQuery.isLoading || membersQ.isLoading}
-				/>
-			)}
-
-			{tab === "by-campaign" && (
-				<ReportsByCampaign
-					transactions={txQuery.data?.items ?? []}
-					campaignsById={campaignsById}
-					loading={txQuery.isLoading || campaignsQ.isLoading}
-				/>
-			)}
-
-			{tab === "by-month" && (
-				<ReportsByMonth summary={summary.data} loading={summary.isLoading} />
-			)}
+				)}
+			</div>
 		</div>
 	);
 };

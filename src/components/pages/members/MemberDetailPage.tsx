@@ -15,21 +15,33 @@ export const MemberDetailPage = () => {
 
 	if (isLoading) {
 		return (
-			<div className="p-6">
-				<div className="mb-6 h-[60px] rounded-xl bg-secondary" />
-				<div className="h-60 rounded-2xl bg-secondary" />
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Directory / Members"
+					title="Loading..."
+					subtitle="Fetching member details..."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
+				</div>
 			</div>
 		);
 	}
 
 	if (error || !member) {
 		return (
-			<div className="bg-background px-10 py-10 text-center text-muted-foreground">
-				<p className="mb-1 text-base font-medium text-foreground">
-					Member not found
-				</p>
-				<p className="text-sm">This member may have been removed.</p>
-				<div className="mt-4">
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Directory / Members"
+					title="Not Found"
+					subtitle="This member may have been removed."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+					<p className="mb-4 text-base font-medium text-foreground">
+						Member not found
+					</p>
 					<Button
 						variant="secondary"
 						onClick={() => router.push(`/${tenantSlug}/admin/members`)}
@@ -44,8 +56,9 @@ export const MemberDetailPage = () => {
 	const fullName = `${member.firstName} ${member.lastName}`.trim();
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Directory / Members"
 				title={fullName}
 				subtitle="Member profile, giving history, and pledges."
@@ -111,11 +124,13 @@ export const MemberDetailPage = () => {
 				}
 			/>
 
-			<div className="grid gap-4">
-				<MemberInfoCard member={member} />
-				<div className="grid grid-cols-[2fr_1fr] items-start gap-4">
-					<MemberRecentGiving tenantSlug={tenantSlug} memberId={member.id} />
-					<MemberPledges tenantSlug={tenantSlug} memberId={member.id} />
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="grid gap-4">
+					<MemberInfoCard member={member} />
+					<div className="grid grid-cols-[2fr_1fr] items-start gap-4">
+						<MemberRecentGiving tenantSlug={tenantSlug} memberId={member.id} />
+						<MemberPledges tenantSlug={tenantSlug} memberId={member.id} />
+					</div>
 				</div>
 			</div>
 		</div>

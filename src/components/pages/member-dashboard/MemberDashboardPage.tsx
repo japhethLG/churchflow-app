@@ -86,37 +86,40 @@ export const MemberDashboardPage = () => {
 	const loading = memberQ.isLoading || txQ.isLoading;
 
 	return (
-		<div className="h-full overflow-auto pr-2">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Welcome"
 				title={`Hello, ${firstName}`}
 				subtitle={`Here's a gentle summary of your giving and campaigns at ${tenantQ.data?.name ?? "your church"}.`}
 			/>
 
-			{/* Row 1: KPI strip */}
-			<MemberKpiStrip transactions={transactions} loading={loading} />
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{/* Row 1: KPI strip */}
+				<MemberKpiStrip transactions={transactions} loading={loading} />
 
-			{/* Row 2: Recent giving + Campaigns & Pledges */}
-			<div className="mb-6 grid grid-cols-[1.5fr_1fr] gap-4">
-				<MemberRecentGiving
-					transactions={transactions}
-					loading={loading}
-					tenantSlug={tenantSlug}
-				/>
-				<MemberCampaignsPledges
-					campaigns={campaigns}
-					pledges={pledges}
-					progressMap={progressMap}
-					loading={campaignsQ.isLoading}
-					tenantSlug={tenantSlug}
-					memberId={memberId}
-				/>
+				{/* Row 2: Recent giving + Campaigns & Pledges */}
+				<div className="mb-6 grid grid-cols-[1.5fr_1fr] gap-4">
+					<MemberRecentGiving
+						transactions={transactions}
+						loading={loading}
+						tenantSlug={tenantSlug}
+					/>
+					<MemberCampaignsPledges
+						campaigns={campaigns}
+						pledges={pledges}
+						progressMap={progressMap}
+						loading={campaignsQ.isLoading}
+						tenantSlug={tenantSlug}
+						memberId={memberId}
+					/>
+				</div>
+
+				{/* Row 3: Thank-you banner */}
+				{!loading && transactions.length > 0 && (
+					<MemberThankYou name={firstName} />
+				)}
 			</div>
-
-			{/* Row 3: Thank-you banner */}
-			{!loading && transactions.length > 0 && (
-				<MemberThankYou name={firstName} />
-			)}
 		</div>
 	);
 };

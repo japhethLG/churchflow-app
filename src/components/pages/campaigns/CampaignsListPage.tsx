@@ -68,8 +68,9 @@ export const CampaignsListPage = () => {
 		});
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Fundraising"
 				title="Campaigns"
 				subtitle="Goal-driven drives broken into items, with pledge tracking."
@@ -80,38 +81,40 @@ export const CampaignsListPage = () => {
 				}
 			/>
 
-			<CampaignsFilters
-				value={filters}
-				onChange={(v) => {
-					setFilters(v);
-					setOffset(0);
-				}}
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<CampaignsFilters
+					value={filters}
+					onChange={(v) => {
+						setFilters(v);
+						setOffset(0);
+					}}
+				/>
 
-			<CampaignsStatsBar
-				total={counts.total}
-				active={counts.active}
-				draft={counts.draft}
-				completed={counts.completed}
-			/>
+				<CampaignsStatsBar
+					total={counts.total}
+					active={counts.active}
+					draft={counts.draft}
+					completed={counts.completed}
+				/>
 
-			<CampaignsTable
-				rows={visible}
-				loading={isLoading}
-				pagination={{
-					total: filtered.length,
-					offset,
-					limit: PAGE_SIZE,
-					onChange: setOffset,
-				}}
-				handlers={{
-					onView: goView,
-					onEdit: goEdit,
-					onCancel: askCancel,
-					onDelete: askDelete,
-				}}
-				onCreate={goNew}
-			/>
+				<CampaignsTable
+					rows={visible}
+					loading={isLoading}
+					pagination={{
+						total: filtered.length,
+						offset,
+						limit: PAGE_SIZE,
+						onChange: setOffset,
+					}}
+					handlers={{
+						onView: goView,
+						onEdit: goEdit,
+						onCancel: askCancel,
+						onDelete: askDelete,
+					}}
+					onCreate={goNew}
+				/>
+			</div>
 		</div>
 	);
 };

@@ -63,80 +63,83 @@ export const MemberCampaignsPage = () => {
 	const loading = campaignsQ.isLoading;
 
 	return (
-		<div className="h-full overflow-auto pr-2">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Campaigns"
 				title="Church campaigns"
 				subtitle="Browse active fundraising campaigns, view progress, and make pledges."
 			/>
 
-			{loading ? (
-				<div className="grid grid-cols-2 gap-4">
-					{[0, 1, 2, 3].map((i) => (
-						<Card key={i}>
-							<div className="mb-3 h-5 w-[180px] rounded bg-secondary" />
-							<div className="mb-4 h-3.5 w-[260px] rounded bg-secondary" />
-							<div className="mb-2 h-1.5 rounded bg-secondary" />
-							<div className="h-3 w-[100px] rounded bg-secondary" />
-						</Card>
-					))}
-				</div>
-			) : campaigns.length === 0 ? (
-				<Card>
-					<div className="py-12 text-center">
-						<div className="mb-3 text-5xl leading-none">🎯</div>
-						<div className="mb-1 text-base font-medium text-foreground">
-							No campaigns yet
-						</div>
-						<div className="text-sm text-muted-foreground">
-							Your church hasn&apos;t started any campaigns. Check back later!
-						</div>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{loading ? (
+					<div className="grid grid-cols-2 gap-4">
+						{[1, 2, 3, 4].map((skeletonId) => (
+							<Card key={skeletonId}>
+								<div className="mb-3 h-5 w-[180px] rounded bg-secondary" />
+								<div className="mb-4 h-3.5 w-[260px] rounded bg-secondary" />
+								<div className="mb-2 h-1.5 rounded bg-secondary" />
+								<div className="h-3 w-[100px] rounded bg-secondary" />
+							</Card>
+						))}
 					</div>
-				</Card>
-			) : (
-				<>
-					{activeCampaigns.length > 0 && (
-						<>
-							<div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-								Active campaigns
+				) : campaigns.length === 0 ? (
+					<Card>
+						<div className="py-12 text-center">
+							<div className="mb-3 text-5xl leading-none">🎯</div>
+							<div className="mb-1 text-base font-medium text-foreground">
+								No campaigns yet
 							</div>
-							<div className="mb-8 grid grid-cols-2 gap-4">
-								{activeCampaigns.map((c) => (
-									<CampaignCard
-										key={c.id}
-										campaign={c}
-										myPledges={pledgeByCampaign[c.id] ?? []}
-										tenantSlug={tenantSlug}
-										memberId={memberId}
-										onPledge={open}
-									/>
-								))}
+							<div className="text-sm text-muted-foreground">
+								Your church hasn&apos;t started any campaigns. Check back later!
 							</div>
-						</>
-					)}
+						</div>
+					</Card>
+				) : (
+					<>
+						{activeCampaigns.length > 0 && (
+							<>
+								<div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+									Active campaigns
+								</div>
+								<div className="mb-8 grid grid-cols-2 gap-4">
+									{activeCampaigns.map((c) => (
+										<CampaignCard
+											key={c.id}
+											campaign={c}
+											myPledges={pledgeByCampaign[c.id] ?? []}
+											tenantSlug={tenantSlug}
+											memberId={memberId}
+											onPledge={open}
+										/>
+									))}
+								</div>
+							</>
+						)}
 
-					{pastCampaigns.length > 0 && (
-						<>
-							<div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-								Past campaigns
-							</div>
-							<div className="mb-8 grid grid-cols-2 gap-4">
-								{pastCampaigns.map((c) => (
-									<CampaignCard
-										key={c.id}
-										campaign={c}
-										myPledges={pledgeByCampaign[c.id] ?? []}
-										tenantSlug={tenantSlug}
-										memberId={memberId}
-										onPledge={open}
-										past
-									/>
-								))}
-							</div>
-						</>
-					)}
-				</>
-			)}
+						{pastCampaigns.length > 0 && (
+							<>
+								<div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+									Past campaigns
+								</div>
+								<div className="mb-8 grid grid-cols-2 gap-4">
+									{pastCampaigns.map((c) => (
+										<CampaignCard
+											key={c.id}
+											campaign={c}
+											myPledges={pledgeByCampaign[c.id] ?? []}
+											tenantSlug={tenantSlug}
+											memberId={memberId}
+											onPledge={open}
+											past
+										/>
+									))}
+								</div>
+							</>
+						)}
+					</>
+				)}
+			</div>
 		</div>
 	);
 };

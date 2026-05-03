@@ -38,8 +38,9 @@ export const InvitationsPage = () => {
 		});
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Directory"
 				title="Invitations"
 				subtitle="Manage member and admin access to your church account."
@@ -50,14 +51,14 @@ export const InvitationsPage = () => {
 				}
 			/>
 
-			<InvitationsStatsBar
-				total={invitations.length}
-				pending={pendingCount}
-				accepted={acceptedCount}
-				cancelled={cancelledCount}
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<InvitationsStatsBar
+					total={invitations.length}
+					pending={pendingCount}
+					accepted={acceptedCount}
+					cancelled={cancelledCount}
+				/>
 
-			<div className="px-6 pb-10">
 				<InvitationsTable
 					rows={invitations}
 					loading={invitationsQ.isLoading}

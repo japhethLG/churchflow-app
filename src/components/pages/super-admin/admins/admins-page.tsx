@@ -129,8 +129,9 @@ export const AdminsPage = () => {
 	];
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Platform"
 				title="Admins"
 				subtitle="Everyone with admin access across all churches."
@@ -144,57 +145,59 @@ export const AdminsPage = () => {
 				}
 			/>
 
-			{/* KPI pills */}
-			<div className="mb-6 flex flex-wrap gap-2.5">
-				<StatPill label="Super admins" value={stats?.superAdmins ?? "—"} />
-				<StatPill label="Tenant admins" value={stats?.totalAdmins ?? "—"} />
-				{!isLoading && (
-					<StatPill label="Showing" value={usersData?.total ?? 0} />
-				)}
-			</div>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{/* KPI pills */}
+				<div className="mb-6 flex flex-wrap gap-2.5">
+					<StatPill label="Super admins" value={stats?.superAdmins ?? "—"} />
+					<StatPill label="Tenant admins" value={stats?.totalAdmins ?? "—"} />
+					{!isLoading && (
+						<StatPill label="Showing" value={usersData?.total ?? 0} />
+					)}
+				</div>
 
-			{/* Filter row */}
-			<div className="mb-5 flex flex-wrap items-center gap-2.5">
-				<Input
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					placeholder="Search by name or email…"
-					className="h-9 w-full min-w-[200px] max-w-[320px] rounded-xl border-border bg-muted flex-1"
+				{/* Filter row */}
+				<div className="mb-5 flex flex-wrap items-center gap-2.5">
+					<Input
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						placeholder="Search by name or email…"
+						className="h-9 w-full min-w-[200px] max-w-[320px] rounded-xl border-border bg-muted flex-1"
+					/>
+
+					<Select
+						value={tenantFilter}
+						onChange={setTenantFilter}
+						size="sm"
+						placeholder="All churches"
+						showEmptyOption
+						options={tenants
+							// .filter((t) => !(t as { deletedAt?: Date | null }).deletedAt)
+							.map((t) => ({ value: t.id, label: t.name }))}
+						className="w-auto"
+					/>
+
+					<Chip
+						active={superAdminOnly}
+						onClick={() => setSuperAdminOnly((v) => !v)}
+						className="h-8"
+					>
+						Super admins only
+					</Chip>
+				</div>
+
+				<DataTable<AdminUser>
+					columns={columns}
+					rows={users}
+					rowKey={(u) => u.id}
+					loading={isLoading}
+					emptyTitle="No admin users yet"
+					emptySubtitle={
+						search || tenantFilter || superAdminOnly
+							? "No users match the current filters."
+							: "Invite your first admin to get started."
+					}
 				/>
-
-				<Select
-					value={tenantFilter}
-					onChange={setTenantFilter}
-					size="sm"
-					placeholder="All churches"
-					showEmptyOption
-					options={tenants
-						// .filter((t) => !(t as { deletedAt?: Date | null }).deletedAt)
-						.map((t) => ({ value: t.id, label: t.name }))}
-					className="w-auto"
-				/>
-
-				<Chip
-					active={superAdminOnly}
-					onClick={() => setSuperAdminOnly((v) => !v)}
-					className="h-8"
-				>
-					Super admins only
-				</Chip>
 			</div>
-
-			<DataTable<AdminUser>
-				columns={columns}
-				rows={users}
-				rowKey={(u) => u.id}
-				loading={isLoading}
-				emptyTitle="No admin users yet"
-				emptySubtitle={
-					search || tenantFilter || superAdminOnly
-						? "No users match the current filters."
-						: "Invite your first admin to get started."
-				}
-			/>
 		</div>
 	);
 };

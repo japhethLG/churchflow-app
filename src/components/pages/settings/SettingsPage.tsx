@@ -74,13 +74,14 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 
 	if (tenantQ.isLoading) {
 		return (
-			<div>
+			<div className="h-full flex flex-col">
 				<PageHeader
+					className="px-8"
 					overline="Configuration"
 					title="Settings."
 					subtitle="Loading..."
 				/>
-				<div className="flex flex-col gap-4">
+				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
 					{[0, 1, 2].map((i) => (
 						<Card key={i}>
 							<div className="mb-5 h-4 w-40 animate-pulse rounded bg-secondary" />
@@ -94,8 +95,9 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 	}
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Configuration"
 				title="Settings"
 				subtitle="Manage your church profile."
@@ -115,72 +117,74 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 				}
 			/>
 
-			{error && (
-				<div className="mb-4 rounded-[10px] bg-destructive/10 px-4 py-3 text-sm text-destructive">
-					{error}
-				</div>
-			)}
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{error && (
+					<div className="mb-4 rounded-[10px] bg-destructive/10 px-4 py-3 text-sm text-destructive">
+						{error}
+					</div>
+				)}
 
-			<Form<SettingsFormValues>
-				methods={methods}
-				onSubmit={onSubmit}
-				className="w-2xl gap-5"
-			>
-				<Card>
-					<SectionTitle title="Church profile" />
-					<div className="flex flex-col gap-4">
-						<FormInput
-							inputName="name"
-							label="Church name"
-							placeholder="Grace Community Church"
-						/>
-						<FormInput
-							inputName="address"
-							label="Address"
-							placeholder="123 Main St, Anytown, CA"
-						/>
+				<Form<SettingsFormValues>
+					methods={methods}
+					onSubmit={onSubmit}
+					className="w-2xl gap-5"
+				>
+					<Card>
+						<SectionTitle title="Church profile" />
+						<div className="flex flex-col gap-4">
+							<FormInput
+								inputName="name"
+								label="Church name"
+								placeholder="Grace Community Church"
+							/>
+							<FormInput
+								inputName="address"
+								label="Address"
+								placeholder="123 Main St, Anytown, CA"
+							/>
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<FormInput
+									inputName="phone"
+									label="Phone"
+									type="tel"
+									placeholder="+1 555-555-0123"
+								/>
+								<FormInput
+									inputName="email"
+									label="Email"
+									type="email"
+									placeholder="office@example.com"
+								/>
+							</div>
+						</div>
+					</Card>
+
+					<Card>
+						<SectionTitle title="Identifiers" />
 						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<FormInput
-								inputName="phone"
-								label="Phone"
-								type="tel"
-								placeholder="+1 555-555-0123"
-							/>
-							<FormInput
-								inputName="email"
-								label="Email"
-								type="email"
-								placeholder="office@example.com"
-							/>
-						</div>
-					</div>
-				</Card>
-
-				<Card>
-					<SectionTitle title="Identifiers" />
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-						<div>
-							<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
-								Slug
-							</span>
-							<div className="rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">
-								{tenant?.slug ?? tenantSlug}
+							<div>
+								<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+									Slug
+								</span>
+								<div className="rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">
+									{tenant?.slug ?? tenantSlug}
+								</div>
+								<p className="mt-1 text-[11px] text-muted-foreground">
+									Only super-admins can change this.
+								</p>
 							</div>
-							<p className="mt-1 text-[11px] text-muted-foreground">
-								Only super-admins can change this.
-							</p>
-						</div>
-						<div>
-							<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
-								Tenant ID
-							</span>
-							<div className="truncate overflow-hidden rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">
-								{tenant?.id ?? "—"}
+							<div>
+								<span className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+									Tenant ID
+								</span>
+								<div className="truncate overflow-hidden rounded-[10px] bg-muted px-3.5 py-2.5 font-mono text-sm text-muted-foreground">
+									{tenant?.id ?? "—"}
+								</div>
 							</div>
 						</div>
-					</div>
-				</Card>
-			</Form>
+					</Card>
+				</Form>
+			</div>
 		</div>
 	);
 };

@@ -38,29 +38,49 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 
 	if (isLoading) {
 		return (
-			<div className="py-10">
-				<div className="mb-8 h-8 w-60 animate-pulse rounded-lg bg-secondary" />
-				<div className="grid grid-cols-4 gap-4">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<div
-							key={i}
-							className="h-[100px] animate-pulse rounded-2xl bg-card"
-						/>
-					))}
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Platform / Churches"
+					title="Loading..."
+					subtitle="Fetching church details..."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+					<div className="grid grid-cols-4 gap-4">
+						{[1, 2, 3, 4].map((id) => (
+							<div
+								key={id}
+								className="h-[100px] animate-pulse rounded-2xl bg-card"
+							/>
+						))}
+					</div>
 				</div>
 			</div>
 		);
 	}
 
 	if (!tenant) {
-		return <div className="p-10 text-destructive">Church not found.</div>;
+		return (
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Platform / Churches"
+					title="Not Found"
+					subtitle="Church not found."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-destructive">
+					Church not found.
+				</div>
+			</div>
+		);
 	}
 
 	const isDeleted = Boolean((tenant as { deletedAt?: Date | null }).deletedAt);
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Platform / Churches"
 				title={
 					<span className="inline-flex items-center gap-3">
@@ -122,69 +142,71 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 				}
 			/>
 
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<Card>
-					<div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-						About
-					</div>
-					{(
-						[
-							["Slug", `/${tenant.slug}`, true],
-							[
-								"Created",
-								dayjs(tenant.createdAt).format("MMMM D, YYYY"),
-								false,
-							],
-							...(isDeleted
-								? ([
-										[
-											"Archived",
-											dayjs(
-												(tenant as unknown as { deletedAt: Date }).deletedAt,
-											).format("MMMM D, YYYY"),
-											false,
-										],
-									] as const)
-								: []),
-						] as const
-					).map(([label, value, isSlug]) => (
-						<div
-							key={label}
-							className="flex justify-between border-b border-border py-3 text-sm last:border-b-0"
-						>
-							<span className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-								{label}
-							</span>
-							<span className={isSlug ? "text-primary" : "text-foreground"}>
-								{value}
-							</span>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+					<Card>
+						<div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+							About
 						</div>
-					))}
+						{(
+							[
+								["Slug", `/${tenant.slug}`, true],
+								[
+									"Created",
+									dayjs(tenant.createdAt).format("MMMM D, YYYY"),
+									false,
+								],
+								...(isDeleted
+									? ([
+											[
+												"Archived",
+												dayjs(
+													(tenant as unknown as { deletedAt: Date }).deletedAt,
+												).format("MMMM D, YYYY"),
+												false,
+											],
+										] as const)
+									: []),
+							] as const
+						).map(([label, value, isSlug]) => (
+							<div
+								key={label}
+								className="flex justify-between border-b border-border py-3 text-sm last:border-b-0"
+							>
+								<span className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+									{label}
+								</span>
+								<span className={isSlug ? "text-primary" : "text-foreground"}>
+									{value}
+								</span>
+							</div>
+						))}
 
-					<div className="mt-4 flex flex-wrap gap-2">
-						<Button
-							variant="secondary"
-							size="sm"
-							onClick={() =>
-								openModal("rename-tenant-slug", {
-									tenantId: tenant.id,
-									currentSlug: tenant.slug,
-								})
-							}
-						>
-							Rename slug
-						</Button>
-					</div>
-				</Card>
+						<div className="mt-4 flex flex-wrap gap-2">
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={() =>
+									openModal("rename-tenant-slug", {
+										tenantId: tenant.id,
+										currentSlug: tenant.slug,
+									})
+								}
+							>
+								Rename slug
+							</Button>
+						</div>
+					</Card>
 
-				<Card>
-					<div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-						Recent activity
-					</div>
-					<div className="py-10 text-center text-[13px] text-muted-foreground">
-						Audit log coming soon
-					</div>
-				</Card>
+					<Card>
+						<div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+							Recent activity
+						</div>
+						<div className="py-10 text-center text-[13px] text-muted-foreground">
+							Audit log coming soon
+						</div>
+					</Card>
+				</div>
 			</div>
 		</div>
 	);

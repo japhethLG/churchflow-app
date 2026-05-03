@@ -32,35 +32,36 @@ export const MemberMyPledgesPage = () => {
 		pledgesQ.isLoading || memberQ.isLoading || campaignsQ.isLoading;
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="My pledges"
 				title="Your pledges"
 				subtitle="Track your commitments to church campaigns."
 			/>
 
-			{!loading && pledges.length > 0 && (
-				<div className="flex gap-10 px-6 pb-6">
-					<div>
-						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-							Active pledges
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{!loading && pledges.length > 0 && (
+					<div className="flex gap-10 pb-6">
+						<div>
+							<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+								Active pledges
+							</div>
+							<div className="text-2xl font-semibold tracking-tight tabular-nums">
+								{activePledges.length}
+							</div>
 						</div>
-						<div className="text-2xl font-semibold tracking-tight tabular-nums">
-							{activePledges.length}
+						<div>
+							<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+								Total pledged (active)
+							</div>
+							<div className="text-2xl font-semibold tracking-tight tabular-nums">
+								{formatCurrency(totalActive)}
+							</div>
 						</div>
 					</div>
-					<div>
-						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-							Total pledged (active)
-						</div>
-						<div className="text-2xl font-semibold tracking-tight tabular-nums">
-							{formatCurrency(totalActive)}
-						</div>
-					</div>
-				</div>
-			)}
+				)}
 
-			<div className="px-6 pb-10">
 				<MemberPledgesTable
 					rows={pledges}
 					loading={loading}

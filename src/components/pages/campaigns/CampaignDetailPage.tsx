@@ -26,21 +26,33 @@ export const CampaignDetailPage = () => {
 
 	if (isLoading) {
 		return (
-			<div className="p-6">
-				<div className="mb-6 h-[200px] rounded-[20px] bg-secondary" />
-				<div className="h-60 rounded-2xl bg-secondary" />
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Fundraising / Campaigns"
+					title="Loading..."
+					subtitle="Fetching campaign details..."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
+				</div>
 			</div>
 		);
 	}
 
 	if (error || !campaign) {
 		return (
-			<div className="bg-background px-10 py-10 text-center text-muted-foreground">
-				<p className="mb-1 text-base font-medium text-foreground">
-					Campaign not found
-				</p>
-				<p className="text-sm">It may have been deleted.</p>
-				<div className="mt-4">
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Fundraising / Campaigns"
+					title="Not Found"
+					subtitle="This campaign may have been deleted."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+					<p className="mb-4 text-base font-medium text-foreground">
+						Campaign not found
+					</p>
 					<Button
 						variant="secondary"
 						onClick={() => router.push(`/${tenantSlug}/admin/campaigns`)}
@@ -106,8 +118,9 @@ export const CampaignDetailPage = () => {
 		openModal("confirm-delete-pledge", { tenantSlug, pledgeId: pledge.id });
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Fundraising / Campaigns"
 				title={campaign.title}
 				subtitle="Goal, items, and pledges for this campaign."
@@ -145,28 +158,30 @@ export const CampaignDetailPage = () => {
 				}
 			/>
 
-			<CampaignHero campaign={campaign} />
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<CampaignHero campaign={campaign} />
 
-			<div className="grid gap-4">
-				<CampaignProgressCard progress={progress} loading={progressLoading} />
+				<div className="grid gap-4">
+					<CampaignProgressCard progress={progress} loading={progressLoading} />
 
-				<CampaignItemsList
-					items={items}
-					progressByItemId={progressByItemId}
-					onAdd={openAddItem}
-					onEdit={openEditItem}
-					onDelete={openDeleteItem}
-				/>
+					<CampaignItemsList
+						items={items}
+						progressByItemId={progressByItemId}
+						onAdd={openAddItem}
+						onEdit={openEditItem}
+						onDelete={openDeleteItem}
+					/>
 
-				<CampaignPledgesList
-					tenantSlug={tenantSlug}
-					campaignId={campaign.id}
-					campaignTitle={campaign.title}
-					items={items}
-					onCreate={openCreatePledge}
-					onEdit={openEditPledge}
-					onDelete={openDeletePledge}
-				/>
+					<CampaignPledgesList
+						tenantSlug={tenantSlug}
+						campaignId={campaign.id}
+						campaignTitle={campaign.title}
+						items={items}
+						onCreate={openCreatePledge}
+						onEdit={openEditPledge}
+						onDelete={openDeletePledge}
+					/>
+				</div>
 			</div>
 		</div>
 	);

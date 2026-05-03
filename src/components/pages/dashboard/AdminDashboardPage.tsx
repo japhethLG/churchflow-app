@@ -65,8 +65,9 @@ export const AdminDashboardPage = () => {
 	const firstName = user?.displayName?.split(" ")[0] ?? "Admin";
 
 	return (
-		<div className="h-full overflow-auto pr-2">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline={`Overview · ${dayjs().format("MMMM YYYY")}`}
 				title={`${getGreeting()}, ${firstName}`}
 				subtitle={`Here's how giving is trending at your church.`}
@@ -80,38 +81,40 @@ export const AdminDashboardPage = () => {
 					</Button>
 				}
 			/>
-
-			{/* KPI strip */}
-			<DashboardKpiStrip
-				summary={currentMonthSummary.data}
-				previousSummary={previousMonthSummary.data}
-				memberCount={memberCount}
-				activeCampaignCount={activeCampaigns.length}
-				loading={currentMonthSummary.isLoading}
-			/>
-
-			{/* Charts row */}
-			<DashboardCharts
-				summary={chartSummary.data}
-				loading={chartSummary.isLoading}
-				months={chartMonths}
-				onMonthsChange={setChartMonths}
-			/>
-
-			{/* Bottom row: Recent gifts + Active campaigns */}
-			<div className="mb-4 grid grid-cols-2 gap-4">
-				<DashboardRecentGifts
-					transactions={recentTx.data?.items ?? []}
-					membersById={membersById}
-					loading={recentTx.isLoading}
-					tenantSlug={tenantSlug}
+			{/* Content Wrapper */}
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{/* KPI strip */}
+				<DashboardKpiStrip
+					summary={currentMonthSummary.data}
+					previousSummary={previousMonthSummary.data}
+					memberCount={memberCount}
+					activeCampaignCount={activeCampaigns.length}
+					loading={currentMonthSummary.isLoading}
 				/>
-				<DashboardActiveCampaigns
-					campaigns={campaigns}
-					progressMap={progressMap}
-					loading={campaignsQ.isLoading}
-					tenantSlug={tenantSlug}
+
+				{/* Charts row */}
+				<DashboardCharts
+					summary={chartSummary.data}
+					loading={chartSummary.isLoading}
+					months={chartMonths}
+					onMonthsChange={setChartMonths}
 				/>
+
+				{/* Bottom row: Recent gifts + Active campaigns */}
+				<div className="mb-4 grid grid-cols-2 gap-4">
+					<DashboardRecentGifts
+						transactions={recentTx.data?.items ?? []}
+						membersById={membersById}
+						loading={recentTx.isLoading}
+						tenantSlug={tenantSlug}
+					/>
+					<DashboardActiveCampaigns
+						campaigns={campaigns}
+						progressMap={progressMap}
+						loading={campaignsQ.isLoading}
+						tenantSlug={tenantSlug}
+					/>
+				</div>
 			</div>
 		</div>
 	);

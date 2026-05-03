@@ -72,8 +72,9 @@ export const MembersListPage = () => {
 		openModal("merge-member", { tenantSlug, keep: m });
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Directory"
 				title="Members"
 				subtitle="Everyone giving at this church."
@@ -89,38 +90,40 @@ export const MembersListPage = () => {
 				}
 			/>
 
-			<MembersFilters
-				value={filters}
-				onChange={(v) => {
-					setFilters(v);
-					setOffset(0);
-				}}
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<MembersFilters
+					value={filters}
+					onChange={(v) => {
+						setFilters(v);
+						setOffset(0);
+					}}
+				/>
 
-			<MembersStatsBar
-				total={total}
-				active={activeCount}
-				unregistered={tempCount}
-			/>
+				<MembersStatsBar
+					total={total}
+					active={activeCount}
+					unregistered={tempCount}
+				/>
 
-			<MembersTable
-				rows={visible}
-				loading={isLoading}
-				pagination={{
-					total,
-					offset,
-					limit: PAGE_SIZE,
-					onChange: setOffset,
-				}}
-				handlers={{
-					onView: (m) => router.push(`/${tenantSlug}/admin/members/${m.id}`),
-					onEdit: openEdit,
-					onDelete: openDelete,
-					onClaimInvite: openClaimInvite,
-					onMerge: openMerge,
-				}}
-				onAdd={openAdd}
-			/>
+				<MembersTable
+					rows={visible}
+					loading={isLoading}
+					pagination={{
+						total,
+						offset,
+						limit: PAGE_SIZE,
+						onChange: setOffset,
+					}}
+					handlers={{
+						onView: (m) => router.push(`/${tenantSlug}/admin/members/${m.id}`),
+						onEdit: openEdit,
+						onDelete: openDelete,
+						onClaimInvite: openClaimInvite,
+						onMerge: openMerge,
+					}}
+					onAdd={openAdd}
+				/>
+			</div>
 		</div>
 	);
 };

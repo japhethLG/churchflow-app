@@ -157,164 +157,95 @@ export const MemberTransactions = ({
 	];
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="My Giving"
 				title="Your giving history."
-				subtitle="Everything Grace Community has recorded for you \u2014 private, and always yours."
+				subtitle={`Everything ${tenantSlug} has recorded for you \u2014 private, and always yours.`}
 			/>
 
-			{/* Filter bar */}
-			<div
-				style={{
-					background: "var(--muted)",
-					borderRadius: 16,
-					padding: 12,
-					display: "flex",
-					gap: 10,
-					alignItems: "center",
-					marginBottom: 20,
-					flexWrap: "wrap",
-				}}
-			>
-				<div style={{ display: "flex", gap: 6 }}>
-					<Chip
-						active={rangeFilter === "MONTH"}
-						onClick={() => setRangeFilter("MONTH")}
-					>
-						This month
-					</Chip>
-					<Chip
-						active={rangeFilter === "YEAR"}
-						onClick={() => setRangeFilter("YEAR")}
-					>
-						This year
-					</Chip>
-					<Chip
-						active={rangeFilter === "ALL"}
-						onClick={() => setRangeFilter("ALL")}
-					>
-						All time
-					</Chip>
-				</div>
-
-				<div style={{ width: 1, height: 24, background: "var(--secondary)" }} />
-
-				<div style={{ display: "flex", gap: 6 }}>
-					{types.map((t) => (
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				{/* Filter bar */}
+				<div className="mb-5 flex flex-wrap items-center gap-[10px] rounded-2xl bg-muted p-3">
+					<div className="flex gap-[6px]">
 						<Chip
-							key={t.value}
-							active={typeFilter === t.value}
-							onClick={() => setTypeFilter(t.value)}
+							active={rangeFilter === "MONTH"}
+							onClick={() => setRangeFilter("MONTH")}
 						>
-							{t.label}
+							This month
 						</Chip>
-					))}
+						<Chip
+							active={rangeFilter === "YEAR"}
+							onClick={() => setRangeFilter("YEAR")}
+						>
+							This year
+						</Chip>
+						<Chip
+							active={rangeFilter === "ALL"}
+							onClick={() => setRangeFilter("ALL")}
+						>
+							All time
+						</Chip>
+					</div>
+
+					<div className="h-6 w-px bg-secondary" />
+
+					<div className="flex gap-[6px]">
+						{types.map((t) => (
+							<Chip
+								key={t.value}
+								active={typeFilter === t.value}
+								onClick={() => setTypeFilter(t.value)}
+							>
+								{t.label}
+							</Chip>
+						))}
+					</div>
+
+					<div className="ml-auto text-xs text-muted-foreground">
+						{transactions.length} gift{transactions.length !== 1 ? "s" : ""}
+					</div>
 				</div>
 
-				<div
-					style={{
-						marginLeft: "auto",
-						fontSize: 12,
-						color: "var(--muted-foreground)",
-					}}
-				>
-					{transactions.length} gift{transactions.length !== 1 ? "s" : ""}
+				{/* Summary strip */}
+				<div className="mb-6 flex gap-10 px-6 py-4">
+					<div>
+						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+							Total in range
+						</div>
+						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
+							{formatCurrency(stats.total)}
+						</div>
+					</div>
+					<div>
+						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+							Gifts in range
+						</div>
+						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
+							{stats.count}
+						</div>
+					</div>
+					<div>
+						<div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+							Average per gift
+						</div>
+						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
+							{formatCurrency(stats.avg)}
+						</div>
+					</div>
 				</div>
+
+				{/* Table */}
+				<DataTable
+					columns={columns}
+					rows={transactions}
+					rowKey={(t) => t.id}
+					loading={txQ.isLoading}
+					emptyTitle="No transactions found"
+					emptySubtitle="Try adjusting your filters or date range."
+				/>
 			</div>
-
-			{/* Summary strip */}
-			<div
-				style={{
-					display: "flex",
-					gap: 40,
-					padding: "16px 24px",
-					marginBottom: 24,
-				}}
-			>
-				<div>
-					<div
-						style={{
-							fontSize: 11,
-							fontWeight: 600,
-							letterSpacing: "0.08em",
-							textTransform: "uppercase",
-							color: "var(--muted-foreground)",
-							marginBottom: 6,
-						}}
-					>
-						Total in range
-					</div>
-					<div
-						style={{
-							fontSize: 24,
-							fontWeight: 600,
-							letterSpacing: "-0.02em",
-							fontVariantNumeric: "tabular-nums",
-						}}
-					>
-						{formatCurrency(stats.total)}
-					</div>
-				</div>
-				<div>
-					<div
-						style={{
-							fontSize: 11,
-							fontWeight: 600,
-							letterSpacing: "0.08em",
-							textTransform: "uppercase",
-							color: "var(--muted-foreground)",
-							marginBottom: 6,
-						}}
-					>
-						Gifts in range
-					</div>
-					<div
-						style={{
-							fontSize: 24,
-							fontWeight: 600,
-							letterSpacing: "-0.02em",
-							fontVariantNumeric: "tabular-nums",
-						}}
-					>
-						{stats.count}
-					</div>
-				</div>
-				<div>
-					<div
-						style={{
-							fontSize: 11,
-							fontWeight: 600,
-							letterSpacing: "0.08em",
-							textTransform: "uppercase",
-							color: "var(--muted-foreground)",
-							marginBottom: 6,
-						}}
-					>
-						Average per gift
-					</div>
-					<div
-						style={{
-							fontSize: 24,
-							fontWeight: 600,
-							letterSpacing: "-0.02em",
-							fontVariantNumeric: "tabular-nums",
-						}}
-					>
-						{formatCurrency(stats.avg)}
-					</div>
-				</div>
-			</div>
-
-			{/* Table */}
-			<DataTable
-				columns={columns}
-				rows={transactions}
-				rowKey={(t) => t.id}
-				loading={txQ.isLoading}
-				emptyTitle="No transactions found"
-				emptySubtitle="Try adjusting your filters or date range."
-			/>
 		</div>
 	);
 };

@@ -60,15 +60,24 @@ export const CampaignEditPage = () => {
 
 	if (isLoading) {
 		return (
-			<div className="p-6">
-				<p className="text-muted-foreground">Loading…</p>
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Fundraising / Campaigns"
+					title="Loading..."
+					subtitle="Fetching campaign details..."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
+				</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Fundraising / Campaigns"
 				title="Edit campaign"
 				subtitle="Items are managed from the campaign detail page after saving."
@@ -81,13 +90,15 @@ export const CampaignEditPage = () => {
 					</Button>
 				}
 			/>
-			<CampaignForm
-				onSubmit={onSubmit}
-				onCancel={() => router.push(`/${tenantSlug}/admin/campaigns/${id}`)}
-				initialValues={initialValues}
-				submitLabel="Save changes"
-				itemsEditable={false}
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<CampaignForm
+					onSubmit={onSubmit}
+					onCancel={() => router.push(`/${tenantSlug}/admin/campaigns/${id}`)}
+					initialValues={initialValues}
+					submitLabel="Save changes"
+					itemsEditable={false}
+				/>
+			</div>
 		</div>
 	);
 };

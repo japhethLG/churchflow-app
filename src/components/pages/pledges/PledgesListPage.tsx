@@ -87,8 +87,9 @@ export const PledgesListPage = () => {
 	};
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Fundraising"
 				title="Pledges"
 				subtitle="Every commitment, across every active campaign."
@@ -104,35 +105,37 @@ export const PledgesListPage = () => {
 				}
 			/>
 
-			<PledgesFilters
-				value={filters}
-				campaigns={campaigns}
-				onChange={(v) => {
-					setFilters(v);
-					setOffset(0);
-				}}
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<PledgesFilters
+					value={filters}
+					campaigns={campaigns}
+					onChange={(v) => {
+						setFilters(v);
+						setOffset(0);
+					}}
+				/>
 
-			<PledgesStatsBar
-				total={total}
-				active={counts.active}
-				fulfilled={counts.fulfilled}
-				totalAmount={totalAmount}
-			/>
+				<PledgesStatsBar
+					total={total}
+					active={counts.active}
+					fulfilled={counts.fulfilled}
+					totalAmount={totalAmount}
+				/>
 
-			<PledgesTable
-				rows={visible}
-				loading={isLoading}
-				pagination={{ total, offset, limit: PAGE_SIZE, onChange: setOffset }}
-				membersById={membersById}
-				campaignsById={campaignsById}
-				handlers={{
-					onEdit: askEdit,
-					onDelete: askDelete,
-					onOpenCampaign: (id) =>
-						router.push(`/${tenantSlug}/admin/campaigns/${id}`),
-				}}
-			/>
+				<PledgesTable
+					rows={visible}
+					loading={isLoading}
+					pagination={{ total, offset, limit: PAGE_SIZE, onChange: setOffset }}
+					membersById={membersById}
+					campaignsById={campaignsById}
+					handlers={{
+						onEdit: askEdit,
+						onDelete: askDelete,
+						onOpenCampaign: (id) =>
+							router.push(`/${tenantSlug}/admin/campaigns/${id}`),
+					}}
+				/>
+			</div>
 		</div>
 	);
 };

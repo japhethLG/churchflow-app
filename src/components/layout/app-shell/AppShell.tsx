@@ -49,11 +49,11 @@ export const AppShell = ({
 				<TopBar breadcrumb={breadcrumb} />
 				<div
 					className="flex-1 overflow-auto"
-					style={{
-						paddingLeft: contentPad,
-						paddingRight: contentPad,
-						paddingBottom: contentPad,
-					}}
+					// style={{
+					// 	paddingLeft: contentPad,
+					// 	paddingRight: contentPad,
+					// 	paddingBottom: contentPad,
+					// }}
 				>
 					{children}
 				</div>

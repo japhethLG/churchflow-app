@@ -171,8 +171,9 @@ export const TenantsPage = () => {
 	];
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Platform"
 				title="Churches"
 				subtitle="All churches on ChurchFlow. Create new ones and manage their admins."
@@ -186,55 +187,57 @@ export const TenantsPage = () => {
 				}
 			/>
 
-			<div className="mb-6 grid grid-cols-4 gap-4">
-				<StatCard
-					label="Churches"
-					value={stats?.totalTenants ?? "—"}
-					caption={
-						stats ? `${stats.createdThisMonth} created this month` : undefined
-					}
-				/>
-				<StatCard
-					label="Total admins"
-					value={stats?.totalAdmins ?? "—"}
-					caption="Across all churches"
-				/>
-				<StatCard
-					label="Total members"
-					value={
-						stats?.totalMembers != null
-							? stats.totalMembers.toLocaleString()
-							: "—"
-					}
-					caption={
-						stats ? `${stats.newMembersThisMonth} new this month` : undefined
-					}
-				/>
-				<StatCard
-					label="Gifts (30d)"
-					value={
-						stats?.giftsLast30dTotal != null
-							? formatCompact(stats.giftsLast30dTotal)
-							: "—"
-					}
-					caption={
-						stats?.giftsLast30dCount != null
-							? `${stats.giftsLast30dCount.toLocaleString()} gifts`
-							: undefined
-					}
-					accent
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="mb-6 grid grid-cols-4 gap-4">
+					<StatCard
+						label="Churches"
+						value={stats?.totalTenants ?? "—"}
+						caption={
+							stats ? `${stats.createdThisMonth} created this month` : undefined
+						}
+					/>
+					<StatCard
+						label="Total admins"
+						value={stats?.totalAdmins ?? "—"}
+						caption="Across all churches"
+					/>
+					<StatCard
+						label="Total members"
+						value={
+							stats?.totalMembers != null
+								? stats.totalMembers.toLocaleString()
+								: "—"
+						}
+						caption={
+							stats ? `${stats.newMembersThisMonth} new this month` : undefined
+						}
+					/>
+					<StatCard
+						label="Gifts (30d)"
+						value={
+							stats?.giftsLast30dTotal != null
+								? formatCompact(stats.giftsLast30dTotal)
+								: "—"
+						}
+						caption={
+							stats?.giftsLast30dCount != null
+								? `${stats.giftsLast30dCount.toLocaleString()} gifts`
+								: undefined
+						}
+						accent
+					/>
+				</div>
+
+				<DataTable<Tenant>
+					columns={columns}
+					rows={tenants}
+					rowKey={(t) => t.id}
+					loading={isLoading}
+					onRowClick={(t) => router.push(`/super-admin/tenants/${t.slug}`)}
+					emptyTitle="No churches yet"
+					emptySubtitle="Create your first church to get started."
 				/>
 			</div>
-
-			<DataTable<Tenant>
-				columns={columns}
-				rows={tenants}
-				rowKey={(t) => t.id}
-				loading={isLoading}
-				onRowClick={(t) => router.push(`/super-admin/tenants/${t.slug}`)}
-				emptyTitle="No churches yet"
-				emptySubtitle="Create your first church to get started."
-			/>
 		</div>
 	);
 };

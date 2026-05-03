@@ -58,142 +58,96 @@ export const MemberProfile = ({
 	};
 
 	return (
-		<div className="w-2xl">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline={overline}
 				title={title}
 				subtitle="Manage your contact information and how the church office reaches you."
 			/>
 
-			<Card className="mt-6">
-				<div
-					style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-				>
-					<Input
-						label="First name"
-						value={form.firstName}
-						onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-						placeholder="e.g. Amara"
-					/>
-					<Input
-						label="Last name"
-						value={form.lastName}
-						onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-						placeholder="e.g. Okonkwo"
-					/>
-				</div>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="max-w-2xl">
+					<Card className="mt-6">
+						<div className="grid grid-cols-2 gap-4">
+							<Input
+								label="First name"
+								value={form.firstName}
+								onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+								placeholder="e.g. Amara"
+							/>
+							<Input
+								label="Last name"
+								value={form.lastName}
+								onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+								placeholder="e.g. Okonkwo"
+							/>
+						</div>
 
-				<div style={{ marginTop: 16 }}>
-					<Input
-						label="Email address"
-						icon="mail"
-						value={form.email}
-						readOnly
-						disabled
-						helper="Email is managed by your sign-in provider."
-					/>
-				</div>
+						<div className="mt-4">
+							<Input
+								label="Email address"
+								icon="mail"
+								value={form.email}
+								readOnly
+								disabled
+								helper="Email is managed by your sign-in provider."
+							/>
+						</div>
 
-				<div style={{ marginTop: 16 }}>
-					<Input
-						label="Phone number"
-						icon="phone"
-						value={form.phone}
-						onChange={(e) => setForm({ ...form, phone: e.target.value })}
-						placeholder="+1 555 000 0000"
-					/>
-				</div>
+						<div className="mt-4">
+							<Input
+								label="Phone number"
+								icon="phone"
+								value={form.phone}
+								onChange={(e) => setForm({ ...form, phone: e.target.value })}
+								placeholder="+1 555 000 0000"
+							/>
+						</div>
 
-				<div style={{ marginTop: 16 }}>
-					<Input
-						label="Home address"
-						icon="location"
-						value={form.address}
-						onChange={(e) => setForm({ ...form, address: e.target.value })}
-						placeholder="Street, City, State, ZIP"
-					/>
-				</div>
+						<div className="mt-4">
+							<Input
+								label="Home address"
+								icon="location"
+								value={form.address}
+								onChange={(e) => setForm({ ...form, address: e.target.value })}
+								placeholder="Street, City, State, ZIP"
+							/>
+						</div>
 
-				<div
-					style={{
-						marginTop: 32,
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-					}}
-				>
-					<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-						{saved && (
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									gap: 6,
-									color: "var(--secondary-foreground)",
-									fontSize: 13,
-									fontWeight: 500,
-								}}
-							>
-								<Icon name="check" size={16} color={"var(--primary)"} />
-								Profile updated successfully
+						<div className="mt-8 flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								{saved && (
+									<div className="flex items-center gap-1.5 text-[13px] font-medium text-secondary-foreground">
+										<Icon name="check" size={16} className="text-primary" />
+										Profile updated successfully
+									</div>
+								)}
 							</div>
-						)}
-					</div>
-					<Button
-						onClick={handleSave}
-						loading={updateM.isPending}
-						disabled={updateM.isPending}
-					>
-						Save changes
-					</Button>
-				</div>
-			</Card>
+							<Button
+								onClick={handleSave}
+								loading={updateM.isPending}
+								disabled={updateM.isPending}
+							>
+								Save changes
+							</Button>
+						</div>
+					</Card>
 
-			<div
-				style={{
-					marginTop: 40,
-					padding: "24px",
-					background: "var(--muted)",
-					borderRadius: 16,
-					display: "flex",
-					gap: 16,
-					alignItems: "flex-start",
-				}}
-			>
-				<div
-					style={{
-						width: 40,
-						height: 40,
-						borderRadius: 12,
-						background: "var(--input)",
-						display: "grid",
-						placeItems: "center",
-						flexShrink: 0,
-					}}
-				>
-					<Icon name="bell" size={20} color={"var(--secondary-foreground)"} />
-				</div>
-				<div>
-					<div
-						style={{
-							fontSize: 14,
-							fontWeight: 600,
-							color: "var(--foreground)",
-						}}
-					>
-						Privacy Note
-					</div>
-					<div
-						style={{
-							fontSize: 13,
-							color: "var(--secondary-foreground)",
-							marginTop: 4,
-							lineHeight: 1.5,
-						}}
-					>
-						Your information is only visible to authorized church
-						administrators. We use this data to keep you informed about
-						campaigns and to provide accurate giving statements.
+					<div className="mt-10 flex items-start gap-4 rounded-2xl bg-muted p-6">
+						<div className="grid size-10 shrink-0 place-items-center rounded-xl bg-input">
+							<Icon name="bell" size={20} className="text-secondary-foreground" />
+						</div>
+						<div>
+							<div className="text-sm font-semibold text-foreground">
+								Privacy Note
+							</div>
+							<div className="mt-1 text-[13px] leading-relaxed text-secondary-foreground">
+								Your information is only visible to authorized church
+								administrators. We use this data to keep you informed about
+								campaigns and to provide accurate giving statements.
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

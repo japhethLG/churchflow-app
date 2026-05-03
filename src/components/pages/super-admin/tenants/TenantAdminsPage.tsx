@@ -118,8 +118,9 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 	];
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline={tenant ? `Churches / ${tenant.name}` : "Churches"}
 				title="Admins"
 				subtitle={
@@ -150,13 +151,15 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 				}
 			/>
 
-			<DataTable<Member>
-				columns={columns}
-				rows={members}
-				rowKey={(m) => m.id}
-				loading={isLoading}
-				emptyTitle="No members yet"
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<DataTable<Member>
+					columns={columns}
+					rows={members}
+					rowKey={(m) => m.id}
+					loading={isLoading}
+					emptyTitle="No members yet"
+				/>
+			</div>
 		</div>
 	);
 };

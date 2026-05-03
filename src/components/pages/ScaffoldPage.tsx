@@ -14,15 +14,17 @@ export const ScaffoldPage = ({
 	children?: ReactNode;
 }) => {
 	return (
-		<div className="max-w-[1100px] py-6">
-			<PageHeader title={title} subtitle={subtitle} />
-			<div className="mt-6 rounded-2xl border border-dashed border-border bg-card p-8 text-[13px] leading-relaxed text-muted-foreground">
-				{children ?? (
-					<>
-						Not built yet — this page is scaffolded so the route and role gating
-						are real, but the UI will land later.
-					</>
-				)}
+		<div className="h-full flex flex-col">
+			<PageHeader className="px-8" title={title} subtitle={subtitle} />
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="max-w-[1100px] mt-6 rounded-2xl border border-dashed border-border bg-card p-8 text-[13px] leading-relaxed text-muted-foreground">
+					{children ?? (
+						<>
+							Not built yet — this page is scaffolded so the route and role gating
+							are real, but the UI will land later.
+						</>
+					)}
+				</div>
 			</div>
 		</div>
 	);

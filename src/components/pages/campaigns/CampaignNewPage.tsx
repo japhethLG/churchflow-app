@@ -3,7 +3,6 @@
 import { useParams, useRouter } from "next/navigation";
 import { Button, PageHeader } from "@/components/primitives";
 import { useAddCampaignItem, useCreateCampaign } from "@/lib/api/campaigns";
-import { useTenant } from "@/lib/api/tenants";
 import dayjs from "@/lib/dayjs";
 import { CampaignForm } from "./CampaignForm";
 import type { CampaignFormValues } from "./formHelpers";
@@ -11,7 +10,6 @@ import type { CampaignFormValues } from "./formHelpers";
 export const CampaignNewPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
-	const { data: tenant } = useTenant(tenantSlug);
 	const createCampaign = useCreateCampaign(tenantSlug);
 	const addItem = useAddCampaignItem(tenantSlug);
 
@@ -51,8 +49,9 @@ export const CampaignNewPage = () => {
 	};
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Fundraising / Campaigns"
 				title="New campaign"
 				subtitle="Set the goal in line items so members can pledge to specific needs."
@@ -65,11 +64,13 @@ export const CampaignNewPage = () => {
 					</Button>
 				}
 			/>
-			<CampaignForm
-				onSubmit={onSubmit}
-				onCancel={() => router.push(`/${tenantSlug}/admin/campaigns`)}
-				submitLabel="Create campaign"
-			/>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<CampaignForm
+					onSubmit={onSubmit}
+					onCancel={() => router.push(`/${tenantSlug}/admin/campaigns`)}
+					submitLabel="Create campaign"
+				/>
+			</div>
 		</div>
 	);
 };

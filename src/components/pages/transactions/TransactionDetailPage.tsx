@@ -61,21 +61,33 @@ export const TransactionDetailPage = () => {
 
 	if (isLoading) {
 		return (
-			<div className="p-6">
-				<div className="mb-6 h-[60px] rounded-xl bg-secondary" />
-				<div className="h-60 rounded-2xl bg-secondary" />
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Ledger / Transactions"
+					title="Loading..."
+					subtitle="Fetching transaction details..."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
+				</div>
 			</div>
 		);
 	}
 
 	if (error || !tx) {
 		return (
-			<div className="bg-background px-10 py-10 text-center text-muted-foreground">
-				<p className="mb-1 text-base font-medium text-foreground">
-					Transaction not found
-				</p>
-				<p className="text-sm">It may have been deleted.</p>
-				<div className="mt-4">
+			<div className="h-full flex flex-col">
+				<PageHeader
+					className="px-8"
+					overline="Ledger / Transactions"
+					title="Not Found"
+					subtitle="This transaction may have been deleted."
+				/>
+				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+					<p className="mb-4 text-base font-medium text-foreground">
+						Transaction not found
+					</p>
 					<Button
 						variant="secondary"
 						onClick={() => router.push(`/${tenantSlug}/admin/transactions`)}
@@ -96,8 +108,9 @@ export const TransactionDetailPage = () => {
 			: null;
 
 	return (
-		<div className="h-full overflow-auto">
+		<div className="h-full flex flex-col">
 			<PageHeader
+				className="px-8"
 				overline="Ledger / Transactions"
 				title={formatCurrency(tx.amount)}
 				subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${dayjs(tx.date).format("dddd, MMMM D, YYYY")}`}
@@ -129,118 +142,120 @@ export const TransactionDetailPage = () => {
 				}
 			/>
 
-			<div className="grid grid-cols-[1.5fr_1fr] items-start gap-4">
-				<Card padding={24}>
-					<SectionTitle title="Details" />
-					<DetailRow label="Amount" value={<Amount value={tx.amount} />} />
-					<DetailRow
-						label="Type"
-						value={<TypeBadge type={TYPE_BADGE_LABEL[tx.type]} />}
-					/>
-					<DetailRow
-						label="Reference #"
-						value={
-							nstr(tx.referenceNumber) ? (
-								<span className="font-mono text-[13px] text-muted-foreground">
-									{nstr(tx.referenceNumber)}
-								</span>
-							) : (
-								<span className="text-muted-foreground">—</span>
-							)
-						}
-					/>
-					<DetailRow
-						label="Recorded on"
-						value={dayjs(tx.createdAt).format("MMM D, YYYY h:mm A")}
-						last
-					/>
-					{nstr(tx.note) && (
-						<>
-							<div className="mb-1.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-								Note
-							</div>
-							<p className="m-0 text-sm leading-relaxed text-secondary-foreground">
-								{nstr(tx.note)}
-							</p>
-						</>
-					)}
-				</Card>
-
-				<Card padding={24}>
-					<SectionTitle title="Attribution" />
-
-					<div className="flex flex-col gap-3.5">
-						{/* Member */}
-						<div>
-							<Label>Member</Label>
-							{member ? (
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									className="h-auto gap-2.5 bg-transparent p-0 text-left font-sans shadow-none hover:bg-muted/60"
-									onClick={() =>
-										router.push(`/${tenantSlug}/admin/members/${member.id}`)
-									}
-								>
-									<span className="flex items-center gap-2.5">
-										<Avatar
-											name={`${member.firstName} ${member.lastName}`}
-											size={32}
-										/>
-										<span className="text-sm font-medium">
-											{member.firstName} {member.lastName}
-										</span>
+			<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="grid grid-cols-[1.5fr_1fr] items-start gap-4">
+					<Card padding={24}>
+						<SectionTitle title="Details" />
+						<DetailRow label="Amount" value={<Amount value={tx.amount} />} />
+						<DetailRow
+							label="Type"
+							value={<TypeBadge type={TYPE_BADGE_LABEL[tx.type]} />}
+						/>
+						<DetailRow
+							label="Reference #"
+							value={
+								nstr(tx.referenceNumber) ? (
+									<span className="font-mono text-[13px] text-muted-foreground">
+										{nstr(tx.referenceNumber)}
 									</span>
-								</Button>
-							) : (
-								<span className="text-sm italic text-muted-foreground">
-									Anonymous gift
-								</span>
-							)}
-						</div>
-
-						{/* Campaign + item */}
-						<div>
-							<Label>Campaign</Label>
-							{campaign ? (
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									className="h-auto px-0 py-0 text-sm font-medium text-primary shadow-none hover:bg-transparent hover:text-primary/90 hover:underline"
-									onClick={() =>
-										router.push(`/${tenantSlug}/admin/campaigns/${campaign.id}`)
-									}
-								>
-									{campaign.title}
-								</Button>
-							) : (
-								<span className="text-sm text-muted-foreground">
-									Not attributed
-								</span>
-							)}
-							{itemTitle && (
-								<div className="mt-1 text-xs text-muted-foreground">
-									Earmarked to <strong>{itemTitle}</strong>
+								) : (
+									<span className="text-muted-foreground">—</span>
+								)
+							}
+						/>
+						<DetailRow
+							label="Recorded on"
+							value={dayjs(tx.createdAt).format("MMM D, YYYY h:mm A")}
+							last
+						/>
+						{nstr(tx.note) && (
+							<>
+								<div className="mb-1.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+									Note
 								</div>
-							)}
-						</div>
+								<p className="m-0 text-sm leading-relaxed text-secondary-foreground">
+									{nstr(tx.note)}
+								</p>
+							</>
+						)}
+					</Card>
 
-						{/* Pledge */}
-						<div>
-							<Label>Pledge</Label>
-							{pledge ? (
-								<span className="text-sm">
-									{formatCurrency(pledge.pledgedAmount)} pledged · status{" "}
-									<strong>{pledge.status.toLowerCase()}</strong>
-								</span>
-							) : (
-								<span className="text-sm text-muted-foreground">Unpledged</span>
-							)}
+					<Card padding={24}>
+						<SectionTitle title="Attribution" />
+
+						<div className="flex flex-col gap-3.5">
+							{/* Member */}
+							<div>
+								<Label>Member</Label>
+								{member ? (
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										className="h-auto gap-2.5 bg-transparent p-0 text-left font-sans shadow-none hover:bg-muted/60"
+										onClick={() =>
+											router.push(`/${tenantSlug}/admin/members/${member.id}`)
+										}
+									>
+										<span className="flex items-center gap-2.5">
+											<Avatar
+												name={`${member.firstName} ${member.lastName}`}
+												size={32}
+											/>
+											<span className="text-sm font-medium">
+												{member.firstName} {member.lastName}
+											</span>
+										</span>
+									</Button>
+								) : (
+									<span className="text-sm italic text-muted-foreground">
+										Anonymous gift
+									</span>
+								)}
+							</div>
+
+							{/* Campaign + item */}
+							<div>
+								<Label>Campaign</Label>
+								{campaign ? (
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										className="h-auto px-0 py-0 text-sm font-medium text-primary shadow-none hover:bg-transparent hover:text-primary/90 hover:underline"
+										onClick={() =>
+											router.push(`/${tenantSlug}/admin/campaigns/${campaign.id}`)
+										}
+									>
+										{campaign.title}
+									</Button>
+								) : (
+									<span className="text-sm text-muted-foreground">
+										Not attributed
+									</span>
+								)}
+								{itemTitle && (
+									<div className="mt-1 text-xs text-muted-foreground">
+										Earmarked to <strong>{itemTitle}</strong>
+									</div>
+								)}
+							</div>
+
+							{/* Pledge */}
+							<div>
+								<Label>Pledge</Label>
+								{pledge ? (
+									<span className="text-sm">
+										{formatCurrency(pledge.pledgedAmount)} pledged · status{" "}
+										<strong>{pledge.status.toLowerCase()}</strong>
+									</span>
+								) : (
+									<span className="text-sm text-muted-foreground">Unpledged</span>
+								)}
+							</div>
 						</div>
-					</div>
-				</Card>
+					</Card>
+				</div>
 			</div>
 		</div>
 	);
