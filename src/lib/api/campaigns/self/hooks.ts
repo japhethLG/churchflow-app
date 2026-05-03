@@ -14,11 +14,7 @@ export const useMyCampaigns = (tenantId: string, enabled = true) => {
 	);
 };
 
-export const useMyCampaign = (
-	tenantId: string,
-	id: string,
-	enabled = true,
-) => {
+export const useMyCampaign = (tenantId: string, id: string, enabled = true) => {
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/me/campaigns/{id}",
 		{ params: { path: { tenantId, id } } },

@@ -38,11 +38,9 @@ export const useRenameTenantSlug = () => {
 
 export const useRestoreTenant = () => {
 	const qc = useQueryClient();
-	return useApiMutation(
-		"/api/v1/platform/tenants/{tenantId}/restore",
-		"post",
-		{ onSuccess: () => invalidateTenants(qc) },
-	);
+	return useApiMutation("/api/v1/platform/tenants/{tenantId}/restore", "post", {
+		onSuccess: () => invalidateTenants(qc),
+	});
 };
 
 export const useSlugSuggestion = (name: string, enabled = true) => {
