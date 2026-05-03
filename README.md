@@ -1,7 +1,8 @@
-# Church App Frontend
+# ChurchFlow Frontend
 
-Next.js 16 frontend for the multi-tenant church app. Admins record tithes,
-offerings, and fundraising campaigns; members pledge and pay against them.
+Next.js 16 frontend for the multi-tenant church-management app. Admins
+record tithes, offerings, and fundraising campaigns; members pledge and
+pay against them. Super-admins run platform ops across every tenant.
 
 Backend lives in [../church-app-backend](../church-app-backend).
 
@@ -10,12 +11,21 @@ Backend lives in [../church-app-backend](../church-app-backend).
 - **Next.js 16** (App Router) + **React 19**
 - **TypeScript 6** (strict)
 - **TanStack Query v5** — server state
-- **openapi-fetch** + **openapi-typescript** — typed HTTP client generated
-  from the backend's OpenAPI spec
-- **Zustand** — tiny client state (modals)
-- **Firebase** (client SDK) — Google SSO; ID tokens sent to the backend,
-  session cookies minted for Next SSR
-- **Tailwind 4** + CSS variables (`globals.css` / `@theme inline`)
+- **openapi-fetch 0.17** + **openapi-typescript 7** — typed HTTP client
+  generated from the backend's OpenAPI spec. Two clients: one in the
+  browser (Bearer ID token), one for RSCs (forwards the session cookie
+  under a custom `SessionCookie` auth scheme)
+- **Zustand 5** — minimal client state (modals only)
+- **react-hook-form 7** + **zod 4** — forms, wrapped in
+  `components/formElements/*`
+- **Firebase** (client SDK) + **firebase-admin** (server) — Google SSO;
+  ID tokens for REST, session cookies for SSR
+- **Tailwind 4** + CSS variables — tokens in `globals.css`
+- **dayjs** — sole date library
+- **recharts**, **lucide-react**, **react-day-picker**, **@base-ui/react**
+  — vendored through primitives, never imported directly from a page
+- **Biome 2** — lint + format
+- **husky** — git hooks
 
 ## Setup
 
@@ -23,110 +33,186 @@ Backend lives in [../church-app-backend](../church-app-backend).
 # 1. Install
 npm install
 
-# 2. Configure env — copy .env.example to .env.local and fill in:
-#    - NEXT_PUBLIC_FIREBASE_* (client SDK config)
-#    - FIREBASE_ADMIN_* (server-side Admin SDK for session cookie minting)
-#    - NEXT_PUBLIC_API_BASE_URL (defaults to http://localhost:8000)
+# 2. Configure env — fill .env.local with:
+#    - NEXT_PUBLIC_FIREBASE_*       (client SDK config)
+#    - FIREBASE_ADMIN_*             (server-side Admin SDK)
+#    - NEXT_PUBLIC_API_BASE_URL     (defaults to http://localhost:8001 in dev)
 
-# 3. Start the backend first (sibling repo), then:
-npm run api:types        # pulls types from http://localhost:8000/api-docs-json
-npm run dev              # Next dev server on :3000
+# 3. Start the backend first (sibling repo). Backend dev server runs on :8001
+#    and exposes /api-docs-json on :8000 for type generation.
+
+# 4. Generate types + run dev server (waits for backend automatically):
+npm run api:types
+npm run dev                    # Next on :3000
 ```
 
 ## Commands
 
 | Command | Purpose |
-|---------|---------|
-| `npm run dev` | Next dev server |
-| `npm run build` | production build |
-| `npm run start` | serve the production build |
+|---|---|
+| `npm run dev` | Wait for backend, then start Next on :3000 |
+| `npm run dev:test` | Same as `dev`, loading `.env.development.local` |
+| `npm run build` | Production build (loads `.env.production`) |
+| `npm run build:test` | Production build with `.env.development.local` |
+| `npm run start` | Serve production build on :3002 |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run api:types` | regenerate `src/lib/api/schema.d.ts` from the running backend |
-| `npm run dev:test` / `build:test` | same but loading `.env.test.local` |
+| `npm run lint` / `format` | Biome lint / format |
+| `npm run check` | `enforce-ui-primitives.mjs` + `biome check --write` |
+| `npm run api:types` | Regenerate `src/lib/api/schema.d.ts` from `:8000/api-docs-json` |
+
+`scripts/enforce-ui-primitives.mjs` (run as part of `npm run check`)
+fails if any native HTML element (`<button>`, `<input>`, `<select>`,
+`<textarea>`, `<img>`, `<label>`, `<table>`, `<hr>`, `<a>`) appears
+outside `components/primitives/` and `components/ui/`.
 
 ## Architecture overview
 
 ```
 src/
-├── app/                  # Next App Router (server + client components)
-│   ├── layout.tsx        # AuthProvider → QueryProvider → ModalHost
-│   ├── (auth)/           # /login, /select-church, /invite
-│   ├── (dashboard)/      # /dashboard, /members, /transactions, …
-│   ├── admin/            # /admin/tenants (super admin)
-│   └── api/auth/session  # Next route that mints/clears the session cookie
+├── app/                                # Next App Router (RSC by default)
+│   ├── layout.tsx                      # AuthProvider → QueryProvider → ModalHost
+│   ├── page.tsx                        # landing redirect
+│   ├── (auth)/                         # /login, /select-church, /invite/[token]
+│   ├── (super-admin)/super-admin/      # platform-ops; not tenant-scoped
+│   │   └── { tenants, admins, audit, profile }
+│   ├── [tenantSlug]/                   # ALL tenant-scoped pages
+│   │   ├── (admin)/admin/{ dashboard, members, campaigns, pledges, transactions, … }
+│   │   ├── (member)/member/{ dashboard, campaigns, my-pledges, my-transactions, … }
+│   │   └── welcome/
+│   ├── api/auth/session/               # POST mints / DELETE clears the session cookie
+│   └── logout/
 │
-├── proxy.ts              # Next middleware — session cookie gate
+├── proxy.ts                            # middleware: cookie gate + per-request CSP nonce
 │
 ├── components/
-│   ├── primitives/       # Button, Input, Card, Table, …
-│   ├── modals/           # BaseModal + one folder per modal (see below)
-│   └── pages/            # page composites
+│   ├── primitives/                     # OUR design system (Button, Input, Card, DataTable, …)
+│   ├── ui/                             # raw shadcn-style wrappers — used BY primitives only
+│   ├── formElements/                   # react-hook-form bindings (FormInput, FormSelect, FormSubmit, …)
+│   ├── layout/                         # AppShell + Sidebar + TopBar
+│   ├── pages/                          # page-level composites (DashboardKpiStrip, CampaignForm, …)
+│   ├── modals/                         # BaseModal + 25+ registered modals
+│   ├── illustrations/                  # SVG components
+│   └── auth/                           # client pieces of the auth flow
 │
 └── lib/
-    ├── api/              # typed hooks — one folder per entity
-    │   ├── client.ts     # openapi-fetch + Bearer token middleware
-    │   ├── hooks.ts      # generic useApiQuery / useApiMutation
-    │   ├── tenants/      # { hooks.ts, keys.ts, index.ts }
-    │   ├── campaigns/
-    │   ├── pledges/
-    │   ├── transactions/
-    │   └── …
-    ├── modals/           # registry + Zustand store + ModalHost
-    ├── auth/             # AuthProvider, signInWithGoogle, refreshSession
-    ├── firebase/         # client + admin SDK factories
-    └── design/           # Shared design helpers (e.g. logo gradient)
+    ├── api/                            # one folder per backend entity, intent-split
+    │   ├── client.ts                   # browser openapi-fetch + Bearer ID token + 401/claims-refresh middleware
+    │   ├── server.ts                   # RSC openapi-fetch + "SessionCookie" scheme middleware
+    │   ├── hooks.ts                    # useApiQuery, useApiMutation, invalidateByPaths, invalidateAllApiQueries
+    │   ├── errors.ts / coerce.ts       # typed errors + nullable-field helpers
+    │   ├── schema.d.ts                 # GENERATED — never edit
+    │   ├── auth/   health/             # flat (not intent-split — per-user / global)
+    │   └── tenants/ members/ pledges/ transactions/ campaigns/ invitations/ admin/
+    │       ├── keys.ts                 # <ENTITY>_PATHS + invalidate<Entity>(qc, tenantId?)
+    │       ├── tenant/   self/         # /tenants/:tenantId/<entity>     /tenants/:tenantId/me/<entity>
+    │       └── platform/   public/     # /platform/<entity>              /<token-route>
+    ├── modals/                         # registry, Zustand store, ModalHost
+    ├── auth/                           # AuthProvider, server.getSessionUser, actions, rate-limit
+    ├── firebase/                       # client + admin SDK factories
+    ├── design/   utils.ts   dayjs.ts   format-currency.ts
 ```
 
-### Data layer
+### Routing model — URL is the source of truth
 
-Every backend endpoint is wrapped in a typed hook:
+Tenant scope is encoded in the URL: `/[tenantSlug]/(admin|member)/…`.
+There is **no** "active tenant" state and **no** `switchTenant` API
+call — to switch tenants, you navigate. Three layers gate access
+(outermost first):
+
+1. `proxy.ts` — middleware redirects unauthenticated visitors to
+   `/login` (except `/login`, `/invite`, `/logout`).
+2. `[tenantSlug]/layout.tsx` — verifies caller is a member of the slug
+   OR a super-admin. For super-admins, pre-validates the slug exists
+   via `serverApi`.
+3. `(admin)/layout.tsx` / `(member)/layout.tsx` — narrow further to
+   ADMIN role / any role and render `AppShell` with the matching
+   perspective.
+
+`(super-admin)/super-admin/*` is gated by its own top-level layout
+(signed-in + `isSuperAdmin`).
+
+### Data layer — intent-split hooks
+
+Every backend endpoint is wrapped in a typed hook in an entity folder
+under `src/lib/api/<entity>/`. Each entity is split by **intent**:
+
+| Subfolder | Backend URL | Hook prefix |
+|---|---|---|
+| `tenant/` | `/tenants/:tenantId/<entity>` | none — `usePledges` |
+| `self/` | `/tenants/:tenantId/me/<entity>` | `My` — `useMyPledges` |
+| `platform/` | `/platform/<entity>` | mostly `Platform` — `usePlatformTenants` |
+| `public/` | token-based / unauthenticated | mostly `Public` |
+
+Member surfaces call `self/*` hooks; admin surfaces call `tenant/*`.
+Authorization is enforced server-side; the FE picks the right intent.
 
 ```tsx
-const { data, isPending } = useTenants();
-const createTx = useCreateTransaction(tenantId);
-createTx.mutate({
+const { data, isPending } = useMyPledges(tenantId);
+const createPledge = useCreatePledge(tenantId);
+
+createPledge.mutate({
   params: { path: { tenantId } },
-  body: { type: "COMMITMENT", amount: 100, pledgeId, … },
+  body: { campaignItemId, amount, memberId, … },
 });
 ```
 
-Paths, params, bodies, and responses are inferred from the backend's OpenAPI
-spec — regenerate with `npm run api:types` whenever the backend changes.
-Each entity owns its invalidation helpers (`invalidateTenants`,
-`invalidateTransactions(qc, tenantId)`, etc.). See
-[CLAUDE.md §5](CLAUDE.md#5-api-layer--one-folder-per-entity) for the full
-pattern.
+Paths, params, bodies, and responses are inferred from the OpenAPI spec
+— regenerate with `npm run api:types`. Mutations call
+`invalidate<Entity>(qc, tenantId)` from the entity's `keys.ts` in
+`onSuccess`. See [CLAUDE.md §6](CLAUDE.md#6-api-layer--one-folder-per-entity-split-by-intent).
 
 ### Auth (dual-path)
 
-1. **Client** signs in with Google → Firebase ID token.
-2. **Backend** verifies the token via `POST /api/v1/auth/session` (upserts
-   the user in Postgres).
-3. **Next** mints a session cookie via `POST /api/auth/session` (for SSR
-   gating).
+```
+Google SSO (Firebase client SDK)
+        │
+        ▼
+    ID token ──┬──► POST /api/v1/auth/session   (backend upserts User + writes claims)
+               └──► POST /api/auth/session       (Admin SDK mints HTTP-only session cookie)
+```
 
-Subsequent API calls carry the ID token (via openapi-fetch middleware);
-subsequent Next navigations carry the session cookie (via the browser).
-After any operation that mutates Firebase custom claims (tenant selection,
-role change), call `refreshSession()` from
-[lib/auth/actions.ts](src/lib/auth/actions.ts) so Server Components see the
-new claims.
+Subsequent client API calls carry the Bearer ID token (browser
+middleware); RSC API calls carry the session cookie under a custom
+`SessionCookie` scheme; Next navigations carry the session cookie via
+the browser.
+
+The Next session-cookie route is rate-limited (20 req/min/IP via
+in-memory token bucket — replace with KV before scaling horizontally).
+
+When the backend mutates Firebase claims (admin grants a role, invite
+accepted, super-admin toggle, sign-out-everywhere) the response carries
+`X-Claims-Refreshed: 1`; the browser middleware sees that header,
+force-refreshes the ID token, and re-mints the session cookie. You
+don't have to call `refreshSession()` manually unless your flow bypasses
+the typed API client.
+
+### UI primitive enforcement
+
+Page code lives at the **primitive** layer
+(`components/primitives/Button`, `Input`, `DataTable`, …), not at the
+raw HTML or the `components/ui/` wrappers. `npm run check` fails the
+build on native `<button>`/`<input>`/`<a>`/etc. outside the allowed
+folders. Forms compose RHF + zod via the
+`components/formElements/Form*` wrappers.
 
 ### Modals
 
-Every modal lives in its own folder and renders inside the shared
-[BaseModal](src/components/modals/BaseModal.tsx) shell. Open any registered
-modal from anywhere with:
+Every modal lives in its own folder under `src/components/modals/<name>/`
+and renders inside the shared
+[BaseModal](src/components/modals/BaseModal.tsx) shell. Open one from
+anywhere with:
 
 ```ts
 openModal("confirm-delete", { title, message, onConfirm });
 ```
 
-See [CLAUDE.md §6](CLAUDE.md#6-modal-system--one-folder-per-modal) for how
-to add one.
+Modal prop shapes are typed via `declare module` augmentation — there's
+no string-typed `props: any` payload. See
+[CLAUDE.md §8](CLAUDE.md#8-modal-system--one-folder-per-modal) for how
+to register one.
 
 ## For agents
 
-Full conventions and anti-patterns live in [CLAUDE.md](CLAUDE.md). Please
-read it before making non-trivial changes. Next 16 has breaking differences
-from prior versions — see [AGENTS.md](AGENTS.md).
+Full conventions and anti-patterns live in [CLAUDE.md](CLAUDE.md).
+Please read it before non-trivial changes. Next 16 has breaking
+differences from prior versions — see [AGENTS.md](AGENTS.md).
