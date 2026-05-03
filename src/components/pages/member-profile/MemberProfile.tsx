@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Icon, Input, PageHeader } from "@/components/primitives";
 import { nstr } from "@/lib/api/coerce";
-import { useMyMembership, useUpdateMyMembership } from "@/lib/api/members";
+import { useMyProfile, useUpdateMyProfile } from "@/lib/api/members";
 
 export const MemberProfile = ({
 	overline = "Account",
@@ -14,8 +14,8 @@ export const MemberProfile = ({
 	title?: string;
 }) => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
-	const memberQ = useMyMembership(tenantSlug);
-	const updateM = useUpdateMyMembership(tenantSlug);
+	const memberQ = useMyProfile(tenantSlug);
+	const updateM = useUpdateMyProfile(tenantSlug);
 
 	const [form, setForm] = useState({
 		firstName: "",

@@ -1,10 +1,13 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { invalidateCampaigns } from "../campaigns/keys";
-import { useApiMutation, useApiQuery } from "../hooks";
-import { invalidatePledges } from "../pledges/keys";
-import { invalidateTransactions } from "./keys";
+
+import { invalidateCampaigns } from "../../campaigns/keys";
+import { useApiMutation, useApiQuery } from "../../hooks";
+import { invalidatePledges } from "../../pledges/keys";
+import { invalidateTransactions } from "../keys";
+
+// Tenant intent — admin-facing transaction recording / reporting hooks.
 
 export type TransactionsListQuery = {
 	memberId?: string;
@@ -37,9 +40,8 @@ export const useTransactions = (
 	);
 };
 
-// Summary KPIs + per-type / per-month breakdowns. The `months` window is
-// the count of trailing UTC month buckets the backend should aggregate
-// (1 = MTD, 12 = trailing year, etc.).
+// Summary KPIs + per-type / per-month breakdowns. Admin-only on the
+// backend — members do not call this.
 export const useTransactionSummary = (
 	tenantId: string,
 	months = 1,
@@ -69,7 +71,6 @@ export const useCreateTransaction = (tenantId: string) => {
 	return useApiMutation("/api/v1/tenants/{tenantId}/transactions", "post", {
 		onSuccess: () => {
 			invalidateTransactions(qc, tenantId);
-			// raisedAmount + pledge status are recomputed from transactions.
 			invalidateCampaigns(qc, tenantId);
 			invalidatePledges(qc, tenantId);
 		},

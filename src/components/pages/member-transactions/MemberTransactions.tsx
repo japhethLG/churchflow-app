@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import { Amount, Chip, DataTable, PageHeader } from "@/components/primitives";
 import { type TransactionType, TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
-import { useCampaigns } from "@/lib/api/campaigns";
+import { useMyCampaigns } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
-import { useMyMembership } from "@/lib/api/members";
-import { useTransactions } from "@/lib/api/transactions";
+import { useMyProfile } from "@/lib/api/members";
+import { useMyTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -33,12 +33,11 @@ export const MemberTransactions = ({
 	const [typeFilter, setTypeFilter] = useState<string>("ALL");
 	const [rangeFilter, setRangeFilter] = useState<string>("YEAR");
 
-	// Current member
-	const memberQ = useMyMembership(tenantSlug);
-	const memberId = memberQ.data?.id;
+	// Current member (kept around for any downstream side effects)
+	useMyProfile(tenantSlug);
 
-	// Campaigns to resolve titles
-	const campaignsQ = useCampaigns(tenantSlug);
+	// Campaigns to resolve titles (member-visible)
+	const campaignsQ = useMyCampaigns(tenantSlug);
 	const campaigns = campaignsQ.data?.items ?? [];
 	const campaignMap = useMemo(() => {
 		return campaigns.reduce(
@@ -62,18 +61,13 @@ export const MemberTransactions = ({
 		return undefined;
 	}, [rangeFilter]);
 
-	// Fetch transactions
-	const txQ = useTransactions(
-		tenantSlug,
-		{
-			memberId,
-			type:
-				typeFilter === "ALL" ? undefined : (typeFilter as Transaction["type"]),
-			dateFrom,
-			limit: 1000,
-		},
-		Boolean(memberId),
-	);
+	// Fetch the caller's own transactions — self-scoped automatically
+	const txQ = useMyTransactions(tenantSlug, {
+		type:
+			typeFilter === "ALL" ? undefined : (typeFilter as Transaction["type"]),
+		dateFrom,
+		limit: 1000,
+	});
 	const transactions = txQ.data?.items ?? [];
 
 	// Summary stats

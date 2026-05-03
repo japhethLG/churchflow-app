@@ -1,10 +1,11 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useApiMutation, useApiQuery } from "../hooks";
-import { invalidateCampaigns } from "./keys";
 
-// Campaigns
+import { useApiMutation, useApiQuery } from "../../hooks";
+import { invalidateCampaigns } from "../keys";
+
+// Tenant intent — admin-facing campaign management hooks.
 
 export const useCampaigns = (tenantId: string, enabled = true) => {
 	return useApiQuery(
@@ -57,6 +58,15 @@ export const useDeleteCampaign = (tenantId: string) => {
 	return useApiMutation("/api/v1/tenants/{tenantId}/campaigns/{id}", "delete", {
 		onSuccess: () => invalidateCampaigns(qc, tenantId),
 	});
+};
+
+export const useRestoreCampaign = (tenantId: string) => {
+	const qc = useQueryClient();
+	return useApiMutation(
+		"/api/v1/tenants/{tenantId}/campaigns/{id}/restore",
+		"post",
+		{ onSuccess: () => invalidateCampaigns(qc, tenantId) },
+	);
 };
 
 // Campaign items (nested under a campaign)

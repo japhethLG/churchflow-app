@@ -10,10 +10,10 @@ import {
 	StatusBadge,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useCampaignProgress, useCampaigns } from "@/lib/api/campaigns";
+import { useMyCampaignProgress, useMyCampaigns } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
-import { useMyMembership } from "@/lib/api/members";
-import { usePledges } from "@/lib/api/pledges";
+import { useMyProfile } from "@/lib/api/members";
+import { useMyPledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 import { useModalStore } from "@/lib/modals/store";
@@ -35,13 +35,14 @@ export const MemberCampaignsPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const open = useModalStore((s) => s.open);
 
-	const memberQ = useMyMembership(tenantSlug);
+	const memberQ = useMyProfile(tenantSlug);
 	const memberId = memberQ.data?.id;
 
-	const campaignsQ = useCampaigns(tenantSlug);
+	const campaignsQ = useMyCampaigns(tenantSlug);
 	const campaigns = campaignsQ.data?.items ?? [];
 
-	const pledgesQ = usePledges(tenantSlug, { memberId }, Boolean(memberId));
+	// Self-scoped automatically by URL prefix.
+	const pledgesQ = useMyPledges(tenantSlug);
 	const pledges = pledgesQ.data?.items ?? [];
 
 	const pledgeByCampaign: Record<string, typeof pledges> = {};
@@ -153,7 +154,7 @@ const CampaignCard = ({
 	onPledge: (name: "member-pledge", props: MemberPledgeProps) => void;
 	past?: boolean;
 }) => {
-	const progressQ = useCampaignProgress(tenantSlug, c.id, Boolean(c.id));
+	const progressQ = useMyCampaignProgress(tenantSlug, c.id, Boolean(c.id));
 	const progress = progressQ.data;
 	const goal = Number(progress?.goalAmount ?? 0);
 	const raised = Number(progress?.raisedAmount ?? 0);
@@ -279,7 +280,6 @@ const CampaignCard = ({
 							tenantSlug,
 							campaignId: c.id,
 							campaignTitle: c.title,
-							memberId,
 							items: items.map((i) => ({
 								id: i.itemId,
 								tenantId: c.tenantId,

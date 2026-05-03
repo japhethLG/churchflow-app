@@ -1,6 +1,6 @@
 "use client";
 
-import { StatCard } from "@/components/primitives";
+import { Amount, StatCard } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -70,12 +70,8 @@ export const DashboardKpiStrip = ({
 	return (
 		<div className="mb-6 grid grid-cols-4 gap-4">
 			<StatCard
-				label="Total this month"
-				value={
-					<span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-[32px] font-semibold tabular-nums tracking-tighter">
-						{formatCurrency(total)}
-					</span>
-				}
+				label="Total Giving"
+				value={<Amount value={total} size="display" />}
 				delta={deltaStr}
 				deltaDirection={deltaDir as "up" | "down" | "flat" | undefined}
 				caption={

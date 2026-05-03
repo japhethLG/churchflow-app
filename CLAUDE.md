@@ -79,9 +79,16 @@ src/
     │   ├── hooks.ts              # generic useApiQuery / useApiMutation
     │   ├── index.ts              # barrel
     │   └── <entity>/             # one folder per backend resource
-    │       ├── hooks.ts
-    │       ├── keys.ts
-    │       └── index.ts
+    │       ├── keys.ts           # <ENTITY>_PATHS + invalidate<Entity>(qc, tenantId?)
+    │       ├── index.ts          # re-exports keys + every intent subfolder
+    │       ├── tenant/           # admin-facing hooks for /tenants/:tenantId/<entity>
+    │       │   ├── hooks.ts
+    │       │   └── index.ts
+    │       ├── self/             # member-facing hooks for /tenants/:tenantId/me/<entity>
+    │       │   ├── hooks.ts
+    │       │   └── index.ts
+    │       ├── platform/         # super-admin hooks for /platform/<entity> (when applicable)
+    │       └── public/           # token / unauthenticated hooks (when applicable)
     ├── modals/
     │   ├── registry.ts           # ModalPropsMap interface (augmented per modal)
     │   ├── store.ts              # Zustand + openModal / closeModal helpers
@@ -156,24 +163,59 @@ Subsequent requests:
 
 ---
 
-## 5. API layer — one folder per entity
+## 5. API layer — one folder per entity, split by intent
 
 The single most important frontend convention. **Every backend endpoint is
 wrapped in a typed hook in an entity folder.** Consumers never call
 `openapi-fetch` directly; they import hooks from `@/lib/api/<entity>`.
 
+The hook layer mirrors the backend's intent split (see backend CLAUDE.md
+§6.3). Each entity has subfolders named after the URL scope, not the
+caller's role:
+
+- `tenant/` — admin-facing routes under `/tenants/:tenantId/<entity>`
+- `self/` — member-facing routes under `/tenants/:tenantId/me/<entity>`
+- `platform/` — super-admin routes under `/platform/<entity>` (when applicable)
+- `public/` — token / unauthenticated routes (when applicable)
+
+A surface picks the intent that matches the URL it should hit. Member
+dashboards call `self/*` hooks; admin dashboards call `tenant/*` hooks.
+Authorization is enforced by the backend; the frontend's job is to choose
+the right intent.
+
 ### 5.1 Folder shape
 
 ```
 src/lib/api/<entity>/
-├── hooks.ts    # useEntity*, useCreateEntity, useUpdateEntity, useDeleteEntity
-├── keys.ts    (+ invalidate<Entity>(qc, scope?))
-└── index.ts    # export * from "./hooks"; export * from "./keys";
+├── keys.ts          # <ENTITY>_PATHS (covers every intent) + invalidate<Entity>(qc, tenantId?)
+├── index.ts         # re-exports keys + each intent subfolder
+├── tenant/
+│   ├── hooks.ts     # usePledges, useCreatePledge, useUpdatePledge, useDeletePledge, …
+│   └── index.ts
+├── self/
+│   ├── hooks.ts     # useMyPledges, useCreateMyPledge, useUpdateMyPledge, …
+│   └── index.ts
+├── platform/        # only if the entity has /platform/* endpoints
+└── public/          # only if the entity has token / unauthenticated endpoints
 ```
 
-Keys live in `keys.ts`. Hooks live in `hooks.ts`. Both are re-exported
-through `index.ts` so consumers do `import { useTenants, invalidateTenants }
-from "@/lib/api/tenants"`.
+`keys.ts` lives at the entity root because invalidation is intent-agnostic
+— a tenant-side mutation should refresh self-side caches for the same
+tenant and vice versa. `<ENTITY>_PATHS` lists the literal OpenAPI paths
+across **all** intent folders.
+
+### 5.1.1 Hook naming convention
+
+| Intent | Prefix | Example |
+|---|---|---|
+| `tenant/` | none | `usePledges`, `useCreatePledge`, `useUpdatePledge` |
+| `self/` | `My` | `useMyPledges`, `useCreateMyPledge`, `useUpdateMyPledge` |
+| `platform/` | `Platform` | `usePlatformTenants`, `useCreatePlatformTenant` |
+| `public/` | `Public` | `usePublicInvitationLookup`, `useAcceptPublicInvitation` |
+
+Hooks are re-exported through `index.ts` so consumers do
+`import { useMyPledges } from "@/lib/api/pledges"` without caring about the
+subfolder. The `My` / `Platform` / `Public` prefix is the disambiguator.
 
 ### 5.2 Query keys
 
@@ -215,13 +257,18 @@ scope to clear.
 
 1. Backend ships the endpoint.
 2. Run `npm run api:types`.
-3. Add a hook to the relevant entity's `hooks.ts`. If it's a new entity,
-   create the folder following the pattern in
-   [src/lib/api/tenants/](src/lib/api/tenants/) (no list GET yet? look at
-   [invitations/](src/lib/api/invitations/) instead).
-4. Mutations get `onSuccess: () => invalidate<Entity>(qc, …)`.
-5. Add a line to [src/lib/api/index.ts](src/lib/api/index.ts) if it's a new
-   folder.
+3. Pick the intent subfolder that matches the URL (`tenant/`, `self/`,
+   `platform/`, `public/`). Add a hook to that subfolder's `hooks.ts`,
+   using the naming convention in §5.1.1. If the intent folder doesn't
+   exist yet, create it with a `hooks.ts` + `index.ts` and add the
+   `export * from "./<intent>";` line to the entity's root `index.ts`.
+4. Add the new path to `<ENTITY>_PATHS` in the entity's `keys.ts` so
+   `invalidate<Entity>` covers it.
+5. Mutations get `onSuccess: () => invalidate<Entity>(qc, tenantId)`.
+6. If it's a new entity, create the folder following the pattern in
+   [src/lib/api/pledges/](src/lib/api/pledges/) (tenant + self) or
+   [src/lib/api/tenants/](src/lib/api/tenants/) (platform + tenant +
+   self). Add the entity to [src/lib/api/index.ts](src/lib/api/index.ts).
 
 ### 5.5 Auth endpoints are special
 
@@ -348,6 +395,9 @@ claims server-side, follow with `refreshSession()` so the cookie updates.
 | Rendering a modal overlay inline instead of through `BaseModal` + registry | Opens a second modal on top of BaseModal, breaks ESC/backdrop handling |
 | Editing `src/lib/api/schema.d.ts` by hand | It's regenerated; your edits vanish on `npm run api:types` |
 | Calling `queryClient.invalidateQueries({ queryKey: ["/api/v1/tenants"] })` | Matches only the exact-prefix list queries; use `invalidateTenants(qc)` for the full scope |
+| Member surface calling `tenant/*` hooks (e.g. `usePledges` from a member dashboard) | Member surfaces use `self/*` hooks (`useMyPledges`); the URL prefix declares scope, the backend rejects mismatches |
+| Admin surface calling `self/*` hooks to "view as the admin" | Admin surfaces use `tenant/*` hooks; `self/*` always scopes to the caller's `memberId` and an admin without a Member row gets a 404 |
+| Adding a new path under an existing entity without updating `<ENTITY>_PATHS` | `invalidate<Entity>` will silently miss the new path; add it to `keys.ts` |
 
 ---
 

@@ -1,9 +1,14 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { invalidateCampaigns } from "../campaigns/keys";
-import { useApiMutation, useApiQuery } from "../hooks";
-import { invalidatePledges } from "./keys";
+
+import { invalidateCampaigns } from "../../campaigns/keys";
+import { useApiMutation, useApiQuery } from "../../hooks";
+import { invalidatePledges } from "../keys";
+
+// Tenant intent — admin-facing pledge management hooks. Members consume
+// the self-intent variants (useMyPledges, etc.) which scope to the
+// caller automatically.
 
 export type PledgesListQuery = {
 	campaignId?: string;
@@ -39,7 +44,6 @@ export const useCreatePledge = (tenantId: string) => {
 	return useApiMutation("/api/v1/tenants/{tenantId}/pledges", "post", {
 		onSuccess: () => {
 			invalidatePledges(qc, tenantId);
-			// Pledged totals are a campaign-progress aggregate.
 			invalidateCampaigns(qc, tenantId);
 		},
 	});
@@ -50,7 +54,6 @@ export const useUpdatePledge = (tenantId: string) => {
 	return useApiMutation("/api/v1/tenants/{tenantId}/pledges/{id}", "patch", {
 		onSuccess: () => {
 			invalidatePledges(qc, tenantId);
-			// Pledged totals are a campaign-progress aggregate.
 			invalidateCampaigns(qc, tenantId);
 		},
 	});
@@ -61,7 +64,6 @@ export const useDeletePledge = (tenantId: string) => {
 	return useApiMutation("/api/v1/tenants/{tenantId}/pledges/{id}", "delete", {
 		onSuccess: () => {
 			invalidatePledges(qc, tenantId);
-			// Pledged totals are a campaign-progress aggregate.
 			invalidateCampaigns(qc, tenantId);
 		},
 	});

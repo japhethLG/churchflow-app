@@ -79,7 +79,7 @@ export const MemberKpiStrip = ({
 		<div className="mb-6 grid grid-cols-3 gap-4">
 			<StatCard
 				label="Your giving this month"
-				value={<Amount value={monthTotal} size="display" gradient />}
+				value={<Amount value={monthTotal} size="display" />}
 				caption={`${thisMonth.length} gift${thisMonth.length !== 1 ? "s" : ""} recorded`}
 			/>
 			<StatCard

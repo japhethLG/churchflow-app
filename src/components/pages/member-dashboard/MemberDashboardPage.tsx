@@ -2,11 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/primitives";
-import { useCampaignProgress, useCampaigns } from "@/lib/api/campaigns";
-import { useMyMembership } from "@/lib/api/members";
-import { usePledges } from "@/lib/api/pledges";
-import { useTenant } from "@/lib/api/tenants";
-import { useTransactions } from "@/lib/api/transactions";
+import { useMyCampaignProgress, useMyCampaigns } from "@/lib/api/campaigns";
+import { useMyProfile } from "@/lib/api/members";
+import { useMyPledges } from "@/lib/api/pledges";
+import { useMyChurch } from "@/lib/api/tenants";
+import { useMyTransactions } from "@/lib/api/transactions";
 import { MemberCampaignsPledges } from "./MemberCampaignsPledges";
 import { MemberKpiStrip } from "./MemberKpiStrip";
 import { MemberRecentGiving } from "./MemberRecentGiving";
@@ -15,44 +15,39 @@ import { MemberThankYou } from "./MemberThankYou";
 export const MemberDashboardPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	// Tenant name for greeting
-	const tenantQ = useTenant(tenantSlug);
+	// Tenant name for greeting (member-perspective read)
+	const tenantQ = useMyChurch(tenantSlug);
 
 	// Current member
-	const memberQ = useMyMembership(tenantSlug);
+	const memberQ = useMyProfile(tenantSlug);
 	const memberId = memberQ.data?.id;
 	const firstName = memberQ.data?.firstName ?? "there";
 
-	// Member's transactions (scoped by memberId)
-	const txQ = useTransactions(
-		tenantSlug,
-		{ memberId, limit: 500 },
-		Boolean(memberId),
-	);
+	// Member's transactions — self-scoped automatically by URL
+	const txQ = useMyTransactions(tenantSlug, { limit: 500 });
 	const transactions = txQ.data?.items ?? [];
 
-	// Active campaigns
-	const campaignsQ = useCampaigns(tenantSlug);
+	// Active campaigns (member-visible)
+	const campaignsQ = useMyCampaigns(tenantSlug);
 	const campaigns = campaignsQ.data?.items ?? [];
 	const activeCampaigns = campaigns.filter((c) => c.status === "ACTIVE");
 
-	// Campaign progress for active campaigns
-	// We fetch progress for the first few active campaigns
+	// Campaign progress for the first three active campaigns
 	const firstCampaignId = activeCampaigns[0]?.id ?? "";
 	const secondCampaignId = activeCampaigns[1]?.id ?? "";
 	const thirdCampaignId = activeCampaigns[2]?.id ?? "";
 
-	const progress1 = useCampaignProgress(
+	const progress1 = useMyCampaignProgress(
 		tenantSlug,
 		firstCampaignId,
 		Boolean(firstCampaignId),
 	);
-	const progress2 = useCampaignProgress(
+	const progress2 = useMyCampaignProgress(
 		tenantSlug,
 		secondCampaignId,
 		Boolean(secondCampaignId),
 	);
-	const progress3 = useCampaignProgress(
+	const progress3 = useMyCampaignProgress(
 		tenantSlug,
 		thirdCampaignId,
 		Boolean(thirdCampaignId),
@@ -84,8 +79,8 @@ export const MemberDashboardPage = () => {
 		};
 	}
 
-	// Member's pledges
-	const pledgesQ = usePledges(tenantSlug, { memberId }, Boolean(memberId));
+	// Member's pledges — self-scoped automatically by URL
+	const pledgesQ = useMyPledges(tenantSlug);
 	const pledges = pledgesQ.data?.items ?? [];
 
 	const loading = memberQ.isLoading || txQ.isLoading;

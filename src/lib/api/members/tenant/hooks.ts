@@ -1,8 +1,12 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useApiMutation, useApiQuery } from "../hooks";
-import { invalidateMembers } from "./keys";
+
+import { useApiMutation, useApiQuery } from "../../hooks";
+import { invalidateMembers } from "../keys";
+
+// Tenant intent — admin-facing member management hooks. The caller's own
+// member profile lives on the self intent (useMyProfile / useUpdateMyProfile).
 
 export type MembersListQuery = {
 	status?: "ACTIVE" | "INACTIVE";
@@ -35,26 +39,9 @@ export const useMember = (
 	);
 };
 
-export const useMyMembership = (tenantId: string, enabled = true) => {
-	return useApiQuery(
-		"/api/v1/tenants/{tenantId}/members/me",
-		{ params: { path: { tenantId } } },
-		{ enabled: enabled && Boolean(tenantId) },
-	);
-};
-
 export const useCreateMember = (tenantId: string) => {
 	const qc = useQueryClient();
 	return useApiMutation("/api/v1/tenants/{tenantId}/members", "post", {
-		onSuccess: () => invalidateMembers(qc, tenantId),
-	});
-};
-
-// Self-update — narrower than the admin path. Used by the welcome
-// onboarding flow and the member's profile page.
-export const useUpdateMyMembership = (tenantId: string) => {
-	const qc = useQueryClient();
-	return useApiMutation("/api/v1/tenants/{tenantId}/members/me", "patch", {
 		onSuccess: () => invalidateMembers(qc, tenantId),
 	});
 };
@@ -103,7 +90,9 @@ export const useMergeMembers = (tenantId: string) => {
 						const k0 = (q.queryKey as unknown[])[0];
 						return (
 							k0 === "/api/v1/tenants/{tenantId}/transactions" ||
-							k0 === "/api/v1/tenants/{tenantId}/pledges"
+							k0 === "/api/v1/tenants/{tenantId}/pledges" ||
+							k0 === "/api/v1/tenants/{tenantId}/me/transactions" ||
+							k0 === "/api/v1/tenants/{tenantId}/me/pledges"
 						);
 					},
 				});

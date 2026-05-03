@@ -7,8 +7,13 @@ import type { QueryClient } from "@tanstack/react-query";
 export const CAMPAIGN_PATHS = [
 	"/api/v1/tenants/{tenantId}/campaigns",
 	"/api/v1/tenants/{tenantId}/campaigns/{id}",
+	"/api/v1/tenants/{tenantId}/campaigns/{id}/progress",
 	"/api/v1/tenants/{tenantId}/campaigns/{id}/items",
 	"/api/v1/tenants/{tenantId}/campaigns/{id}/items/{itemId}",
+	"/api/v1/tenants/{tenantId}/campaigns/{id}/restore",
+	"/api/v1/tenants/{tenantId}/me/campaigns",
+	"/api/v1/tenants/{tenantId}/me/campaigns/{id}",
+	"/api/v1/tenants/{tenantId}/me/campaigns/{id}/progress",
 ] as const;
 
 export const invalidateCampaigns = (qc: QueryClient, tenantId?: string) => {

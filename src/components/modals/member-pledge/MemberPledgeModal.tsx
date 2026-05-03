@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Form, FormInput, FormOptionGroup } from "@/components/formElements";
 import type { components } from "@/lib/api";
-import { useCreatePledge } from "@/lib/api/pledges";
+import { useCreateMyPledge } from "@/lib/api/pledges";
 import { formatAmount } from "@/lib/format-currency";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import { BaseModal } from "../BaseModal";
@@ -27,7 +27,6 @@ export type MemberPledgeProps = {
 	tenantSlug: string;
 	campaignId: string;
 	campaignTitle: string;
-	memberId: string;
 	items: Item[];
 };
 
@@ -35,12 +34,13 @@ export const MemberPledgeModal = ({
 	tenantSlug,
 	campaignId,
 	campaignTitle,
-	memberId,
 	items,
 	onClose,
 }: MemberPledgeProps & ModalBaseProps) => {
 	const [submitError, setSubmitError] = useState<string | null>(null);
-	const { mutateAsync, isPending } = useCreatePledge(tenantSlug);
+	// Self intent — backend forces memberId to the authenticated caller
+	// regardless of what the body sends.
+	const { mutateAsync, isPending } = useCreateMyPledge(tenantSlug);
 
 	const methods = useForm<MemberPledgeFormValues>({
 		defaultValues: memberPledgeDefaults,
@@ -65,7 +65,6 @@ export const MemberPledgeModal = ({
 				body: {
 					campaignId,
 					campaignItemId: values.itemId || undefined,
-					memberId,
 					pledgedAmount: Number(values.amount),
 					note: values.note.trim() || undefined,
 				},

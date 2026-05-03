@@ -1,8 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
 
+// Includes both tenant and self routes so a single mutation invalidates
+// every cached query against the same tenant, regardless of intent.
 export const PLEDGE_PATHS = [
 	"/api/v1/tenants/{tenantId}/pledges",
 	"/api/v1/tenants/{tenantId}/pledges/{id}",
+	"/api/v1/tenants/{tenantId}/me/pledges",
+	"/api/v1/tenants/{tenantId}/me/pledges/{id}",
 ] as const;
 
 export const invalidatePledges = (qc: QueryClient, tenantId?: string) => {

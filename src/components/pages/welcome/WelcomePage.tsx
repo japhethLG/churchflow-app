@@ -7,7 +7,7 @@ import {
 	type ReconcileChoice,
 } from "@/components/pages/welcome";
 import { Avatar, Button, Card, Wordmark } from "@/components/primitives";
-import { useMyMembership, useUpdateMyMembership } from "@/lib/api/members";
+import { useMyProfile, useUpdateMyProfile } from "@/lib/api/members";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { cn } from "@/lib/utils";
 
@@ -42,8 +42,8 @@ export const WelcomePage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const { user: firebaseUser, loading: authLoading } = useAuth();
-	const { data: member, isLoading } = useMyMembership(tenantSlug);
-	const { mutateAsync, isPending } = useUpdateMyMembership(tenantSlug);
+	const { data: member, isLoading } = useMyProfile(tenantSlug);
+	const { mutateAsync, isPending } = useUpdateMyProfile(tenantSlug);
 
 	const ssoName = useMemo(() => {
 		const dn = firebaseUser?.displayName ?? "";

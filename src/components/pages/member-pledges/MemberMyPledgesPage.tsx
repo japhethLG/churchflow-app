@@ -2,22 +2,22 @@
 
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/primitives";
-import { useCampaigns } from "@/lib/api/campaigns";
-import { useMyMembership } from "@/lib/api/members";
-import { usePledges } from "@/lib/api/pledges";
+import { useMyCampaigns } from "@/lib/api/campaigns";
+import { useMyProfile } from "@/lib/api/members";
+import { useMyPledges } from "@/lib/api/pledges";
 import { formatCurrency } from "@/lib/format-currency";
 import { MemberPledgesTable } from "./MemberPledgesTable";
 
 export const MemberMyPledgesPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const memberQ = useMyMembership(tenantSlug);
-	const memberId = memberQ.data?.id;
+	const memberQ = useMyProfile(tenantSlug);
 
-	const pledgesQ = usePledges(tenantSlug, { memberId }, Boolean(memberId));
+	// Self-scoped automatically by URL prefix.
+	const pledgesQ = useMyPledges(tenantSlug);
 	const pledges = pledgesQ.data?.items ?? [];
 
-	const campaignsQ = useCampaigns(tenantSlug);
+	const campaignsQ = useMyCampaigns(tenantSlug);
 	const campaignMap = Object.fromEntries(
 		(campaignsQ.data?.items ?? []).map((c) => [c.id, c]),
 	);
