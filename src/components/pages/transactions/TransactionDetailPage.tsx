@@ -224,7 +224,9 @@ export const TransactionDetailPage = () => {
 										size="sm"
 										className="h-auto px-0 py-0 text-sm font-medium text-primary shadow-none hover:bg-transparent hover:text-primary/90 hover:underline"
 										onClick={() =>
-											router.push(`/${tenantSlug}/admin/campaigns/${campaign.id}`)
+											router.push(
+												`/${tenantSlug}/admin/campaigns/${campaign.id}`,
+											)
 										}
 									>
 										{campaign.title}
@@ -250,7 +252,9 @@ export const TransactionDetailPage = () => {
 										<strong>{pledge.status.toLowerCase()}</strong>
 									</span>
 								) : (
-									<span className="text-sm text-muted-foreground">Unpledged</span>
+									<span className="text-sm text-muted-foreground">
+										Unpledged
+									</span>
 								)}
 							</div>
 						</div>

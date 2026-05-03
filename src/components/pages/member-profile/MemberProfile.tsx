@@ -73,7 +73,9 @@ export const MemberProfile = ({
 							<Input
 								label="First name"
 								value={form.firstName}
-								onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+								onChange={(e) =>
+									setForm({ ...form, firstName: e.target.value })
+								}
 								placeholder="e.g. Amara"
 							/>
 							<Input
@@ -136,7 +138,11 @@ export const MemberProfile = ({
 
 					<div className="mt-10 flex items-start gap-4 rounded-2xl bg-muted p-6">
 						<div className="grid size-10 shrink-0 place-items-center rounded-xl bg-input">
-							<Icon name="bell" size={20} className="text-secondary-foreground" />
+							<Icon
+								name="bell"
+								size={20}
+								className="text-secondary-foreground"
+							/>
 						</div>
 						<div>
 							<div className="text-sm font-semibold text-foreground">

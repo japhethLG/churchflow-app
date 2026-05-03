@@ -99,7 +99,10 @@ export const AdminReportsPage = () => {
 				{tab === "by-type" && (
 					<>
 						<ReportsByType summary={summary.data} loading={summary.isLoading} />
-						<ReportsByMonth summary={summary.data} loading={summary.isLoading} />
+						<ReportsByMonth
+							summary={summary.data}
+							loading={summary.isLoading}
+						/>
 					</>
 				)}
 

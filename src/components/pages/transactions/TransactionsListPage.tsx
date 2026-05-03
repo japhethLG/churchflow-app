@@ -165,7 +165,11 @@ export const TransactionsListPage = () => {
 					pagination={{ total, offset, limit: PAGE_SIZE, onChange: setOffset }}
 					membersById={membersById}
 					campaignsById={campaignsById}
-					handlers={{ onView: openView, onEdit: openEdit, onDelete: openDelete }}
+					handlers={{
+						onView: openView,
+						onEdit: openEdit,
+						onDelete: openDelete,
+					}}
 					onCreate={openRecord}
 				/>
 			</div>
