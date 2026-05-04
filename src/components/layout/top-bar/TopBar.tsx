@@ -1,15 +1,13 @@
 import { Icon } from "@/components/primitives/Icon";
 import { cn } from "@/lib/utils";
 
-export const TopBar = ({
-	breadcrumb = "Dashboard",
-}: {
-	breadcrumb?: string;
-}) => {
+import { DynamicBreadcrumbs } from "./DynamicBreadcrumbs";
+
+export const TopBar = () => {
 	return (
 		<div className="flex h-[72px] items-center gap-4 bg-transparent px-8">
-			<div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-				{breadcrumb}
+			<div className="flex items-center">
+				<DynamicBreadcrumbs />
 			</div>
 			<div className="flex-1" />
 			<div
@@ -28,7 +26,7 @@ export const TopBar = ({
 			</div>
 			<div className="relative grid size-10 shrink-0 place-items-center rounded-full bg-card">
 				<Icon name="bell" size={18} className="text-secondary-foreground" />
-				<span className="absolute right-2 top-2 size-2 rounded-full border-2 border-card bg-[var(--tertiary)]" />
+				<span className="absolute right-2 top-2 size-2 rounded-full border-2 border-card bg-tertiary" />
 			</div>
 		</div>
 	);

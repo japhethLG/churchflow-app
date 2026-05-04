@@ -6,26 +6,22 @@ import { TopBar } from "../top-bar";
 export const AppShell = ({
 	perspective,
 	tenantSlug,
-	breadcrumb,
 	churchName,
 	userName,
 	userEmail,
 	memberships,
 	isSuperAdmin,
 	children,
-	contentPad = 32,
 	bg,
 }: {
 	perspective: Perspective;
 	tenantSlug?: string;
-	breadcrumb?: string;
 	churchName?: string;
 	userName: string;
 	userEmail?: string;
 	memberships?: TenantSummary[];
 	isSuperAdmin?: boolean;
 	children: ReactNode;
-	contentPad?: number;
 	bg?: string;
 }) => {
 	return (
@@ -34,7 +30,6 @@ export const AppShell = ({
 				"flex min-h-screen w-full font-sans text-foreground",
 				!bg && "bg-background",
 			)}
-			style={bg ? { background: bg } : undefined}
 		>
 			<Sidebar
 				perspective={perspective}
@@ -46,17 +41,8 @@ export const AppShell = ({
 				isSuperAdmin={isSuperAdmin}
 			/>
 			<div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
-				<TopBar breadcrumb={breadcrumb} />
-				<div
-					className="flex-1 overflow-auto"
-					// style={{
-					// 	paddingLeft: contentPad,
-					// 	paddingRight: contentPad,
-					// 	paddingBottom: contentPad,
-					// }}
-				>
-					{children}
-				</div>
+				<TopBar />
+				<div className="flex-1 overflow-auto">{children}</div>
 			</div>
 		</div>
 	);

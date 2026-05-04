@@ -71,7 +71,7 @@ export const Button = ({
 			size={sizeMap[size]}
 			disabled={isCurrentlyDisabled}
 			className={cn(
-				"rounded-full font-medium transition-all duration-200 active:scale-[0.98]",
+				"rounded-full font-medium transition-all duration-200 active:scale-[0.98] h-11",
 				fullWidth && "w-full",
 				variant === "primary" &&
 					!destructive && [

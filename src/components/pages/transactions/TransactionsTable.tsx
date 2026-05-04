@@ -151,7 +151,6 @@ export const TransactionsTable = ({
 							label: "Delete",
 							onClick: () => handlers.onDelete(t),
 							destructive: true,
-							separatorBefore: true,
 						},
 					]}
 				/>

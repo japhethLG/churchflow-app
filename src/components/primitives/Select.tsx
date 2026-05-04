@@ -64,7 +64,7 @@ export const Select = ({
 				<SelectTrigger
 					className={cn(
 						"rounded-xl border-1.5 px-3.5 transition-all focus:ring-2 focus:ring-ring/20 bg-input border-transparent",
-						size === "sm" ? "h-9 text-xs min-w-[140px]" : "h-11 w-full",
+						size === "sm" ? "h-9 text-xs min-w-[140px]" : "h-11! w-full",
 						disabled && "bg-secondary opacity-60",
 						!value && "text-muted-foreground",
 					)}

@@ -17,11 +17,11 @@ export const PageHeader = ({
 	return (
 		<div className={cn("flex items-end justify-between mb-8 gap-6", className)}>
 			<div className="flex-1 min-w-0">
-				{overline && (
+				{/* {overline && (
 					<div className="text-xs font-bold tracking-[0.08em] uppercase text-muted-foreground mb-2.5">
 						{overline}
 					</div>
-				)}
+				)} */}
 				<h1 className="text-4xl font-bold tracking-tight text-foreground leading-[1.1] m-0">
 					{title}
 				</h1>

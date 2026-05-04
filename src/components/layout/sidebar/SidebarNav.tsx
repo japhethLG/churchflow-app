@@ -14,7 +14,7 @@ export const SidebarNav = ({ items }: { items: NavItem[] }) => {
 	return (
 		<div className="flex flex-1 flex-col gap-0.5 overflow-auto">
 			{items.map((item) => {
-				const active = pathname === item.href;
+				const active = pathname.startsWith(item.href);
 				return (
 					<Link
 						key={item.href}

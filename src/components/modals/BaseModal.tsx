@@ -76,7 +76,7 @@ export const BaseModal = ({
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}
-			className="fixed inset-0 z-1000 grid place-items-center p-6"
+			className="fixed inset-0 z-40 grid place-items-center p-6"
 			style={{
 				background: "rgba(53, 37, 205, 0.18)",
 				backdropFilter: "blur(8px)",
@@ -145,7 +145,7 @@ export const BaseModal = ({
 				{hasFooter && (
 					<div
 						className={cn(
-							"flex items-center gap-2 border-t border-border bg-card px-8 py-5",
+							"flex items-center gap-2 bg-card px-8 pb-5",
 							footerHint && (secondaryAction || primaryAction)
 								? "justify-between"
 								: "justify-end",

@@ -131,7 +131,6 @@ export const PledgesTable = ({
 							label: "Delete",
 							onClick: () => handlers.onDelete(p),
 							destructive: true,
-							separatorBefore: true,
 						},
 					]}
 				/>
