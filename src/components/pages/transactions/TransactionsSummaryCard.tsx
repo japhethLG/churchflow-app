@@ -2,10 +2,9 @@
 
 import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { Pressable } from "@/components/primitives";
+import { SegmentedControl } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCurrency } from "@/lib/format-currency";
-import { cn } from "@/lib/utils";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
@@ -89,22 +88,14 @@ export const TransactionsSummaryCard = ({
 			<div>
 				<div className="mb-[18px] flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 					<span>Window</span>
-					<div className="flex gap-1 rounded-full bg-muted p-0.5">
-						{PERIOD_OPTIONS.map((opt) => (
-							<Pressable
-								key={opt.months}
-								onClick={() => onMonthsChange(opt.months)}
-								className={cn(
-									"rounded-full border-none px-3 py-1 font-inherit text-xs font-semibold uppercase tracking-wide",
-									months === opt.months
-										? "bg-card text-foreground shadow-sm"
-										: "bg-transparent text-muted-foreground",
-								)}
-							>
-								{opt.label}
-							</Pressable>
-						))}
-					</div>
+					<SegmentedControl
+						options={PERIOD_OPTIONS.map((o) => ({
+							value: String(o.months),
+							label: o.label,
+						}))}
+						value={String(months)}
+						onChange={(v) => onMonthsChange(Number(v))}
+					/>
 				</div>
 
 				<div className="grid grid-cols-[repeat(3,minmax(140px,1fr))] gap-8">
@@ -161,6 +152,16 @@ export const TransactionsSummaryCard = ({
 				</div>
 
 				<div className="relative h-[140px] w-[140px] shrink-0">
+					<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+						<div>
+							<div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+								Total
+							</div>
+							<div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
+								{formatCurrency(total)}
+							</div>
+						</div>
+					</div>
 					<ResponsiveContainer width="100%" height="100%">
 						<PieChart>
 							<Pie
@@ -194,16 +195,6 @@ export const TransactionsSummaryCard = ({
 							/>
 						</PieChart>
 					</ResponsiveContainer>
-					<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-						<div>
-							<div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-								Total
-							</div>
-							<div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
-								{formatCurrency(total)}
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { Input } from "./Input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 export type AmountInputProps = {
 	label?: string;
@@ -18,7 +19,6 @@ export type AmountInputProps = {
 	className?: string;
 };
 
-// Large currency-prefixed number input. Thin preset over `Input` with size="lg".
 export const AmountInput = ({
 	label,
 	value,
@@ -34,21 +34,45 @@ export const AmountInput = ({
 	error,
 	className,
 }: AmountInputProps) => (
-	<Input
-		label={label}
-		size="lg"
-		type="number"
-		prefix={currency}
-		placeholder={placeholder}
-		step={step}
-		min={min}
-		autoFocus={autoFocus}
-		disabled={disabled}
-		helper={hint}
-		error={error}
-		value={value}
-		onChange={(e) => onChange(e.target.value)}
-		onBlur={onBlur}
-		className={className}
-	/>
+	<div className={cn("flex w-full flex-col gap-2", className)}>
+		{label && (
+			<Label className="text-[13px] font-medium text-on-surface-variant">
+				{label}
+			</Label>
+		)}
+		<div
+			className={cn(
+				"flex items-baseline gap-2 rounded-[14px] px-5 py-[18px] transition-all",
+				disabled
+					? "cursor-not-allowed bg-secondary"
+					: [
+							"bg-muted",
+							error
+								? "shadow-[inset_0_0_0_2px_var(--color-destructive)]"
+								: "focus-within:shadow-[inset_0_0_0_2px_var(--color-ring)]",
+						],
+			)}
+		>
+			{currency && (
+				<span className="shrink-0 select-none text-[20px] font-medium leading-none text-muted-foreground">
+					{currency}
+				</span>
+			)}
+			<input
+				type="number"
+				step={step}
+				min={min}
+				// biome-ignore lint/a11y/noAutofocus: controlled by consumer
+				autoFocus={autoFocus}
+				value={value ?? ""}
+				placeholder={placeholder}
+				onChange={(e) => onChange(e.target.value)}
+				onBlur={onBlur}
+				disabled={disabled}
+				className="min-w-0 flex-1 bg-transparent outline-none font-features-['tnum'] text-[32px] font-semibold leading-none tracking-[-0.02em] text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
+			/>
+		</div>
+		{hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+		{error && <p className="text-xs text-destructive">{error}</p>}
+	</div>
 );

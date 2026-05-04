@@ -16,7 +16,7 @@ export const InvitationsStatsBar = ({
 	cancelled,
 }: StatsProps) => {
 	return (
-		<div className="flex gap-3 overflow-x-auto px-6 pb-6">
+		<div className="flex gap-3 overflow-x-auto pb-6">
 			<StatCard
 				className="flex-1 min-w-[160px]"
 				label="Total sent"

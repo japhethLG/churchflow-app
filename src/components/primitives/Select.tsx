@@ -51,7 +51,7 @@ export const Select = ({
 			)}
 		>
 			{label && (
-				<Label className="text-sm font-medium text-muted-foreground ml-1">
+				<Label className="text-[13px] font-medium text-on-surface-variant">
 					{label}
 				</Label>
 			)}
@@ -63,9 +63,11 @@ export const Select = ({
 			>
 				<SelectTrigger
 					className={cn(
-						"rounded-xl border-1.5 px-3.5 transition-all focus:ring-2 focus:ring-ring/20 bg-input border-transparent",
+						"rounded-xl border-1.5 border-transparent px-4 transition-all",
 						size === "sm" ? "h-9 text-xs min-w-[140px]" : "h-11! w-full",
-						disabled && "bg-secondary opacity-60",
+						disabled
+							? "bg-secondary cursor-not-allowed shadow-[inset_0_0_0_1px_var(--color-input)]"
+							: "bg-card shadow-[inset_0_0_0_1px_var(--color-input)] hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)] data-[state=open]:shadow-[inset_0_0_0_2px_var(--color-ring)]",
 						!value && "text-muted-foreground",
 					)}
 				>
@@ -98,7 +100,7 @@ export const Select = ({
 				</SelectContent>
 			</ShadedSelect>
 
-			{hint && <p className="ml-1 text-sm text-muted-foreground">{hint}</p>}
+			{hint && <p className="text-xs text-muted-foreground">{hint}</p>}
 		</div>
 	);
 };

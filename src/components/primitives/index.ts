@@ -47,6 +47,10 @@ export { PageHeader, SectionTitle } from "./PageHeader";
 export { Pill, type PillProps } from "./Pill";
 export { Pressable, type PressableProps } from "./Pressable";
 export { type RowAction, RowActionsMenu } from "./RowActionsMenu";
+export {
+	SegmentedControl,
+	type SegmentedOption,
+} from "./SegmentedControl";
 export { Select, type SelectOption, type SelectProps } from "./Select";
 export { StatCard } from "./StatCard";
 export { StatPill } from "./StatPill";

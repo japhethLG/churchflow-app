@@ -135,7 +135,7 @@ export const CreatePledgeModal = ({
 					inputName="memberId"
 					label="Member"
 					members={members}
-					variant="inline"
+					variant="dropdown"
 					placeholder="Search by name or email…"
 				/>
 

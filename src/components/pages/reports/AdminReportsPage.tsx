@@ -2,13 +2,13 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { Button, Chip, PageHeader } from "@/components/primitives";
+import { Button, Chip, PageHeader, SegmentedControl } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
-import { cn } from "@/lib/utils";
+
 import { ReportsByCampaign } from "./ReportsByCampaign";
 import { ReportsByMember } from "./ReportsByMember";
 import { ReportsByMonth } from "./ReportsByMonth";
@@ -68,25 +68,12 @@ export const AdminReportsPage = () => {
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
 				{/* Tab bar */}
-				<div className="mb-5 flex w-fit gap-1.5 rounded-full bg-muted p-1">
-					{TABS.map((t) => (
-						<Button
-							key={t.key}
-							type="button"
-							variant="ghost"
-							size="sm"
-							className={cn(
-								"h-9 px-[18px] py-2 font-inherit text-sm shadow-none hover:bg-transparent",
-								tab === t.key
-									? "bg-card text-foreground shadow-sm"
-									: "bg-transparent text-muted-foreground",
-							)}
-							onClick={() => setTab(t.key)}
-						>
-							{t.label}
-						</Button>
-					))}
-				</div>
+				<SegmentedControl
+					className="mb-5"
+					options={TABS.map((t) => ({ value: t.key, label: t.label }))}
+					value={tab}
+					onChange={(v) => setTab(v as Tab)}
+				/>
 
 				{/* Date range chips */}
 				<div className="mb-5 flex gap-2.5">

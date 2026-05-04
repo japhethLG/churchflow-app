@@ -77,24 +77,25 @@ export const MemberPicker = ({
 			)}
 
 			{chosen ? (
-				<div className="flex items-center gap-3 rounded-xl bg-muted p-3">
-					<Avatar name={fullName(chosen)} size={36} />
+				<div className="flex h-11 items-center gap-3 rounded-xl bg-muted px-3">
+					<Avatar name={fullName(chosen)} size={28} className="shrink-0" />
 					<div className="min-w-0 flex-1">
-						<div className="text-sm font-medium">{fullName(chosen)}</div>
-						<div className="text-xs text-muted-foreground">
+						<div className="truncate text-sm font-medium">{fullName(chosen)}</div>
+						<div className="truncate text-xs text-muted-foreground">
 							{asString(chosen.email) ?? "no email"}
 						</div>
 					</div>
 					<Button
 						variant="ghost"
 						size="sm"
+						icon="x"
+						aria-label="Remove"
+						className="size-8 shrink-0 px-0"
 						onClick={() => {
 							onChange("");
 							setSearch("");
 						}}
-					>
-						Change
-					</Button>
+					/>
 				</div>
 			) : (
 				<div className="relative">

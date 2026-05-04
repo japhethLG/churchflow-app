@@ -118,7 +118,6 @@ export const DashboardRecentGifts = ({
 							key={t.id}
 							className={cn(
 								"grid grid-cols-[36px_1fr_auto_auto] items-center gap-3 rounded-[10px] px-2 py-2.5 transition-colors duration-150",
-								i === 0 ? "bg-muted" : "bg-transparent",
 							)}
 						>
 							{isAnon ? (

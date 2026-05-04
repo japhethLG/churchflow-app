@@ -70,6 +70,9 @@
 	/* Sanctuary clay / tertiary (auth accents, thank-you strip) */
 	--color-tertiary: var(--tertiary);
 	--color-tertiary-container: var(--tertiary-container);
+
+	/* Sanctuary surface / text tokens */
+	--color-on-surface-variant: var(--on-surface-variant);
 }
 
 :root {
@@ -88,6 +91,7 @@
 	--secondary-foreground: #191c1e;
 	--muted: #f1f3f6; /* surfaceContainerLow */
 	--muted-foreground: #6b7280; /* onSurfaceMuted */
+	--on-surface-variant: #42474e; /* onSurfaceVariant */
 	--accent: #e6e6fa; /* primaryFixed */
 	--accent-foreground: #3525cd;
 	--destructive: #8c1d18;

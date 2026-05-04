@@ -11,7 +11,7 @@ import { Icon, type IconName } from "./Icon";
 export type InputSize = "md" | "lg";
 
 const SHELL_BY_SIZE: Record<InputSize, string> = {
-	md: "flex h-11 items-center gap-2.5 px-3.5",
+	md: "flex h-11 items-center gap-2.5 px-4",
 	lg: "flex items-baseline gap-1.5 px-[18px] py-3.5",
 };
 
@@ -80,18 +80,22 @@ export const Input = ({
 	return (
 		<div className={cn("flex flex-col gap-2", fullWidth ? "w-full" : "w-fit")}>
 			{label && (
-				<Label className="text-sm font-medium text-muted-foreground ml-1">
+				<Label className="text-[13px] font-medium text-on-surface-variant">
 					{label}
 				</Label>
 			)}
 			<div
 				className={cn(
-					"rounded-xl border-1.5 transition-all focus-within:ring-2 focus-within:ring-ring/20",
+					"rounded-xl border-1.5 border-transparent transition-all",
 					SHELL_BY_SIZE[size],
-					disabled ? "bg-secondary opacity-60" : "bg-input",
-					error
-						? "border-destructive ring-destructive/10"
-						: "border-transparent",
+					disabled
+						? "bg-secondary cursor-not-allowed shadow-[inset_0_0_0_1px_var(--color-input)]"
+						: [
+								"bg-card",
+								error
+									? "shadow-[inset_0_0_0_2px_var(--color-destructive)]"
+									: "shadow-[inset_0_0_0_1px_var(--color-input)] hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)] focus-within:shadow-[inset_0_0_0_2px_var(--color-ring)]",
+							],
 					className,
 				)}
 			>
@@ -142,9 +146,9 @@ export const Input = ({
 			</div>
 
 			{helper && !error && (
-				<p className="ml-1 text-sm text-muted-foreground">{helper}</p>
+				<p className="text-xs text-muted-foreground">{helper}</p>
 			)}
-			{error && <p className="ml-1 text-sm text-destructive">{error}</p>}
+			{error && <p className="text-xs text-destructive">{error}</p>}
 		</div>
 	);
 };

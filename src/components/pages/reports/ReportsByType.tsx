@@ -57,6 +57,16 @@ export const ReportsByType = ({
 				<SectionTitle title="Distribution" />
 				<div className="grid place-items-center py-5">
 					<div className="relative size-[240px]">
+						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+							<div>
+								<div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+									Total
+								</div>
+								<div className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+									{formatCurrency(total)}
+								</div>
+							</div>
+						</div>
 						<ResponsiveContainer width="100%" height="100%">
 							<PieChart>
 								<Pie
@@ -76,16 +86,6 @@ export const ReportsByType = ({
 								<Tooltip content={<ReportsPieTooltip />} />
 							</PieChart>
 						</ResponsiveContainer>
-						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-							<div>
-								<div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-									Total
-								</div>
-								<div className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
-									{formatCurrency(total)}
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</Card>
