@@ -121,7 +121,8 @@ export const DashboardCharts = ({
 			value: b.total,
 			color: TYPE_COLOR[b.type],
 			pct: total > 0 ? (b.total / total) * 100 : 0,
-		}));
+		}))
+		.sort((a, b) => b.value - a.value);
 
 	const donutPlaceholder = [
 		{ name: "No data", value: 1, color: "var(--input)" },
@@ -232,8 +233,18 @@ export const DashboardCharts = ({
 
 			<Card>
 				<SectionTitle title="Income breakdown" />
-				<div className="flex items-center gap-5">
-					<div className="relative h-[200px] w-[200px] shrink-0">
+				<div className="mt-4 flex flex-col gap-6 lg:flex-row lg:items-center">
+					<div className="relative mx-auto h-[200px] w-[200px] shrink-0 lg:mx-0">
+						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+							<div>
+								<div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
+									Total
+								</div>
+								<div className="mt-0.5 text-xl font-bold tracking-tight tabular-nums">
+									{formatCompact(total)}
+								</div>
+							</div>
+						</div>
 						<ResponsiveContainer width="100%" height="100%">
 							<PieChart>
 								<Pie
@@ -241,14 +252,18 @@ export const DashboardCharts = ({
 									dataKey="value"
 									cx="50%"
 									cy="50%"
-									innerRadius={60}
-									outerRadius={85}
-									paddingAngle={1}
+									innerRadius={65}
+									outerRadius={90}
+									paddingAngle={2}
 									stroke="none"
 								>
 									{(donutData.length > 0 ? donutData : donutPlaceholder).map(
 										(d) => (
-											<Cell key={d.name} fill={d.color} />
+											<Cell
+												key={d.name}
+												fill={d.color}
+												className="transition-opacity hover:opacity-80 outline-none"
+											/>
 										),
 									)}
 								</Pie>
@@ -266,34 +281,43 @@ export const DashboardCharts = ({
 										];
 									}}
 									contentStyle={tooltipChrome}
+									wrapperStyle={{ zIndex: 10 }}
 								/>
 							</PieChart>
 						</ResponsiveContainer>
-						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-							<div>
-								<div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-									Total
-								</div>
-								<div className="mt-0.5 text-lg font-semibold tracking-tight tabular-nums">
-									{formatCompact(total)}
-								</div>
-							</div>
-						</div>
 					</div>
 
-					<div className="flex min-w-0 flex-1 flex-col gap-2.5">
+					<div className="flex min-w-0 flex-1 flex-col gap-1.5">
 						{donutData.map((x) => (
-							<div key={x.name} className="flex items-center gap-2.5 text-sm">
-								<span
-									className="size-2.5 shrink-0 rounded-sm"
-									style={{ backgroundColor: x.color }}
+							<div
+								key={x.name}
+								className="group relative overflow-hidden rounded-lg border border-transparent transition-all hover:border-border hover:bg-muted/30"
+							>
+								{/* Subtle progress background */}
+								<div
+									className="absolute inset-y-0 left-0 opacity-[0.1] transition-opacity group-hover:opacity-[0.1]"
+									style={{ backgroundColor: x.color, width: `${x.pct}%` }}
 								/>
-								<span className="min-w-0 flex-1 text-secondary-foreground">
-									{x.name}
-								</span>
-								<span className="shrink-0 font-semibold tabular-nums">
-									{x.pct.toFixed(0)}%
-								</span>
+
+								<div className="relative flex items-center justify-between px-3 py-2 text-sm">
+									<div className="flex min-w-0 items-center gap-3">
+										<div
+											className="size-2.5 shrink-0 rounded-full shadow-sm"
+											style={{ backgroundColor: x.color }}
+										/>
+										<span className="truncate font-medium text-foreground/90">
+											{x.name}
+										</span>
+									</div>
+									<div className="flex items-center gap-4 tabular-nums">
+										<span className="text-xs text-muted-foreground/70">
+											{formatCompact(x.value)}
+										</span>
+										<span className="w-8 text-right font-bold text-foreground">
+											{x.pct.toFixed(0)}%
+										</span>
+									</div>
+								</div>
 							</div>
 						))}
 					</div>

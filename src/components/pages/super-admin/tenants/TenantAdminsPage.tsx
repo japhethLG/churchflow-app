@@ -136,6 +136,7 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 						</Button>
 						{tenant && (
 							<Button
+								icon="plus"
 								variant="primary"
 								onClick={() =>
 									openModal("invite-tenant-admin", {
@@ -144,7 +145,7 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 									})
 								}
 							>
-								+ Invite admin
+								Invite admin
 							</Button>
 						)}
 					</div>

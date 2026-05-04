@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChurchFlow — Design</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; background: #E4E7EB; color: #191C1E; }
+    * { box-sizing: border-box; }
+    *::-webkit-scrollbar { width: 8px; height: 8px; }
+    *::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="tokens.js"></script>
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="primitives.jsx"></script>
+  <script type="text/babel" src="pages/auth.jsx"></script>
+  <script type="text/babel" src="pages/member.jsx"></script>
+  <script type="text/babel" src="pages/admin1.jsx"></script>
+  <script type="text/babel" src="pages/admin2.jsx"></script>
+  <script type="text/babel" src="pages/admin3.jsx"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const App = () => (
+      <DesignCanvas title="ChurchFlow — Sanctuary" subtitle="Per-page hi-fi designs for login, member, admin, and super admin flows. Based on the design brief v1.0 (2026-04-23).">
+        <DCSection id="auth" title="Public · Auth" subtitle="Entry points. Google SSO only.">
+          <DCArtboard id="login" label="6.2 — Sign in" width={1280} height={860}>
+            <LoginPage />
+          </DCArtboard>
+          <DCArtboard id="invite" label="6.3 — Accept invitation" width={1280} height={860}>
+            <InvitePage />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="member" title="Member" subtitle="Warm, private, restful. Read-only.">
+          <DCArtboard id="m-dashboard" label="7.2 — Member dashboard" width={1440} height={1000}>
+            <MemberDashboard />
+          </DCArtboard>
+          <DCArtboard id="m-giving" label="7.3 — My giving history" width={1440} height={1000}>
+            <MemberGiving />
+          </DCArtboard>
+          <DCArtboard id="m-events" label="7.5 — Events (member view)" width={1440} height={1000}>
+            <MemberEvents />
+          </DCArtboard>
+          <DCArtboard id="m-drawer" label="7.4 — Transaction drawer" width={1280} height={860}>
+            <TransactionDrawer />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="admin" title="Admin" subtitle="Organized, efficient, never cluttered. The primary workhorse role.">
+          <DCArtboard id="a-dashboard" label="8.1 — Admin dashboard" width={1440} height={1100}>
+            <AdminDashboard />
+          </DCArtboard>
+          <DCArtboard id="a-members" label="8.2 — Members list" width={1440} height={1000}>
+            <AdminMembers />
+          </DCArtboard>
+          <DCArtboard id="a-transactions" label="8.8 — Transactions list" width={1440} height={1000}>
+            <AdminTransactions />
+          </DCArtboard>
+          <DCArtboard id="a-record" label="8.10 — Record a gift (modal)" width={1280} height={900}>
+            <RecordGiftModal />
+          </DCArtboard>
+          <DCArtboard id="a-events" label="8.5 — Events list" width={1440} height={900}>
+            <AdminEvents />
+          </DCArtboard>
+          <DCArtboard id="a-event-detail" label="8.7 — Event detail" width={1440} height={1100}>
+            <AdminEventDetail />
+          </DCArtboard>
+          <DCArtboard id="a-reports" label="8.11 — Reports" width={1440} height={1000}>
+            <AdminReports />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="super" title="Super Admin" subtitle="Platform control-center. Multi-tenant oversight.">
+          <DCArtboard id="s-tenants" label="9.1 — Tenants list" width={1440} height={900}>
+            <SuperTenants />
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+    );
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

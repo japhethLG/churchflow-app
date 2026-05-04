@@ -3,11 +3,11 @@
 import {
 	Avatar,
 	Badge,
+	Button,
 	DataTable,
 	type DataTableColumn,
 	type DataTablePagination,
 	Icon,
-	Pressable,
 	RowActionsMenu,
 	StatusBadge,
 } from "@/components/primitives";
@@ -156,12 +156,9 @@ export const MembersTable = ({
 			emptySubtitle="Add or invite your first member to get started."
 			emptyAction={
 				onAdd && (
-					<Pressable
-						onClick={onAdd}
-						className="cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,var(--ring),var(--primary))] px-5 py-2.5 font-inherit text-sm font-medium text-primary-foreground"
-					>
-						+ Add member
-					</Pressable>
+					<Button icon="plus" onClick={onAdd}>
+						Add member
+					</Button>
 				)
 			}
 		/>

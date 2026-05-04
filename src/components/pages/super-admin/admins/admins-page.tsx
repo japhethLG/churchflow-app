@@ -137,10 +137,11 @@ export const AdminsPage = () => {
 				subtitle="Everyone with admin access across all churches."
 				action={
 					<Button
+						icon="plus"
 						variant="primary"
 						onClick={() => openModal("invite-admin-global", {})}
 					>
-						+ Invite admin
+						Invite admin
 					</Button>
 				}
 			/>

@@ -179,10 +179,11 @@ export const TenantsPage = () => {
 				subtitle="All churches on ChurchFlow. Create new ones and manage their admins."
 				action={
 					<Button
+						icon="plus"
 						variant="primary"
 						onClick={() => router.push("/super-admin/tenants/new")}
 					>
-						+ Create church
+						Create church
 					</Button>
 				}
 			/>

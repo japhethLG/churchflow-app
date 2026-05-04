@@ -28,7 +28,7 @@ export const AppShell = ({
 		<div
 			className={cn(
 				"flex min-h-screen w-full font-sans text-foreground",
-				!bg && "bg-background",
+				!bg && "bg-linear-to-br from-background via-secondary/40 to-secondary",
 			)}
 		>
 			<Sidebar

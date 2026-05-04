@@ -27,7 +27,7 @@ export const Card = ({
 	return (
 		<ShadedCard
 			className={cn(
-				"rounded-2xl border-none shadow-none bg-card",
+				"rounded-2xl border-none ring-0 bg-card shadow-card",
 				paddingClasses[padding as keyof typeof paddingClasses] || "p-6",
 				className,
 			)}

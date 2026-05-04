@@ -1,10 +1,10 @@
 "use client";
 
 import {
+	Button,
 	DataTable,
 	type DataTableColumn,
 	type DataTablePagination,
-	Pressable,
 	RowActionsMenu,
 	type Status,
 	StatusBadge,
@@ -145,12 +145,9 @@ export const CampaignsTable = ({
 			emptySubtitle="Start a fundraising campaign to track pledges and gifts."
 			emptyAction={
 				onCreate && (
-					<Pressable
-						onClick={onCreate}
-						className="cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,var(--ring),var(--primary))] px-5 py-2.5 font-inherit text-sm font-medium text-primary-foreground"
-					>
-						+ New campaign
-					</Pressable>
+					<Button icon="plus" onClick={onCreate}>
+						New campaign
+					</Button>
 				)
 			}
 		/>
