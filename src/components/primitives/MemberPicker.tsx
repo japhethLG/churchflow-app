@@ -80,7 +80,9 @@ export const MemberPicker = ({
 				<div className="flex h-11 items-center gap-3 rounded-xl bg-muted px-3">
 					<Avatar name={fullName(chosen)} size={28} className="shrink-0" />
 					<div className="min-w-0 flex-1">
-						<div className="truncate text-sm font-medium">{fullName(chosen)}</div>
+						<div className="truncate text-sm font-medium">
+							{fullName(chosen)}
+						</div>
 						<div className="truncate text-xs text-muted-foreground">
 							{asString(chosen.email) ?? "no email"}
 						</div>

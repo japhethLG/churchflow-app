@@ -2,7 +2,12 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { Button, Chip, PageHeader, SegmentedControl } from "@/components/primitives";
+import {
+	Button,
+	Chip,
+	PageHeader,
+	SegmentedControl,
+} from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
