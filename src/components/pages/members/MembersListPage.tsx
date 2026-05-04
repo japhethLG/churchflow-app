@@ -80,7 +80,12 @@ export const MembersListPage = () => {
 				subtitle="Everyone giving at this church."
 				action={
 					<>
-						<Button variant="secondary" recipe="outline" icon="mail" onClick={openInvite}>
+						<Button
+							variant="secondary"
+							recipe="outline"
+							icon="mail"
+							onClick={openInvite}
+						>
 							Invite member
 						</Button>
 						<Button variant="primary" icon="plus" onClick={openAdd}>
