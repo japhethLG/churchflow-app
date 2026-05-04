@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ChurchFlow — Component Library</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#3525CD; --primary-container:#4F46E5; --primary-fixed:#E6E6FA;
+    --on-primary:#FFFFFF; --tertiary:#7E3000; --tertiary-container:#FBE9DD;
+    --surface:#F7F9FB; --slc:#FFFFFF; --sl-low:#F1F3F6; --sl:#ECEEF0; --sl-high:#E4E7EB; --sl-highest:#DCE0E5;
+    --on:#191C1E; --on-var:#42474E; --on-muted:#6B7280; --outline:#72787E; --outline-var:#C2C7CE;
+    --success:#156B3D; --success-c:#C8EFD4;
+    --warning:#8B5A00; --warning-c:#FDE8B8;
+    --error:#8C1D18; --error-c:#F9DEDC;
+    --info:#1B4C8C; --info-c:#D6E6FB;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:'Inter',system-ui,sans-serif;background:var(--surface);color:var(--on);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+  body{padding:0 64px 120px}
+  .wrap{max-width:1320px;margin:0 auto}
+
+  /* Top navigation */
+  .topnav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(247,249,251,.82);
+    backdrop-filter:saturate(180%) blur(14px);
+    -webkit-backdrop-filter:saturate(180%) blur(14px);
+    border-bottom:1px solid rgba(0,0,0,.06);
+    margin:0 -64px 0;
+    padding:0 64px;
+  }
+  .topnav-inner{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:32px;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-.01em}
+  .brand-mark{
+    width:28px;height:28px;border-radius:8px;
+    background:linear-gradient(135deg, var(--primary-container), var(--primary));
+    display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700;
+    box-shadow:0 4px 12px -2px color-mix(in srgb, var(--primary) 50%, transparent);
+  }
+  .brand-sub{font-size:11px;color:var(--on-muted);font-weight:500;letter-spacing:.04em;margin-left:2px}
+  .topnav-links{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+  .topnav-links::-webkit-scrollbar{display:none}
+  .topnav-link{
+    display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;
+    font:500 13px 'Inter';color:var(--on-var);text-decoration:none;white-space:nowrap;
+    transition:all .15s
+  }
+  .topnav-link:hover{background:var(--sl);color:var(--on)}
+  .topnav-link.on{background:var(--primary-fixed);color:var(--primary);font-weight:600}
+  .topnav-link .num{
+    font-size:10px;font-family:'JetBrains Mono',monospace;
+    color:var(--on-muted);font-weight:500;
+  }
+  .topnav-link.on .num{color:var(--primary);opacity:.7}
+  .topnav-cta{
+    display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:9px;
+    background:#0F1115;color:#fff;font:500 13px 'Inter';text-decoration:none;
+  }
+  .topnav-cta:hover{background:var(--primary)}
+
+  /* Page content offset */
+  body > .wrap{padding-top:80px}
+  .hero{margin-bottom:80px}
+  .overline{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--primary)}
+  .h1{font-size:56px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin:14px 0 16px}
+  .sub{font-size:17px;color:var(--on-var);max-width:680px;line-height:1.6}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:32px}
+  .toc a{padding:8px 14px;border-radius:9999px;background:var(--slc);color:var(--on-var);text-decoration:none;font-size:13px;font-weight:500;border:1px solid transparent;transition:all .15s}
+  .toc a:hover{border-color:var(--outline-var);color:var(--on)}
+
+  section{margin-top:96px}
+  .sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;border-bottom:1px solid var(--sl-high);padding-bottom:20px}
+  .sec-title{font-size:32px;font-weight:600;letter-spacing:-.025em;margin:0}
+  .sec-num{font-size:13px;font-weight:500;color:var(--on-muted);font-family:'JetBrains Mono',monospace}
+  .sec-desc{font-size:15px;color:var(--on-var);max-width:680px;margin-top:8px;line-height:1.55}
+
+  .group{margin-bottom:48px}
+  .group-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .group-title{font-size:18px;font-weight:600;letter-spacing:-.01em;margin:0}
+  .group-tag{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-muted);padding:3px 8px;border-radius:6px;background:var(--sl)}
+  .group-desc{font-size:13px;color:var(--on-muted);margin:0}
+  .stage{background:var(--slc);border-radius:20px;padding:40px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+  .stage.dense{gap:16px}
+  .stage.col{flex-direction:column;align-items:stretch}
+  .stage.row{flex-direction:row}
+  .stage.center{justify-content:center}
+  .stage.dark{background:#0F1115;color:#fff}
+  .stage.warm{background:linear-gradient(135deg, var(--primary-fixed), #fff 60%, var(--tertiary-container))}
+
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+  /* Card primitives */
+  .card{background:var(--slc);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:8px}
+  .card-flat{background:var(--sl-low);border-radius:14px;padding:20px}
+  .card-outline{background:var(--slc);border:1px solid var(--outline-var);border-radius:14px;padding:20px}
+  .card-shadow{background:var(--slc);border-radius:16px;padding:24px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -8px rgba(0,0,0,.08)}
+  .card-elevated{background:var(--slc);border-radius:18px;padding:26px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 16px 40px -12px rgba(0,0,0,.12)}
+
+  /* Type */
+  .label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-muted)}
+  .num{font-feature-settings:'tnum'}
+
+  /* Inputs */
+  .field{display:flex;flex-direction:column;gap:8px;width:100%}
+  .field-label{font-size:13px;font-weight:500;color:var(--on-var)}
+  .field-help{font-size:12px;color:var(--on-muted)}
+  .field-error{font-size:12px;color:var(--error)}
+
+  .input, .select, .textarea{
+    width:100%;background:var(--slc);border:1.5px solid transparent;border-radius:12px;
+    padding:14px 16px;font:500 15px 'Inter',sans-serif;color:var(--on);
+    box-shadow:inset 0 0 0 1px var(--sl-high);transition:all .15s
+  }
+  .input::placeholder{color:var(--on-muted)}
+  .input:hover{box-shadow:inset 0 0 0 1px var(--outline)}
+  .input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--primary-container);border-color:transparent}
+  .input.error{box-shadow:inset 0 0 0 2px var(--error)}
+  .input.success{box-shadow:inset 0 0 0 2px var(--success)}
+  .input.disabled{background:var(--sl);color:var(--on-muted);box-shadow:inset 0 0 0 1px var(--sl-high);cursor:not-allowed}
+
+  .input-flat{
+    width:100%;background:var(--sl-low);border:none;border-radius:12px;
+    padding:14px 16px;font:500 15px 'Inter',sans-serif;color:var(--on);transition:all .15s
+  }
+  .input-flat:focus{outline:none;background:var(--slc);box-shadow:inset 0 0 0 2px var(--primary-container)}
+
+  .input-underline{
+    width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--outline-var);border-radius:0;
+    padding:10px 2px;font:500 15px 'Inter',sans-serif;color:var(--on);transition:border-color .15s
+  }
+  .input-underline:focus{outline:none;border-bottom-color:var(--primary-container);border-bottom-width:2px}
+
+  .ig{position:relative;display:flex;align-items:center}
+  .ig .input{padding-left:42px}
+  .ig .ig-icon{position:absolute;left:14px;color:var(--on-muted);pointer-events:none;display:flex}
+  .ig .ig-suffix{position:absolute;right:14px;color:var(--on-muted);font-size:13px}
+
+  /* amount */
+  .amount-input{display:flex;align-items:baseline;gap:8px;background:var(--sl-low);border-radius:14px;padding:18px 20px}
+  .amount-currency{font-size:20px;font-weight:500;color:var(--on-muted)}
+  .amount-num{flex:1;background:transparent;border:none;outline:none;font:600 32px/1 'Inter';letter-spacing:-.02em;color:var(--on);font-feature-settings:'tnum'}
+
+  /* checkbox / radio */
+  .check{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14px}
+  .check .box{width:20px;height:20px;border-radius:6px;background:var(--slc);box-shadow:inset 0 0 0 1.5px var(--outline-var);display:grid;place-items:center;transition:all .15s}
+  .check.on .box{background:var(--primary-container);box-shadow:none}
+  .check.on .box svg{color:#fff}
+  .check.on .box svg{display:block}
+  .check .box svg{display:none;width:12px;height:12px}
+
+  .radio{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14px}
+  .radio .ring{width:20px;height:20px;border-radius:50%;background:var(--slc);box-shadow:inset 0 0 0 1.5px var(--outline-var);display:grid;place-items:center}
+  .radio.on .ring{box-shadow:inset 0 0 0 2px var(--primary-container)}
+  .radio.on .ring::after{content:'';width:10px;height:10px;border-radius:50%;background:var(--primary-container)}
+
+  /* switch */
+  .switch{width:44px;height:26px;border-radius:9999px;background:var(--sl-high);position:relative;cursor:pointer;transition:all .2s}
+  .switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:all .2s}
+  .switch.on{background:var(--primary-container)}
+  .switch.on::after{left:21px}
+
+  /* segmented */
+  .segmented{display:inline-flex;background:var(--sl);border-radius:10px;padding:3px;gap:2px}
+  .segmented .seg{padding:7px 14px;border-radius:8px;font:500 13px 'Inter';color:var(--on-var);cursor:pointer}
+  .segmented .seg.on{background:var(--slc);color:var(--on);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+  /* badges */
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:9999px;font:500 11px 'Inter';letter-spacing:.01em}
+  .badge.dot::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
+
+  /* chips */
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9999px;font:500 13px 'Inter';background:var(--sl-low);color:var(--on-var);cursor:pointer}
+  .chip.on{background:var(--primary-fixed);color:var(--primary)}
+  .chip:hover:not(.on){background:var(--sl)}
+
+  /* tags (rectangular) */
+  .tag{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font:500 11px 'JetBrains Mono';letter-spacing:.02em}
+
+  /* avatars */
+  .av{border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:600;flex-shrink:0}
+  .av-lg{width:56px;height:56px;font-size:18px}
+  .av-md{width:40px;height:40px;font-size:14px}
+  .av-sm{width:28px;height:28px;font-size:11px}
+  .av-stack{display:flex}
+  .av-stack > .av{box-shadow:0 0 0 2px var(--slc);margin-left:-8px}
+  .av-stack > .av:first-child{margin-left:0}
+
+  /* alerts */
+  .alert{display:flex;gap:14px;padding:16px 20px;border-radius:14px;align-items:flex-start}
+  .alert-icon{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+  .alert-body{flex:1}
+  .alert-title{font-size:14px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  .alert-text{font-size:13px;color:var(--on-var);margin:0;line-height:1.5}
+
+  /* progress */
+  .progress{height:8px;border-radius:9999px;background:var(--sl);overflow:hidden}
+  .progress > .bar{height:100%;border-radius:9999px;background:linear-gradient(90deg, var(--primary-container), var(--primary))}
+
+  /* breadcrumb */
+  .crumbs{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--on-muted)}
+  .crumbs a{color:var(--on-var);text-decoration:none;padding:4px 8px;border-radius:6px}
+  .crumbs a:hover{background:var(--sl-low);color:var(--on)}
+  .crumbs .sep{color:var(--outline-var)}
+  .crumbs .cur{color:var(--on);font-weight:500}
+
+  /* tabs */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--sl-high)}
+  .tab{padding:12px 16px;font:500 14px 'Inter';color:var(--on-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab.on{color:var(--primary);border-bottom-color:var(--primary-container)}
+  .tab:hover:not(.on){color:var(--on)}
+
+  .tabs-pill{display:inline-flex;background:var(--sl);padding:4px;border-radius:12px;gap:2px}
+  .tabs-pill .tab{border-bottom:none;border-radius:9px;padding:8px 14px;margin:0}
+  .tabs-pill .tab.on{background:var(--slc);color:var(--on);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+
+  /* table */
+  .table{width:100%;border-collapse:separate;border-spacing:0;background:var(--slc);border-radius:16px;overflow:hidden}
+  .table thead th{font:600 11px/1 'Inter';letter-spacing:.08em;text-transform:uppercase;color:var(--on-muted);text-align:left;padding:14px 18px;background:var(--sl-low)}
+  .table tbody td{padding:18px;border-top:1px solid var(--sl-low);font-size:14px;vertical-align:middle}
+  .table tbody tr:first-child td{border-top:none}
+  .table tbody tr:hover td{background:var(--sl-low)}
+
+  /* tooltip */
+  .tooltip{display:inline-flex;background:#0F1115;color:#fff;padding:8px 12px;border-radius:8px;font:500 12px 'Inter';position:relative}
+  .tooltip::after{content:'';position:absolute;top:100%;left:24px;border:5px solid transparent;border-top-color:#0F1115}
+
+  /* code */
+  code, .code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--primary);background:var(--primary-fixed);padding:2px 6px;border-radius:5px}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="#top" class="brand" style="text-decoration:none;color:inherit">
+      <div class="brand-mark">CF</div>
+      <span>ChurchFlow</span>
+      <span class="brand-sub">/ Components</span>
+    </a>
+    <div class="topnav-links" id="topnav-links">
+      <a href="#cards" class="topnav-link"><span class="num">01</span>Cards</a>
+      <a href="#inputs" class="topnav-link"><span class="num">02</span>Inputs</a>
+      <a href="#selection" class="topnav-link"><span class="num">03</span>Selection</a>
+      <a href="#badges" class="topnav-link"><span class="num">04</span>Badges</a>
+      <a href="#avatars" class="topnav-link"><span class="num">05</span>Avatars</a>
+      <a href="#feedback" class="topnav-link"><span class="num">06</span>Feedback</a>
+      <a href="#nav" class="topnav-link"><span class="num">07</span>Navigation</a>
+      <a href="#data" class="topnav-link"><span class="num">08</span>Data</a>
+      <a href="#states" class="topnav-link"><span class="num">09</span>States</a>
+      <a href="#overlays" class="topnav-link"><span class="num">10</span>Overlays</a>
+    </div>
+    <a href="#" class="topnav-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Feedback
+    </a>
+  </div>
+</nav>
+
+<div class="wrap" id="top">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="overline">ChurchFlow · Sanctuary system</div>
+    <h1 class="h1">Component library.</h1>
+    <p class="sub">A complete, opinionated catalogue of cards, inputs, navigation, feedback, and data-display components — every one built from Sanctuary tokens. Use as the source of truth for new screens.</p>
+    <div class="toc">
+      <a href="#cards">01 · Cards</a>
+      <a href="#inputs">02 · Inputs</a>
+      <a href="#selection">03 · Selection</a>
+      <a href="#badges">04 · Badges &amp; tags</a>
+      <a href="#avatars">05 · Avatars</a>
+      <a href="#feedback">06 · Feedback</a>
+      <a href="#nav">07 · Navigation</a>
+      <a href="#data">08 · Data display</a>
+      <a href="#states">09 · Empty &amp; loading</a>
+      <a href="#overlays">10 · Modals &amp; sheets</a>
+    </div>
+  </header>
+
+  <!-- 01 CARDS -->
+  <section id="cards">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Cards</h2>
+        <p class="sec-desc">Five elevation levels — from flat tonal containers to elevated overlays. Default radius 16px; use 12px in dense contexts and 20–24px for hero moments.</p>
+      </div>
+      <div class="sec-num">01 / 10</div>
+    </div>
+
+    <!-- Variants -->
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Elevation variants</h3><span class="group-tag">5 levels</span></div>
+      <div class="stage">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:20px;width:100%">
+          <div class="card-flat">
+            <div class="label">Flat</div>
+            <div style="font-size:24px;font-weight:600;letter-spacing:-.02em">$28,450</div>
+            <div style="font-size:12px;color:var(--on-muted)">Tonal · no shadow</div>
+          </div>
+          <div class="card-outline">
+            <div class="label">Outlined</div>
+            <div style="font-size:24px;font-weight:600;letter-spacing:-.02em">$28,450</div>
+            <div style="font-size:12px;color:var(--on-muted)">1px hairline</div>
+          </div>
+          <div class="card">
+            <div class="label">Default</div>
+            <div style="font-size:24px;font-weight:600;letter-spacing:-.02em">$28,450</div>
+            <div style="font-size:12px;color:var(--on-muted)">White on warm</div>
+          </div>
+          <div class="card-shadow">
+            <div class="label">Raised</div>
+            <div style="font-size:24px;font-weight:600;letter-spacing:-.02em">$28,450</div>
+            <div style="font-size:12px;color:var(--on-muted)">Soft shadow</div>
+          </div>
+          <div class="card-elevated">
+            <div class="label">Elevated</div>
+            <div style="font-size:24px;font-weight:600;letter-spacing:-.02em">$28,450</div>
+            <div style="font-size:12px;color:var(--on-muted)">For overlays</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real card patterns -->
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Patterns in context</h3><span class="group-tag">recipes</span></div>
+      <div class="stage">
+        <div class="grid-3" style="width:100%">
+          <!-- KPI -->
+          <div class="card-shadow" style="gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div class="label">Total this month</div>
+              <span class="badge" style="background:var(--success-c);color:var(--success)">▲ 12%</span>
+            </div>
+            <div style="font-size:42px;font-weight:600;letter-spacing:-.03em" class="num">$28,450</div>
+            <div style="font-size:13px;color:var(--on-muted)">142 gifts · vs $25,400 in March</div>
+          </div>
+          <!-- Hero gradient KPI -->
+          <div style="background:linear-gradient(135deg, var(--primary-container), var(--primary));border-radius:16px;padding:24px;color:#fff;display:flex;flex-direction:column;gap:12px">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85">Your giving</div>
+            <div style="font-size:42px;font-weight:600;letter-spacing:-.03em" class="num">$820.00</div>
+            <div style="font-size:13px;opacity:.85">3 gifts · April 2026</div>
+          </div>
+          <!-- Clay thanks -->
+          <div style="background:linear-gradient(135deg, var(--tertiary-container), #fff);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px">
+            <div class="label" style="color:var(--tertiary)">A gentle note</div>
+            <div style="font-size:18px;font-style:italic;line-height:1.45;color:var(--tertiary);letter-spacing:-.01em">"Thank you for your faithful giving, Amara."</div>
+          </div>
+          <!-- Person card -->
+          <div class="card" style="gap:12px">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div class="av av-md" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+              <div style="flex:1">
+                <div style="font-size:15px;font-weight:600">Amara Okonkwo</div>
+                <div style="font-size:12px;color:var(--on-muted)">amara.ok@email.com</div>
+              </div>
+              <span class="badge dot" style="background:var(--success-c);color:var(--success)">Active</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--sl-low)">
+              <div><div class="label">YTD</div><div style="font-weight:600;margin-top:2px" class="num">$6,240</div></div>
+              <div><div class="label">Last gift</div><div style="font-weight:600;margin-top:2px">Apr 21</div></div>
+            </div>
+          </div>
+          <!-- Event card -->
+          <div class="card" style="gap:14px;padding:0;overflow:hidden">
+            <div style="height:100px;background:linear-gradient(135deg,#4F46E5,#3525CD);position:relative">
+              <span class="badge" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,.22);color:#fff;backdrop-filter:blur(8px)">Service</span>
+            </div>
+            <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:14px;align-items:flex-start">
+                <div style="text-align:center;background:var(--sl-low);padding:6px 10px;border-radius:10px;min-width:48px">
+                  <div style="font-size:18px;font-weight:600;letter-spacing:-.02em" class="num">28</div>
+                  <div style="font-size:9px;font-weight:600;letter-spacing:.08em;color:var(--on-muted)">APR</div>
+                </div>
+                <div style="flex:1">
+                  <div style="font-size:15px;font-weight:600;letter-spacing:-.01em">Sunday Worship</div>
+                  <div style="font-size:12px;color:var(--on-muted);margin-top:3px">Main Sanctuary · 10am</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Stat with progress -->
+          <div class="card" style="gap:12px">
+            <div class="label">Pledge progress · 2026</div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <div style="font-size:28px;font-weight:600;letter-spacing:-.02em" class="num">$6,240</div>
+              <div style="font-size:13px;color:var(--on-muted)">of $10,000</div>
+            </div>
+            <div class="progress"><div class="bar" style="width:62%"></div></div>
+            <div style="font-size:12px;color:var(--on-muted)">62% · 8 months remaining</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 INPUTS -->
+  <section id="inputs">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Inputs</h2>
+        <p class="sec-desc">Three input families: outlined (default), flat (for forms-on-surface), and underlined (for inline edits). Always pair with a label; use help text over placeholder for hints.</p>
+      </div>
+      <div class="sec-num">02 / 10</div>
+    </div>
+
+    <!-- Three families -->
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Three families</h3><span class="group-tag">style</span></div>
+      <div class="stage">
+        <div class="grid-3" style="width:100%">
+          <div class="field">
+            <label class="field-label">Outlined <span style="color:var(--on-muted);font-weight:400">(default)</span></label>
+            <input class="input" placeholder="amara.ok@email.com" />
+            <span class="field-help">Used everywhere by default.</span>
+          </div>
+          <div class="field">
+            <label class="field-label">Flat</label>
+            <input class="input-flat" placeholder="amara.ok@email.com" />
+            <span class="field-help">For forms sitting on white cards.</span>
+          </div>
+          <div class="field">
+            <label class="field-label">Underlined</label>
+            <input class="input-underline" placeholder="amara.ok@email.com" />
+            <span class="field-help">Inline editing, table cells.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- States -->
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">States</h3><span class="group-tag">5 states</span></div>
+      <div class="stage">
+        <div class="grid-3" style="width:100%">
+          <div class="field"><label class="field-label">Rest</label><input class="input" value="Amara Okonkwo" /></div>
+          <div class="field"><label class="field-label">Hover</label><input class="input" value="Amara Okonkwo" style="box-shadow:inset 0 0 0 1px var(--outline)" /></div>
+          <div class="field"><label class="field-label">Focused</label><input class="input" value="Amara Okonkwo" style="box-shadow:inset 0 0 0 2px var(--primary-container)" /></div>
+          <div class="field"><label class="field-label">Success</label><input class="input success" value="amara.ok@email.com" /><span class="field-help" style="color:var(--success)">✓ Looks good.</span></div>
+          <div class="field"><label class="field-label">Error</label><input class="input error" value="not-an-email" /><span class="field-error">Please enter a valid email.</span></div>
+          <div class="field"><label class="field-label">Disabled</label><input class="input disabled" value="Locked field" disabled /></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- With icons / addons -->
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">With affordances</h3><span class="group-tag">icon · suffix · clear</span></div>
+      <div class="stage">
+        <div class="grid-3" style="width:100%">
+          <div class="field">
+            <label class="field-label">Search</label>
+            <div class="ig">
+              <span class="ig-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+              <input class="input" placeholder="Member, note, ref #…" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Email</label>
+            <div class="ig">
+              <span class="ig-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <input class="input" value="amara.ok@email.com" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Date</label>
+            <div class="ig">
+              <span class="ig-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+              <input class="input" value="Apr 23, 2026" />
+              <span class="ig-suffix">▾</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">URL</label>
+            <div class="ig">
+              <span class="ig-icon" style="position:absolute;left:14px;color:var(--on-muted);font-size:13px;font-weight:500">https://</span>
+              <input class="input" value="gracecommunity.churchflow.app" style="padding-left:74px" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Password</label>
+            <div class="ig">
+              <input class="input" type="password" value="••••••••••" />
+              <span class="ig-suffix" style="cursor:pointer;color:var(--primary)">Show</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Search · clearable</label>
+            <div class="ig">
+              <span class="ig-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+              <input class="input" value="Maria" />
+              <span class="ig-suffix" style="background:var(--sl);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:11px">✕</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Specialized -->
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Specialized</h3><span class="group-tag">amount · select · textarea</span></div>
+      <div class="stage">
+        <div class="grid-3" style="width:100%">
+          <div class="field">
+            <label class="field-label">Amount</label>
+            <div class="amount-input">
+              <span class="amount-currency">$</span>
+              <input class="amount-num" value="250.00" />
+              <span class="amount-currency" style="font-size:13px">USD</span>
+            </div>
+            <span class="field-help">Tabular numerals · auto-formatted on blur.</span>
+          </div>
+          <div class="field">
+            <label class="field-label">Select</label>
+            <div class="ig">
+              <select class="input" style="appearance:none;cursor:pointer">
+                <option>Tithe</option><option>Offering</option><option>Mission</option>
+              </select>
+              <span class="ig-suffix">▾</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Note</label>
+            <textarea class="input" rows="3" style="resize:none;font-family:inherit">End-of-month tithe for April. Thank you for faithfully serving Grace Community.</textarea>
+            <span class="field-help">120 / 500 chars</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sizes -->
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Sizes</h3><span class="group-tag">3 sizes</span></div>
+      <div class="stage col">
+        <div class="field"><label class="field-label">Small · 36px (compact tables)</label><input class="input" value="Search" style="padding:8px 12px;font-size:13px" /></div>
+        <div class="field"><label class="field-label">Medium · 44px (default)</label><input class="input" value="Search" /></div>
+        <div class="field"><label class="field-label">Large · 56px (auth forms)</label><input class="input" value="Search" style="padding:18px 20px;font-size:17px" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 SELECTION -->
+  <section id="selection">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Selection controls</h2>
+        <p class="sec-desc">Checkboxes, radios, switches, segmented controls, and chips. All built from the indigo primary container — never raw saturated colors.</p>
+      </div>
+      <div class="sec-num">03 / 10</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Checkboxes &amp; radios</h3></div>
+        <div class="stage col" style="gap:14px">
+          <label class="check on"><span class="box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg></span> Send me weekly summaries</label>
+          <label class="check"><span class="box"></span> Send mission updates</label>
+          <label class="check on" style="opacity:.5;cursor:not-allowed"><span class="box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg></span> Required by org policy (locked)</label>
+
+          <div style="height:1px;background:var(--sl-high);margin:10px 0"></div>
+
+          <label class="radio on"><span class="ring"></span> Tithe</label>
+          <label class="radio"><span class="ring"></span> Offering</label>
+          <label class="radio"><span class="ring"></span> Mission</label>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Switches &amp; segmented</h3></div>
+        <div class="stage col" style="gap:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:500;font-size:14px">Anonymize publicly</div>
+              <div style="font-size:12px;color:var(--on-muted)">Show "Anonymous" in shared lists</div>
+            </div>
+            <div class="switch on"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:500;font-size:14px">Email receipts</div>
+              <div style="font-size:12px;color:var(--on-muted)">Send a copy on every recorded gift</div>
+            </div>
+            <div class="switch"></div>
+          </div>
+
+          <div style="height:1px;background:var(--sl-high);margin:6px 0"></div>
+
+          <div>
+            <div class="field-label" style="margin-bottom:8px">View</div>
+            <div class="segmented">
+              <span class="seg on">Month</span><span class="seg">Quarter</span><span class="seg">Year</span><span class="seg">All time</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label" style="margin-bottom:8px">Layout</div>
+            <div class="segmented">
+              <span class="seg on">List</span><span class="seg">Cards</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Chips</h3><span class="group-tag">filter · choice · input</span></div>
+      <div class="stage col" style="gap:18px">
+        <div>
+          <div class="field-label" style="margin-bottom:10px">Filter chips</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <span class="chip on">All · 234</span><span class="chip">Active · 189</span><span class="chip">Temp · 45</span><span class="chip">Inactive · 12</span>
+          </div>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:10px">Filter chips with icons</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <span class="chip on"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg> This year</span>
+            <span class="chip">Type ▾</span><span class="chip">Method ▾</span><span class="chip">Event ▾</span>
+            <span class="chip" style="background:var(--error-c);color:var(--error)">Clear all ✕</span>
+          </div>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:10px">Input chips (recipients)</div>
+          <div class="input" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;align-items:center;min-height:48px">
+            <span class="chip" style="background:var(--primary-fixed);color:var(--primary);padding:5px 10px"><div class="av av-sm" style="width:18px;height:18px;font-size:9px;background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div> Amara Okonkwo ✕</span>
+            <span class="chip" style="background:var(--primary-fixed);color:var(--primary);padding:5px 10px"><div class="av av-sm" style="width:18px;height:18px;font-size:9px;background:linear-gradient(135deg,#0D9488,#115E59)">DT</div> Daniel Tan ✕</span>
+            <input style="flex:1;border:none;outline:none;font-size:14px;background:transparent;min-width:120px" placeholder="Add a member…" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 BADGES -->
+  <section id="badges">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Badges &amp; tags</h2>
+        <p class="sec-desc">Soft pill badges for status &amp; types. Monospace tags for IDs and references. Never use raw saturated colors — always container + text pairs.</p>
+      </div>
+      <div class="sec-num">04 / 10</div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Status badges</h3></div>
+      <div class="stage" style="gap:10px">
+        <span class="badge dot" style="background:var(--success-c);color:var(--success)">Active</span>
+        <span class="badge dot" style="background:var(--warning-c);color:var(--warning)">Pending</span>
+        <span class="badge dot" style="background:var(--error-c);color:var(--error)">Failed</span>
+        <span class="badge dot" style="background:var(--info-c);color:var(--info)">Scheduled</span>
+        <span class="badge dot" style="background:var(--sl-high);color:var(--on-var)">Inactive</span>
+        <span class="badge dot" style="background:var(--tertiary-container);color:var(--tertiary)">Temp</span>
+        <span class="badge" style="background:var(--primary-fixed);color:var(--primary)">★ Admin</span>
+        <span class="badge" style="background:#0F1115;color:#fff">Owner</span>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Transaction type badges</h3><span class="group-tag">7 types</span></div>
+      <div class="stage" style="gap:10px">
+        <span class="badge" style="background:#EEF1FE;color:#4F46E5">Tithe</span>
+        <span class="badge" style="background:#DCFCE7;color:#15803D">Offering</span>
+        <span class="badge" style="background:#DBEAFE;color:#1D4ED8">Mission</span>
+        <span class="badge" style="background:#FEF3C7;color:#A16207">First Fruit</span>
+        <span class="badge" style="background:#F3E8FF;color:#7E22CE">Commitment</span>
+        <span class="badge" style="background:#CCFBF1;color:#0F766E">Donation</span>
+        <span class="badge" style="background:var(--sl);color:var(--on-var)">Other</span>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Numeric badges &amp; counters</h3></div>
+      <div class="stage" style="gap:14px;align-items:center">
+        <div style="position:relative">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13 21a2 2 0 0 1-4 0"/></svg>
+          <span style="position:absolute;top:-4px;right:-6px;background:var(--error);color:#fff;font-size:10px;font-weight:600;border-radius:9999px;padding:1px 5px;min-width:16px;text-align:center">3</span>
+        </div>
+        <span class="badge" style="background:var(--primary);color:#fff;font-weight:600">99+</span>
+        <span class="badge" style="background:var(--sl-high);color:var(--on-var);font-feature-settings:'tnum'">v1.4.2</span>
+        <span class="badge" style="background:var(--success);color:#fff">NEW</span>
+        <span class="badge" style="background:var(--tertiary);color:#fff">PRO</span>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Tags &amp; references</h3><span class="group-tag">monospace</span></div>
+      <div class="stage" style="gap:10px">
+        <span class="tag" style="background:var(--sl);color:var(--on-var)">TXN-8821</span>
+        <span class="tag" style="background:var(--sl);color:var(--on-var)">CHK-1402</span>
+        <span class="tag" style="background:var(--primary-fixed);color:var(--primary)">#mission-2026</span>
+        <span class="tag" style="background:var(--success-c);color:var(--success)">verified</span>
+        <span class="tag" style="background:var(--warning-c);color:var(--warning)">refunded</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 AVATARS -->
+  <section id="avatars">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Avatars</h2>
+        <p class="sec-desc">Initials with deterministic gradients. Three sizes; stack with 2px white ring.</p>
+      </div>
+      <div class="sec-num">05 / 10</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Sizes &amp; states</h3></div>
+        <div class="stage" style="gap:20px;align-items:center">
+          <div class="av av-sm" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+          <div class="av av-md" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+          <div class="av av-lg" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+          <div style="width:1px;height:40px;background:var(--sl-high)"></div>
+          <div class="av av-md" style="background:var(--sl);color:var(--on-muted)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          </div>
+          <div class="av av-md" style="background:linear-gradient(135deg,#9333EA,#5B21B6);position:relative">MR<span style="position:absolute;bottom:-1px;right:-1px;width:12px;height:12px;border-radius:50%;background:var(--success);box-shadow:0 0 0 2px #fff"></span></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Stacks &amp; gradient set</h3></div>
+        <div class="stage col" style="gap:18px">
+          <div class="av-stack">
+            <div class="av av-md" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#0D9488,#115E59)">DT</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#9333EA,#5B21B6)">MR</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#D97706,#92400E)">JW</div>
+            <div class="av av-md" style="background:var(--sl);color:var(--on-muted);font-size:12px">+8</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="av av-md" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#0D9488,#115E59)">DT</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#9333EA,#5B21B6)">MR</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#D97706,#92400E)">JW</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#2563EB,#1E40AF)">GA</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#16A34A,#166534)">PN</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#DB2777,#9F1239)">RP</div>
+            <div class="av av-md" style="background:linear-gradient(135deg,#0891B2,#155E75)">SC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 FEEDBACK -->
+  <section id="feedback">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Feedback</h2>
+        <p class="sec-desc">Alerts, toasts, progress, tooltips. Always quiet first — soft container, no big saturated blocks.</p>
+      </div>
+      <div class="sec-num">06 / 10</div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Alerts</h3></div>
+      <div class="stage col" style="gap:14px">
+        <div class="alert" style="background:var(--success-c)">
+          <div class="alert-icon" style="background:var(--success);color:#fff">✓</div>
+          <div class="alert-body"><h4 class="alert-title" style="color:var(--success)">Gift recorded</h4><p class="alert-text">Amara Okonkwo · $250.00 · Tithe. Receipt sent to amara.ok@email.com.</p></div>
+          <span class="badge" style="background:rgba(255,255,255,.5);color:var(--success);cursor:pointer">View</span>
+        </div>
+        <div class="alert" style="background:var(--info-c)">
+          <div class="alert-icon" style="background:var(--info);color:#fff">i</div>
+          <div class="alert-body"><h4 class="alert-title" style="color:var(--info)">Welcome to Grace Community</h4><p class="alert-text">You've been added as a member by Pastor David Obi. Take a quick tour of your dashboard.</p></div>
+        </div>
+        <div class="alert" style="background:var(--warning-c)">
+          <div class="alert-icon" style="background:var(--warning);color:#fff">!</div>
+          <div class="alert-body"><h4 class="alert-title" style="color:var(--warning)">3 members missing emails</h4><p class="alert-text">These members can't receive receipts until you add their email or mark them as cash-only.</p></div>
+        </div>
+        <div class="alert" style="background:var(--error-c)">
+          <div class="alert-icon" style="background:var(--error);color:#fff">✕</div>
+          <div class="alert-body"><h4 class="alert-title" style="color:var(--error)">Couldn't save the gift</h4><p class="alert-text">Reference number TXN-8821 has already been used. Try a different number, or leave it blank.</p></div>
+        </div>
+        <div class="alert" style="background:var(--tertiary-container)">
+          <div class="alert-icon" style="background:var(--tertiary);color:#fff">♡</div>
+          <div class="alert-body"><h4 class="alert-title" style="color:var(--tertiary)">A gentle reminder</h4><p class="alert-text" style="color:var(--tertiary);font-style:italic">"Your faithfulness has reached 62% of your 2026 commitment. Thank you."</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Toasts &amp; banners</h3></div>
+      <div class="stage" style="gap:14px;flex-direction:column;align-items:flex-start">
+        <div style="display:flex;gap:14px;background:#0F1115;color:#fff;padding:14px 18px;border-radius:14px;align-items:center;min-width:380px;box-shadow:0 12px 32px -8px rgba(0,0,0,.3)">
+          <div style="width:8px;height:8px;border-radius:50%;background:#22C55E"></div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:500">Saved</div>
+            <div style="font-size:11px;opacity:.7;margin-top:2px">Sarah Chen · 2 seconds ago</div>
+          </div>
+          <span style="opacity:.7;cursor:pointer">✕</span>
+        </div>
+        <div style="display:flex;gap:14px;background:var(--slc);padding:14px 18px;border-radius:14px;align-items:center;min-width:380px;box-shadow:0 12px 32px -8px rgba(0,0,0,.12)">
+          <div class="av av-sm" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">DO</div>
+          <div style="flex:1">
+            <div style="font-size:13px"><strong>David Obi</strong> shared a report</div>
+            <div style="font-size:11px;color:var(--on-muted);margin-top:2px">April giving summary · 2 min ago</div>
+          </div>
+          <span style="font-size:13px;color:var(--primary);font-weight:600;cursor:pointer">Open</span>
+        </div>
+        <div style="background:linear-gradient(90deg, var(--primary-fixed), var(--tertiary-container));padding:12px 20px;border-radius:12px;display:flex;align-items:center;gap:14px;width:100%">
+          <span class="badge" style="background:#fff;color:var(--primary)">NEW</span>
+          <div style="flex:1;font-size:13px;font-weight:500">Reports just got better — try the new monthly summary</div>
+          <span style="font-size:13px;color:var(--primary);font-weight:600;cursor:pointer">Take a look →</span>
+          <span style="opacity:.5;cursor:pointer;margin-left:6px">✕</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Progress &amp; loading</h3></div>
+      <div class="stage col" style="gap:18px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
+            <span class="label">Annual pledge</span><span class="num" style="font-weight:600">$6,240 / $10,000 · 62%</span>
+          </div>
+          <div class="progress"><div class="bar" style="width:62%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
+            <span class="label">Mission goal</span><span class="num" style="font-weight:600">$8,400 / $20,000 · 42%</span>
+          </div>
+          <div class="progress" style="background:var(--tertiary-container)"><div class="bar" style="width:42%;background:linear-gradient(90deg, var(--tertiary), #5C2200)"></div></div>
+        </div>
+        <div style="display:flex;gap:18px;align-items:center">
+          <div style="position:relative;width:60px;height:60px">
+            <svg width="60" height="60" viewBox="0 0 60 60" style="transform:rotate(-90deg)">
+              <circle cx="30" cy="30" r="26" stroke="var(--sl-high)" stroke-width="6" fill="none"/>
+              <circle cx="30" cy="30" r="26" stroke="url(#g)" stroke-width="6" fill="none" stroke-dasharray="163.4" stroke-dashoffset="62.1" stroke-linecap="round"/>
+              <defs><linearGradient id="g"><stop stop-color="#4F46E5"/><stop offset="1" stop-color="#3525CD"/></linearGradient></defs>
+            </svg>
+            <div style="position:absolute;inset:0;display:grid;place-items:center;font-size:14px;font-weight:600">62%</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600">Importing members…</div>
+            <div style="font-size:12px;color:var(--on-muted)">62 of 100 · estimated 8s remaining</div>
+          </div>
+        </div>
+        <!-- Skeleton -->
+        <div style="width:100%;background:var(--sl-low);border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--sl-high);animation:pulse 1.5s ease-in-out infinite"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <div style="height:12px;width:140px;background:var(--sl-high);border-radius:6px;animation:pulse 1.5s ease-in-out infinite"></div>
+            <div style="height:10px;width:200px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite"></div>
+          </div>
+          <div style="width:60px;height:18px;background:var(--sl-high);border-radius:6px;animation:pulse 1.5s ease-in-out infinite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Tooltips</h3></div>
+      <div class="stage" style="gap:24px;align-items:flex-start">
+        <span class="tooltip">Recorded by Sarah Chen</span>
+        <span class="tooltip" style="background:var(--primary)">Click to view full transaction →</span>
+        <span class="tooltip" style="background:var(--tertiary)">Cash gifts can't be reversed</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 NAV -->
+  <section id="nav">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Navigation</h2>
+        <p class="sec-desc">Tabs, breadcrumbs, desktop sidebar &amp; mobile shells, pagination, and command bar.</p>
+      </div>
+      <div class="sec-num">07 / 10</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Tabs</h3></div>
+        <div class="stage col" style="gap:24px">
+          <div>
+            <div class="field-label" style="margin-bottom:10px">Underlined</div>
+            <div class="tabs"><span class="tab on">Overview</span><span class="tab">Giving</span><span class="tab">Events</span><span class="tab">Profile</span></div>
+          </div>
+          <div>
+            <div class="field-label" style="margin-bottom:10px">Pill</div>
+            <div class="tabs-pill"><span class="tab on">Month</span><span class="tab">Quarter</span><span class="tab">Year</span></div>
+          </div>
+          <div>
+            <div class="field-label" style="margin-bottom:10px">With counters</div>
+            <div class="tabs"><span class="tab on">All <span class="badge" style="background:var(--primary-fixed);color:var(--primary);margin-left:4px">142</span></span><span class="tab">Pending <span class="badge" style="background:var(--sl);color:var(--on-muted);margin-left:4px">6</span></span><span class="tab">Failed <span class="badge" style="background:var(--error-c);color:var(--error);margin-left:4px">2</span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Breadcrumbs</h3></div>
+        <div class="stage col" style="gap:18px">
+          <div class="crumbs"><a href="#">Members</a><span class="sep">/</span><span class="cur">Amara Okonkwo</span></div>
+          <div class="crumbs"><a href="#">Events</a><span class="sep">/</span><a href="#">April 2026</a><span class="sep">/</span><span class="cur">Sunday Worship · Apr 21</span></div>
+          <div class="crumbs"><a href="#">Grace Community</a><span class="sep">/</span><a href="#">Settings</a><span class="sep">/</span><a href="#">Members</a><span class="sep">/</span><span class="cur">Invite</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Desktop sidebar</h3><span class="group-tag">≥ 1024px</span></div>
+        <div class="stage" style="background:var(--slc);padding:24px">
+          <div style="width:100%;display:flex;flex-direction:column;gap:4px">
+            <a href="#" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;text-decoration:none;color:var(--on);background:var(--primary-fixed);font-weight:500;font-size:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M3 12 12 3l9 9M5 10v10h14V10"/></svg>
+              <span style="flex:1;color:var(--primary)">Dashboard</span>
+            </a>
+            <a href="#" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;text-decoration:none;color:var(--on-var);font-size:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21c0-3.3 2.7-6 6-6s6 2.7 6 6M16 11a4 4 0 0 0 0-8M22 21c0-2.7-1.8-5-4-5.7"/></svg>
+              <span style="flex:1">Members</span>
+              <span class="badge" style="background:var(--sl);color:var(--on-muted)">234</span>
+            </a>
+            <a href="#" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;text-decoration:none;color:var(--on-var);font-size:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              <span style="flex:1">Transactions</span>
+              <span class="badge dot" style="background:var(--error-c);color:var(--error)">3</span>
+            </a>
+            <a href="#" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;text-decoration:none;color:var(--on-var);font-size:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+              <span style="flex:1">Events</span>
+            </a>
+            <div style="height:1px;background:var(--sl-high);margin:8px 6px"></div>
+            <a href="#" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;text-decoration:none;color:var(--on-var);font-size:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span style="flex:1">Settings</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Pagination &amp; jump</h3></div>
+        <div class="stage col" style="gap:20px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <button style="padding:8px 12px;border-radius:8px;border:1px solid var(--sl-high);background:#fff;font-size:13px;cursor:pointer">←</button>
+            <button style="width:36px;height:36px;border-radius:8px;border:none;background:var(--primary-fixed);color:var(--primary);font-weight:600;font-size:13px">1</button>
+            <button style="width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--on-var);font-size:13px;cursor:pointer">2</button>
+            <button style="width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--on-var);font-size:13px;cursor:pointer">3</button>
+            <span style="color:var(--on-muted);padding:0 4px">…</span>
+            <button style="width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--on-var);font-size:13px;cursor:pointer">12</button>
+            <button style="padding:8px 12px;border-radius:8px;border:1px solid var(--sl-high);background:#fff;font-size:13px;cursor:pointer">→</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--on-var);width:100%">
+            <span>Showing <strong>1–25</strong> of <strong>234</strong></span>
+            <div class="segmented"><span class="seg on">25</span><span class="seg">50</span><span class="seg">100</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Mobile navigation</h3><span class="group-tag">&lt; 768px</span><span class="group-desc">Bottom tab bar, hamburger drawer, top app bar with large title.</span></div>
+      <div class="stage" style="gap:32px;flex-wrap:wrap;justify-content:center;background:var(--sl-high);padding:48px 32px">
+
+        <!-- Bottom tab bar -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-muted)">Bottom tab bar</div>
+          <div style="width:340px;height:560px;border-radius:36px;background:#000;padding:10px;box-shadow:0 24px 48px -12px rgba(0,0,0,.3);position:relative">
+            <div style="width:100%;height:100%;border-radius:28px;background:var(--surface);overflow:hidden;position:relative;display:flex;flex-direction:column">
+              <!-- status bar -->
+              <div style="height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;padding-top:6px"><span>9:41</span><span style="font-size:10px">●●●●&nbsp;&nbsp;</span></div>
+              <div style="flex:1;padding:8px 18px 8px;overflow:hidden">
+                <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--on-muted);text-transform:uppercase">Welcome</div>
+                <div style="font-size:24px;font-weight:600;letter-spacing:-.025em;margin-top:4px">Hello, Amara.</div>
+                <div style="margin-top:14px;background:linear-gradient(135deg, var(--primary-container), var(--primary));border-radius:16px;padding:18px;color:#fff">
+                  <div style="font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85">This month</div>
+                  <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:6px">$820.00</div>
+                  <div style="font-size:11px;opacity:.85;margin-top:4px">3 gifts · April</div>
+                </div>
+                <div style="margin-top:14px;background:#fff;border-radius:12px;padding:14px;display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:500">Recent giving</span><span style="font-size:11px;color:var(--primary);font-weight:600">View all →</span></div>
+              </div>
+              <!-- tab bar -->
+              <div style="background:#fff;border-top:1px solid var(--sl);padding:8px 4px 22px;display:flex;justify-content:space-around">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 12px;border-radius:10px;color:var(--primary)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary-fixed)" stroke="var(--primary)" stroke-width="2"><path d="M3 12 12 3l9 9M5 10v10h14V10"/></svg>
+                  <span style="font-size:9px;font-weight:600">Home</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 12px;color:var(--on-muted)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                  <span style="font-size:9px;font-weight:500">Giving</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 12px;color:var(--on-muted)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                  <span style="font-size:9px;font-weight:500">Events</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 12px;color:var(--on-muted);position:relative">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+                  <span style="position:absolute;top:0;right:8px;width:7px;height:7px;border-radius:50%;background:var(--tertiary)"></span>
+                  <span style="font-size:9px;font-weight:500">Profile</span>
+                </div>
+              </div>
+              <!-- home indicator -->
+              <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:rgba(0,0,0,.25)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hamburger drawer -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-muted)">Hamburger drawer</div>
+          <div style="width:340px;height:560px;border-radius:36px;background:#000;padding:10px;box-shadow:0 24px 48px -12px rgba(0,0,0,.3);position:relative">
+            <div style="width:100%;height:100%;border-radius:28px;background:var(--surface);overflow:hidden;position:relative">
+              <div style="position:absolute;inset:0;background:rgba(15,17,21,.45);backdrop-filter:blur(2px);z-index:5"></div>
+              <!-- drawer -->
+              <div style="position:absolute;top:0;left:0;bottom:0;width:78%;background:#fff;z-index:10;display:flex;flex-direction:column;box-shadow:8px 0 24px -8px rgba(0,0,0,.2)">
+                <div style="padding:42px 18px 18px;border-bottom:1px solid var(--sl-low);display:flex;align-items:center;gap:10px">
+                  <div class="av av-md" style="background:linear-gradient(135deg,#4F46E5,#3525CD);width:36px;height:36px;font-size:13px">AO</div>
+                  <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">Amara Okonkwo</div>
+                    <div style="font-size:10px;color:var(--on-muted)">Grace Community</div>
+                  </div>
+                  <span style="color:var(--on-muted);font-size:14px">✕</span>
+                </div>
+                <div style="padding:8px;display:flex;flex-direction:column;gap:2px;flex:1">
+                  <a href="#" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;background:var(--primary-fixed);font-weight:600;font-size:13px;color:var(--primary)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12 12 3l9 9M5 10v10h14V10"/></svg>
+                    Dashboard
+                  </a>
+                  <a href="#" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--on-var);font-size:13px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                    My giving
+                  </a>
+                  <a href="#" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--on-var);font-size:13px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                    Events
+                    <span class="badge" style="margin-left:auto;background:var(--sl);color:var(--on-muted);font-size:9px">6</span>
+                  </a>
+                  <a href="#" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--on-var);font-size:13px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+                    Profile
+                  </a>
+                  <div style="height:1px;background:var(--sl-low);margin:8px 6px"></div>
+                  <a href="#" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--on-var);font-size:13px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+                    Help &amp; FAQ
+                  </a>
+                  <a href="#" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--on-var);font-size:13px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                    Sign out
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Large-title top app bar -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-muted)">Top app bar · large title</div>
+          <div style="width:340px;height:560px;border-radius:36px;background:#000;padding:10px;box-shadow:0 24px 48px -12px rgba(0,0,0,.3);position:relative">
+            <div style="width:100%;height:100%;border-radius:28px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column">
+              <div style="height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;padding-top:6px"><span>9:41</span><span style="font-size:10px">●●●●&nbsp;&nbsp;</span></div>
+              <div style="padding:6px 16px 0;display:flex;align-items:center;justify-content:space-between">
+                <div style="width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 1px 2px rgba(0,0,0,.06)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                </div>
+                <div style="width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 1px 2px rgba(0,0,0,.06);position:relative">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+                  <span style="position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--tertiary)"></span>
+                </div>
+              </div>
+              <div style="padding:14px 18px 8px">
+                <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--on-muted);text-transform:uppercase">My Giving</div>
+                <div style="font-size:30px;font-weight:600;letter-spacing:-.025em;margin-top:4px;line-height:1.05">Your giving.</div>
+              </div>
+              <div style="padding:0 18px 8px;display:flex;gap:6px;overflow:hidden">
+                <span class="chip on" style="font-size:11px;padding:5px 11px">This year</span>
+                <span class="chip" style="font-size:11px;padding:5px 11px">All types</span>
+                <span class="chip" style="font-size:11px;padding:5px 11px">Tithe</span>
+                <span class="chip" style="font-size:11px;padding:5px 11px">Offering</span>
+              </div>
+              <div style="padding:14px 18px 0;flex:1;overflow:hidden;display:flex;flex-direction:column;gap:8px">
+                <div style="background:#fff;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+                  <div><span class="badge" style="background:#EEF1FE;color:#4F46E5;font-size:10px">Tithe</span><div style="font-size:10px;color:var(--on-muted);margin-top:6px">Apr 21 · Bank</div></div>
+                  <div style="font-weight:600">$250.00</div>
+                </div>
+                <div style="background:#fff;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+                  <div><span class="badge" style="background:#DCFCE7;color:#15803D;font-size:10px">Offering</span><div style="font-size:10px;color:var(--on-muted);margin-top:6px">Apr 07 · Cash</div></div>
+                  <div style="font-weight:600">$120.00</div>
+                </div>
+              </div>
+              <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:rgba(0,0,0,.25)"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Command bar (⌘K)</h3></div>
+      <div class="stage center" style="background:var(--sl-high);padding:60px 40px">
+        <div style="width:560px;background:var(--slc);border-radius:14px;box-shadow:0 24px 64px -12px rgba(0,0,0,.25);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--sl-low)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--on-muted)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input style="flex:1;border:none;outline:none;font:500 15px 'Inter';background:transparent" placeholder="Search members, gifts, events…" value="amara" />
+            <span class="tag" style="background:var(--sl);color:var(--on-muted)">⌘K</span>
+          </div>
+          <div style="padding:8px">
+            <div class="label" style="padding:8px 12px">People</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--primary-fixed)">
+              <div class="av av-sm" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:500">Amara Okonkwo</div><div style="font-size:11px;color:var(--on-muted)">amara.ok@email.com · 14 gifts · YTD $6,240</div></div>
+              <span class="tag" style="background:#fff;color:var(--primary)">↵</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px">
+              <div class="av av-sm" style="background:linear-gradient(135deg,#16A34A,#166534)">AM</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:500">Amaka Mbeki</div><div style="font-size:11px;color:var(--on-muted)">a.mbeki@email.com</div></div>
+            </div>
+            <div class="label" style="padding:8px 12px;margin-top:6px">Actions</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px">
+              <div style="width:28px;height:28px;border-radius:7px;background:var(--primary-fixed);color:var(--primary);display:grid;place-items:center">+</div>
+              <div style="flex:1;font-size:14px">Record a gift for "amara"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 DATA DISPLAY -->
+  <section id="data">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Data display</h2>
+        <p class="sec-desc">Tables, list rows, definition lists, mini-stats. Always tabular numerals; right-align money; 64-px row height.</p>
+      </div>
+      <div class="sec-num">08 / 10</div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Table</h3></div>
+      <div class="stage">
+        <table class="table">
+          <thead><tr>
+            <th>Date</th><th>Member</th><th>Type</th><th>Method</th><th style="text-align:right">Amount</th><th></th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="color:var(--on-var)">Apr 21</td><td><div style="display:flex;gap:10px;align-items:center"><div class="av av-sm" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>Amara Okonkwo</div></td><td><span class="badge" style="background:#EEF1FE;color:#4F46E5">Tithe</span></td><td style="color:var(--on-muted)">Bank transfer</td><td class="num" style="text-align:right;font-weight:600">$250.00</td><td style="text-align:right;color:var(--on-muted)">⋯</td></tr>
+            <tr><td style="color:var(--on-var)">Apr 21</td><td><div style="display:flex;gap:10px;align-items:center"><div class="av av-sm" style="background:linear-gradient(135deg,#0D9488,#115E59)">DT</div>Daniel Tan</div></td><td><span class="badge" style="background:#DCFCE7;color:#15803D">Offering</span></td><td style="color:var(--on-muted)">Cash</td><td class="num" style="text-align:right;font-weight:600">$100.00</td><td style="text-align:right;color:var(--on-muted)">⋯</td></tr>
+            <tr><td style="color:var(--on-var)">Apr 20</td><td><div style="display:flex;gap:10px;align-items:center"><div class="av av-sm" style="background:linear-gradient(135deg,#9333EA,#5B21B6)">MR</div>Maria Reyes</div></td><td><span class="badge" style="background:#DBEAFE;color:#1D4ED8">Mission</span></td><td style="color:var(--on-muted)">Bank transfer</td><td class="num" style="text-align:right;font-weight:600">$500.00</td><td style="text-align:right;color:var(--on-muted)">⋯</td></tr>
+            <tr><td style="color:var(--on-var)">Apr 20</td><td style="color:var(--on-muted);font-style:italic"><div style="display:flex;gap:10px;align-items:center"><div class="av av-sm" style="background:var(--sl);color:var(--on-muted)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>Anonymous</div></td><td><span class="badge" style="background:#DCFCE7;color:#15803D">Offering</span></td><td style="color:var(--on-muted)">Cash</td><td class="num" style="text-align:right;font-weight:600">$80.00</td><td style="text-align:right;color:var(--on-muted)">⋯</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">List rows (mobile-style)</h3></div>
+        <div class="stage" style="background:var(--slc);padding:8px">
+          <div style="width:100%">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--sl-low)">
+              <div class="av av-md" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:600">Amara Okonkwo</div><div style="font-size:12px;color:var(--on-muted);margin-top:2px"><span class="badge" style="background:#EEF1FE;color:#4F46E5;font-size:10px;padding:2px 7px">Tithe</span> · Apr 21</div></div>
+              <div class="num" style="font-weight:600">$250.00</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--sl-low)">
+              <div class="av av-md" style="background:linear-gradient(135deg,#0D9488,#115E59)">DT</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:600">Daniel Tan</div><div style="font-size:12px;color:var(--on-muted);margin-top:2px"><span class="badge" style="background:#DCFCE7;color:#15803D;font-size:10px;padding:2px 7px">Offering</span> · Apr 21</div></div>
+              <div class="num" style="font-weight:600">$100.00</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px">
+              <div class="av av-md" style="background:linear-gradient(135deg,#9333EA,#5B21B6)">MR</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:600">Maria Reyes</div><div style="font-size:12px;color:var(--on-muted);margin-top:2px"><span class="badge" style="background:#DBEAFE;color:#1D4ED8;font-size:10px;padding:2px 7px">Mission</span> · Apr 20</div></div>
+              <div class="num" style="font-weight:600">$500.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Definition list (KV)</h3></div>
+        <div class="stage" style="padding:0">
+          <div class="card" style="width:100%;padding:8px;gap:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--sl-low)"><span class="label">Method</span><span style="font-size:13px">Bank transfer</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--sl-low)"><span class="label">Reference</span><span class="tag" style="background:var(--sl);color:var(--on-var)">TXN-8821</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--sl-low)"><span class="label">Event</span><span style="font-size:13px;color:var(--primary);font-weight:500">Sunday Worship · Apr 21</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--sl-low)"><span class="label">Recorded by</span><span style="display:flex;gap:6px;align-items:center;font-size:13px"><div class="av av-sm" style="width:20px;height:20px;font-size:9px;background:linear-gradient(135deg,#0891B2,#155E75)">SC</div>Sarah Chen</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px"><span class="label">Recorded on</span><span style="font-size:13px">Apr 21 · 2:14pm</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 EMPTY/LOADING -->
+  <section id="states">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Empty &amp; loading</h2>
+        <p class="sec-desc">Empty states should always offer a primary next action. Skeletons match the shape of real content.</p>
+      </div>
+      <div class="sec-num">09 / 10</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Empty states</h3></div>
+        <div class="stage col" style="gap:18px">
+          <div class="card" style="text-align:center;padding:48px 32px;gap:14px;align-items:center">
+            <div style="width:64px;height:64px;border-radius:18px;background:var(--primary-fixed);display:grid;place-items:center;color:var(--primary)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            </div>
+            <div style="font-size:16px;font-weight:600;letter-spacing:-.01em;margin-top:8px">No gifts yet this month</div>
+            <div style="font-size:13px;color:var(--on-muted);max-width:280px;line-height:1.55">Record your first gift to start tracking giving for Grace Community.</div>
+            <button style="padding:10px 18px;border-radius:10px;background:linear-gradient(135deg, var(--primary-container), var(--primary));color:#fff;border:none;font:600 13px 'Inter';margin-top:6px;cursor:pointer">+ Record a gift</button>
+          </div>
+          <div class="card" style="text-align:center;padding:36px 32px;gap:10px;align-items:center;background:var(--tertiary-container)">
+            <div style="font-size:32px">♡</div>
+            <div style="font-size:15px;font-weight:600;color:var(--tertiary)">No giving recorded yet</div>
+            <div style="font-size:13px;color:var(--tertiary);max-width:280px;line-height:1.55;font-style:italic">"When you give in faithfulness, your record is here whenever you need it."</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Loading skeletons</h3></div>
+        <div class="stage col" style="gap:14px">
+          <div class="card" style="gap:10px">
+            <div style="height:11px;width:80px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite"></div>
+            <div style="height:36px;width:160px;background:var(--sl-high);border-radius:8px;animation:pulse 1.5s ease-in-out infinite"></div>
+            <div style="height:10px;width:140px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite"></div>
+          </div>
+          <div class="card" style="padding:16px;gap:0">
+            <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--sl-low)">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--sl-high);animation:pulse 1.5s ease-in-out infinite"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                <div style="height:11px;width:140px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite"></div>
+                <div style="height:9px;width:90px;background:var(--sl-high);border-radius:4px;animation:pulse 1.5s ease-in-out infinite"></div>
+              </div>
+              <div style="width:60px;height:14px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite"></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--sl-low)">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--sl-high);animation:pulse 1.5s ease-in-out infinite;animation-delay:.2s"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                <div style="height:11px;width:120px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite;animation-delay:.2s"></div>
+                <div style="height:9px;width:80px;background:var(--sl-high);border-radius:4px;animation:pulse 1.5s ease-in-out infinite;animation-delay:.2s"></div>
+              </div>
+              <div style="width:60px;height:14px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite;animation-delay:.2s"></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;padding:12px 0">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--sl-high);animation:pulse 1.5s ease-in-out infinite;animation-delay:.4s"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                <div style="height:11px;width:130px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite;animation-delay:.4s"></div>
+                <div style="height:9px;width:100px;background:var(--sl-high);border-radius:4px;animation:pulse 1.5s ease-in-out infinite;animation-delay:.4s"></div>
+              </div>
+              <div style="width:60px;height:14px;background:var(--sl-high);border-radius:5px;animation:pulse 1.5s ease-in-out infinite;animation-delay:.4s"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 OVERLAYS -->
+  <section id="overlays">
+    <div class="sec-head">
+      <div>
+        <h2 class="sec-title">Overlays</h2>
+        <p class="sec-desc">Modals, drawers, popovers, and confirms. Always backdrop-blur the underlying surface; never scroll-lock without restoring focus.</p>
+      </div>
+      <div class="sec-num">10 / 10</div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Modal</h3></div>
+      <div class="stage center" style="background:var(--sl-high);padding:48px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:rgba(15,17,21,.4);backdrop-filter:blur(4px)"></div>
+        <div style="position:relative;width:560px;background:var(--slc);border-radius:20px;box-shadow:0 24px 64px -8px rgba(0,0,0,.3);overflow:hidden">
+          <div style="padding:24px 28px 0;display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div class="overline" style="color:var(--on-muted)">Confirm</div>
+              <h3 style="font-size:22px;font-weight:600;letter-spacing:-.02em;margin:6px 0 8px">Delete this gift record?</h3>
+              <p style="font-size:14px;color:var(--on-var);margin:0;line-height:1.55;max-width:440px">This will permanently remove <strong>Amara Okonkwo's</strong> $250 tithe from Apr 21. Members will see their balance update immediately.</p>
+            </div>
+            <span style="color:var(--on-muted);font-size:18px;cursor:pointer;padding:4px;margin:-4px">✕</span>
+          </div>
+          <div style="padding:20px 28px;background:var(--sl-low);margin:24px 28px 0;border-radius:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="display:flex;gap:10px;align-items:center"><div class="av av-sm" style="background:linear-gradient(135deg,#4F46E5,#3525CD)">AO</div><div><div style="font-size:13px;font-weight:600">Amara Okonkwo</div><div style="font-size:11px;color:var(--on-muted)">Apr 21 · Tithe</div></div></div>
+              <div class="num" style="font-size:18px;font-weight:600">$250.00</div>
+            </div>
+          </div>
+          <div style="padding:24px 28px;display:flex;justify-content:flex-end;gap:8px">
+            <button style="padding:10px 18px;border-radius:10px;border:none;background:transparent;color:var(--on-var);font:500 14px 'Inter';cursor:pointer">Cancel</button>
+            <button style="padding:10px 18px;border-radius:10px;border:none;background:var(--error);color:#fff;font:600 14px 'Inter';cursor:pointer">Delete record</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head"><h3 class="group-title">Drawer (right)</h3></div>
+      <div class="stage" style="background:var(--sl-high);padding:0;height:480px;overflow:hidden;position:relative">
+        <div style="position:absolute;inset:0;background:rgba(15,17,21,.3);backdrop-filter:blur(2px)"></div>
+        <div style="position:absolute;top:0;right:0;bottom:0;width:440px;background:var(--slc);box-shadow:-12px 0 40px -8px rgba(0,0,0,.2);display:flex;flex-direction:column">
+          <div style="padding:24px 28px;border-bottom:1px solid var(--sl-low);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="overline" style="color:var(--on-muted)">Gift record</div>
+              <h3 style="font-size:18px;font-weight:600;margin:4px 0 0;letter-spacing:-.01em">Apr 21, 2026</h3>
+            </div>
+            <span style="color:var(--on-muted);font-size:16px;cursor:pointer">✕</span>
+          </div>
+          <div style="padding:32px 28px;background:linear-gradient(135deg, var(--primary-fixed), #fff);text-align:center">
+            <span class="badge" style="background:#EEF1FE;color:#4F46E5">Tithe</span>
+            <div style="font-size:48px;font-weight:600;letter-spacing:-.03em;margin-top:14px;background:linear-gradient(135deg, var(--primary-container), var(--primary));-webkit-background-clip:text;background-clip:text;color:transparent" class="num">$250.00</div>
+          </div>
+          <div style="padding:0 16px;flex:1">
+            <div style="display:flex;justify-content:space-between;padding:14px 12px;border-bottom:1px solid var(--sl-low)"><span class="label">Method</span><span style="font-size:13px">Bank transfer</span></div>
+            <div style="display:flex;justify-content:space-between;padding:14px 12px;border-bottom:1px solid var(--sl-low)"><span class="label">Reference</span><span class="tag" style="background:var(--sl);color:var(--on-var)">TXN-8821</span></div>
+            <div style="display:flex;justify-content:space-between;padding:14px 12px;border-bottom:1px solid var(--sl-low)"><span class="label">Event</span><span style="font-size:13px;color:var(--primary);font-weight:500">Sunday Worship · Apr 21</span></div>
+            <div style="display:flex;justify-content:space-between;padding:14px 12px"><span class="label">Recorded by</span><span style="display:flex;gap:6px;align-items:center;font-size:13px"><div class="av av-sm" style="width:20px;height:20px;font-size:9px;background:linear-gradient(135deg,#0891B2,#155E75)">SC</div>Sarah Chen</span></div>
+          </div>
+          <div style="padding:16px 28px;border-top:1px solid var(--sl-low);display:flex;gap:8px;justify-content:flex-end">
+            <button style="padding:10px 18px;border-radius:10px;border:1px solid var(--sl-high);background:#fff;font:500 13px 'Inter';cursor:pointer">Edit</button>
+            <button style="padding:10px 18px;border-radius:10px;border:none;background:var(--error-c);color:var(--error);font:600 13px 'Inter';cursor:pointer">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Popover</h3></div>
+        <div class="stage center" style="background:var(--sl-high);padding:80px 40px">
+          <div style="background:var(--slc);border-radius:14px;padding:16px;width:280px;box-shadow:0 20px 48px -8px rgba(0,0,0,.2)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px">Filter by date</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+              <input class="input" placeholder="From" style="padding:8px 10px;font-size:12px" value="Apr 1" />
+              <input class="input" placeholder="To" style="padding:8px 10px;font-size:12px" value="Apr 30" />
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+              <span class="chip" style="font-size:11px;padding:5px 10px">Today</span>
+              <span class="chip" style="font-size:11px;padding:5px 10px">7 days</span>
+              <span class="chip on" style="font-size:11px;padding:5px 10px">This month</span>
+              <span class="chip" style="font-size:11px;padding:5px 10px">YTD</span>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:6px">
+              <button style="padding:6px 12px;border-radius:8px;border:none;background:transparent;color:var(--on-var);font:500 12px 'Inter';cursor:pointer">Reset</button>
+              <button style="padding:6px 12px;border-radius:8px;border:none;background:linear-gradient(135deg, var(--primary-container), var(--primary));color:#fff;font:600 12px 'Inter';cursor:pointer">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3 class="group-title">Action sheet (mobile)</h3></div>
+        <div class="stage center" style="background:var(--sl-high);padding:30px;height:auto">
+          <div style="width:300px;background:var(--slc);border-radius:18px;overflow:hidden;box-shadow:0 24px 64px -8px rgba(0,0,0,.3)">
+            <div style="padding:16px;text-align:center;border-bottom:1px solid var(--sl-low)">
+              <div style="font-size:12px;font-weight:500;color:var(--on-muted)">Apr 21 · Tithe · $250.00</div>
+            </div>
+            <div style="padding:6px">
+              <div style="padding:14px 16px;font-size:15px;font-weight:500;color:var(--primary);text-align:center;border-radius:10px">View receipt</div>
+              <div style="padding:14px 16px;font-size:15px;font-weight:500;text-align:center;border-radius:10px">Edit details</div>
+              <div style="padding:14px 16px;font-size:15px;font-weight:500;color:var(--error);text-align:center;border-radius:10px">Delete record</div>
+            </div>
+            <div style="padding:6px;border-top:1px solid var(--sl-low)">
+              <div style="padding:14px 16px;font-size:15px;font-weight:600;text-align:center;border-radius:10px;background:var(--sl-low)">Cancel</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<style>
+  @keyframes pulse {
+    0%,100% { opacity:1 }
+    50% { opacity:.5 }
+  }
+</style>
+<script>
+  // Scroll-spy for top navigation
+  (function() {
+    const links = Array.from(document.querySelectorAll('.topnav-link'));
+    const sections = links.map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+    const setActive = (id) => {
+      links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + id));
+    };
+    const onScroll = () => {
+      const offset = 96; // sticky nav height + a little
+      let current = sections[0];
+      for (const s of sections) {
+        if (s.getBoundingClientRect().top - offset <= 0) current = s;
+      }
+      if (current) setActive(current.id);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

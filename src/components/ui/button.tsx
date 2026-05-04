@@ -5,7 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-	"group/button inline-flex shrink-0 items-center justify-center rounded-[10px] border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-[120ms] ease-out outline-none select-none focus-visible:ring-3 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+	"group/button inline-flex shrink-0 items-center justify-center rounded-[10px] border-none bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-[120ms] ease-out outline-none select-none focus-visible:ring-3 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 	{
 		variants: {
 			variant: {
@@ -76,7 +76,7 @@ const buttonVariants = cva(
 				].join(" "),
 			},
 			size: {
-				default: "h-10 gap-1.5 px-5",
+				default: "h-11 gap-1.5 px-5",
 				xs: "h-6 gap-1 rounded-[8px] px-2 text-xs [&_svg:not([class*='size-'])]:size-3",
 				sm: "h-8 gap-1 rounded-[8px] px-3.5 text-[13px] [&_svg:not([class*='size-'])]:size-3.5",
 				lg: "h-[52px] gap-2 px-7 text-[15px]",
