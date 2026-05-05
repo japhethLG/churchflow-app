@@ -1,3 +1,4 @@
+export { PledgeDetailPage } from "./PledgeDetailPage";
 export {
 	type PledgeStatusFilter,
 	PledgesFilters,

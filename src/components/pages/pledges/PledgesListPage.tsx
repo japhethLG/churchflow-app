@@ -133,6 +133,8 @@ export const PledgesListPage = () => {
 						onDelete: askDelete,
 						onOpenCampaign: (id) =>
 							router.push(`/${tenantSlug}/admin/campaigns/${id}`),
+						onOpenPledge: (id) =>
+							router.push(`/${tenantSlug}/admin/pledges/${id}`),
 					}}
 				/>
 			</div>

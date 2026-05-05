@@ -23,11 +23,13 @@ export const MemberPledgesTable = ({
 	loading,
 	campaignMap,
 	campaignItemMap,
+	onOpenPledge,
 }: {
 	rows: Pledge[];
 	loading?: boolean;
 	campaignMap: Record<string, Campaign>;
 	campaignItemMap?: Record<string, string>;
+	onOpenPledge?: (pledgeId: string) => void;
 }) => {
 	const itemMap = campaignItemMap ?? {};
 	const columns: DataTableColumn<Pledge>[] = [
@@ -57,13 +59,30 @@ export const MemberPledgesTable = ({
 			},
 		},
 		{
-			key: "amount",
-			label: "Amount",
+			key: "pledged",
+			label: "Pledged",
 			width: "140px",
 			align: "right",
 			render: (row) => (
 				<span className="font-semibold tabular-nums text-foreground">
 					{formatCurrency(row.pledgedAmount)}
+				</span>
+			),
+		},
+		{
+			key: "paid",
+			label: "Paid",
+			width: "140px",
+			align: "right",
+			render: (row) => (
+				<span
+					className={
+						row.paidAmount === 0
+							? "tabular-nums text-muted-foreground"
+							: "font-semibold tabular-nums text-foreground"
+					}
+				>
+					{formatCurrency(row.paidAmount)}
 				</span>
 			),
 		},
@@ -81,6 +100,7 @@ export const MemberPledgesTable = ({
 			rows={rows}
 			rowKey={(r) => r.id}
 			loading={loading}
+			onRowClick={onOpenPledge ? (r) => onOpenPledge(r.id) : undefined}
 			emptyTitle="No pledges found"
 			emptySubtitle="You haven't made any pledges to church campaigns yet."
 		/>

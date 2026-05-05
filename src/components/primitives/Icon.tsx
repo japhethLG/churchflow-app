@@ -38,7 +38,9 @@ export type IconName =
 	| "logo"
 	| "logout"
 	| "clock"
-	| "close";
+	| "close"
+	| "moreHorizontal"
+	| "slash";
 
 const LUCIDE_MAP: Record<
 	Exclude<IconName, "google" | "logo">,
@@ -78,6 +80,8 @@ const LUCIDE_MAP: Record<
 	logout: Lucide.LogOut,
 	clock: Lucide.Clock,
 	close: Lucide.X,
+	moreHorizontal: Lucide.MoreHorizontal,
+	slash: Lucide.Slash,
 };
 
 type IconProps = {

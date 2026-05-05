@@ -35,6 +35,7 @@ export type PledgesTableHandlers = {
 	onEdit: (p: PledgeRow) => void;
 	onDelete: (p: PledgeRow) => void;
 	onOpenCampaign: (campaignId: string) => void;
+	onOpenPledge: (pledgeId: string) => void;
 };
 
 export const PledgesTable = ({
@@ -87,11 +88,24 @@ export const PledgesTable = ({
 			},
 		},
 		{
-			key: "amount",
+			key: "pledged",
 			label: "Pledged",
 			width: "140px",
 			align: "right",
 			render: (p) => <Amount value={p.pledgedAmount.toString()} />,
+		},
+		{
+			key: "paid",
+			label: "Paid",
+			width: "140px",
+			align: "right",
+			render: (p) => (
+				<span
+					className={p.paidAmount === 0 ? "text-muted-foreground" : undefined}
+				>
+					<Amount value={p.paidAmount.toString()} />
+				</span>
+			),
 		},
 		{
 			key: "status",
@@ -119,6 +133,10 @@ export const PledgesTable = ({
 				<RowActionsMenu
 					actions={[
 						{
+							label: "View transactions",
+							onClick: () => handlers.onOpenPledge(p.id),
+						},
+						{
 							label: "View campaign",
 							onClick: () => handlers.onOpenCampaign(p.campaignId),
 						},
@@ -145,6 +163,7 @@ export const PledgesTable = ({
 			rowKey={(p) => p.id}
 			loading={loading}
 			pagination={pagination}
+			onRowClick={(p) => handlers.onOpenPledge(p.id)}
 			emptyTitle="No pledges yet"
 			emptySubtitle="When members commit to a campaign, those pledges show up here."
 		/>

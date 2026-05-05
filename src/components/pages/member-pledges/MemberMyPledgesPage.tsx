@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/primitives";
 import { useMyCampaigns } from "@/lib/api/campaigns";
 import { useMyProfile } from "@/lib/api/members";
@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/format-currency";
 import { MemberPledgesTable } from "./MemberPledgesTable";
 
 export const MemberMyPledgesPage = () => {
+	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
 	const memberQ = useMyProfile(tenantSlug);
@@ -66,6 +67,9 @@ export const MemberMyPledgesPage = () => {
 					rows={pledges}
 					loading={loading}
 					campaignMap={campaignMap}
+					onOpenPledge={(id) =>
+						router.push(`/${tenantSlug}/member/my-pledges/${id}`)
+					}
 				/>
 			</div>
 		</div>
