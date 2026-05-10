@@ -69,6 +69,7 @@ export const useTransaction = (
 export const useCreateTransaction = (tenantId: string) => {
 	const qc = useQueryClient();
 	return useApiMutation("/api/v1/tenants/{tenantId}/transactions", "post", {
+		meta: { successMessage: "Transaction recorded" },
 		onSuccess: () => {
 			invalidateTransactions(qc, tenantId);
 			invalidateCampaigns(qc, tenantId);
@@ -77,12 +78,39 @@ export const useCreateTransaction = (tenantId: string) => {
 	});
 };
 
+// Atomic multi-gift entry. The backend wraps the whole batch in a Prisma
+// transaction so it's all-or-nothing. Same invalidation surface as the
+// single-create hook.
+export const useBulkCreateTransactions = (tenantId: string) => {
+	const qc = useQueryClient();
+	return useApiMutation(
+		"/api/v1/tenants/{tenantId}/transactions/bulk",
+		"post",
+		{
+			meta: {
+				successMessage: (data: { items?: unknown[] }) => {
+					const count = data?.items?.length ?? 0;
+					return `Recorded ${count} ${count === 1 ? "gift" : "gifts"}`;
+				},
+			},
+			onSuccess: () => {
+				invalidateTransactions(qc, tenantId);
+				invalidateCampaigns(qc, tenantId);
+				invalidatePledges(qc, tenantId);
+			},
+		},
+	);
+};
+
 export const useUpdateTransaction = (tenantId: string) => {
 	const qc = useQueryClient();
 	return useApiMutation(
 		"/api/v1/tenants/{tenantId}/transactions/{id}",
 		"patch",
-		{ onSuccess: () => invalidateTransactions(qc, tenantId) },
+		{
+			meta: { successMessage: "Transaction updated" },
+			onSuccess: () => invalidateTransactions(qc, tenantId),
+		},
 	);
 };
 
@@ -91,6 +119,9 @@ export const useDeleteTransaction = (tenantId: string) => {
 	return useApiMutation(
 		"/api/v1/tenants/{tenantId}/transactions/{id}",
 		"delete",
-		{ onSuccess: () => invalidateTransactions(qc, tenantId) },
+		{
+			meta: { successMessage: "Transaction deleted" },
+			onSuccess: () => invalidateTransactions(qc, tenantId),
+		},
 	);
 };

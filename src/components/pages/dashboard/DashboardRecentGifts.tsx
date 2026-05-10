@@ -96,7 +96,7 @@ export const DashboardRecentGifts = ({
 					No transactions recorded yet.
 				</div>
 			) : (
-				recent.map((t, i) => {
+				recent.map((t, _i) => {
 					const memberId = nstr(t.memberId);
 					const member = memberId ? membersById[memberId] : null;
 					const isAnon = !member;

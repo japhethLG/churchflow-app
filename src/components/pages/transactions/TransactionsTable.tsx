@@ -4,10 +4,10 @@ import {
 	Amount,
 	Avatar,
 	type TransactionType as BadgeType,
+	Button,
 	DataTable,
 	type DataTableColumn,
 	type DataTablePagination,
-	Pressable,
 	RowActionsMenu,
 	TypeBadge,
 } from "@/components/primitives";
@@ -170,12 +170,9 @@ export const TransactionsTable = ({
 			emptySubtitle="Record the first gift to start the giving history."
 			emptyAction={
 				onCreate && (
-					<Pressable
-						onClick={onCreate}
-						className="cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,var(--ring),var(--primary))] px-5 py-2.5 font-inherit text-sm font-medium text-primary-foreground"
-					>
-						+ Record gift
-					</Pressable>
+					<Button variant="primary" icon="plus" onClick={onCreate}>
+						Record gift
+					</Button>
 				)
 			}
 		/>

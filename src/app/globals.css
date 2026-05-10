@@ -89,7 +89,7 @@
 	--primary-foreground: #ffffff;
 	--secondary: #eceef0; /* surfaceContainer */
 	--secondary-foreground: #191c1e;
-	--muted: #f1f3f6; /* surfaceContainerLow */
+	--muted: #f1f1f1; /* surfaceContainerLow */
 	--muted-foreground: #6b7280; /* onSurfaceMuted */
 	--on-surface-variant: #42474e; /* onSurfaceVariant */
 	--accent: #e6e6fa; /* primaryFixed */

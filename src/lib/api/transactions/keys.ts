@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 
 export const TRANSACTION_PATHS = [
 	"/api/v1/tenants/{tenantId}/transactions",
+	"/api/v1/tenants/{tenantId}/transactions/bulk",
 	"/api/v1/tenants/{tenantId}/transactions/{id}",
 	"/api/v1/tenants/{tenantId}/transactions/summary",
 	"/api/v1/tenants/{tenantId}/me/transactions",

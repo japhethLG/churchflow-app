@@ -40,7 +40,12 @@ export type IconName =
 	| "clock"
 	| "close"
 	| "moreHorizontal"
-	| "slash";
+	| "slash"
+	| "info"
+	| "circleCheck"
+	| "triangleAlert"
+	| "octagonX"
+	| "loader";
 
 const LUCIDE_MAP: Record<
 	Exclude<IconName, "google" | "logo">,
@@ -82,6 +87,11 @@ const LUCIDE_MAP: Record<
 	close: Lucide.X,
 	moreHorizontal: Lucide.MoreHorizontal,
 	slash: Lucide.Slash,
+	info: Lucide.Info,
+	circleCheck: Lucide.CircleCheck,
+	triangleAlert: Lucide.TriangleAlert,
+	octagonX: Lucide.OctagonX,
+	loader: Lucide.Loader2,
 };
 
 type IconProps = {

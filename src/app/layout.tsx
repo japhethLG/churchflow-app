@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 	description: "Record tithes, offerings, and giving for your church.",
 };
 
+import { Toaster } from "@/components/primitives/Toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default ({ children }: { children: React.ReactNode }) => {
@@ -24,6 +25,7 @@ export default ({ children }: { children: React.ReactNode }) => {
 						<QueryProvider>
 							{children}
 							<ModalHost />
+							<Toaster />
 						</QueryProvider>
 					</AuthProvider>
 				</TooltipProvider>

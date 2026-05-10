@@ -32,16 +32,21 @@ export const FormButton = ({
 	} = useFormContext();
 	const formInternal = useFormInternalContext();
 
-	const effectiveSubmitHandler = onFormSubmit || formInternal?.onSubmit;
-
-	// If it's a submit button inside a Form component, we let the form handle it.
-	// Otherwise, if we have a handler and it's not a submit button (or we're not in a Form),
-	// we trigger it manually.
-	const shouldTriggerManually =
-		effectiveSubmitHandler && (type !== "submit" || !formInternal);
-	const handleAction = shouldTriggerManually
-		? handleSubmit(effectiveSubmitHandler)
-		: onClick;
+	// Resolve the click handler in priority order:
+	// 1. onFormSubmit — explicit "submit my values via this fn" (validated).
+	// 2. onClick — explicit imperative handler. Always wins over the implicit
+	//    "fall back to the parent Form's onSubmit" so a FormButton can be
+	//    used as an inline action inside a <Form> (e.g. "Save row", "Add
+	//    another") without secretly triggering the outer form's submission.
+	// 3. Parent Form's onSubmit — only when neither of the above is provided
+	//    AND we either aren't a submit button OR we're outside a <Form>.
+	const handleAction = onFormSubmit
+		? handleSubmit(onFormSubmit)
+		: onClick
+			? onClick
+			: formInternal?.onSubmit && (type !== "submit" || !formInternal)
+				? handleSubmit(formInternal.onSubmit)
+				: undefined;
 
 	return (
 		<Button
