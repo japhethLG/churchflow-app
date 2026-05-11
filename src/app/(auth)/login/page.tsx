@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { JournalIllustration } from "@/components/illustrations/JournalIllustration";
 import { Card } from "@/components/primitives/Card";
 import { Wordmark } from "@/components/primitives/Wordmark";
@@ -36,13 +37,19 @@ export default () => {
 
 						<div className="mt-6 text-center text-[11px] leading-normal text-muted-foreground/60">
 							By continuing you agree to our{" "}
-							<span className="text-muted-foreground font-medium underline decoration-primary/20 transition-colors hover:text-primary">
+							<Link
+								href="/terms"
+								className="text-muted-foreground font-medium underline decoration-primary/20 transition-colors hover:text-primary"
+							>
 								Terms
-							</span>{" "}
+							</Link>{" "}
 							and{" "}
-							<span className="text-muted-foreground font-medium underline decoration-primary/20 transition-colors hover:text-primary">
+							<Link
+								href="/privacy"
+								className="text-muted-foreground font-medium underline decoration-primary/20 transition-colors hover:text-primary"
+							>
 								Privacy Policy
-							</span>
+							</Link>
 							.
 						</div>
 					</Card>
@@ -70,12 +77,18 @@ export default () => {
 					Built for churches with heart.
 				</span>
 				<span className="flex gap-8">
-					<span className="hover:text-primary/60 transition-colors cursor-pointer">
+					<Link
+						href="/privacy"
+						className="hover:text-primary/60 transition-colors cursor-pointer"
+					>
 						Privacy
-					</span>
-					<span className="hover:text-primary/60 transition-colors cursor-pointer">
+					</Link>
+					<Link
+						href="/terms"
+						className="hover:text-primary/60 transition-colors cursor-pointer"
+					>
 						Terms
-					</span>
+					</Link>
 					<span className="hover:text-primary/60 transition-colors cursor-pointer">
 						Support
 					</span>

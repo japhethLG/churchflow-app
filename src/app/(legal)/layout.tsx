@@ -1,21 +1,15 @@
+import type { ReactNode } from "react";
 import {
-	LandingCta,
-	LandingFaq,
-	LandingFeatures,
 	LandingFooter,
-	LandingHero,
-	LandingHowItWorks,
 	LandingNavbar,
 	type LandingNavbarUser,
 } from "@/components/pages/landing";
 import { getSessionUser } from "@/lib/auth/server";
 
-// Public landing page. Replaces the prior auto-redirect at `/` — the
-// signed-in routing logic now lives in /launch, so this page can be
-// visited by anyone (guest or member). The navbar swaps its
-// right-hand slot between "Sign in" and an AccountMenu depending on the
-// session, but the landing content itself is identical for both.
-export default async () => {
+// Shared chrome for /privacy and /terms. Reuses the public LandingNavbar
+// (which handles both signed-in and guest states) so visitors can jump
+// straight back to the marketing surface or their dashboard.
+export default async ({ children }: { children: ReactNode }) => {
 	const user = await getSessionUser();
 
 	let navbarUser: LandingNavbarUser | null = null;
@@ -23,10 +17,6 @@ export default async () => {
 		const memberships = Object.entries(user.tenantMemberships).map(
 			([slug, m]) => ({ slug, name: m.name, role: m.role }),
 		);
-
-		// Pick a sensible default perspective for the AccountMenu (drives
-		// the "Profile" link). Super-admins → super; otherwise prefer an
-		// admin membership, else fall back to member.
 		const adminMembership = memberships.find((m) => m.role === "ADMIN");
 		const fallbackMembership = memberships[0];
 		const perspective = user.isSuperAdmin
@@ -40,7 +30,6 @@ export default async () => {
 				: perspective === "member"
 					? fallbackMembership?.slug
 					: undefined;
-
 		navbarUser = {
 			userName: user.displayName ?? user.email ?? "Account",
 			userEmail: user.email ?? undefined,
@@ -51,18 +40,13 @@ export default async () => {
 		};
 	}
 
-	const isAuthenticated = Boolean(user);
-
 	return (
 		<div className="flex min-h-screen flex-col bg-background font-sans antialiased">
-			<LandingNavbar user={navbarUser} />
-			<main className="flex-1 pt-16">
-				<LandingHero isAuthenticated={isAuthenticated} />
-				<LandingFeatures />
-				<LandingHowItWorks />
-				<LandingFaq />
-				<LandingCta isAuthenticated={isAuthenticated} />
-			</main>
+			{/* Legal pages live on their own URLs, so the landing
+			    anchor links (#features, #faq, …) wouldn't resolve here
+			    — hide them to avoid broken navigation. */}
+			<LandingNavbar user={navbarUser} showNavItems={false} />
+			<main className="flex-1 pt-16">{children}</main>
 			<LandingFooter />
 		</div>
 	);

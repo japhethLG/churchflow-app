@@ -22,7 +22,18 @@ export default async ({ children }: { children: React.ReactNode }) => {
 	await connection();
 
 	return (
-		<html lang="en" className={cn("font-sans", geist.variable)}>
+		// `scroll-smooth` makes in-page anchor navigation (e.g. landing
+		// nav items linking to #features) glide instead of jumping. It's
+		// CSS-driven so it works in Server Components too, and the
+		// `motion-reduce:scroll-auto` variant respects users who've opted
+		// out of motion at the OS level.
+		<html
+			lang="en"
+			className={cn(
+				"scroll-smooth motion-reduce:scroll-auto font-sans",
+				geist.variable,
+			)}
+		>
 			<body>
 				<TooltipProvider>
 					<AuthProvider>

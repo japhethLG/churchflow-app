@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { type ReactElement, useState } from "react";
 
 import { Icon } from "@/components/primitives/Icon";
 import {
@@ -22,6 +22,20 @@ import { PlatformMenuItem } from "./PlatformMenuItem";
 import { profileHrefFor } from "./routes";
 import { TenantRoleSubmenu } from "./TenantRoleSubmenu";
 
+/**
+ * Render-prop signature for swapping the AccountMenu trigger. The element
+ * must forward `menuOpen` so it can mirror the dropdown state visually
+ * (chevron rotation, hover background, …). Base UI injects the actual
+ * trigger handlers/aria/tabindex via `render`, so the consumer only owns
+ * the *appearance*.
+ */
+export type AccountMenuTriggerRender = (args: {
+	menuOpen: boolean;
+	userName: string;
+	userEmail?: string;
+	perspective: Perspective;
+}) => ReactElement;
+
 export const AccountMenu = ({
 	perspective,
 	tenantSlug,
@@ -29,6 +43,9 @@ export const AccountMenu = ({
 	userEmail,
 	memberships,
 	isSuperAdmin,
+	side = "top",
+	align = "start",
+	renderTrigger,
 }: {
 	perspective: Perspective;
 	tenantSlug?: string;
@@ -36,6 +53,11 @@ export const AccountMenu = ({
 	userEmail?: string;
 	memberships: TenantSummary[];
 	isSuperAdmin: boolean;
+	/** Popup placement — sidebar opens "top", navbar wants "bottom". */
+	side?: "top" | "bottom";
+	align?: "start" | "center" | "end";
+	/** Custom trigger renderer; defaults to the sidebar-styled trigger. */
+	renderTrigger?: AccountMenuTriggerRender;
 }) => {
 	const router = useRouter();
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -67,22 +89,36 @@ export const AccountMenu = ({
 		router.push(`/${slug}/${dash}/dashboard`);
 	};
 
+	const triggerEl = renderTrigger ? (
+		renderTrigger({ menuOpen, userName, userEmail, perspective })
+	) : (
+		<AccountMenuTrigger
+			userName={userName}
+			perspective={perspective}
+			menuOpen={menuOpen}
+		/>
+	);
+
+	// Popup shadow flips direction with placement so the elevation reads
+	// correctly regardless of whether it opens upward (sidebar) or
+	// downward (top navbar). Sidebar trigger is wide → popup matches its
+	// width via --anchor-width; navbar trigger is a small avatar so we
+	// just clamp to a comfortable min width.
+	const popupShadow =
+		side === "top"
+			? "shadow-[0_-4px_6px_rgba(0,0,0,0.03),0_-12px_28px_rgba(0,0,0,0.08)]"
+			: "shadow-[0_4px_6px_rgba(0,0,0,0.03),0_12px_28px_rgba(0,0,0,0.08)]";
+	const popupSize =
+		side === "top" ? "w-[var(--anchor-width)] min-w-[200px]" : "min-w-[240px]";
+
 	return (
 		<DropdownMenu onOpenChange={setMenuOpen}>
-			<DropdownMenuTrigger
-				render={
-					<AccountMenuTrigger
-						userName={userName}
-						perspective={perspective}
-						menuOpen={menuOpen}
-					/>
-				}
-			/>
+			<DropdownMenuTrigger render={triggerEl} />
 			<DropdownMenuContent
-				side="top"
-				align="start"
+				side={side}
+				align={align}
 				sideOffset={6}
-				className="z-50 w-[var(--anchor-width)] min-w-[200px] rounded-[14px] border-0 bg-card p-1.5 shadow-[0_-4px_6px_rgba(0,0,0,0.03),0_-12px_28px_rgba(0,0,0,0.08)]"
+				className={`z-50 ${popupSize} rounded-[14px] border-0 bg-card p-1.5 ${popupShadow}`}
 			>
 				<AccountIdentityHeader userName={userName} userEmail={userEmail} />
 

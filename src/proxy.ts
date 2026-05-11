@@ -9,7 +9,14 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 //      (HSTS, X-Frame-Options, Permissions-Policy, …) are set in
 //      next.config.ts; CSP has to live here because the nonce changes
 //      per request.
-const PUBLIC_PATHS = ["/login", "/invite", "/logout"];
+// Public, unauthenticated-accessible paths. The landing page (`/`),
+// legal pages, login, invitations, and logout all need to render
+// without a session cookie present.
+const PUBLIC_PATHS = ["/login", "/invite", "/logout", "/privacy", "/terms"];
+
+// `/` is special-cased below because every other path matches as a
+// prefix and `/` would gobble all of them.
+const PUBLIC_EXACT_PATHS = new Set(["/"]);
 
 const apiBaseUrl =
 	process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001";
@@ -60,7 +67,9 @@ const applyCspHeaders = (
 export const proxy = (req: NextRequest) => {
 	const { pathname } = req.nextUrl;
 	const hasSession = req.cookies.has(SESSION_COOKIE_NAME);
-	const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+	const isPublic =
+		PUBLIC_EXACT_PATHS.has(pathname) ||
+		PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
 	const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 	const csp = buildCsp(nonce, process.env.NODE_ENV === "development");
@@ -73,11 +82,12 @@ export const proxy = (req: NextRequest) => {
 		return response;
 	}
 
-	// Signed in hitting /login → let `/` pick the right destination
-	// (rules live in src/app/page.tsx).
+	// Signed in hitting /login → let /launch pick the right destination
+	// (rules live in src/app/launch/page.tsx). `/` is the public
+	// landing page, so we no longer route through it.
 	if (hasSession && pathname === "/login") {
 		const url = req.nextUrl.clone();
-		url.pathname = "/";
+		url.pathname = "/launch";
 		const response = NextResponse.redirect(url);
 		applyCspHeaders(response, nonce, csp);
 		return response;

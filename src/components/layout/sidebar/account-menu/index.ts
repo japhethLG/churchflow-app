@@ -1,1 +1,1 @@
-export { AccountMenu } from "./AccountMenu";
+export { AccountMenu, type AccountMenuTriggerRender } from "./AccountMenu";
