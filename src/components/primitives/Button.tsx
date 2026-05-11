@@ -304,7 +304,7 @@ export const Button = ({
 				ROLE_CLASSES[effectiveRole],
 				fullWidth && "w-full",
 				className,
-				"cursor-pointer"
+				"cursor-pointer",
 			)}
 			{...rest}
 		>
