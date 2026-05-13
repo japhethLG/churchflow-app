@@ -55,7 +55,7 @@ export type IconName =
 	| "lock"
 	| "gift"
 	| "brush"
-	| "eraser"
+	| "eraser";
 
 const LUCIDE_MAP: Record<
 	Exclude<IconName, "google" | "logo">,

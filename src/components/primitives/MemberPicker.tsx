@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import type { components } from "@/lib/api";
 import { Avatar } from "./Avatar";
@@ -110,8 +110,8 @@ export const MemberPicker = ({
 						onChange={(e) => setSearch(e.target.value)}
 						onFocus={() => {
 							if (blurTimeout.current) {
-							clearTimeout(blurTimeout.current);
-						}
+								clearTimeout(blurTimeout.current);
+							}
 							setFocused(true);
 						}}
 						onBlur={() => {
