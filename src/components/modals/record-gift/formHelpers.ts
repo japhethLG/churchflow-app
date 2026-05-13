@@ -39,17 +39,19 @@ export const giftRowSchema = z.object({
 
 export type GiftRowValues = z.infer<typeof giftRowSchema>;
 
-// The whole modal — one shared member/date plus N rows.
+// The whole modal — one shared member/date plus a single draft row.
 //
-// The "is at least one gift recorded?" question is NOT in zod — it's
-// answered by the explicit `saved` map in RecordGiftModal because zod
-// would have to peek at component state to tell drafts apart from
-// committed rows. The primary "Record gifts" button is gated on
-// `saved.size > 0` instead.
+// Saved gifts are kept in component state (not the form) because they're
+// committed snapshots; the form only holds the live draft. The primary
+// "Record gifts" button is gated on `savedGifts.length > 0`. The draft
+// schema is intentionally loose (matches giftRowSchema's structure but
+// without the strict refinements) so the resolver doesn't fight a
+// partially-filled draft on every keystroke — strict validation happens
+// only when the user clicks Save and we call `methods.trigger("draft")`.
 export const recordGiftEntrySchema = z.object({
 	memberId: z.string(),
 	date: z.string().min(1, "Date is required"),
-	gifts: z.array(giftRowSchema).max(50),
+	draft: giftRowSchema,
 });
 
 export type RecordGiftEntryValues = z.infer<typeof recordGiftEntrySchema>;
@@ -87,12 +89,40 @@ export const buildRecordGiftEntryDefaults = (overrides?: {
 }): RecordGiftEntryValues => ({
 	memberId: overrides?.defaultMemberId ?? "",
 	date: todayInputValue(),
-	gifts: [
-		buildEmptyGiftRow({
-			defaultCampaignId: overrides?.defaultCampaignId,
-			defaultPledgeId: overrides?.defaultPledgeId,
-		}),
-	],
+	draft: buildEmptyGiftRow({
+		defaultCampaignId: overrides?.defaultCampaignId,
+		defaultPledgeId: overrides?.defaultPledgeId,
+	}),
+});
+
+// A draft is "dirty" if the user has actually started filling it in.
+// Type is excluded because we intentionally preserve it across saves
+// for bulk-entry runs; an empty Amount + no optional fields means the
+// user hasn't engaged with this draft yet, so it can be silently
+// abandoned when switching to edit-mode or submitting.
+export const isDraftDirty = (draft: GiftRowValues): boolean =>
+	Boolean(
+		draft.amount ||
+			draft.campaignId ||
+			draft.campaignItemId ||
+			draft.pledgeId ||
+			draft.referenceNumber ||
+			draft.note,
+	);
+
+// Reset the draft after a save — keep Type (bulk-entry sessions tend
+// to be runs of the same type) and reuse the same defaults the user
+// pre-seeded the modal with.
+export const buildEmptyDraft = (carryOver: {
+	type: GiftRowValues["type"];
+	defaultCampaignId?: string;
+	defaultPledgeId?: string;
+}): GiftRowValues => ({
+	...buildEmptyGiftRow({
+		defaultCampaignId: carryOver.defaultCampaignId,
+		defaultPledgeId: carryOver.defaultPledgeId,
+	}),
+	type: carryOver.type,
 });
 
 export const TYPE_OPTIONS: {

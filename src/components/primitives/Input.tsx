@@ -1,5 +1,6 @@
 import type {
 	ChangeEventHandler,
+	FocusEventHandler,
 	HTMLInputTypeAttribute,
 	KeyboardEventHandler,
 } from "react";
@@ -45,6 +46,7 @@ export const Input = ({
 	inputClassName,
 	onChange,
 	onKeyDown,
+	onFocus,
 	onBlur,
 	type = "text",
 	step,
@@ -67,6 +69,7 @@ export const Input = ({
 	inputClassName?: string;
 	onChange?: ChangeEventHandler<HTMLInputElement>;
 	onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
+	onFocus?: FocusEventHandler<HTMLInputElement>;
 	onBlur?: () => void;
 	type?: HTMLInputTypeAttribute;
 	step?: string;
@@ -118,6 +121,7 @@ export const Input = ({
 						placeholder={placeholder}
 						onChange={onChange}
 						onKeyDown={onKeyDown}
+						onFocus={onFocus}
 						onBlur={onBlur}
 						disabled={disabled}
 						readOnly={readOnly}

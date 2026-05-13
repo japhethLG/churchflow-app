@@ -76,14 +76,14 @@ export const Select = ({
 					</SelectValue>
 				</SelectTrigger>
 				<SelectContent
-					className="rounded-xl border-border/40 shadow-xl min-w-[200px]"
+					className="rounded-lg border-border/40 shadow-xl min-w-[200px]"
 					alignItemWithTrigger={false}
 					sideOffset={4}
 				>
 					{showEmptyOption && (
 						<SelectItem
 							value=""
-							className="cursor-pointer rounded-lg mx-1 my-0.5 text-muted-foreground italic"
+							className="cursor-pointer rounded-none mx-1 py-2 text-muted-foreground italic"
 						>
 							{emptyOptionLabel || placeholder}
 						</SelectItem>
@@ -92,7 +92,7 @@ export const Select = ({
 						<SelectItem
 							key={opt.value}
 							value={opt.value}
-							className="cursor-pointer rounded-lg mx-1 my-0.5"
+							className="cursor-pointer rounded-none mx-1 py-2"
 						>
 							{opt.label}
 						</SelectItem>

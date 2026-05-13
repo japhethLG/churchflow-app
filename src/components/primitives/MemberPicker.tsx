@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRef, useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import type { components } from "@/lib/api";
 import { Avatar } from "./Avatar";
@@ -50,6 +50,8 @@ export const MemberPicker = ({
 	error,
 }: MemberPickerProps) => {
 	const [search, setSearch] = useState("");
+	const [focused, setFocused] = useState(false);
+	const blurTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 	const memberById = useMemo(
 		() => Object.fromEntries(members.map((m) => [m.id, m])),
 		[members],
@@ -65,7 +67,7 @@ export const MemberPicker = ({
 	}, [members, search, maxResults]);
 
 	const showDropdownResults =
-		variant === "dropdown" && search.trim().length > 0;
+		variant === "dropdown" && (focused || search.trim().length > 0);
 	const showInlineResults = variant === "inline" && !chosen;
 
 	return (
@@ -106,6 +108,15 @@ export const MemberPicker = ({
 						placeholder={placeholder}
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
+						onFocus={() => {
+							if (blurTimeout.current) {
+							clearTimeout(blurTimeout.current);
+						}
+							setFocused(true);
+						}}
+						onBlur={() => {
+							blurTimeout.current = setTimeout(() => setFocused(false), 150);
+						}}
 					/>
 
 					{showDropdownResults && (

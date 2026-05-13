@@ -18,18 +18,22 @@ export const Pill = ({
 	disabled,
 	onClick,
 	className,
-}: PillProps) => (
-	<Pressable
-		disabled={disabled}
-		onClick={onClick}
-		className={cn(
-			"flex-1 rounded-full border-[1.5px] px-3.5 py-2.5 text-center text-sm",
-			active
-				? "border-primary bg-accent font-semibold text-primary"
-				: "border-transparent bg-input font-medium text-foreground",
-			className,
-		)}
-	>
-		{children}
-	</Pressable>
-);
+}: PillProps) => {
+	const classes = cn(
+		"flex-1 rounded-full border-[1.5px] px-3.5 py-2.5 text-center text-sm",
+		active
+			? "border-primary bg-accent font-semibold text-primary"
+			: "border-transparent bg-input font-medium text-foreground",
+		className,
+	);
+
+	if (!onClick) {
+		return <span className={classes}>{children}</span>;
+	}
+
+	return (
+		<Pressable disabled={disabled} onClick={onClick} className={classes}>
+			{children}
+		</Pressable>
+	);
+};

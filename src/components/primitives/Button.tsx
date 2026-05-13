@@ -43,7 +43,13 @@ type ButtonProps = {
 	 *   "tertiary"  → role=secondary recipe=outline
 	 *   "ghost"     → role=secondary recipe=ghost
 	 */
-	variant?: "primary" | "secondary" | "tertiary" | "ghost";
+	variant?:
+		| "primary"
+		| "secondary"
+		| "tertiary"
+		| "ghost"
+		| "danger"
+		| "danger-outline";
 	size?: "sm" | "md" | "lg";
 	icon?: IconName;
 	iconRight?: IconName;
@@ -51,7 +57,7 @@ type ButtonProps = {
 	/** Shorthand for role="danger" recipe="filled". */
 	destructive?: boolean;
 	loading?: boolean;
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size">;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size" | "role">;
 
 // Tailwind arbitrary-property classes that set --btn-* CSS vars per role.
 // The recipe variants in ui/button.tsx reference these via var(--btn-*).
@@ -238,6 +244,8 @@ const VARIANT_MAP: Record<
 	secondary: ["secondary", "soft"],
 	tertiary: ["secondary", "outline"],
 	ghost: ["secondary", "ghost"],
+	danger: ["danger", "filled"],
+	"danger-outline": ["danger", "outline"],
 };
 
 const RECIPE_VARIANT: Record<
@@ -310,7 +318,9 @@ export const Button = ({
 		>
 			{loading && <Loader2 className="animate-spin" />}
 			{!loading && icon && <Icon name={icon} size={iconSize} />}
-			<span className={cn(loading && "opacity-70")}>{children}</span>
+			{children && (
+				<span className={cn(loading && "opacity-70")}>{children}</span>
+			)}
 			{!loading && iconRight && <Icon name={iconRight} size={iconSize} />}
 		</ShadedButton>
 	);

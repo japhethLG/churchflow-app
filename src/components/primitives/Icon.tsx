@@ -52,7 +52,10 @@ export type IconName =
 	| "heart"
 	| "trending"
 	| "globe"
-	| "lock";
+	| "lock"
+	| "gift"
+	| "brush"
+	| "eraser"
 
 const LUCIDE_MAP: Record<
 	Exclude<IconName, "google" | "logo">,
@@ -106,6 +109,9 @@ const LUCIDE_MAP: Record<
 	trending: Lucide.TrendingUp,
 	globe: Lucide.Globe,
 	lock: Lucide.Lock,
+	gift: Lucide.Gift,
+	brush: Lucide.Brush,
+	eraser: Lucide.Eraser,
 };
 
 type IconProps = {
