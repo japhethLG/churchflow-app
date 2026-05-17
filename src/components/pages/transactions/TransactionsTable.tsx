@@ -4,10 +4,8 @@ import {
 	Amount,
 	Avatar,
 	type TransactionType as BadgeType,
-	Button,
-	DataTable,
 	type DataTableColumn,
-	type DataTablePagination,
+	DeletedLabel,
 	RowActionsMenu,
 	TypeBadge,
 } from "@/components/primitives";
@@ -43,102 +41,127 @@ export type TransactionsTableHandlers = {
 	onView: (t: TransactionRow) => void;
 	onEdit: (t: TransactionRow) => void;
 	onDelete: (t: TransactionRow) => void;
+	onRestore: (t: TransactionRow) => void;
 };
 
-export const TransactionsTable = ({
-	rows,
-	loading,
-	pagination,
+export const transactionColumns = ({
+	handlers,
 	membersById,
 	campaignsById,
-	handlers,
-	onCreate,
 }: {
-	rows: TransactionRow[] | undefined;
-	loading?: boolean;
-	pagination?: DataTablePagination;
+	handlers: TransactionsTableHandlers;
 	membersById: Record<string, Member>;
 	campaignsById: Record<string, Campaign>;
-	handlers: TransactionsTableHandlers;
-	onCreate?: () => void;
-}) => {
-	const columns: DataTableColumn<TransactionRow>[] = [
-		{
-			key: "date",
-			label: "Date",
-			width: "100px",
-			render: (t) => <span className="text-sm">{fmtDate(t.date)}</span>,
-		},
-		{
-			key: "member",
-			label: "Member",
-			render: (t) => {
-				const memberId = nstr(t.memberId);
-				if (!memberId) {
-					return (
-						<span className="text-sm italic text-muted-foreground">
-							Anonymous
-						</span>
-					);
-				}
-				const m = membersById[memberId];
+}): DataTableColumn<TransactionRow>[] => [
+	{
+		key: "date",
+		label: "Date",
+		width: "100px",
+		render: (t) => <span className="text-sm">{fmtDate(t.date)}</span>,
+	},
+	{
+		key: "member",
+		label: "Member",
+		render: (t) => {
+			const memberId = nstr(t.memberId);
+			if (!memberId) {
 				return (
-					<span className="inline-flex min-w-0 items-center gap-2">
-						<Avatar name={fullName(m)} size={26} />
+					<span className="text-sm italic text-muted-foreground">
+						Anonymous
+					</span>
+				);
+			}
+			const m = membersById[memberId];
+			const isDeleted = Boolean(m?.deletedAt);
+			return (
+				<span className="inline-flex min-w-0 items-center gap-2">
+					<Avatar name={fullName(m)} size={26} />
+					{isDeleted ? (
+						<DeletedLabel deletedAt={m?.deletedAt} className="truncate text-sm">
+							{fullName(m)}
+						</DeletedLabel>
+					) : (
 						<span className="truncate text-sm">{fullName(m)}</span>
-					</span>
-				);
-			},
+					)}
+				</span>
+			);
 		},
-		{
-			key: "type",
-			label: "Type",
-			width: "130px",
-			render: (t) => <TypeBadge type={TYPE_BADGE_LABEL[t.type]} />,
-		},
-		{
-			key: "campaign",
-			label: "Campaign",
-			width: "180px",
-			render: (t) => {
-				const cid = nstr(t.campaignId);
-				if (!cid) {
-					return <span className="text-muted-foreground">—</span>;
-				}
+	},
+	{
+		key: "type",
+		label: "Type",
+		width: "130px",
+		render: (t) => <TypeBadge type={TYPE_BADGE_LABEL[t.type]} />,
+	},
+	{
+		key: "campaign",
+		label: "Campaign",
+		width: "180px",
+		render: (t) => {
+			const cid = nstr(t.campaignId);
+			if (!cid) {
+				return <span className="text-muted-foreground">—</span>;
+			}
+			const c = campaignsById[cid];
+			if (c?.deletedAt) {
 				return (
-					<span className="block truncate text-sm text-primary">
-						{campaignsById[cid]?.title ?? "Campaign"}
-					</span>
+					<DeletedLabel
+						deletedAt={c.deletedAt}
+						className="block truncate text-sm"
+					>
+						{c.title}
+					</DeletedLabel>
 				);
-			},
+			}
+			return (
+				<span className="block truncate text-sm text-primary">
+					{c?.title ?? "Campaign"}
+				</span>
+			);
 		},
-		{
-			key: "ref",
-			label: "Ref #",
-			width: "100px",
-			render: (t) => {
-				const r = nstr(t.referenceNumber);
-				return r ? (
-					<span className="font-mono text-xs text-muted-foreground">{r}</span>
-				) : (
-					<span className="text-muted-foreground">—</span>
+	},
+	{
+		key: "ref",
+		label: "Ref #",
+		width: "100px",
+		render: (t) => {
+			const r = nstr(t.referenceNumber);
+			return r ? (
+				<span className="font-mono text-xs text-muted-foreground">{r}</span>
+			) : (
+				<span className="text-muted-foreground">—</span>
+			);
+		},
+	},
+	{
+		key: "amt",
+		label: "Amount",
+		width: "120px",
+		align: "right",
+		render: (t) => <Amount value={t.amount} />,
+	},
+	{
+		key: "actions",
+		label: "",
+		width: "48px",
+		align: "right",
+		overflow: "visible",
+		render: (t) => {
+			if (t.deletedAt) {
+				return (
+					<RowActionsMenu
+						actions={[
+							{ label: "View details", onClick: () => handlers.onView(t) },
+							{
+								label: "Restore",
+								onClick: () => handlers.onRestore(t),
+								separatorBefore: true,
+							},
+						]}
+					/>
 				);
-			},
-		},
-		{
-			key: "amt",
-			label: "Amount",
-			width: "120px",
-			align: "right",
-			render: (t) => <Amount value={t.amount} />,
-		},
-		{
-			key: "actions",
-			label: "",
-			width: "48px",
-			align: "right",
-			overflow: "visible",
-			render: (t) => (
+			}
+			return (
 				<RowActionsMenu
 					actions={[
 						{ label: "View details", onClick: () => handlers.onView(t) },
@@ -154,27 +177,7 @@ export const TransactionsTable = ({
 						},
 					]}
 				/>
-			),
+			);
 		},
-	];
-
-	return (
-		<DataTable<TransactionRow>
-			columns={columns}
-			rows={rows}
-			rowKey={(t) => t.id}
-			loading={loading}
-			pagination={pagination}
-			onRowClick={(t) => handlers.onView(t)}
-			emptyTitle="No gifts recorded yet"
-			emptySubtitle="Record the first gift to start the giving history."
-			emptyAction={
-				onCreate && (
-					<Button variant="primary" icon="plus" onClick={onCreate}>
-						Record gift
-					</Button>
-				)
-			}
-		/>
-	);
-};
+	},
+];

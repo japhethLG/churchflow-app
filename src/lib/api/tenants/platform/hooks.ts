@@ -8,8 +8,18 @@ import { invalidateTenants } from "../keys";
 // Platform intent — super-admin platform management. Lives at
 // /platform/tenants/* on the backend.
 
-export const useTenants = () => {
-	return useApiQuery("/api/v1/platform/tenants");
+export type TenantsListQuery = {
+	// 3-state archive filter — see members/tenant/hooks for encoding.
+	includeDeleted?: boolean;
+	onlyDeleted?: boolean;
+};
+
+export const useTenants = (query: TenantsListQuery = {}) => {
+	const hasFilter = query.includeDeleted || query.onlyDeleted;
+	return useApiQuery(
+		"/api/v1/platform/tenants",
+		hasFilter ? { params: { query } } : undefined,
+	);
 };
 
 export const useCreateTenant = () => {

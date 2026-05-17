@@ -15,8 +15,14 @@ export type PledgesListQuery = {
 	campaignItemId?: string;
 	memberId?: string;
 	status?: "ACTIVE" | "FULFILLED" | "CANCELLED";
+	// ISO 8601 UTC, both inclusive — bracket the pledge's createdAt.
+	dateFrom?: string;
+	dateTo?: string;
 	offset?: number;
 	limit?: number;
+	// 3-state archive filter — see members/tenant/hooks for encoding.
+	includeDeleted?: boolean;
+	onlyDeleted?: boolean;
 };
 
 export const usePledges = (
@@ -31,10 +37,20 @@ export const usePledges = (
 	);
 };
 
-export const usePledge = (tenantId: string, id: string, enabled = true) => {
+export const usePledge = (
+	tenantId: string,
+	id: string,
+	options: { includeDeleted?: boolean; enabled?: boolean } = {},
+) => {
+	const { includeDeleted, enabled = true } = options;
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/pledges/{id}",
-		{ params: { path: { tenantId, id } } },
+		{
+			params: {
+				path: { tenantId, id },
+				query: includeDeleted ? { includeDeleted: true } : undefined,
+			},
+		},
 		{ enabled: enabled && Boolean(tenantId) && Boolean(id) },
 	);
 };
@@ -67,4 +83,18 @@ export const useDeletePledge = (tenantId: string) => {
 			invalidateCampaigns(qc, tenantId);
 		},
 	});
+};
+
+export const useRestorePledge = (tenantId: string) => {
+	const qc = useQueryClient();
+	return useApiMutation(
+		"/api/v1/tenants/{tenantId}/pledges/{id}/restore",
+		"post",
+		{
+			onSuccess: () => {
+				invalidatePledges(qc, tenantId);
+				invalidateCampaigns(qc, tenantId);
+			},
+		},
+	);
 };

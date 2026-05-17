@@ -2,40 +2,68 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Button, PageHeader } from "@/components/primitives";
+import {
+	Button,
+	DataTableShell,
+	DateRangePicker,
+	type DateRangeValue,
+	PageHeader,
+	type StateFilterValue,
+	toStateFilterFlags,
+} from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
+import dayjs from "@/lib/dayjs";
 import { openModal } from "@/lib/modals/store";
-import { PledgesFilters, type PledgesFiltersValue } from "./PledgesFilters";
-import { PledgesStatsBar } from "./PledgesStatsBar";
-import { type PledgeRow, PledgesTable } from "./PledgesTable";
-
-const PAGE_SIZE = 20;
+import { type PledgeRow, pledgeColumns } from "./PledgesTable";
 
 type Member = components["schemas"]["MemberResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
+
+type StatusFilter = "all" | "ACTIVE" | "FULFILLED" | "CANCELLED";
+
+const STATUS_OPTIONS = [
+	{ value: "all", label: "All statuses" },
+	{ value: "ACTIVE", label: "Active" },
+	{ value: "FULFILLED", label: "Fulfilled" },
+	{ value: "CANCELLED", label: "Cancelled" },
+];
 
 export const PledgesListPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const [filters, setFilters] = useState<PledgesFiltersValue>({
-		campaignId: "all",
-		status: "all",
-		search: "",
-	});
+	const [search, setSearch] = useState("");
+	const [status, setStatus] = useState<StatusFilter>("all");
+	const [campaignId, setCampaignId] = useState<string>("all");
+	const [range, setRange] = useState<DateRangeValue>({});
+	const [state, setState] = useState<StateFilterValue>("active");
 	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
-	const { data: campaignsData } = useCampaigns(tenantSlug);
-	const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
+	// Lookup tables include tombstones for Mode-B rendering.
+	const { data: campaignsData } = useCampaigns(tenantSlug, {
+		includeDeleted: true,
+	});
+	const { data: membersData } = useMembers(tenantSlug, {
+		limit: 200,
+		includeDeleted: true,
+	});
 
 	const { data: pledgesData, isLoading } = usePledges(tenantSlug, {
-		campaignId: filters.campaignId === "all" ? undefined : filters.campaignId,
-		status: filters.status === "all" ? undefined : filters.status,
+		campaignId: campaignId === "all" ? undefined : campaignId,
+		status: status === "all" ? undefined : status,
+		dateFrom: range.from
+			? dayjs.utc(range.from).startOf("day").toISOString()
+			: undefined,
+		dateTo: range.to
+			? dayjs.utc(range.to).endOf("day").toISOString()
+			: undefined,
 		offset,
-		limit: PAGE_SIZE,
+		limit,
+		...toStateFilterFlags(state),
 	});
 
 	const campaigns: Campaign[] = campaignsData?.items ?? [];
@@ -51,16 +79,15 @@ export const PledgesListPage = () => {
 	const total = pledgesData?.meta.total ?? 0;
 	const totalAmount = pledgesData?.meta.sum ?? 0;
 
-	// Note search is client-side over the current page; server filter is on
-	// status + campaignId already. Notes aren't indexed, so server search
-	// would need its own query — not worth it for the scale we have.
+	// Notes aren't indexed server-side, so search lives client-side over the
+	// current page. Other filters (status, campaignId) ship to the backend.
 	const visible = useMemo<PledgeRow[]>(() => {
-		const q = filters.search.trim().toLowerCase();
+		const q = search.trim().toLowerCase();
 		if (!q) {
 			return allItems;
 		}
 		return allItems.filter((p) => (p.note ?? "").toLowerCase().includes(q));
-	}, [allItems, filters.search]);
+	}, [allItems, search]);
 
 	const counts = {
 		active: allItems.filter((p) => p.status === "ACTIVE").length,
@@ -72,6 +99,17 @@ export const PledgesListPage = () => {
 	};
 	const askDelete = (p: PledgeRow) =>
 		openModal("confirm-delete-pledge", { tenantSlug, pledgeId: p.id });
+	const askRestore = (p: PledgeRow) => {
+		const m = membersById[p.memberId];
+		const memberName = m
+			? `${m.firstName} ${m.lastName}`.trim()
+			: "this member";
+		openModal("confirm-restore-pledge", {
+			tenantId: tenantSlug,
+			pledgeId: p.id,
+			memberName,
+		});
+	};
 
 	const openCreate = () => {
 		if (campaigns.length === 0) {
@@ -85,6 +123,21 @@ export const PledgesListPage = () => {
 			items: [],
 		});
 	};
+
+	const columns = pledgeColumns({
+		handlers: {
+			onEdit: askEdit,
+			onDelete: askDelete,
+			onRestore: askRestore,
+			onOpenCampaign: (id) =>
+				router.push(`/${tenantSlug}/admin/campaigns/${id}`),
+			onOpenPledge: (id) => router.push(`/${tenantSlug}/admin/pledges/${id}`),
+		},
+		membersById,
+		campaignsById,
+	});
+
+	const resetOffset = () => setOffset(0);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -106,35 +159,88 @@ export const PledgesListPage = () => {
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
-				<PledgesFilters
-					value={filters}
-					campaigns={campaigns}
-					onChange={(v) => {
-						setFilters(v);
-						setOffset(0);
+				<DataTableShell<PledgeRow>
+					search={{
+						value: search,
+						onChange: (v) => {
+							setSearch(v);
+							resetOffset();
+						},
+						placeholder: "Search by note…",
 					}}
-				/>
-
-				<PledgesStatsBar
-					total={total}
-					active={counts.active}
-					fulfilled={counts.fulfilled}
-					totalAmount={totalAmount}
-				/>
-
-				<PledgesTable
+					filters={[
+						{
+							key: "campaign",
+							label: "Campaign",
+							value: campaignId,
+							onChange: (v) => {
+								setCampaignId(v);
+								resetOffset();
+							},
+							options: [
+								{ value: "all", label: "All campaigns" },
+								...campaigns.map((c) => ({ value: c.id, label: c.title })),
+							],
+						},
+						{
+							key: "status",
+							label: "Status",
+							value: status,
+							onChange: (v) => {
+								setStatus(v as StatusFilter);
+								resetOffset();
+							},
+							options: STATUS_OPTIONS,
+						},
+					]}
+					toolbar={
+						<DateRangePicker
+							value={range}
+							onChange={(v) => {
+								setRange(v);
+								resetOffset();
+							}}
+							placeholder="Date range"
+							size="sm"
+							autoWidth
+							clearable
+						/>
+					}
+					onClearFilters={() => {
+						setStatus("all");
+						setCampaignId("all");
+						setRange({});
+						resetOffset();
+					}}
+					state={{
+						value: state,
+						onChange: (v) => {
+							setState(v);
+							resetOffset();
+						},
+					}}
+					stats={[
+						{ label: "total", value: total },
+						{ label: "active", value: counts.active, tone: "success" },
+						{ label: "fulfilled", value: counts.fulfilled },
+						{ label: "pledged", value: `$${totalAmount.toLocaleString()}` },
+					]}
+					columns={columns}
 					rows={visible}
+					rowKey={(p) => p.id}
 					loading={isLoading}
-					pagination={{ total, offset, limit: PAGE_SIZE, onChange: setOffset }}
-					membersById={membersById}
-					campaignsById={campaignsById}
-					handlers={{
-						onEdit: askEdit,
-						onDelete: askDelete,
-						onOpenCampaign: (id) =>
-							router.push(`/${tenantSlug}/admin/campaigns/${id}`),
-						onOpenPledge: (id) =>
-							router.push(`/${tenantSlug}/admin/pledges/${id}`),
+					onRowClick={(p) =>
+						router.push(`/${tenantSlug}/admin/pledges/${p.id}`)
+					}
+					rowClassName={(p) => (p.deletedAt ? "bg-muted/30" : undefined)}
+					emptyTitle="No pledges yet"
+					emptySubtitle="When members commit to a campaign, those pledges show up here."
+					pagination={{
+						total,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
 					}}
 				/>
 			</div>

@@ -7,18 +7,63 @@ import { invalidateCampaigns } from "../keys";
 
 // Tenant intent — admin-facing campaign management hooks.
 
-export const useCampaigns = (tenantId: string, enabled = true) => {
+export type CampaignsListQuery = {
+	status?: "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
+	// ISO 8601 UTC, both inclusive — bracket the campaign's createdAt.
+	dateFrom?: string;
+	dateTo?: string;
+	offset?: number;
+	limit?: number;
+	// 3-state archive filter — see members/tenant/hooks for encoding.
+	includeDeleted?: boolean;
+	onlyDeleted?: boolean;
+};
+
+export const useCampaigns = (
+	tenantId: string,
+	query: CampaignsListQuery = {},
+	enabled = true,
+) => {
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/campaigns",
-		{ params: { path: { tenantId } } },
+		{ params: { path: { tenantId }, query } },
 		{ enabled: enabled && Boolean(tenantId) },
 	);
 };
 
-// Returns a campaign with its items embedded.
-export const useCampaign = (tenantId: string, id: string, enabled = true) => {
+// Returns a campaign with its items embedded. Pass `includeDeleted` to
+// fetch an archived campaign (banner detail view) AND surface archived
+// items in the "Removed items" section. Pass `onlyDeleted` to filter
+// items to tombstones only.
+export const useCampaign = (
+	tenantId: string,
+	id: string,
+	options: {
+		includeDeleted?: boolean;
+		onlyDeleted?: boolean;
+		enabled?: boolean;
+	} = {},
+) => {
+	const { includeDeleted, onlyDeleted, enabled = true } = options;
+	const query =
+		includeDeleted || onlyDeleted ? { includeDeleted, onlyDeleted } : undefined;
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/campaigns/{id}",
+		{ params: { path: { tenantId, id }, query } },
+		{ enabled: enabled && Boolean(tenantId) && Boolean(id) },
+	);
+};
+
+// Cascade preview for the restore confirmation modal. Returns a record
+// of child-model → count (e.g. `{ CampaignItem: 12 }`). Empty when the
+// campaign has no cascaded descendants.
+export const useCampaignRestorePreview = (
+	tenantId: string,
+	id: string,
+	enabled = true,
+) => {
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/campaigns/{id}/restore-preview",
 		{ params: { path: { tenantId, id } } },
 		{ enabled: enabled && Boolean(tenantId) && Boolean(id) },
 	);
@@ -94,6 +139,15 @@ export const useDeleteCampaignItem = (tenantId: string) => {
 	return useApiMutation(
 		"/api/v1/tenants/{tenantId}/campaigns/{id}/items/{itemId}",
 		"delete",
+		{ onSuccess: () => invalidateCampaigns(qc, tenantId) },
+	);
+};
+
+export const useRestoreCampaignItem = (tenantId: string) => {
+	const qc = useQueryClient();
+	return useApiMutation(
+		"/api/v1/tenants/{tenantId}/campaigns/{id}/items/{itemId}/restore",
+		"post",
 		{ onSuccess: () => invalidateCampaigns(qc, tenantId) },
 	);
 };

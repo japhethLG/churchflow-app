@@ -46,7 +46,7 @@ export const AdminReportsPage = () => {
 		tab === "by-member" || tab === "by-campaign",
 	);
 	const membersQ = useMembers(tenantSlug, { limit: 500 }, tab === "by-member");
-	const campaignsQ = useCampaigns(tenantSlug, tab === "by-campaign");
+	const campaignsQ = useCampaigns(tenantSlug, undefined, tab === "by-campaign");
 
 	const members: Member[] = membersQ.data?.items ?? [];
 	const campaigns: Campaign[] = campaignsQ.data?.items ?? [];

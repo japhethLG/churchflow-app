@@ -294,6 +294,11 @@ const CampaignCard = ({
 								sortOrder: 0,
 								createdAt: c.createdAt,
 								updatedAt: c.updatedAt,
+								// Items synthesized from /progress aren't real DB rows, but
+								// the typed shape now requires the soft-delete fields.
+								deletedAt: null,
+								deletedBy: null,
+								deletedByCascade: false,
 							})),
 						})
 					}

@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { SegmentedControl } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -29,12 +28,6 @@ const TYPE_COLOR: Record<ByType["type"], string> = {
 	OTHER: "var(--tx-other)",
 };
 
-const PERIOD_OPTIONS = [
-	{ months: 1, label: "MTD" },
-	{ months: 3, label: "Last 3mo" },
-	{ months: 12, label: "Last 12mo" },
-];
-
 const tooltipChrome = {
 	backgroundColor: "var(--input)",
 	border: "none",
@@ -45,13 +38,9 @@ const tooltipChrome = {
 export const TransactionsSummaryCard = ({
 	summary,
 	loading,
-	months,
-	onMonthsChange,
 }: {
 	summary: Summary | undefined;
 	loading?: boolean;
-	months: number;
-	onMonthsChange: (m: number) => void;
 }) => {
 	if (loading || !summary) {
 		return (
@@ -86,18 +75,6 @@ export const TransactionsSummaryCard = ({
 	return (
 		<div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-8 rounded-2xl border border-secondary bg-card p-6">
 			<div>
-				<div className="mb-[18px] flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-					<span>Window</span>
-					<SegmentedControl
-						options={PERIOD_OPTIONS.map((o) => ({
-							value: String(o.months),
-							label: o.label,
-						}))}
-						value={String(months)}
-						onChange={(v) => onMonthsChange(Number(v))}
-					/>
-				</div>
-
 				<div className="grid grid-cols-[repeat(3,minmax(140px,1fr))] gap-8">
 					<Kpi
 						label="Total received"

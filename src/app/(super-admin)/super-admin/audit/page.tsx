@@ -1,10 +1,4 @@
-import { ScaffoldPage } from "@/components/pages/ScaffoldPage";
+"use client";
+import { AuditLogPage } from "@/components/pages/super-admin/audit";
 
-export default () => {
-	return (
-		<ScaffoldPage
-			title="Audit log"
-			subtitle="Every mutating action across the platform."
-		/>
-	);
-};
+export default () => <AuditLogPage />;

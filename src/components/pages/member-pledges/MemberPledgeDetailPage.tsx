@@ -6,6 +6,8 @@ import {
 	Amount,
 	DataTable,
 	type DataTableColumn,
+	DeletedLabel,
+	EntityRestoreBanner,
 	PageHeader,
 	type Status,
 	StatusBadge,
@@ -93,17 +95,19 @@ export const MemberPledgeDetailPage = () => {
 		pledgeId: string;
 	}>();
 
-	const pledgeQ = useMyPledge(tenantSlug, pledgeId);
+	const pledgeQ = useMyPledge(tenantSlug, pledgeId, { includeDeleted: true });
 	const pledge = pledgeQ.data;
+	const pledgeArchived = Boolean(pledge?.deletedAt);
 
 	const txQ = useMyTransactions(tenantSlug, { pledgeId }, Boolean(pledgeId));
 	const transactions = txQ.data?.items ?? [];
 	const txTotal = txQ.data?.meta.sum ?? 0;
 
-	const campaignsQ = useMyCampaigns(tenantSlug);
+	const campaignsQ = useMyCampaigns(tenantSlug, { includeDeleted: true });
 	const campaign = campaignsQ.data?.items.find(
 		(c) => c.id === pledge?.campaignId,
 	);
+	const campaignArchived = Boolean(campaign?.deletedAt);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -119,10 +123,29 @@ export const MemberPledgeDetailPage = () => {
 			<PageHeader
 				className="px-8"
 				title={pledgeQ.isLoading ? "Loading…" : "Pledge details"}
-				subtitle={campaign?.title}
+				subtitle={
+					campaign ? (
+						campaignArchived ? (
+							<DeletedLabel deletedAt={campaign.deletedAt}>
+								{campaign.title}
+							</DeletedLabel>
+						) : (
+							campaign.title
+						)
+					) : undefined
+				}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8 space-y-8">
+				{pledge && (pledgeArchived || campaignArchived) && (
+					<EntityRestoreBanner
+						entityLabel={pledgeArchived ? "Pledge" : "Campaign"}
+						deletedAt={
+							pledgeArchived ? pledge.deletedAt : (campaign?.deletedAt ?? null)
+						}
+						memberVariant
+					/>
+				)}
 				{pledge && (
 					<div className="flex flex-wrap gap-8 rounded-xl border border-border bg-card p-6">
 						<div>

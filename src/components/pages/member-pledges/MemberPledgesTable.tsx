@@ -1,50 +1,50 @@
 "use client";
 
 import { type Status, StatusBadge } from "@/components/primitives/Badge";
-import {
-	DataTable,
-	type DataTableColumn,
-} from "@/components/primitives/DataTable";
+import type { DataTableColumn } from "@/components/primitives/DataTable";
+import { DeletedLabel } from "@/components/primitives/DeletedLabel";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 
-type Pledge = components["schemas"]["PledgeResponseDto"];
+export type MemberPledgeRow = components["schemas"]["PledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-const STATUS_MAP: Record<Pledge["status"], Status> = {
+const STATUS_MAP: Record<MemberPledgeRow["status"], Status> = {
 	ACTIVE: "Active",
 	FULFILLED: "Completed",
 	CANCELLED: "Cancelled",
 };
 
-export const MemberPledgesTable = ({
-	rows,
-	loading,
+export const memberPledgeColumns = ({
 	campaignMap,
 	campaignItemMap,
-	onOpenPledge,
 }: {
-	rows: Pledge[];
-	loading?: boolean;
 	campaignMap: Record<string, Campaign>;
 	campaignItemMap?: Record<string, string>;
-	onOpenPledge?: (pledgeId: string) => void;
-}) => {
+}): DataTableColumn<MemberPledgeRow>[] => {
 	const itemMap = campaignItemMap ?? {};
-	const columns: DataTableColumn<Pledge>[] = [
+	return [
 		{
 			key: "campaign",
 			label: "Campaign",
 			render: (row) => {
-				const campaignTitle = campaignMap[row.campaignId]?.title ?? "Campaign";
+				const campaign = campaignMap[row.campaignId];
+				const campaignTitle = campaign?.title ?? "Campaign";
+				const campaignDeletedAt = campaign?.deletedAt ?? null;
 				const itemKey =
 					typeof row.campaignItemId === "string" ? row.campaignItemId : null;
 				const itemTitle = itemKey ? itemMap[itemKey] : null;
 				return (
 					<div className="flex flex-col">
 						<span className="font-medium text-foreground">
-							{campaignTitle}
+							{campaignDeletedAt ? (
+								<DeletedLabel deletedAt={campaignDeletedAt}>
+									{campaignTitle}
+								</DeletedLabel>
+							) : (
+								campaignTitle
+							)}
 							{itemTitle && (
 								<span className="ml-1 text-muted-foreground">
 									[{itemTitle}]
@@ -93,16 +93,4 @@ export const MemberPledgesTable = ({
 			render: (row) => <StatusBadge status={STATUS_MAP[row.status]} />,
 		},
 	];
-
-	return (
-		<DataTable
-			columns={columns}
-			rows={rows}
-			rowKey={(r) => r.id}
-			loading={loading}
-			onRowClick={onOpenPledge ? (r) => onOpenPledge(r.id) : undefined}
-			emptyTitle="No pledges found"
-			emptySubtitle="You haven't made any pledges to church campaigns yet."
-		/>
-	);
 };

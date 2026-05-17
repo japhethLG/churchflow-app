@@ -6,6 +6,8 @@ import {
 	Avatar,
 	Button,
 	Card,
+	DeletedLabel,
+	EntityRestoreBanner,
 	PageHeader,
 	SectionTitle,
 	TypeBadge,
@@ -44,20 +46,33 @@ const TYPE_BADGE_LABEL: Record<
 export const TransactionDetailPage = () => {
 	const router = useRouter();
 	const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
-	const { data: tx, isLoading, error } = useTransaction(tenantSlug, id);
+	const {
+		data: tx,
+		isLoading,
+		error,
+	} = useTransaction(tenantSlug, id, {
+		includeDeleted: true,
+	});
 
 	const memberId = nstr(tx?.memberId);
 	const campaignId = nstr(tx?.campaignId);
 	const pledgeId = nstr(tx?.pledgeId);
 	const campaignItemId = nstr(tx?.campaignItemId);
 
-	const memberQ = useMember(tenantSlug, memberId ?? "", Boolean(memberId));
-	const campaignQ = useCampaign(
-		tenantSlug,
-		campaignId ?? "",
-		Boolean(campaignId),
-	);
-	const pledgeQ = usePledge(tenantSlug, pledgeId ?? "", Boolean(pledgeId));
+	// Include deleted so attribution still resolves when the referenced
+	// member / campaign / pledge has been archived (Mode-B treatment).
+	const memberQ = useMember(tenantSlug, memberId ?? "", {
+		enabled: Boolean(memberId),
+		includeDeleted: true,
+	});
+	const campaignQ = useCampaign(tenantSlug, campaignId ?? "", {
+		enabled: Boolean(campaignId),
+		includeDeleted: true,
+	});
+	const pledgeQ = usePledge(tenantSlug, pledgeId ?? "", {
+		enabled: Boolean(pledgeId),
+		includeDeleted: true,
+	});
 
 	if (isLoading) {
 		return (
@@ -107,6 +122,8 @@ export const TransactionDetailPage = () => {
 			? (campaign.items.find((it) => it.id === campaignItemId)?.title ?? null)
 			: null;
 
+	const isDeleted = Boolean(tx.deletedAt);
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
@@ -122,27 +139,43 @@ export const TransactionDetailPage = () => {
 						>
 							Back
 						</Button>
-						<Button
-							variant="tertiary"
-							destructive
-							icon="trash"
-							onClick={() =>
-								openModal("confirm-delete-transaction", {
-									tenantSlug,
-									transactionId: tx.id,
-									amountLabel: formatCurrency(tx.amount),
-									onDeleted: () =>
-										router.push(`/${tenantSlug}/admin/transactions`),
-								})
-							}
-						>
-							Delete
-						</Button>
+						{!isDeleted && (
+							<Button
+								variant="tertiary"
+								destructive
+								icon="trash"
+								onClick={() =>
+									openModal("confirm-delete-transaction", {
+										tenantSlug,
+										transactionId: tx.id,
+										amountLabel: formatCurrency(tx.amount),
+										onDeleted: () =>
+											router.push(`/${tenantSlug}/admin/transactions`),
+									})
+								}
+							>
+								Delete
+							</Button>
+						)}
 					</>
 				}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
+				{isDeleted && (
+					<EntityRestoreBanner
+						className="mb-4"
+						entityLabel="Transaction"
+						deletedAt={tx.deletedAt}
+						onRestore={() =>
+							openModal("confirm-restore-transaction", {
+								tenantId: tenantSlug,
+								transactionId: tx.id,
+								summary: `${formatCurrency(tx.amount)} on ${dayjs(tx.date).format("MMM D, YYYY")}`,
+							})
+						}
+					/>
+				)}
 				<div className="grid grid-cols-[1.5fr_1fr] items-start gap-4">
 					<Card padding={24}>
 						<SectionTitle title="Details" />
@@ -188,25 +221,41 @@ export const TransactionDetailPage = () => {
 							<div>
 								<Label>Member</Label>
 								{member ? (
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										className="h-auto gap-2.5 bg-transparent p-0 text-left font-sans shadow-none hover:bg-muted/60"
-										onClick={() =>
-											router.push(`/${tenantSlug}/admin/members/${member.id}`)
-										}
-									>
+									member.deletedAt ? (
 										<span className="flex items-center gap-2.5">
 											<Avatar
 												name={`${member.firstName} ${member.lastName}`}
 												size={32}
 											/>
-											<span className="text-sm font-medium">
+											<DeletedLabel
+												deletedAt={member.deletedAt}
+												href={`/${tenantSlug}/admin/members/${member.id}`}
+												className="text-sm font-medium"
+											>
 												{member.firstName} {member.lastName}
-											</span>
+											</DeletedLabel>
 										</span>
-									</Button>
+									) : (
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											className="h-auto gap-2.5 bg-transparent p-0 text-left font-sans shadow-none hover:bg-muted/60"
+											onClick={() =>
+												router.push(`/${tenantSlug}/admin/members/${member.id}`)
+											}
+										>
+											<span className="flex items-center gap-2.5">
+												<Avatar
+													name={`${member.firstName} ${member.lastName}`}
+													size={32}
+												/>
+												<span className="text-sm font-medium">
+													{member.firstName} {member.lastName}
+												</span>
+											</span>
+										</Button>
+									)
 								) : (
 									<span className="text-sm italic text-muted-foreground">
 										Anonymous gift
@@ -218,19 +267,29 @@ export const TransactionDetailPage = () => {
 							<div>
 								<Label>Campaign</Label>
 								{campaign ? (
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										className="h-auto px-0 py-0 text-sm font-medium text-primary shadow-none hover:bg-transparent hover:text-primary/90 hover:underline"
-										onClick={() =>
-											router.push(
-												`/${tenantSlug}/admin/campaigns/${campaign.id}`,
-											)
-										}
-									>
-										{campaign.title}
-									</Button>
+									campaign.deletedAt ? (
+										<DeletedLabel
+											deletedAt={campaign.deletedAt}
+											href={`/${tenantSlug}/admin/campaigns/${campaign.id}`}
+											className="text-sm font-medium"
+										>
+											{campaign.title}
+										</DeletedLabel>
+									) : (
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											className="h-auto px-0 py-0 text-sm font-medium text-primary shadow-none hover:bg-transparent hover:text-primary/90 hover:underline"
+											onClick={() =>
+												router.push(
+													`/${tenantSlug}/admin/campaigns/${campaign.id}`,
+												)
+											}
+										>
+											{campaign.title}
+										</Button>
+									)
 								) : (
 									<span className="text-sm text-muted-foreground">
 										Not attributed
@@ -250,6 +309,17 @@ export const TransactionDetailPage = () => {
 									<span className="text-sm">
 										{formatCurrency(pledge.pledgedAmount)} pledged · status{" "}
 										<strong>{pledge.status.toLowerCase()}</strong>
+										{pledge.deletedAt && (
+											<span className="ml-2">
+												<DeletedLabel
+													deletedAt={pledge.deletedAt}
+													href={`/${tenantSlug}/admin/pledges/${pledge.id}`}
+													hidePill
+												>
+													(archived)
+												</DeletedLabel>
+											</span>
+										)}
 									</span>
 								) : (
 									<span className="text-sm text-muted-foreground">

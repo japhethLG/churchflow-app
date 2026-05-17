@@ -5,12 +5,13 @@ import { Label } from "@/components/ui/label";
 import type { components } from "@/lib/api";
 import { Avatar } from "./Avatar";
 import { Button } from "./Button";
+import { DeletedLabel } from "./DeletedLabel";
 import { Input } from "./Input";
 import { ListRow } from "./ListRow";
 
 export type MemberOption = Pick<
 	components["schemas"]["MemberResponseDto"],
-	"id" | "firstName" | "lastName" | "email" | "phone"
+	"id" | "firstName" | "lastName" | "email" | "phone" | "deletedAt"
 >;
 
 const asString = (v: unknown): string | null =>
@@ -83,7 +84,13 @@ export const MemberPicker = ({
 					<Avatar name={fullName(chosen)} size={28} className="shrink-0" />
 					<div className="min-w-0 flex-1">
 						<div className="truncate text-sm font-medium">
-							{fullName(chosen)}
+							{chosen.deletedAt ? (
+								<DeletedLabel deletedAt={chosen.deletedAt}>
+									{fullName(chosen)}
+								</DeletedLabel>
+							) : (
+								fullName(chosen)
+							)}
 						</div>
 						<div className="truncate text-xs text-muted-foreground">
 							{asString(chosen.email) ?? "no email"}

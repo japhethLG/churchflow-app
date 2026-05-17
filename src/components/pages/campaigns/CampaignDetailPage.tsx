@@ -1,7 +1,15 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Button, PageHeader } from "@/components/primitives";
+import { useState } from "react";
+import {
+	Button,
+	EntityRestoreBanner,
+	PageHeader,
+	StateFilter,
+	type StateFilterValue,
+	toStateFilterFlags,
+} from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaign, useCampaignProgress } from "@/lib/api/campaigns";
 import { openModal } from "@/lib/modals/store";
@@ -17,7 +25,18 @@ type Pledge = components["schemas"]["PledgeResponseDto"];
 export const CampaignDetailPage = () => {
 	const router = useRouter();
 	const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
-	const { data: campaign, isLoading, error } = useCampaign(tenantSlug, id);
+	const [itemsState, setItemsState] = useState<StateFilterValue>("active");
+	// Fetch with `includeDeleted` so the page resolves for archived
+	// campaigns (banner + read-only view). Items list is filtered inline
+	// via `itemsState`.
+	const {
+		data: campaign,
+		isLoading,
+		error,
+	} = useCampaign(tenantSlug, id, {
+		includeDeleted: true,
+		...toStateFilterFlags(itemsState),
+	});
 	const { data: progress, isLoading: progressLoading } = useCampaignProgress(
 		tenantSlug,
 		id,
@@ -84,6 +103,14 @@ export const CampaignDetailPage = () => {
 			campaignTitle: campaign.title,
 			onDeleted: () => router.push(`/${tenantSlug}/admin/campaigns`),
 		});
+	const askRestore = () =>
+		openModal("confirm-restore-campaign", {
+			tenantId: tenantSlug,
+			campaignId: campaign.id,
+			campaignTitle: campaign.title,
+		});
+
+	const isDeleted = Boolean(campaign.deletedAt);
 
 	const openAddItem = () =>
 		openModal("add-campaign-item", {
@@ -132,33 +159,46 @@ export const CampaignDetailPage = () => {
 						>
 							Back
 						</Button>
-						<Button
-							variant="secondary"
-							icon="edit"
-							onClick={() =>
-								router.push(`/${tenantSlug}/admin/campaigns/${id}/edit`)
-							}
-						>
-							Edit
-						</Button>
-						{canCancel && (
-							<Button variant="tertiary" onClick={askCancel}>
-								Cancel campaign
-							</Button>
+						{!isDeleted && (
+							<>
+								<Button
+									variant="secondary"
+									icon="edit"
+									onClick={() =>
+										router.push(`/${tenantSlug}/admin/campaigns/${id}/edit`)
+									}
+								>
+									Edit
+								</Button>
+								{canCancel && (
+									<Button variant="tertiary" onClick={askCancel}>
+										Cancel campaign
+									</Button>
+								)}
+								<Button
+									variant="tertiary"
+									destructive
+									icon="trash"
+									onClick={askDelete}
+								>
+									Delete
+								</Button>
+							</>
 						)}
-						<Button
-							variant="tertiary"
-							destructive
-							icon="trash"
-							onClick={askDelete}
-						>
-							Delete
-						</Button>
 					</>
 				}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
+				{isDeleted && (
+					<EntityRestoreBanner
+						className="mb-4"
+						entityLabel="Campaign"
+						deletedAt={campaign.deletedAt}
+						onRestore={askRestore}
+					/>
+				)}
+
 				<CampaignHero campaign={campaign} />
 
 				<div className="grid gap-4">
@@ -170,6 +210,20 @@ export const CampaignDetailPage = () => {
 						onAdd={openAddItem}
 						onEdit={openEditItem}
 						onDelete={openDeleteItem}
+						onRestore={(item) =>
+							openModal("confirm-restore-campaign-item", {
+								tenantId: tenantSlug,
+								campaignId: campaign.id,
+								itemId: item.id,
+								itemTitle: item.title,
+							})
+						}
+						disabled={isDeleted}
+						stateFilter={
+							!isDeleted ? (
+								<StateFilter value={itemsState} onChange={setItemsState} />
+							) : undefined
+						}
 					/>
 
 					<CampaignPledgesList
@@ -180,6 +234,7 @@ export const CampaignDetailPage = () => {
 						onCreate={openCreatePledge}
 						onEdit={openEditPledge}
 						onDelete={openDeletePledge}
+						parentDeleted={isDeleted}
 					/>
 				</div>
 			</div>

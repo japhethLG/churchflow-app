@@ -2,51 +2,69 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Button, PageHeader } from "@/components/primitives";
+import {
+	Button,
+	DataTableShell,
+	PageHeader,
+	type StateFilterValue,
+	toStateFilterFlags,
+} from "@/components/primitives";
 import { useMembers } from "@/lib/api/members";
 import { openModal } from "@/lib/modals/store";
-import { MembersFilters, type MembersFiltersValue } from "./MembersFilters";
-import { MembersStatsBar } from "./MembersStatsBar";
-import { type MemberRow, MembersTable } from "./MembersTable";
+import { type MemberRow, memberColumns } from "./MembersTable";
 
-const PAGE_SIZE = 20;
+type StatusFilter = "all" | "active" | "inactive";
+type LinkedFilter = "all" | "linked" | "unlinked";
+
+const STATUS_OPTIONS = [
+	{ value: "all", label: "All statuses" },
+	{ value: "active", label: "Active" },
+	{ value: "inactive", label: "Inactive" },
+];
+
+const LINKED_OPTIONS = [
+	{ value: "all", label: "All members" },
+	{ value: "linked", label: "Registered only" },
+	{ value: "unlinked", label: "Unregistered only" },
+];
 
 export const MembersListPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const [filters, setFilters] = useState<MembersFiltersValue>({
-		search: "",
-		status: "all",
-		linked: "all",
-	});
+	const [search, setSearch] = useState("");
+	const [status, setStatus] = useState<StatusFilter>("all");
+	const [linked, setLinked] = useState<LinkedFilter>("all");
+	const [state, setState] = useState<StateFilterValue>("active");
 	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
 	const { data, isLoading } = useMembers(tenantSlug, {
 		status:
-			filters.status === "all"
+			status === "all"
 				? undefined
-				: filters.status === "active"
+				: status === "active"
 					? "ACTIVE"
 					: "INACTIVE",
-		search: filters.search.trim() || undefined,
+		search: search.trim() || undefined,
 		offset,
-		limit: PAGE_SIZE,
+		limit,
+		...toStateFilterFlags(state),
 	});
 
 	const allItems = data?.items ?? [];
 	const total = data?.meta.total ?? 0;
 
-	// `linked` filter is applied client-side because the backend doesn't expose it.
+	// `linked` is applied client-side because the backend doesn't expose it.
 	const visible = useMemo(() => {
-		if (filters.linked === "all") {
+		if (linked === "all") {
 			return allItems;
 		}
-		if (filters.linked === "linked") {
+		if (linked === "linked") {
 			return allItems.filter((m) => Boolean(m.userId));
 		}
 		return allItems.filter((m) => !m.userId);
-	}, [allItems, filters.linked]);
+	}, [allItems, linked]);
 
 	const activeCount = visible.filter((m) => m.status === "ACTIVE").length;
 	const tempCount = visible.filter((m) => !m.userId).length;
@@ -70,6 +88,23 @@ export const MembersListPage = () => {
 		});
 	const openMerge = (m: MemberRow) =>
 		openModal("merge-member", { tenantSlug, keep: m });
+	const openRestore = (m: MemberRow) =>
+		openModal("confirm-restore-member", {
+			tenantId: tenantSlug,
+			memberId: m.id,
+			memberName: `${m.firstName} ${m.lastName}`.trim(),
+		});
+
+	const columns = memberColumns({
+		onView: (m) => router.push(`/${tenantSlug}/admin/members/${m.id}`),
+		onEdit: openEdit,
+		onDelete: openDelete,
+		onClaimInvite: openClaimInvite,
+		onMerge: openMerge,
+		onRestore: openRestore,
+	});
+
+	const resetOffset = () => setOffset(0);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -96,37 +131,76 @@ export const MembersListPage = () => {
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
-				<MembersFilters
-					value={filters}
-					onChange={(v) => {
-						setFilters(v);
-						setOffset(0);
+				<DataTableShell<MemberRow>
+					search={{
+						value: search,
+						onChange: (v) => {
+							setSearch(v);
+							resetOffset();
+						},
+						placeholder: "Search by name or email…",
 					}}
-				/>
-
-				<MembersStatsBar
-					total={total}
-					active={activeCount}
-					unregistered={tempCount}
-				/>
-
-				<MembersTable
+					filters={[
+						{
+							key: "status",
+							label: "Status",
+							value: status,
+							onChange: (v) => {
+								setStatus(v as StatusFilter);
+								resetOffset();
+							},
+							options: STATUS_OPTIONS,
+						},
+						{
+							key: "linked",
+							label: "Registration",
+							value: linked,
+							onChange: (v) => {
+								setLinked(v as LinkedFilter);
+								resetOffset();
+							},
+							options: LINKED_OPTIONS,
+						},
+					]}
+					onClearFilters={() => {
+						setStatus("all");
+						setLinked("all");
+						resetOffset();
+					}}
+					state={{
+						value: state,
+						onChange: (v) => {
+							setState(v);
+							resetOffset();
+						},
+					}}
+					stats={[
+						{ label: "total", value: total },
+						{ label: "active", value: activeCount, tone: "success" },
+						{ label: "unregistered", value: tempCount },
+					]}
+					columns={columns}
 					rows={visible}
+					rowKey={(m) => m.id}
 					loading={isLoading}
+					onRowClick={(m) =>
+						router.push(`/${tenantSlug}/admin/members/${m.id}`)
+					}
+					rowClassName={(m) => (m.deletedAt ? "bg-muted/30" : undefined)}
+					emptyTitle="No members yet"
+					emptySubtitle="Add or invite your first member to get started."
+					emptyAction={
+						<Button icon="plus" onClick={openAdd}>
+							Add member
+						</Button>
+					}
 					pagination={{
 						total,
 						offset,
-						limit: PAGE_SIZE,
-						onChange: setOffset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
 					}}
-					handlers={{
-						onView: (m) => router.push(`/${tenantSlug}/admin/members/${m.id}`),
-						onEdit: openEdit,
-						onDelete: openDelete,
-						onClaimInvite: openClaimInvite,
-						onMerge: openMerge,
-					}}
-					onAdd={openAdd}
 				/>
 			</div>
 		</div>

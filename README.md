@@ -161,6 +161,13 @@ Paths, params, bodies, and responses are inferred from the OpenAPI spec
 `invalidate<Entity>(qc, tenantId)` from the entity's `keys.ts` in
 `onSuccess`. See [CLAUDE.md §6](CLAUDE.md#6-api-layer--one-folder-per-entity-split-by-intent).
 
+List hooks share a common query shape: `offset` / `limit`, the
+3-state archive flags (`includeDeleted` / `onlyDeleted`), and — where
+the backend supports it — an inclusive `dateFrom` / `dateTo` pair as
+ISO 8601 UTC instants. The same trio is enforced on the backend via
+shared `StateFilterRequestDto` / `DateRangeRequestDto` /
+`PaginationRequestDto` base classes.
+
 ### Auth (dual-path)
 
 ```
@@ -194,6 +201,32 @@ raw HTML or the `components/ui/` wrappers. `npm run check` fails the
 build on native `<button>`/`<input>`/`<a>`/etc. outside the allowed
 folders. Forms compose RHF + zod via the
 `components/formElements/Form*` wrappers.
+
+Dates are picked through a custom three-view (`day` / `month` / `year`)
+[`Calendar`](src/components/primitives/Calendar.tsx) primitive — built
+on dayjs rather than react-day-picker — and wrapped by
+[`DatePicker`](src/components/primitives/DatePicker.tsx) and
+[`DateRangePicker`](src/components/primitives/DateRangePicker.tsx). The
+range picker has an optional preset sidebar (`presets="default" | false
+| DateRangePreset[]`) and a compact `size="sm" autoWidth clearable`
+variant for list-page toolbars. See
+[CLAUDE.md §7.2](CLAUDE.md#72-date-primitives--calendar-datepicker-daterangepicker).
+
+### Soft delete
+
+Tombstones are first-class on every list and detail page. Admin lists
+expose a 3-state "Active / Deleted / All" switcher through
+[`StateFilter`](src/components/primitives/StateFilter.tsx) (mapped to
+the backend's `includeDeleted` / `onlyDeleted` flags via
+`toStateFilterFlags`). Cross-entity references that point at archived
+rows render through
+[`DeletedLabel`](src/components/primitives/DeletedLabel.tsx) (muted
+text + "deleted" pill + tooltip); detail pages for archived entities
+render an
+[`EntityRestoreBanner`](src/components/primitives/EntityRestoreBanner.tsx)
+with a Restore button that opens a per-entity
+`confirm-restore-<entity>` modal. See
+[CLAUDE.md §13](CLAUDE.md#13-soft-delete--frontend-ux-patterns).
 
 ### Modals
 

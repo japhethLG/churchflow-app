@@ -50,11 +50,9 @@ export const GiftEditor = ({
 	const rowIsValid = Boolean(amount) && Number(amount) > 0;
 
 	const { data: campaignsData } = useCampaigns(tenantSlug);
-	const { data: campaignDetail } = useCampaign(
-		tenantSlug,
-		campaignId,
-		Boolean(campaignId),
-	);
+	const { data: campaignDetail } = useCampaign(tenantSlug, campaignId, {
+		enabled: Boolean(campaignId),
+	});
 	const campaignItems = campaignDetail?.items ?? [];
 
 	// Options list: active campaigns, plus the currently-selected campaign

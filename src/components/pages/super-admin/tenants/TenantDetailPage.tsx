@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Badge, Button, Card, PageHeader } from "@/components/primitives";
+import {
+	Badge,
+	Button,
+	Card,
+	EntityRestoreBanner,
+	PageHeader,
+} from "@/components/primitives";
 import { useTenant } from "@/lib/api/tenants";
 import dayjs from "@/lib/dayjs";
 import { tenantInitials, tenantLogoGradient } from "@/lib/design/logo-gradient";
@@ -143,6 +149,19 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
+				{isDeleted && (
+					<EntityRestoreBanner
+						className="mb-4"
+						entityLabel="Church"
+						deletedAt={(tenant as { deletedAt?: Date | null }).deletedAt}
+						onRestore={() =>
+							openModal("confirm-restore-tenant", {
+								tenantId: tenant.id,
+								tenantName: tenant.name,
+							})
+						}
+					/>
+				)}
 				<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<Card>
 						<div className="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">

@@ -2,6 +2,7 @@
 // directly for tighter tree-shaking; this re-export is a convenience.
 
 export * from "./admin";
+export * from "./audit";
 export * from "./auth";
 export * from "./campaigns";
 // Low-level client — use for imperative calls outside React (e.g. in

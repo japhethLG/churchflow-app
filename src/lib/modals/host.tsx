@@ -17,7 +17,12 @@ import { ConfirmDeleteMemberModal } from "@/components/modals/confirm-delete-mem
 import { ConfirmDeletePledgeModal } from "@/components/modals/confirm-delete-pledge";
 import { ConfirmDeleteTenantModal } from "@/components/modals/confirm-delete-tenant";
 import { ConfirmDeleteTransactionModal } from "@/components/modals/confirm-delete-transaction";
+import { ConfirmRestoreCampaignModal } from "@/components/modals/confirm-restore-campaign";
+import { ConfirmRestoreCampaignItemModal } from "@/components/modals/confirm-restore-campaign-item";
+import { ConfirmRestoreMemberModal } from "@/components/modals/confirm-restore-member";
+import { ConfirmRestorePledgeModal } from "@/components/modals/confirm-restore-pledge";
 import { ConfirmRestoreTenantModal } from "@/components/modals/confirm-restore-tenant";
+import { ConfirmRestoreTransactionModal } from "@/components/modals/confirm-restore-transaction";
 import { ConfirmToggleSuperAdminModal } from "@/components/modals/confirm-toggle-super-admin";
 import { CreatePledgeModal } from "@/components/modals/create-pledge";
 import { EditCampaignItemModal } from "@/components/modals/edit-campaign-item";
@@ -40,6 +45,11 @@ const registry: Partial<Record<ModalName, AnyModal>> = {
 	"rename-tenant-slug": RenameTenantSlugModal as AnyModal,
 	"confirm-delete-tenant": ConfirmDeleteTenantModal as AnyModal,
 	"confirm-restore-tenant": ConfirmRestoreTenantModal as AnyModal,
+	"confirm-restore-member": ConfirmRestoreMemberModal as AnyModal,
+	"confirm-restore-campaign": ConfirmRestoreCampaignModal as AnyModal,
+	"confirm-restore-campaign-item": ConfirmRestoreCampaignItemModal as AnyModal,
+	"confirm-restore-pledge": ConfirmRestorePledgeModal as AnyModal,
+	"confirm-restore-transaction": ConfirmRestoreTransactionModal as AnyModal,
 	"invite-tenant-admin": InviteTenantAdminModal as AnyModal,
 	"invite-admin-global": InviteAdminGlobalModal as AnyModal,
 	"confirm-toggle-super-admin": ConfirmToggleSuperAdminModal as AnyModal,

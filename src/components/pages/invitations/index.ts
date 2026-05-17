@@ -1,3 +1,2 @@
 export { InvitationsPage } from "./InvitationsPage";
-export { InvitationsStatsBar } from "./InvitationsStatsBar";
-export { InvitationsTable } from "./InvitationsTable";
+export { type Invitation, invitationColumns } from "./InvitationsTable";

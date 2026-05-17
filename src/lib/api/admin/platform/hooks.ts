@@ -20,6 +20,9 @@ export const useAdminUsers = (
 		superAdminOnly?: boolean;
 		skip?: number;
 		take?: number;
+		// 3-state archive filter — see members/tenant/hooks for encoding.
+		includeDeleted?: boolean;
+		onlyDeleted?: boolean;
 	},
 	enabled = true,
 ) => {

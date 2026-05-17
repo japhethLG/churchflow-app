@@ -26,7 +26,7 @@
 | Forms | **react-hook-form 7** + **zod 4** + **@hookform/resolvers** | wrapped in `components/formElements/*` |
 | Auth | `firebase` (client) + `firebase-admin` (server) | |
 | Charts | `recharts` | only consumed via [Charts.tsx](src/components/primitives/Charts.tsx) |
-| Date pickers | `react-day-picker` | only consumed via DatePicker / DateRangePicker primitives |
+| Date pickers | **custom** ([Calendar.tsx](src/components/primitives/Calendar.tsx) — dayjs-based) | DatePicker / DateRangePicker primitives wrap it. `react-day-picker` is no longer used (its shadcn wrapper at `components/ui/calendar.tsx` is dormant) |
 | Date math | **dayjs** | sole date library — no `Date.parse`, no `date-fns`, no `Intl.DateTimeFormat` ad-hoc |
 | Icons | `lucide-react` | only consumed via [Icon.tsx](src/components/primitives/Icon.tsx) |
 | Styling | Tailwind 4 + CSS variables | tokens in `globals.css`; `cn()` helper from `class-variance-authority` + `clsx` + `tailwind-merge` |
@@ -512,6 +512,67 @@ a new `Form*` element under
 [components/formElements/](src/components/formElements/) if a wrapper is
 missing.
 
+### 7.2 Date primitives — Calendar, DatePicker, DateRangePicker
+
+The three date primitives are a self-contained stack:
+
+```
+DatePicker / DateRangePicker
+        └── Calendar (custom, dayjs-based)
+```
+
+[`Calendar`](src/components/primitives/Calendar.tsx) is **not**
+react-day-picker — it's a small custom component with three views
+(`day` / `month` / `year`) wired to dayjs. Click the header label to
+zoom out from day → month → year; prev/next pages the active view.
+It supports both `mode="single"` and `mode="range"`.
+[`DatePicker`](src/components/primitives/DatePicker.tsx) and
+[`DateRangePicker`](src/components/primitives/DateRangePicker.tsx) wrap
+it inside a Popover trigger.
+
+**Value contract:** ISO `YYYY-MM-DD` strings — the date-only wire format
+the backend's DTOs accept. Convert at the boundary if you need a full
+UTC instant (the common pattern for list filters is
+`dayjs.utc(value).startOf("day").toISOString()` /
+`dayjs.utc(value).endOf("day").toISOString()` to widen the inclusive
+range to full days).
+
+**DateRangePicker presets.** A left-rail preset list is opt-in via the
+`presets` prop:
+
+| Value | Effect |
+|---|---|
+| `"default"` (default) | Renders `DEFAULT_DATE_RANGE_PRESETS` — Today / This week / Last week / This month / Last month / This year |
+| `false` | No sidebar — calendar only |
+| `DateRangePreset[]` | Custom preset list. Each preset has a `label` and a `resolve()` returning `{ from, to }` |
+
+**Compact form for list-page toolbars.** When the picker sits in the
+`DataTableShell` toolbar slot next to the search input, set
+`size="sm" autoWidth clearable`. The h-9 trigger matches the search
+input height, the trigger shrinks to its label, and a sibling clear
+button (positioned absolutely so we don't nest `<button>` inside the
+popover trigger) appears when a range is set.
+
+```tsx
+<DataTableShell
+  toolbar={
+    <DateRangePicker
+      value={range}
+      onChange={setRange}
+      placeholder="Date range"
+      size="sm"
+      autoWidth
+      clearable
+    />
+  }
+/>
+```
+
+Pass the resolved `dateFrom` / `dateTo` to the matching list hook
+(`usePledges`, `useTransactions`, `useAuditEvents`, etc. — every list
+hook accepts the pair now; see §6.5). The form-row sibling (`size="md"`,
+the default) is what you reach for inside `react-hook-form` forms.
+
 ---
 
 ## 8. Modal system — one folder per modal
@@ -700,11 +761,135 @@ will mutate Firebase claims, mark the backend handler with
 | Adding a new path under an existing entity without updating `<ENTITY>_PATHS` | `invalidate<Entity>` will silently miss the new path; add it to `keys.ts` |
 | Using `new Date(...)` / `Date.parse(...)` / `Intl.DateTimeFormat` directly | Use `dayjs` (with our preconfigured plugins from [lib/dayjs.ts](src/lib/dayjs.ts)) |
 | Importing recharts / lucide-react / react-day-picker / @base-ui/react directly from a page | Wrap them in a primitive first — those packages are vendored through `Charts.tsx`, `Icon.tsx`, `DatePicker.tsx`, etc. |
+| Hand-rolling a date-range chip filter on a list page | Use `<DateRangePicker size="sm" autoWidth clearable />` in the `DataTableShell` `toolbar` slot and forward `dateFrom`/`dateTo` to the list hook (§7.2) |
+| Sending `dateFrom`/`dateTo` as raw `YYYY-MM-DD` strings to the backend | The wire format is ISO 8601 UTC instants; widen the inclusive range with `dayjs.utc(v).startOf("day").toISOString()` / `.endOf("day").toISOString()` at the boundary |
 | Inlining JSX, data fetching, or `useParams()` inside `app/**/page.tsx` | `page.tsx` is a thin wrapper (§4.3). Build the UI as a Page composite under `components/pages/<feature>/` and have `page.tsx` only `import` + render it |
 
 ---
 
-## 13. Pre-commit checklist
+## 13. Soft delete — frontend UX patterns
+
+The backend stamps `deletedAt` / `deletedBy` / `deletedByCascade` on
+every soft-deletable entity and a Prisma extension keeps tombstones out
+of normal reads (see
+[backend CLAUDE.md §8.3](../church-app-backend/CLAUDE.md#83-soft-delete--managed-by-the-prisma-extension-at-srcinfrastructureprisma-clientsoft-delete)).
+The frontend's job is to make that lifecycle legible to humans. Three
+patterns cover every surface.
+
+### 13.1 The 3-state archive filter (admin lists)
+
+Every admin list page has an "Active / Deleted / All" switcher in the
+[`DataTableShell`](src/components/primitives/DataTableShell.tsx) toolbar
+via the `state` prop. The mapping from UI state to backend query flags
+lives in
+[`StateFilter.tsx`](src/components/primitives/StateFilter.tsx):
+
+| UI value | `toStateFilterFlags` output | Backend behavior |
+|---|---|---|
+| `"active"` (default) | `{}` (both flags omitted) | Active rows only |
+| `"deleted"` | `{ onlyDeleted: true }` | Tombstones only |
+| `"all"` | `{ includeDeleted: true }` | Active + tombstones |
+
+```tsx
+const [state, setState] = useState<StateFilterValue>("active");
+
+const list = usePledges(tenantSlug, {
+  // …other filters…
+  ...toStateFilterFlags(state),
+});
+
+<DataTableShell state={{ value: state, onChange: setState }} … />
+```
+
+Every list hook accepts the same `includeDeleted` / `onlyDeleted` pair
+because the backend filter DTOs all extend the shared
+`StateFilterRequestDto` (see backend CLAUDE.md §7.7). Member surfaces
+do **not** expose this switcher — they only opt into tombstones to
+resolve Mode-B labels (§13.2 below); they never offer a "deleted only"
+view.
+
+### 13.2 Tombstone rendering — three modes
+
+A row can be a tombstone *itself* or merely *reference* a tombstone of
+another entity. Three rendering modes cover both cases:
+
+| Mode | When | Primitive | Visual |
+|---|---|---|---|
+| **A** — tombstone row in a list | Admin viewing an "All" or "Deleted" view; the row's own `deletedAt` is set | `rowClassName={(r) => r.deletedAt ? "bg-muted/30" : undefined}` on `DataTableShell` | Muted row background; row-action menu still functional (Restore replaces Delete) |
+| **B** — reference to a tombstone | Any caller; the row is active but one of its foreign keys points at an archived entity (e.g. a pledge whose campaign is deleted) | [`DeletedLabel`](src/components/primitives/DeletedLabel.tsx) | Muted text + inline `deleted` pill + tooltip showing `Deleted MMM D, YYYY` |
+| **C** — tombstone detail page | Admin (or member) lands on a detail page for an archived entity | [`EntityRestoreBanner`](src/components/primitives/EntityRestoreBanner.tsx) | Amber banner at top of page; admin variant carries a Restore button, member variant omits actor identity |
+
+`DeletedLabel` has a `hidePill` prop for nested contexts where the
+surrounding row already conveys the deleted state — use it inside an
+already-Mode-A row that *also* references another tombstone (avoid
+double-pill noise).
+
+### 13.3 Lookup-table opt-in to tombstones
+
+A list page that needs to render Mode-B labels must fetch its lookup
+tables with `includeDeleted: true`. Without that the lookup map will
+omit the tombstone and the cell would fall back to the em-dash
+placeholder — silently hiding the deletion.
+
+```tsx
+// Include archived campaigns so deleted references can render Mode-B.
+const { data: campaignsData } = useCampaigns(tenantSlug, {
+  includeDeleted: true,
+});
+const { data: membersData } = useMembers(tenantSlug, {
+  limit: 200,
+  includeDeleted: true,
+});
+```
+
+This is **only** for lookup-style fetches that build a name/id map. The
+list query for the page itself is still driven by the `StateFilter`
+switcher (§13.1) — those two flows are independent.
+
+### 13.4 Restore flow — confirmation modals
+
+Restoring is destructive-of-a-current-state (the row reappears in
+active views, indexes get rebuilt, partial-unique slots get reclaimed),
+so every restore goes through a confirmation modal rather than a one-
+click row action. There is one modal per entity:
+
+- `confirm-restore-campaign`
+- `confirm-restore-campaign-item`
+- `confirm-restore-member`
+- `confirm-restore-pledge`
+- `confirm-restore-tenant` (super-admin)
+- `confirm-restore-transaction`
+
+Open the matching modal from the row-action menu or the
+`EntityRestoreBanner`'s Restore button. The modal owns its own
+`useApiMutation` call and invalidates the entity's queries on success.
+See [`components/modals/confirm-restore-campaign/`](src/components/modals/confirm-restore-campaign/)
+for the canonical shape.
+
+### 13.5 Row-actions on tombstones
+
+[`RowActionsMenu`](src/components/primitives/RowActionsMenu.tsx)
+returns `null` when its `actions` array is empty — pages compose the
+menu items conditionally (`row.deletedAt ? [restoreAction] : [editAction, deleteAction]`),
+and a deleted row whose page chose to expose no actions renders nothing
+at all rather than an empty dropdown. **Don't render `RowActionsMenu`
+unconditionally with a manually-emptied `actions={[]}`** — let the menu
+short-circuit.
+
+### 13.6 Cheat sheet
+
+| Surface | What to do |
+|---|---|
+| Admin list page | `<DataTableShell state={{ … }} />`; spread `toStateFilterFlags(state)` into the list query |
+| Admin list row | `rowClassName={(r) => r.deletedAt ? "bg-muted/30" : undefined}`; swap the action menu on tombstones |
+| Member list page | No state filter; only fetch with `includeDeleted: true` if you need Mode-B labels |
+| Cross-entity cell rendering a possibly-archived reference | Wrap the title/name in `<DeletedLabel deletedAt={…}>{title}</DeletedLabel>` |
+| Detail page that loaded a tombstone | Render `<EntityRestoreBanner>` at the top; disable mutating actions further down |
+| Restore button (row menu or banner) | `openModal("confirm-restore-<entity>", { … })` |
+
+---
+
+## 14. Pre-commit checklist
 
 1. Did you run `npm run api:types` after the backend changed?
 2. Does every new mutation hook call an `invalidate<Entity>` helper in

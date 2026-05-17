@@ -2,15 +2,12 @@
 
 import { Badge, type Status, StatusBadge } from "@/components/primitives/Badge";
 import { Button } from "@/components/primitives/Button";
-import {
-	DataTable,
-	type DataTableColumn,
-} from "@/components/primitives/DataTable";
+import type { DataTableColumn } from "@/components/primitives/DataTable";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
 
-type Invitation = components["schemas"]["InvitationResponseDto"];
+export type Invitation = components["schemas"]["InvitationResponseDto"];
 
 const STATUS_MAP: Record<Invitation["status"], Status> = {
 	PENDING: "Pending",
@@ -19,97 +16,78 @@ const STATUS_MAP: Record<Invitation["status"], Status> = {
 	CANCELLED: "Cancelled",
 };
 
-export const InvitationsTable = ({
-	rows,
-	loading,
-	tenantId: _tenantId,
+export const invitationColumns = ({
 	onCancel,
 }: {
-	rows: Invitation[];
-	loading?: boolean;
-	tenantId: string;
 	onCancel: (inv: Invitation) => void;
-}) => {
-	const columns: DataTableColumn<Invitation>[] = [
-		{
-			key: "email",
-			label: "Recipient",
-			render: (row) => (
-				<div className="flex flex-col">
-					<span className="font-medium text-foreground">{row.email}</span>
-					<span className="text-xs text-muted-foreground">
-						Sent {dayjs(row.createdAt).format("ll")}
-					</span>
-				</div>
-			),
-		},
-		{
-			key: "role",
-			label: "Role",
-			width: "120px",
-			render: (row) => (
-				<Badge color={row.role === "ADMIN" ? "indigo" : "neutral"}>
-					{row.role === "ADMIN" ? "Admin" : "Member"}
-				</Badge>
-			),
-		},
-		{
-			key: "status",
-			label: "Status",
-			width: "140px",
-			render: (row) => <StatusBadge status={STATUS_MAP[row.status]} />,
-		},
-		{
-			key: "expires",
-			label: "Expires",
-			width: "120px",
-			render: (row) => {
-				if (row.status !== "PENDING") {
-					return <span className="text-muted-foreground">—</span>;
-				}
-				const diff = dayjs(row.expiresAt).diff(dayjs());
-				const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+}): DataTableColumn<Invitation>[] => [
+	{
+		key: "email",
+		label: "Recipient",
+		render: (row) => (
+			<div className="flex flex-col">
+				<span className="font-medium text-foreground">{row.email}</span>
+				<span className="text-xs text-muted-foreground">
+					Sent {dayjs(row.createdAt).format("ll")}
+				</span>
+			</div>
+		),
+	},
+	{
+		key: "role",
+		label: "Role",
+		width: "120px",
+		render: (row) => (
+			<Badge color={row.role === "ADMIN" ? "indigo" : "neutral"}>
+				{row.role === "ADMIN" ? "Admin" : "Member"}
+			</Badge>
+		),
+	},
+	{
+		key: "status",
+		label: "Status",
+		width: "140px",
+		render: (row) => <StatusBadge status={STATUS_MAP[row.status]} />,
+	},
+	{
+		key: "expires",
+		label: "Expires",
+		width: "120px",
+		render: (row) => {
+			if (row.status !== "PENDING") {
+				return <span className="text-muted-foreground">—</span>;
+			}
+			const diff = dayjs(row.expiresAt).diff(dayjs());
+			const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
-				return (
-					<span
-						className={cn(
-							days < 3 && days > 0
-								? "text-destructive"
-								: "text-secondary-foreground",
-						)}
-					>
-						{days <= 0 ? "Expired" : `${days}d left`}
-					</span>
-				);
-			},
+			return (
+				<span
+					className={cn(
+						days < 3 && days > 0
+							? "text-destructive"
+							: "text-secondary-foreground",
+					)}
+				>
+					{days <= 0 ? "Expired" : `${days}d left`}
+				</span>
+			);
 		},
-		{
-			key: "actions",
-			label: "",
-			width: "100px",
-			align: "right",
-			render: (row) =>
-				row.status === "PENDING" ? (
-					<Button
-						variant="tertiary"
-						size="sm"
-						destructive
-						onClick={() => onCancel(row)}
-					>
-						Cancel
-					</Button>
-				) : null,
-		},
-	];
-
-	return (
-		<DataTable
-			columns={columns}
-			rows={rows}
-			rowKey={(r) => r.id}
-			loading={loading}
-			emptyTitle="No invitations"
-			emptySubtitle="Invite members or admins to join your church."
-		/>
-	);
-};
+	},
+	{
+		key: "actions",
+		label: "",
+		width: "100px",
+		align: "right",
+		render: (row) =>
+			row.status === "PENDING" ? (
+				<Button
+					variant="tertiary"
+					size="sm"
+					destructive
+					onClick={() => onCancel(row)}
+				>
+					Cancel
+				</Button>
+			) : null,
+	},
+];

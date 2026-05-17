@@ -1,7 +1,11 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Button, PageHeader } from "@/components/primitives";
+import {
+	Button,
+	EntityRestoreBanner,
+	PageHeader,
+} from "@/components/primitives";
 import { useMember } from "@/lib/api/members";
 import { openModal } from "@/lib/modals/store";
 import { MemberInfoCard } from "./MemberInfoCard";
@@ -11,7 +15,13 @@ import { MemberRecentGiving } from "./MemberRecentGiving";
 export const MemberDetailPage = () => {
 	const router = useRouter();
 	const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
-	const { data: member, isLoading, error } = useMember(tenantSlug, id);
+	const {
+		data: member,
+		isLoading,
+		error,
+	} = useMember(tenantSlug, id, {
+		includeDeleted: true,
+	});
 
 	if (isLoading) {
 		return (
@@ -54,6 +64,7 @@ export const MemberDetailPage = () => {
 	}
 
 	const fullName = `${member.firstName} ${member.lastName}`.trim();
+	const isDeleted = Boolean(member.deletedAt);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -70,61 +81,82 @@ export const MemberDetailPage = () => {
 						>
 							Back
 						</Button>
-						{!member.userId && (
-							<Button
-								variant="secondary"
-								icon="mail"
-								onClick={() =>
-									openModal("invite-member", {
-										tenantId: tenantSlug,
-										claimMemberId: member.id,
-										claimMemberName: fullName,
-										defaultEmail:
-											typeof member.email === "string"
-												? member.email
-												: undefined,
-									})
-								}
-							>
-								Send sign-in invite
-							</Button>
+						{!isDeleted && (
+							<>
+								{!member.userId && (
+									<Button
+										variant="secondary"
+										icon="mail"
+										onClick={() =>
+											openModal("invite-member", {
+												tenantId: tenantSlug,
+												claimMemberId: member.id,
+												claimMemberName: fullName,
+												defaultEmail:
+													typeof member.email === "string"
+														? member.email
+														: undefined,
+											})
+										}
+									>
+										Send sign-in invite
+									</Button>
+								)}
+								<Button
+									variant="secondary"
+									icon="link"
+									onClick={() =>
+										openModal("merge-member", { tenantSlug, keep: member })
+									}
+								>
+									Merge
+								</Button>
+								<Button
+									variant="secondary"
+									icon="edit"
+									onClick={() =>
+										openModal("edit-member", { tenantSlug, member })
+									}
+								>
+									Edit
+								</Button>
+								<Button
+									variant="tertiary"
+									destructive
+									icon="trash"
+									onClick={() =>
+										openModal("confirm-delete-member", {
+											tenantSlug,
+											memberId: member.id,
+											memberName: fullName,
+											onDeleted: () =>
+												router.push(`/${tenantSlug}/admin/members`),
+										})
+									}
+								>
+									Remove
+								</Button>
+							</>
 						)}
-						<Button
-							variant="secondary"
-							icon="link"
-							onClick={() =>
-								openModal("merge-member", { tenantSlug, keep: member })
-							}
-						>
-							Merge
-						</Button>
-						<Button
-							variant="secondary"
-							icon="edit"
-							onClick={() => openModal("edit-member", { tenantSlug, member })}
-						>
-							Edit
-						</Button>
-						<Button
-							variant="tertiary"
-							destructive
-							icon="trash"
-							onClick={() =>
-								openModal("confirm-delete-member", {
-									tenantSlug,
-									memberId: member.id,
-									memberName: fullName,
-									onDeleted: () => router.push(`/${tenantSlug}/admin/members`),
-								})
-							}
-						>
-							Remove
-						</Button>
 					</>
 				}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
+				{isDeleted && (
+					<EntityRestoreBanner
+						className="mb-4"
+						entityLabel="Member"
+						deletedAt={member.deletedAt}
+						onRestore={() =>
+							openModal("confirm-restore-member", {
+								tenantId: tenantSlug,
+								memberId: member.id,
+								memberName: fullName,
+							})
+						}
+					/>
+				)}
 				<div className="grid gap-4">
 					<MemberInfoCard member={member} />
 					<div className="grid grid-cols-[2fr_1fr] items-start gap-4">

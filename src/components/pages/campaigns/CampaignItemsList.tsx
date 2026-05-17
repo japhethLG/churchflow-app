@@ -1,9 +1,11 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
 	Amount,
 	Button,
 	Card,
+	DeletedLabel,
 	RowActionsMenu,
 	SectionTitle,
 } from "@/components/primitives";
@@ -25,14 +27,19 @@ export const CampaignItemsList = ({
 	onAdd,
 	onEdit,
 	onDelete,
+	onRestore,
 	disabled,
+	stateFilter,
 }: {
 	items: Item[];
 	progressByItemId: Record<string, ItemProgress>;
 	onAdd: () => void;
 	onEdit: (item: Item) => void;
 	onDelete: (item: Item) => void;
+	onRestore?: (item: Item) => void;
 	disabled?: boolean;
+	/** Optional inline filter (StateFilter) rendered in the section header. */
+	stateFilter?: ReactNode;
 }) => {
 	return (
 		<Card padding={24}>
@@ -42,18 +49,22 @@ export const CampaignItemsList = ({
 					justifyContent: "space-between",
 					alignItems: "center",
 					marginBottom: 16,
+					gap: 12,
 				}}
 			>
 				<SectionTitle title="Line items" />
-				<Button
-					variant="secondary"
-					size="sm"
-					icon="plus"
-					onClick={onAdd}
-					disabled={disabled}
-				>
-					Add item
-				</Button>
+				<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+					{stateFilter}
+					<Button
+						variant="secondary"
+						size="sm"
+						icon="plus"
+						onClick={onAdd}
+						disabled={disabled}
+					>
+						Add item
+					</Button>
+				</div>
 			</div>
 
 			{items.length === 0 ? (
@@ -101,7 +112,13 @@ export const CampaignItemsList = ({
 									<div
 										style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}
 									>
-										{item.title}
+										{item.deletedAt ? (
+											<DeletedLabel deletedAt={item.deletedAt}>
+												{item.title}
+											</DeletedLabel>
+										) : (
+											item.title
+										)}
 									</div>
 									{nstr(item.description) && (
 										<div
@@ -176,15 +193,26 @@ export const CampaignItemsList = ({
 								</div>
 								<div style={{ display: "grid", placeItems: "end" }}>
 									<RowActionsMenu
-										actions={[
-											{ label: "Edit", onClick: () => onEdit(item) },
-											{
-												label: "Delete",
-												onClick: () => onDelete(item),
-												destructive: true,
-												separatorBefore: true,
-											},
-										]}
+										actions={
+											item.deletedAt
+												? onRestore
+													? [
+															{
+																label: "Restore",
+																onClick: () => onRestore(item),
+															},
+														]
+													: []
+												: [
+														{ label: "Edit", onClick: () => onEdit(item) },
+														{
+															label: "Delete",
+															onClick: () => onDelete(item),
+															destructive: true,
+															separatorBefore: true,
+														},
+													]
+										}
 									/>
 								</div>
 							</div>

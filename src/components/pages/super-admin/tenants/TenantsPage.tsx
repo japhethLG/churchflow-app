@@ -1,15 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
 	AvatarStack,
 	Badge,
 	Button,
-	DataTable,
 	type DataTableColumn,
+	DataTableShell,
+	DeletedLabel,
 	PageHeader,
 	RowActionsMenu,
 	StatCard,
+	type StateFilterValue,
+	toStateFilterFlags,
 } from "@/components/primitives";
 import { useAdminStats } from "@/lib/api/admin";
 import type { components } from "@/lib/api/schema";
@@ -41,10 +45,31 @@ const TenantLogoTile = ({ name, slug }: { name: string; slug: string }) => {
 
 export const TenantsPage = () => {
 	const router = useRouter();
-	const { data: tenantsData, isLoading } = useTenants();
+
+	const [search, setSearch] = useState("");
+	const [state, setState] = useState<StateFilterValue>("active");
+	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
+
+	const { data: tenantsData, isLoading } = useTenants(
+		toStateFilterFlags(state),
+	);
 	const { data: stats } = useAdminStats();
 
 	const tenants = (tenantsData?.items ?? []) as Tenant[];
+
+	const filtered = useMemo<Tenant[]>(() => {
+		const q = search.trim().toLowerCase();
+		if (!q) {
+			return tenants;
+		}
+		return tenants.filter(
+			(t) =>
+				t.name.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q),
+		);
+	}, [tenants, search]);
+
+	const visible = filtered.slice(offset, offset + limit);
 
 	const columns: DataTableColumn<Tenant>[] = [
 		{
@@ -55,7 +80,13 @@ export const TenantsPage = () => {
 					<TenantLogoTile name={t.name} slug={t.slug} />
 					<div>
 						<div className="flex items-center gap-2 font-medium">
-							{t.name}
+							{t.deletedAt ? (
+								<DeletedLabel deletedAt={t.deletedAt} hidePill>
+									{t.name}
+								</DeletedLabel>
+							) : (
+								t.name
+							)}
 							{t.deletedAt && <Badge color="clay">Archived</Badge>}
 						</div>
 						<div className="text-xs text-muted-foreground">{t.slug}</div>
@@ -170,6 +201,8 @@ export const TenantsPage = () => {
 		},
 	];
 
+	const resetOffset = () => setOffset(0);
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
@@ -188,8 +221,8 @@ export const TenantsPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
-				<div className="mb-6 grid grid-cols-4 gap-4">
+			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
+				<div className="grid grid-cols-4 gap-4">
 					<StatCard
 						label="Churches"
 						value={stats?.totalTenants ?? "—"}
@@ -229,14 +262,38 @@ export const TenantsPage = () => {
 					/>
 				</div>
 
-				<DataTable<Tenant>
+				<DataTableShell<Tenant>
+					search={{
+						value: search,
+						onChange: (v) => {
+							setSearch(v);
+							resetOffset();
+						},
+						placeholder: "Search by name or slug…",
+					}}
+					state={{
+						value: state,
+						onChange: (v) => {
+							setState(v);
+							resetOffset();
+						},
+					}}
+					stats={[{ label: "churches", value: filtered.length }]}
 					columns={columns}
-					rows={tenants}
+					rows={visible}
 					rowKey={(t) => t.id}
 					loading={isLoading}
 					onRowClick={(t) => router.push(`/super-admin/tenants/${t.slug}`)}
+					rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
 					emptyTitle="No churches yet"
 					emptySubtitle="Create your first church to get started."
+					pagination={{
+						total: filtered.length,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
+					}}
 				/>
 			</div>
 		</div>

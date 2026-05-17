@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 export const MEMBER_PATHS = [
 	"/api/v1/tenants/{tenantId}/members",
 	"/api/v1/tenants/{tenantId}/members/{id}",
+	"/api/v1/tenants/{tenantId}/members/{id}/restore",
 	"/api/v1/tenants/{tenantId}/me/profile",
 ] as const;
 

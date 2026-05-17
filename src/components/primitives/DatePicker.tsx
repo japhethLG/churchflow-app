@@ -1,8 +1,7 @@
 "use client";
 
 import { CalendarIcon } from "lucide-react";
-import * as React from "react";
-import { Calendar } from "@/components/ui/calendar";
+import { useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import {
 	Popover,
@@ -11,9 +10,10 @@ import {
 } from "@/components/ui/popover";
 import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
+import { Calendar } from "./Calendar";
 
 export type DatePickerProps = {
-	/** ISO date string (YYYY-MM-DD) or empty string */
+	// ISO date string (YYYY-MM-DD) or empty string.
 	value?: string;
 	onChange?: (value: string) => void;
 	onBlur?: () => void;
@@ -22,17 +22,14 @@ export type DatePickerProps = {
 	error?: string;
 	helper?: string;
 	disabled?: boolean;
-	/** Earliest selectable date */
 	minDate?: Date;
-	/** Latest selectable date */
 	maxDate?: Date;
 	className?: string;
 };
 
-/**
- * DatePicker — a styled date-picker that uses shadcn Calendar + Popover.
- * Value is kept as "YYYY-MM-DD" (ISO string) to align with backend date fields.
- */
+// Styled date-picker. Value is stored as "YYYY-MM-DD" — the wire format
+// for date-only backend fields. Time-of-day callers should reach for the
+// (range) picker and convert at the boundary.
 export const DatePicker = ({
 	value,
 	onChange,
@@ -46,10 +43,9 @@ export const DatePicker = ({
 	maxDate,
 	className,
 }: DatePickerProps) => {
-	const [open, setOpen] = React.useState(false);
+	const [open, setOpen] = useState(false);
 
-	// Parse the ISO string → Date for the calendar
-	const selected = React.useMemo(() => {
+	const selected = useMemo(() => {
 		if (!value) {
 			return undefined;
 		}
@@ -61,8 +57,8 @@ export const DatePicker = ({
 		? dayjs(selected).format("MMM D, YYYY")
 		: undefined;
 
-	const handleSelect = (day: Date | undefined) => {
-		if (!day) {
+	const handleChange = (day: Date | { from?: Date; to?: Date } | undefined) => {
+		if (!day || !(day instanceof Date)) {
 			return;
 		}
 		onChange?.(dayjs(day).format("YYYY-MM-DD"));
@@ -114,23 +110,15 @@ export const DatePicker = ({
 					align="start"
 					side="bottom"
 					sideOffset={6}
-					className="w-auto p-0"
+					className="w-auto p-3"
 				>
 					<Calendar
 						mode="single"
-						selected={selected}
-						onSelect={handleSelect}
+						value={selected}
+						onChange={handleChange}
 						defaultMonth={selected}
-						disabled={(day) => {
-							if (minDate && day < minDate) {
-								return true;
-							}
-							if (maxDate && day > maxDate) {
-								return true;
-							}
-							return false;
-						}}
-						initialFocus
+						minDate={minDate}
+						maxDate={maxDate}
 					/>
 				</PopoverContent>
 			</Popover>

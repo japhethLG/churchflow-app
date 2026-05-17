@@ -7,6 +7,7 @@ import {
 	Card,
 	DataTable,
 	type DataTableColumn,
+	DeletedLabel,
 	RowActionsMenu,
 	SectionTitle,
 	type Status,
@@ -43,6 +44,7 @@ export const CampaignPledgesList = ({
 	onCreate,
 	onEdit,
 	onDelete,
+	parentDeleted,
 }: {
 	tenantSlug: string;
 	campaignId: string;
@@ -51,52 +53,75 @@ export const CampaignPledgesList = ({
 	onCreate: () => void;
 	onEdit: (p: Pledge) => void;
 	onDelete: (p: Pledge) => void;
+	/** True when the parent campaign is archived — disables mutations. */
+	parentDeleted?: boolean;
 }) => {
 	const { data: pledgesData, isLoading } = usePledges(tenantSlug, {
 		campaignId,
 		limit: 50,
 	});
 	// Pull members so we can render names — small tenants only; fine for v1.
-	const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
+	// Include deleted so we can apply Mode-B treatment to pledges from
+	// archived members.
+	const { data: membersData } = useMembers(tenantSlug, {
+		limit: 200,
+		includeDeleted: true,
+	});
 
 	const pledges = pledgesData?.items ?? [];
 	const itemById: Record<string, Item> = Object.fromEntries(
 		items.map((i) => [i.id, i]),
 	);
-	const memberById: Record<string, { firstName: string; lastName: string }> =
-		Object.fromEntries(
-			(membersData?.items ?? []).map((m) => [
-				m.id,
-				{ firstName: m.firstName, lastName: m.lastName },
-			]),
-		);
+	const memberById: Record<
+		string,
+		{ firstName: string; lastName: string; deletedAt?: unknown }
+	> = Object.fromEntries(
+		(membersData?.items ?? []).map((m) => [
+			m.id,
+			{
+				firstName: m.firstName,
+				lastName: m.lastName,
+				deletedAt: m.deletedAt,
+			},
+		]),
+	);
 
 	const columns: DataTableColumn<Pledge>[] = [
 		{
 			key: "member",
 			label: "Member",
-			render: (p) => (
-				<span
-					style={{
-						display: "inline-flex",
-						alignItems: "center",
-						gap: 10,
-						minWidth: 0,
-					}}
-				>
-					<Avatar name={fullName(memberById[p.memberId])} size={28} />
+			render: (p) => {
+				const m = memberById[p.memberId];
+				const name = fullName(m);
+				return (
 					<span
 						style={{
-							fontWeight: 500,
-							overflow: "hidden",
-							textOverflow: "ellipsis",
-							whiteSpace: "nowrap",
+							display: "inline-flex",
+							alignItems: "center",
+							gap: 10,
+							minWidth: 0,
 						}}
 					>
-						{fullName(memberById[p.memberId])}
+						<Avatar name={name} size={28} />
+						{m?.deletedAt ? (
+							<DeletedLabel deletedAt={m.deletedAt} className="font-medium">
+								{name}
+							</DeletedLabel>
+						) : (
+							<span
+								style={{
+									fontWeight: 500,
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap",
+								}}
+							>
+								{name}
+							</span>
+						)}
 					</span>
-				</span>
-			),
+				);
+			},
 		},
 		{
 			key: "scope",
@@ -105,15 +130,28 @@ export const CampaignPledgesList = ({
 			render: (p) => {
 				const itemId =
 					typeof p.campaignItemId === "string" ? p.campaignItemId : null;
-				const itemTitle = itemId ? itemById[itemId]?.title : null;
+				const linkedItem = itemId ? itemById[itemId] : undefined;
+				const itemTitle = linkedItem?.title ?? null;
+				const itemDeleted = Boolean(linkedItem?.deletedAt);
 				return (
 					<span style={{ fontSize: 13, color: "var(--foreground)" }}>
 						{campaignTitle}
-						{itemTitle && (
-							<span style={{ color: "var(--muted-foreground)", marginLeft: 4 }}>
-								[{itemTitle}]
-							</span>
-						)}
+						{itemTitle &&
+							(itemDeleted ? (
+								<span style={{ marginLeft: 4 }}>
+									[
+									<DeletedLabel deletedAt={linkedItem?.deletedAt}>
+										{itemTitle}
+									</DeletedLabel>
+									]
+								</span>
+							) : (
+								<span
+									style={{ color: "var(--muted-foreground)", marginLeft: 4 }}
+								>
+									[{itemTitle}]
+								</span>
+							))}
 					</span>
 				);
 			},
@@ -147,19 +185,24 @@ export const CampaignPledgesList = ({
 			width: "48px",
 			align: "right",
 			overflow: "visible",
-			render: (p) => (
-				<RowActionsMenu
-					actions={[
-						{ label: "Edit", onClick: () => onEdit(p) },
-						{
-							label: "Delete",
-							onClick: () => onDelete(p),
-							destructive: true,
-							separatorBefore: true,
-						},
-					]}
-				/>
-			),
+			render: (p) => {
+				if (parentDeleted || p.deletedAt) {
+					return <RowActionsMenu actions={[]} />;
+				}
+				return (
+					<RowActionsMenu
+						actions={[
+							{ label: "Edit", onClick: () => onEdit(p) },
+							{
+								label: "Delete",
+								onClick: () => onDelete(p),
+								destructive: true,
+								separatorBefore: true,
+							},
+						]}
+					/>
+				);
+			},
 		},
 	];
 
@@ -174,7 +217,13 @@ export const CampaignPledgesList = ({
 				}}
 			>
 				<SectionTitle title="Pledges" />
-				<Button variant="secondary" size="sm" icon="plus" onClick={onCreate}>
+				<Button
+					variant="secondary"
+					size="sm"
+					icon="plus"
+					onClick={onCreate}
+					disabled={parentDeleted}
+				>
 					Add pledge
 				</Button>
 			</div>

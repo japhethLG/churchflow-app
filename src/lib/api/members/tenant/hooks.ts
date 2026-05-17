@@ -13,6 +13,12 @@ export type MembersListQuery = {
 	search?: string;
 	offset?: number;
 	limit?: number;
+	// 3-state archive filter — FE encodes as:
+	//   Active   → both flags omitted (default)
+	//   Deleted  → onlyDeleted: true
+	//   All      → includeDeleted: true
+	includeDeleted?: boolean;
+	onlyDeleted?: boolean;
 };
 
 export const useMembers = (
@@ -30,11 +36,17 @@ export const useMembers = (
 export const useMember = (
 	tenantId: string,
 	memberId: string,
-	enabled = true,
+	options: { includeDeleted?: boolean; enabled?: boolean } = {},
 ) => {
+	const { includeDeleted, enabled = true } = options;
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/members/{id}",
-		{ params: { path: { tenantId, id: memberId } } },
+		{
+			params: {
+				path: { tenantId, id: memberId },
+				query: includeDeleted ? { includeDeleted: true } : undefined,
+			},
+		},
 		{ enabled: enabled && Boolean(tenantId) && Boolean(memberId) },
 	);
 };
@@ -58,6 +70,15 @@ export const useDeleteMember = (tenantId: string) => {
 	return useApiMutation("/api/v1/tenants/{tenantId}/members/{id}", "delete", {
 		onSuccess: () => invalidateMembers(qc, tenantId),
 	});
+};
+
+export const useRestoreMember = (tenantId: string) => {
+	const qc = useQueryClient();
+	return useApiMutation(
+		"/api/v1/tenants/{tenantId}/members/{id}/restore",
+		"post",
+		{ onSuccess: () => invalidateMembers(qc, tenantId) },
+	);
 };
 
 export const useMergeMembersPreview = (

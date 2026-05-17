@@ -6,6 +6,8 @@ import {
 	Amount,
 	DataTable,
 	type DataTableColumn,
+	DeletedLabel,
+	EntityRestoreBanner,
 	PageHeader,
 	type Status,
 	StatusBadge,
@@ -17,6 +19,7 @@ import { usePledge } from "@/lib/api/pledges";
 import { useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
+import { openModal } from "@/lib/modals/store";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
@@ -94,17 +97,22 @@ export const PledgeDetailPage = () => {
 		pledgeId: string;
 	}>();
 
-	const pledgeQ = usePledge(tenantSlug, pledgeId);
+	const pledgeQ = usePledge(tenantSlug, pledgeId, { includeDeleted: true });
 	const pledge = pledgeQ.data;
 
 	const txQ = useTransactions(tenantSlug, { pledgeId }, Boolean(pledgeId));
 	const transactions = txQ.data?.items ?? [];
 	const txTotal = txQ.data?.meta.sum ?? 0;
 
-	const membersQ = useMembers(tenantSlug, { limit: 200 });
+	// Include deleted in look-ups so we can render Mode-B treatment for
+	// archived member / campaign references on this pledge.
+	const membersQ = useMembers(tenantSlug, {
+		limit: 200,
+		includeDeleted: true,
+	});
 	const member = membersQ.data?.items.find((m) => m.id === pledge?.memberId);
 
-	const campaignsQ = useCampaigns(tenantSlug);
+	const campaignsQ = useCampaigns(tenantSlug, { includeDeleted: true });
 	const campaign = campaignsQ.data?.items.find(
 		(c) => c.id === pledge?.campaignId,
 	);
@@ -112,6 +120,8 @@ export const PledgeDetailPage = () => {
 	const memberName = member
 		? `${member.firstName} ${member.lastName}`.trim()
 		: undefined;
+	const memberDeleted = Boolean(member?.deletedAt);
+	const campaignDeleted = Boolean(campaign?.deletedAt);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -126,11 +136,48 @@ export const PledgeDetailPage = () => {
 
 			<PageHeader
 				className="px-8"
-				title={pledgeQ.isLoading ? "Loading…" : `${memberName ?? "—"}'s pledge`}
-				subtitle={campaign?.title}
+				title={
+					pledgeQ.isLoading ? (
+						"Loading…"
+					) : memberDeleted ? (
+						<span className="inline-flex items-center gap-2">
+							<DeletedLabel deletedAt={member?.deletedAt} hidePill>
+								{memberName ?? "—"}
+							</DeletedLabel>
+							<span>'s pledge</span>
+						</span>
+					) : (
+						`${memberName ?? "—"}'s pledge`
+					)
+				}
+				subtitle={
+					campaign?.title ? (
+						campaignDeleted ? (
+							<DeletedLabel deletedAt={campaign.deletedAt}>
+								{campaign.title}
+							</DeletedLabel>
+						) : (
+							campaign.title
+						)
+					) : undefined
+				}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8 space-y-8">
+				{pledge?.deletedAt && (
+					<EntityRestoreBanner
+						entityLabel="Pledge"
+						deletedAt={pledge.deletedAt}
+						onRestore={() =>
+							openModal("confirm-restore-pledge", {
+								tenantId: tenantSlug,
+								pledgeId: pledge.id,
+								memberName: memberName ?? "this member",
+							})
+						}
+					/>
+				)}
+
 				{pledge && (
 					<div className="flex flex-wrap gap-8 rounded-xl border border-border bg-card p-6">
 						<div>

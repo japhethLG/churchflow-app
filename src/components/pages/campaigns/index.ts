@@ -6,17 +6,11 @@ export { CampaignItemsList } from "./CampaignItemsList";
 export { CampaignNewPage } from "./CampaignNewPage";
 export { CampaignPledgesList } from "./CampaignPledgesList";
 export { CampaignProgressCard } from "./CampaignProgressCard";
-export {
-	type CampaignStatusFilter,
-	CampaignsFilters,
-	type CampaignsFiltersValue,
-} from "./CampaignsFilters";
 export { CampaignsListPage } from "./CampaignsListPage";
-export { CampaignsStatsBar } from "./CampaignsStatsBar";
 export {
 	type CampaignRow,
-	CampaignsTable,
 	type CampaignsTableHandlers,
+	campaignColumns,
 } from "./CampaignsTable";
 export {
 	type CampaignFormValues,

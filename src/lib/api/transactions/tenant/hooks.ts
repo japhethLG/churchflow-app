@@ -26,6 +26,9 @@ export type TransactionsListQuery = {
 	dateTo?: string;
 	offset?: number;
 	limit?: number;
+	// 3-state archive filter — see members/tenant/hooks for encoding.
+	includeDeleted?: boolean;
+	onlyDeleted?: boolean;
 };
 
 export const useTransactions = (
@@ -40,16 +43,27 @@ export const useTransactions = (
 	);
 };
 
+export type TransactionSummaryQuery = {
+	// Either supply an explicit ISO 8601 UTC range (both inclusive, both
+	// optional), or `months` for a rolling window. The range takes
+	// precedence when both are present.
+	dateFrom?: string;
+	dateTo?: string;
+	months?: number;
+};
+
 // Summary KPIs + per-type / per-month breakdowns. Admin-only on the
 // backend — members do not call this.
 export const useTransactionSummary = (
 	tenantId: string,
-	months = 1,
+	query: TransactionSummaryQuery | number = {},
 	enabled = true,
 ) => {
+	const resolved: TransactionSummaryQuery =
+		typeof query === "number" ? { months: query } : query;
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/transactions/summary",
-		{ params: { path: { tenantId }, query: { months: String(months) } } },
+		{ params: { path: { tenantId }, query: resolved } },
 		{ enabled: enabled && Boolean(tenantId) },
 	);
 };
@@ -57,11 +71,17 @@ export const useTransactionSummary = (
 export const useTransaction = (
 	tenantId: string,
 	id: string,
-	enabled = true,
+	options: { includeDeleted?: boolean; enabled?: boolean } = {},
 ) => {
+	const { includeDeleted, enabled = true } = options;
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/transactions/{id}",
-		{ params: { path: { tenantId, id } } },
+		{
+			params: {
+				path: { tenantId, id },
+				query: includeDeleted ? { includeDeleted: true } : undefined,
+			},
+		},
 		{ enabled: enabled && Boolean(tenantId) && Boolean(id) },
 	);
 };
@@ -122,6 +142,24 @@ export const useDeleteTransaction = (tenantId: string) => {
 		{
 			meta: { successMessage: "Transaction deleted" },
 			onSuccess: () => invalidateTransactions(qc, tenantId),
+		},
+	);
+};
+
+export const useRestoreTransaction = (tenantId: string) => {
+	const qc = useQueryClient();
+	return useApiMutation(
+		"/api/v1/tenants/{tenantId}/transactions/{id}/restore",
+		"post",
+		{
+			meta: { successMessage: "Transaction restored" },
+			onSuccess: () => {
+				invalidateTransactions(qc, tenantId);
+				// Pledge paid-amount aggregates depend on transactions; campaign
+				// progress numbers do too. Cheap to nuke both.
+				invalidatePledges(qc, tenantId);
+				invalidateCampaigns(qc, tenantId);
+			},
 		},
 	);
 };

@@ -3,9 +3,8 @@
 import {
 	Amount,
 	Avatar,
-	DataTable,
 	type DataTableColumn,
-	type DataTablePagination,
+	DeletedLabel,
 	Pressable,
 	RowActionsMenu,
 	type Status,
@@ -34,102 +33,132 @@ const fullName = (m: Member | undefined): string => {
 export type PledgesTableHandlers = {
 	onEdit: (p: PledgeRow) => void;
 	onDelete: (p: PledgeRow) => void;
+	onRestore: (p: PledgeRow) => void;
 	onOpenCampaign: (campaignId: string) => void;
 	onOpenPledge: (pledgeId: string) => void;
 };
 
-export const PledgesTable = ({
-	rows,
-	loading,
-	pagination,
+export const pledgeColumns = ({
+	handlers,
 	membersById,
 	campaignsById,
-	handlers,
 }: {
-	rows: PledgeRow[] | undefined;
-	loading?: boolean;
-	pagination?: DataTablePagination;
+	handlers: PledgesTableHandlers;
 	membersById: Record<string, Member>;
 	campaignsById: Record<string, Campaign>;
-	handlers: PledgesTableHandlers;
-}) => {
-	const columns: DataTableColumn<PledgeRow>[] = [
-		{
-			key: "member",
-			label: "Member",
-			render: (p) => (
+}): DataTableColumn<PledgeRow>[] => [
+	{
+		key: "member",
+		label: "Member",
+		render: (p) => {
+			const m = membersById[p.memberId];
+			const name = fullName(m);
+			return (
 				<span className="inline-flex min-w-0 items-center gap-2.5">
-					<Avatar name={fullName(membersById[p.memberId])} size={28} />
-					<span className="truncate font-medium">
-						{fullName(membersById[p.memberId])}
-					</span>
+					<Avatar name={name} size={28} />
+					{m?.deletedAt ? (
+						<DeletedLabel
+							deletedAt={m.deletedAt}
+							className="truncate font-medium"
+						>
+							{name}
+						</DeletedLabel>
+					) : (
+						<span className="truncate font-medium">{name}</span>
+					)}
 				</span>
-			),
+			);
 		},
-		{
-			key: "campaign",
-			label: "Campaign",
-			render: (p) => {
-				const c = campaignsById[p.campaignId];
-				if (!c) {
-					return <span className="text-muted-foreground">—</span>;
-				}
+	},
+	{
+		key: "campaign",
+		label: "Campaign",
+		render: (p) => {
+			const c = campaignsById[p.campaignId];
+			if (!c) {
+				return <span className="text-muted-foreground">—</span>;
+			}
+			if (c.deletedAt) {
 				return (
-					<Pressable
-						className="font-medium text-primary hover:underline text-left"
-						onClick={(e) => {
-							e.stopPropagation();
-							handlers.onOpenCampaign(c.id);
-						}}
-					>
+					<DeletedLabel deletedAt={c.deletedAt} className="font-medium">
 						{c.title}
-					</Pressable>
+					</DeletedLabel>
 				);
-			},
-		},
-		{
-			key: "pledged",
-			label: "Pledged",
-			width: "140px",
-			align: "right",
-			render: (p) => <Amount value={p.pledgedAmount.toString()} />,
-		},
-		{
-			key: "paid",
-			label: "Paid",
-			width: "140px",
-			align: "right",
-			render: (p) => (
-				<span
-					className={p.paidAmount === 0 ? "text-muted-foreground" : undefined}
+			}
+			return (
+				<Pressable
+					className="font-medium text-primary hover:underline text-left"
+					onClick={(e) => {
+						e.stopPropagation();
+						handlers.onOpenCampaign(c.id);
+					}}
 				>
-					<Amount value={p.paidAmount.toString()} />
-				</span>
-			),
+					{c.title}
+				</Pressable>
+			);
 		},
-		{
-			key: "status",
-			label: "Status",
-			width: "120px",
-			render: (p) => <StatusBadge status={STATUS_LABEL[p.status]} />,
-		},
-		{
-			key: "created",
-			label: "Pledged on",
-			width: "130px",
-			render: (p) => (
-				<span className="text-sm text-muted-foreground">
-					{dayjs(p.createdAt).format("MMM D, YYYY")}
-				</span>
-			),
-		},
-		{
-			key: "actions",
-			label: "",
-			width: "48px",
-			align: "right",
-			overflow: "visible",
-			render: (p) => (
+	},
+	{
+		key: "pledged",
+		label: "Pledged",
+		width: "140px",
+		align: "right",
+		render: (p) => <Amount value={p.pledgedAmount.toString()} />,
+	},
+	{
+		key: "paid",
+		label: "Paid",
+		width: "140px",
+		align: "right",
+		render: (p) => (
+			<span
+				className={p.paidAmount === 0 ? "text-muted-foreground" : undefined}
+			>
+				<Amount value={p.paidAmount.toString()} />
+			</span>
+		),
+	},
+	{
+		key: "status",
+		label: "Status",
+		width: "120px",
+		render: (p) => <StatusBadge status={STATUS_LABEL[p.status]} />,
+	},
+	{
+		key: "created",
+		label: "Pledged on",
+		width: "130px",
+		render: (p) => (
+			<span className="text-sm text-muted-foreground">
+				{dayjs(p.createdAt).format("MMM D, YYYY")}
+			</span>
+		),
+	},
+	{
+		key: "actions",
+		label: "",
+		width: "48px",
+		align: "right",
+		overflow: "visible",
+		render: (p) => {
+			if (p.deletedAt) {
+				return (
+					<RowActionsMenu
+						actions={[
+							{
+								label: "View transactions",
+								onClick: () => handlers.onOpenPledge(p.id),
+							},
+							{
+								label: "Restore",
+								onClick: () => handlers.onRestore(p),
+								separatorBefore: true,
+							},
+						]}
+					/>
+				);
+			}
+			return (
 				<RowActionsMenu
 					actions={[
 						{
@@ -152,20 +181,7 @@ export const PledgesTable = ({
 						},
 					]}
 				/>
-			),
+			);
 		},
-	];
-
-	return (
-		<DataTable<PledgeRow>
-			columns={columns}
-			rows={rows}
-			rowKey={(p) => p.id}
-			loading={loading}
-			pagination={pagination}
-			onRowClick={(p) => handlers.onOpenPledge(p.id)}
-			emptyTitle="No pledges yet"
-			emptySubtitle="When members commit to a campaign, those pledges show up here."
-		/>
-	);
-};
+	},
+];

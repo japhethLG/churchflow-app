@@ -2,7 +2,15 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Button, PageHeader } from "@/components/primitives";
+import {
+	Button,
+	DataTableShell,
+	DateRangePicker,
+	type DateRangeValue,
+	PageHeader,
+	type StateFilterValue,
+	toStateFilterFlags,
+} from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
@@ -10,52 +18,64 @@ import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
-import {
-	resolveRange,
-	TransactionsFilters,
-	type TransactionsFiltersValue,
-} from "./TransactionsFilters";
 import { TransactionsSummaryCard } from "./TransactionsSummaryCard";
-import { type TransactionRow, TransactionsTable } from "./TransactionsTable";
-
-const PAGE_SIZE = 20;
+import { type TransactionRow, transactionColumns } from "./TransactionsTable";
 
 type Member = components["schemas"]["MemberResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-const DEFAULT_FILTERS: TransactionsFiltersValue = {
-	search: "",
-	type: "all",
-	range: "this-month",
-	campaignId: "all",
+type TransactionType = TransactionRow["type"];
+type TypeFilter = "all" | TransactionType;
+
+const TYPE_OPTIONS = [
+	{ value: "all", label: "All types" },
+	{ value: "TITHE", label: "Tithe" },
+	{ value: "OFFERING", label: "Offering" },
+	{ value: "MISSION_GIVING", label: "Mission" },
+	{ value: "FIRST_FRUIT", label: "First fruit" },
+	{ value: "COMMITMENT", label: "Commitment" },
+	{ value: "DONATION", label: "Donation" },
+	{ value: "OTHER", label: "Other" },
+];
+
+// Default range: current month. Members can clear to "all time".
+const DEFAULT_RANGE: DateRangeValue = {
+	from: dayjs().utc().startOf("month").format("YYYY-MM-DD"),
+	to: dayjs().utc().endOf("month").format("YYYY-MM-DD"),
 };
 
-// Map the UI period chip onto how many trailing months the summary
-// endpoint should aggregate.
-const rangeToMonths = (range: TransactionsFiltersValue["range"]): number => {
-	switch (range) {
-		case "today":
-		case "this-month":
-			return 1;
-		case "last-month":
-			return 2;
-		case "ytd":
-			return dayjs().month() + 1;
-		default:
-			return 12;
-	}
-};
+// Backend takes ISO UTC instants. We expand the inclusive `YYYY-MM-DD`
+// range to [start-of-day from, end-of-day to] so the boundary days
+// fully fall inside.
+const toWireRange = (
+	range: DateRangeValue,
+): { dateFrom?: string; dateTo?: string } => ({
+	dateFrom: range.from
+		? dayjs.utc(range.from).startOf("day").toISOString()
+		: undefined,
+	dateTo: range.to ? dayjs.utc(range.to).endOf("day").toISOString() : undefined,
+});
 
 export const TransactionsListPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const [filters, setFilters] =
-		useState<TransactionsFiltersValue>(DEFAULT_FILTERS);
+	const [search, setSearch] = useState("");
+	const [type, setType] = useState<TypeFilter>("all");
+	const [range, setRange] = useState<DateRangeValue>(DEFAULT_RANGE);
+	const [campaignId, setCampaignId] = useState<string>("all");
+	const [state, setState] = useState<StateFilterValue>("active");
 	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
-	const { data: campaignsData } = useCampaigns(tenantSlug);
-	const { data: membersData } = useMembers(tenantSlug, { limit: 200 });
+	// Lookup tables include tombstones for Mode-B rendering.
+	const { data: campaignsData } = useCampaigns(tenantSlug, {
+		includeDeleted: true,
+	});
+	const { data: membersData } = useMembers(tenantSlug, {
+		limit: 200,
+		includeDeleted: true,
+	});
 
 	const campaigns: Campaign[] = campaignsData?.items ?? [];
 	const members: Member[] = membersData?.items ?? [];
@@ -66,25 +86,30 @@ export const TransactionsListPage = () => {
 		members.map((m) => [m.id, m]),
 	);
 
-	const dateRange = resolveRange(filters.range);
-	const months = rangeToMonths(filters.range);
-	const summary = useTransactionSummary(tenantSlug, months);
+	const dateRange = toWireRange(range);
+	const summary = useTransactionSummary(tenantSlug, {
+		dateFrom: dateRange.dateFrom,
+		dateTo: dateRange.dateTo,
+	});
 
 	const list = useTransactions(tenantSlug, {
-		type: filters.type === "all" ? undefined : filters.type,
-		campaignId: filters.campaignId === "all" ? undefined : filters.campaignId,
+		type: type === "all" ? undefined : type,
+		campaignId: campaignId === "all" ? undefined : campaignId,
 		dateFrom: dateRange.dateFrom,
 		dateTo: dateRange.dateTo,
 		offset,
-		limit: PAGE_SIZE,
+		limit,
+		...toStateFilterFlags(state),
 	});
 
 	const allItems: TransactionRow[] = list.data?.items ?? [];
 	const total = list.data?.meta.total ?? 0;
+	const sum = list.data?.meta.sum ?? 0;
 
-	// Search across note + reference number, client-side over the page.
+	// Search note + reference number client-side over the current page —
+	// the BE doesn't index either field.
 	const visible = useMemo<TransactionRow[]>(() => {
-		const q = filters.search.trim().toLowerCase();
+		const q = search.trim().toLowerCase();
 		if (!q) {
 			return allItems;
 		}
@@ -93,18 +118,36 @@ export const TransactionsListPage = () => {
 				.toLowerCase()
 				.includes(q),
 		);
-	}, [allItems, filters.search]);
+	}, [allItems, search]);
 
 	const openRecord = () => openModal("record-gift", { tenantSlug });
 	const openView = (t: TransactionRow) =>
 		router.push(`/${tenantSlug}/admin/transactions/${t.id}`);
-	const openEdit = openView; // detail page hosts edit affordance
 	const openDelete = (t: TransactionRow) =>
 		openModal("confirm-delete-transaction", {
 			tenantSlug,
 			transactionId: t.id,
 			amountLabel: formatCurrency(t.amount),
 		});
+	const openRestore = (t: TransactionRow) =>
+		openModal("confirm-restore-transaction", {
+			tenantId: tenantSlug,
+			transactionId: t.id,
+			summary: `${formatCurrency(t.amount)} on ${dayjs(t.date).format("MMM D, YYYY")}`,
+		});
+
+	const columns = transactionColumns({
+		handlers: {
+			onView: openView,
+			onEdit: openView, // detail page hosts the edit affordance
+			onDelete: openDelete,
+			onRestore: openRestore,
+		},
+		membersById,
+		campaignsById,
+	});
+
+	const resetOffset = () => setOffset(0);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -125,52 +168,96 @@ export const TransactionsListPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
-				<TransactionsFilters
-					value={filters}
-					campaigns={campaigns}
-					onChange={(v) => {
-						setFilters(v);
-						setOffset(0);
-					}}
-					onReset={() => {
-						setFilters(DEFAULT_FILTERS);
-						setOffset(0);
-					}}
-				/>
-
+			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
 				<TransactionsSummaryCard
 					summary={summary.data}
 					loading={summary.isLoading}
-					months={months}
-					onMonthsChange={(m) => {
-						// Period switch on the KPI bar updates the list filter so the
-						// numbers stay in sync with the table below.
-						const range: TransactionsFiltersValue["range"] =
-							m === 1
-								? "this-month"
-								: m === 2
-									? "last-month"
-									: m === 12
-										? "all"
-										: "ytd";
-						setFilters((f) => ({ ...f, range }));
-						setOffset(0);
-					}}
 				/>
 
-				<TransactionsTable
-					rows={visible}
-					loading={list.isLoading}
-					pagination={{ total, offset, limit: PAGE_SIZE, onChange: setOffset }}
-					membersById={membersById}
-					campaignsById={campaignsById}
-					handlers={{
-						onView: openView,
-						onEdit: openEdit,
-						onDelete: openDelete,
+				<DataTableShell<TransactionRow>
+					search={{
+						value: search,
+						onChange: (v) => {
+							setSearch(v);
+							resetOffset();
+						},
+						placeholder: "Search note or reference #…",
 					}}
-					onCreate={openRecord}
+					filters={[
+						{
+							key: "type",
+							label: "Type",
+							value: type,
+							onChange: (v) => {
+								setType(v as TypeFilter);
+								resetOffset();
+							},
+							options: TYPE_OPTIONS,
+						},
+						{
+							key: "campaign",
+							label: "Campaign",
+							value: campaignId,
+							onChange: (v) => {
+								setCampaignId(v);
+								resetOffset();
+							},
+							options: [
+								{ value: "all", label: "All campaigns" },
+								...campaigns.map((c) => ({ value: c.id, label: c.title })),
+							],
+						},
+					]}
+					toolbar={
+						<DateRangePicker
+							value={range}
+							onChange={(v) => {
+								setRange(v);
+								resetOffset();
+							}}
+							placeholder="Date range"
+							size="sm"
+							autoWidth
+							clearable
+						/>
+					}
+					onClearFilters={() => {
+						setType("all");
+						setRange({});
+						setCampaignId("all");
+						resetOffset();
+					}}
+					state={{
+						value: state,
+						onChange: (v) => {
+							setState(v);
+							resetOffset();
+						},
+					}}
+					stats={[
+						{ label: "gifts", value: total },
+						{ label: "total", value: formatCurrency(sum), tone: "success" },
+					]}
+					columns={columns}
+					rows={visible}
+					rowKey={(t) => t.id}
+					loading={list.isLoading}
+					onRowClick={openView}
+					rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
+					emptyTitle="No gifts recorded yet"
+					emptySubtitle="Record the first gift to start the giving history."
+					emptyAction={
+						<Button variant="primary" icon="plus" onClick={openRecord}>
+							Record gift
+						</Button>
+					}
+					pagination={{
+						total,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
+					}}
 				/>
 			</div>
 		</div>

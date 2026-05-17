@@ -42,6 +42,15 @@ export type DataTableProps<Row> = {
 	onRowClick?: (row: Row) => void;
 	pagination?: DataTablePagination;
 	className?: string;
+	/** Optional per-row className. Used for tombstone tint on archived rows. */
+	rowClassName?: (row: Row) => string | undefined;
+	/**
+	 * `"card"` (default) renders the table inside a rounded card with its
+	 * own padding + pagination footer — used by sub-tables on detail pages.
+	 * `"embedded"` drops the outer card and the built-in pagination — used
+	 * by `DataTableShell` which provides its own frame and paginator.
+	 */
+	surface?: "card" | "embedded";
 };
 
 export const DataTable = <Row,>({
@@ -56,9 +65,19 @@ export const DataTable = <Row,>({
 	onRowClick,
 	pagination,
 	className,
+	rowClassName,
+	surface = "card",
 }: DataTableProps<Row>) => {
+	const embedded = surface === "embedded";
 	return (
-		<div className={cn("rounded-2xl bg-card p-2 overflow-visible", className)}>
+		<div
+			className={cn(
+				embedded
+					? "overflow-visible"
+					: "rounded-2xl bg-card p-2 overflow-visible",
+				className,
+			)}
+		>
 			<Table>
 				<TableHeader className="border-none">
 					<TableRow className="border-none hover:bg-transparent">
@@ -102,6 +121,7 @@ export const DataTable = <Row,>({
 												clickable
 													? "cursor-pointer hover:bg-muted/50"
 													: "hover:bg-muted/20",
+												rowClassName?.(row),
 											)}
 										>
 											{columns.map((c) => (
@@ -140,7 +160,7 @@ export const DataTable = <Row,>({
 				</div>
 			)}
 
-			{pagination && pagination.total > pagination.limit && (
+			{!embedded && pagination && pagination.total > pagination.limit && (
 				<Pagination {...pagination} />
 			)}
 		</div>

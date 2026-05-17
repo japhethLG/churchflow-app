@@ -2,7 +2,15 @@
 
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Amount, Chip, DataTable, PageHeader } from "@/components/primitives";
+import {
+	Amount,
+	type DataTableColumn,
+	DataTableShell,
+	DateRangePicker,
+	type DateRangeValue,
+	DeletedLabel,
+	PageHeader,
+} from "@/components/primitives";
 import { type TransactionType, TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
 import { useMyCampaigns } from "@/lib/api/campaigns";
@@ -24,53 +32,71 @@ const TYPE_MAP: Record<string, TransactionType> = {
 	OTHER: "Other",
 };
 
+type TypeFilter = "all" | Transaction["type"];
+
+const TYPE_OPTIONS = [
+	{ value: "all", label: "All types" },
+	{ value: "TITHE", label: "Tithe" },
+	{ value: "OFFERING", label: "Offering" },
+	{ value: "MISSION_GIVING", label: "Mission" },
+	{ value: "FIRST_FRUIT", label: "First fruit" },
+	{ value: "COMMITMENT", label: "Commitment" },
+	{ value: "DONATION", label: "Donation" },
+	{ value: "OTHER", label: "Other" },
+];
+
+// Default to year-to-date so the page lands on the most useful slice for
+// a member reviewing their giving history.
+const DEFAULT_RANGE: DateRangeValue = {
+	from: dayjs().utc().startOf("year").format("YYYY-MM-DD"),
+	to: dayjs().utc().endOf("day").format("YYYY-MM-DD"),
+};
+
 export const MemberTransactions = ({
 	campaignItemMap = {},
 }: {
 	campaignItemMap?: Record<string, string>;
 }) => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
-	const [typeFilter, setTypeFilter] = useState<string>("ALL");
-	const [rangeFilter, setRangeFilter] = useState<string>("YEAR");
+
+	const [type, setType] = useState<TypeFilter>("all");
+	const [range, setRange] = useState<DateRangeValue>(DEFAULT_RANGE);
+	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
 	// Current member (kept around for any downstream side effects)
 	useMyProfile(tenantSlug);
 
-	// Campaigns to resolve titles (member-visible)
-	const campaignsQ = useMyCampaigns(tenantSlug);
+	// Campaigns to resolve titles (member-visible). Include archived
+	// campaigns so deleted references can render Mode-B (DeletedLabel)
+	// instead of falling back to the em-dash placeholder.
+	const campaignsQ = useMyCampaigns(tenantSlug, { includeDeleted: true });
 	const campaigns = campaignsQ.data?.items ?? [];
 	const campaignMap = useMemo(() => {
 		return campaigns.reduce(
 			(acc, c) => {
-				acc[c.id] = c.title;
+				acc[c.id] = c;
 				return acc;
 			},
-			{} as Record<string, string>,
+			{} as Record<string, (typeof campaigns)[number]>,
 		);
 	}, [campaigns]);
 
-	// Date range logic
-	const dateFrom = useMemo(() => {
-		const now = dayjs();
-		if (rangeFilter === "MONTH") {
-			return now.startOf("month").toISOString();
-		}
-		if (rangeFilter === "YEAR") {
-			return now.startOf("year").toISOString();
-		}
-		return undefined;
-	}, [rangeFilter]);
+	const dateFrom = range.from
+		? dayjs.utc(range.from).startOf("day").toISOString()
+		: undefined;
+	const dateTo = range.to
+		? dayjs.utc(range.to).endOf("day").toISOString()
+		: undefined;
 
-	// Fetch the caller's own transactions — self-scoped automatically
 	const txQ = useMyTransactions(tenantSlug, {
-		type:
-			typeFilter === "ALL" ? undefined : (typeFilter as Transaction["type"]),
+		type: type === "all" ? undefined : type,
 		dateFrom,
+		dateTo,
 		limit: 1000,
 	});
-	const transactions = txQ.data?.items ?? [];
+	const transactions: Transaction[] = txQ.data?.items ?? [];
 
-	// Summary stats
 	const stats = useMemo(() => {
 		const total = transactions.reduce((s, t) => s + Number(t.amount), 0);
 		const count = transactions.length;
@@ -78,13 +104,15 @@ export const MemberTransactions = ({
 		return { total, count, avg };
 	}, [transactions]);
 
-	const columns = [
+	const visible = transactions.slice(offset, offset + limit);
+
+	const columns: DataTableColumn<Transaction>[] = [
 		{
 			key: "date",
 			label: "Date",
 			width: "120px",
-			render: (t: Transaction) => (
-				<span style={{ color: "var(--muted-foreground)" }}>
+			render: (t) => (
+				<span className="text-muted-foreground">
 					{dayjs(t.date).format("MMM D, YYYY")}
 				</span>
 			),
@@ -93,31 +121,31 @@ export const MemberTransactions = ({
 			key: "type",
 			label: "Type",
 			width: "140px",
-			render: (t: Transaction) => (
-				<TypeBadge type={TYPE_MAP[t.type] || "Other"} />
-			),
+			render: (t) => <TypeBadge type={TYPE_MAP[t.type] || "Other"} />,
 		},
 		{
 			key: "campaign",
 			label: "Campaign",
-			render: (t: Transaction) => {
-				const title = t.campaignId
-					? campaignMap[t.campaignId as unknown as string]
-					: null;
-				const itemTitle = t.campaignItemId
-					? campaignItemMap[t.campaignItemId as unknown as string]
-					: null;
+			render: (t) => {
+				const cid = nstr(t.campaignId);
+				const campaign = cid ? campaignMap[cid] : null;
+				const title = campaign?.title ?? null;
+				const deletedAt = campaign?.deletedAt ?? null;
+				const itemId = nstr(t.campaignItemId);
+				const itemTitle = itemId ? campaignItemMap[itemId] : null;
 				return (
-					<span
-						style={{
-							color: title ? "var(--foreground)" : "var(--muted-foreground)",
-						}}
-					>
-						{title || "\u2014"}
+					<span className={title ? "text-foreground" : "text-muted-foreground"}>
+						{title ? (
+							deletedAt ? (
+								<DeletedLabel deletedAt={deletedAt}>{title}</DeletedLabel>
+							) : (
+								title
+							)
+						) : (
+							"—"
+						)}
 						{itemTitle && (
-							<span style={{ color: "var(--muted-foreground)", marginLeft: 4 }}>
-								[{itemTitle}]
-							</span>
+							<span className="ml-1 text-muted-foreground">[{itemTitle}]</span>
 						)}
 					</span>
 				);
@@ -127,34 +155,25 @@ export const MemberTransactions = ({
 			key: "ref",
 			label: "Reference #",
 			width: "140px",
-			render: (t: Transaction) => (
-				<span
-					style={{
-						fontFamily: "var(--font-mono, monospace)",
-						fontSize: 12,
-						color: "var(--muted-foreground)",
-					}}
-				>
-					{nstr(t.note) ? (t.note as unknown as string).slice(0, 10) : "\u2014"}
-				</span>
-			),
+			render: (t) => {
+				const n = nstr(t.note);
+				return (
+					<span className="font-mono text-xs text-muted-foreground">
+						{n ? n.slice(0, 10) : "—"}
+					</span>
+				);
+			},
 		},
 		{
 			key: "amount",
 			label: "Amount",
 			width: "120px",
-			align: "right" as const,
-			render: (t: Transaction) => <Amount value={t.amount} />,
+			align: "right",
+			render: (t) => <Amount value={t.amount} />,
 		},
 	];
 
-	const types: { label: string; value: string }[] = [
-		{ label: "All types", value: "ALL" },
-		{ label: "Tithe", value: "TITHE" },
-		{ label: "Offering", value: "OFFERING" },
-		{ label: "Mission", value: "MISSION_GIVING" },
-		{ label: "First Fruit", value: "FIRST_FRUIT" },
-	];
+	const resetOffset = () => setOffset(0);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -162,88 +181,63 @@ export const MemberTransactions = ({
 				className="px-8"
 				overline="My Giving"
 				title="Your giving history."
-				subtitle={`Everything ${tenantSlug} has recorded for you \u2014 private, and always yours.`}
+				subtitle={`Everything ${tenantSlug} has recorded for you — private, and always yours.`}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
-				{/* Filter bar */}
-				<div className="mb-5 flex flex-wrap items-center gap-[10px] rounded-2xl bg-muted p-3">
-					<div className="flex gap-[6px]">
-						<Chip
-							active={rangeFilter === "MONTH"}
-							onClick={() => setRangeFilter("MONTH")}
-						>
-							This month
-						</Chip>
-						<Chip
-							active={rangeFilter === "YEAR"}
-							onClick={() => setRangeFilter("YEAR")}
-						>
-							This year
-						</Chip>
-						<Chip
-							active={rangeFilter === "ALL"}
-							onClick={() => setRangeFilter("ALL")}
-						>
-							All time
-						</Chip>
-					</div>
-
-					<div className="h-6 w-px bg-secondary" />
-
-					<div className="flex gap-[6px]">
-						{types.map((t) => (
-							<Chip
-								key={t.value}
-								active={typeFilter === t.value}
-								onClick={() => setTypeFilter(t.value)}
-							>
-								{t.label}
-							</Chip>
-						))}
-					</div>
-
-					<div className="ml-auto text-xs text-muted-foreground">
-						{transactions.length} gift{transactions.length !== 1 ? "s" : ""}
-					</div>
-				</div>
-
-				{/* Summary strip */}
-				<div className="mb-6 flex gap-10 px-6 py-4">
-					<div>
-						<div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-							Total in range
-						</div>
-						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
-							{formatCurrency(stats.total)}
-						</div>
-					</div>
-					<div>
-						<div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-							Gifts in range
-						</div>
-						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
-							{stats.count}
-						</div>
-					</div>
-					<div>
-						<div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-							Average per gift
-						</div>
-						<div className="text-2xl font-semibold tracking-[-0.02em] tabular-nums">
-							{formatCurrency(stats.avg)}
-						</div>
-					</div>
-				</div>
-
-				{/* Table */}
-				<DataTable
+				<DataTableShell<Transaction>
+					filters={[
+						{
+							key: "type",
+							label: "Type",
+							value: type,
+							onChange: (v) => {
+								setType(v as TypeFilter);
+								resetOffset();
+							},
+							options: TYPE_OPTIONS,
+						},
+					]}
+					toolbar={
+						<DateRangePicker
+							value={range}
+							onChange={(v) => {
+								setRange(v);
+								resetOffset();
+							}}
+							placeholder="Date range"
+							size="sm"
+							autoWidth
+							clearable
+						/>
+					}
+					onClearFilters={() => {
+						setRange({});
+						setType("all");
+						resetOffset();
+					}}
+					stats={[
+						{ label: "gifts", value: stats.count },
+						{
+							label: "total",
+							value: formatCurrency(stats.total),
+							tone: "success",
+						},
+						{ label: "average", value: formatCurrency(stats.avg) },
+					]}
 					columns={columns}
-					rows={transactions}
+					rows={visible}
 					rowKey={(t) => t.id}
 					loading={txQ.isLoading}
 					emptyTitle="No transactions found"
 					emptySubtitle="Try adjusting your filters or date range."
+					pagination={{
+						total: transactions.length,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
+					}}
 				/>
 			</div>
 		</div>

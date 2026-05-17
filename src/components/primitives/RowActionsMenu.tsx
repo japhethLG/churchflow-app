@@ -25,6 +25,9 @@ export const RowActionsMenu = ({
 	actions: RowAction[];
 	label?: string;
 }) => {
+	if (actions.length === 0) {
+		return null;
+	}
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger

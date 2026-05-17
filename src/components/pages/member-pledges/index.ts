@@ -1,2 +1,5 @@
 export { MemberMyPledgesPage } from "./MemberMyPledgesPage";
-export { MemberPledgesTable } from "./MemberPledgesTable";
+export {
+	type MemberPledgeRow,
+	memberPledgeColumns,
+} from "./MemberPledgesTable";

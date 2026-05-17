@@ -5,13 +5,16 @@ import {
 	Card,
 	DataTable,
 	type DataTableColumn,
+	DeletedLabel,
 	SectionTitle,
 	StatusBadge,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
+import { useCampaigns } from "@/lib/api/campaigns";
 import { usePledges } from "@/lib/api/pledges";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
+type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const STATUS_LABEL: Record<
 	Pledge["status"],
@@ -30,15 +33,32 @@ export const MemberPledges = ({
 	memberId: string;
 }) => {
 	const { data, isLoading } = usePledges(tenantSlug, { memberId, limit: 10 });
+	const { data: campaignsData } = useCampaigns(tenantSlug, {
+		includeDeleted: true,
+	});
 	const items = (data?.items ?? []) as Pledge[];
+	const campaignsById: Record<string, Campaign> = Object.fromEntries(
+		(campaignsData?.items ?? []).map((c) => [c.id, c]),
+	);
 
 	const columns: DataTableColumn<Pledge>[] = [
 		{
 			key: "campaign",
 			label: "Campaign",
-			render: (p) => (
-				<span className="text-foreground">{p.campaignId.slice(0, 8)}…</span>
-			),
+			render: (p) => {
+				const c = campaignsById[p.campaignId];
+				if (!c) {
+					return (
+						<span className="text-muted-foreground">
+							{p.campaignId.slice(0, 8)}…
+						</span>
+					);
+				}
+				if (c.deletedAt) {
+					return <DeletedLabel deletedAt={c.deletedAt}>{c.title}</DeletedLabel>;
+				}
+				return <span className="text-foreground">{c.title}</span>;
+			},
 		},
 		{
 			key: "amount",

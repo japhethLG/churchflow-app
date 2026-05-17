@@ -14,8 +14,15 @@ export type MyPledgesListQuery = {
 	campaignId?: string;
 	campaignItemId?: string;
 	status?: "ACTIVE" | "FULFILLED" | "CANCELLED";
+	// ISO 8601 UTC, both inclusive — bracket the pledge's createdAt.
+	dateFrom?: string;
+	dateTo?: string;
 	offset?: number;
 	limit?: number;
+	// Opt-in to tombstones for Mode-B DeletedLabel fallbacks. No
+	// admin-style 3-state UI is exposed to members.
+	includeDeleted?: boolean;
+	onlyDeleted?: boolean;
 };
 
 export const useMyPledges = (
@@ -30,10 +37,20 @@ export const useMyPledges = (
 	);
 };
 
-export const useMyPledge = (tenantId: string, id: string, enabled = true) => {
+export const useMyPledge = (
+	tenantId: string,
+	id: string,
+	options: { includeDeleted?: boolean; enabled?: boolean } = {},
+) => {
+	const { includeDeleted, enabled = true } = options;
 	return useApiQuery(
 		"/api/v1/tenants/{tenantId}/me/pledges/{id}",
-		{ params: { path: { tenantId, id } } },
+		{
+			params: {
+				path: { tenantId, id },
+				query: includeDeleted ? { includeDeleted: true } : undefined,
+			},
+		},
 		{ enabled: enabled && Boolean(tenantId) && Boolean(id) },
 	);
 };
