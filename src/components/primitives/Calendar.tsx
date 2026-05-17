@@ -366,8 +366,14 @@ const DayGrid = ({
 								className={cn(
 									"relative z-10 font-medium",
 									isEndpoint && "text-primary-foreground",
-									!isEndpoint && !isMiddle && !inCurrentMonth && "font-normal text-muted-foreground/40",
-									!isEndpoint && !isMiddle && inCurrentMonth && "text-foreground",
+									!isEndpoint &&
+										!isMiddle &&
+										!inCurrentMonth &&
+										"font-normal text-muted-foreground/40",
+									!isEndpoint &&
+										!isMiddle &&
+										inCurrentMonth &&
+										"text-foreground",
 									isMiddle && "text-foreground",
 								)}
 							>
