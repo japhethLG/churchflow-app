@@ -14,8 +14,14 @@
 		"lint": "biome lint .",
 		"format": "biome format . --write",
 		"check": "node scripts/enforce-ui-primitives.mjs && biome check --write --unsafe .",
+		"check:staged": "node scripts/enforce-ui-primitives.mjs && lint-staged",
 		"api:types": "openapi-typescript http://localhost:8000/api-docs-json -o src/lib/api/schema.d.ts",
 		"prepare": "husky"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx,mjs,cjs,json,css}": [
+			"biome check --write --unsafe --no-errors-on-unmatched"
+		]
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.4.1",
@@ -50,6 +56,7 @@
 		"@types/react-dom": "^19.2.3",
 		"dotenv-cli": "^11.0.0",
 		"husky": "^9.1.7",
+		"lint-staged": "^16.4.0",
 		"openapi-typescript": "^7.13.0",
 		"server-only": "^0.0.1",
 		"tailwindcss": "^4.2.4",
