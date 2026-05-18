@@ -37,6 +37,23 @@ const DEFAULT_RANGE: DateRangeValue = {
 
 const RANGE_PRESETS = [
 	{
+		label: "This week",
+		resolve: () => ({
+			from: dayjs().startOf("week").format("YYYY-MM-DD"),
+			to: dayjs().endOf("week").format("YYYY-MM-DD"),
+		}),
+	},
+	{
+		label: "Last week",
+		resolve: () => {
+			const w = dayjs().subtract(1, "week");
+			return {
+				from: w.startOf("week").format("YYYY-MM-DD"),
+				to: w.endOf("week").format("YYYY-MM-DD"),
+			};
+		},
+	},
+	{
 		label: "This month",
 		resolve: () => ({
 			from: dayjs().startOf("month").format("YYYY-MM-DD"),
