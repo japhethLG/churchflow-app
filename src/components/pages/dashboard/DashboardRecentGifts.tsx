@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
 	Amount,
 	Avatar,
 	Card,
+	Pressable,
 	SectionTitle,
 	TypeBadge,
 } from "@/components/primitives";
@@ -15,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 type Member = components["schemas"]["MemberResponseDto"];
+type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const TYPE_UI: Record<Transaction["type"], string> = {
 	TITHE: "Tithe",
@@ -30,15 +33,14 @@ const relativeDate = (iso: string): string => {
 	const d = dayjs(iso);
 	const now = dayjs();
 	const hours = now.diff(d, "hour", true);
-
 	if (hours < 24) {
-		return `Today, ${d.format("h:mma")}`;
+		return `Today · ${d.format("h:mma")}`;
 	}
 	if (hours < 48) {
 		return "Yesterday";
 	}
 	if (hours < 24 * 7) {
-		return `${Math.floor(hours / 24)} days ago`;
+		return `${Math.floor(hours / 24)}d ago`;
 	}
 	return d.format("MMM D");
 };
@@ -46,14 +48,19 @@ const relativeDate = (iso: string): string => {
 export const DashboardRecentGifts = ({
 	transactions,
 	membersById,
+	campaignsById,
 	loading,
 	tenantSlug,
 }: {
 	transactions: Transaction[];
 	membersById: Record<string, Member>;
+	campaignsById: Record<string, Campaign>;
 	loading?: boolean;
 	tenantSlug: string;
 }) => {
+	const router = useRouter();
+	const recent = transactions.slice(0, 8);
+
 	if (loading) {
 		return (
 			<Card>
@@ -76,8 +83,6 @@ export const DashboardRecentGifts = ({
 		);
 	}
 
-	const recent = transactions.slice(0, 6);
-
 	return (
 		<Card>
 			<SectionTitle
@@ -85,7 +90,7 @@ export const DashboardRecentGifts = ({
 				action={
 					<Link
 						href={`/${tenantSlug}/admin/transactions`}
-						className="text-sm font-medium text-primary"
+						className="text-sm font-medium text-primary hover:underline"
 					>
 						View all →
 					</Link>
@@ -96,55 +101,89 @@ export const DashboardRecentGifts = ({
 					No transactions recorded yet.
 				</div>
 			) : (
-				recent.map((t, _i) => {
-					const memberId = nstr(t.memberId);
-					const member = memberId ? membersById[memberId] : null;
-					const isAnon = !member;
-					const name = member
-						? `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() ||
-							"Unnamed"
-						: "Anonymous";
-					const typeLabel = TYPE_UI[t.type] as
-						| "Tithe"
-						| "Offering"
-						| "Mission"
-						| "First Fruit"
-						| "Commitment"
-						| "Donation"
-						| "Other";
+				<ul className="divide-y divide-border">
+					{recent.map((t) => {
+						const memberId = nstr(t.memberId);
+						const member = memberId ? membersById[memberId] : null;
+						const campaignId = nstr(t.campaignId);
+						const campaign = campaignId ? campaignsById[campaignId] : undefined;
+						const isAnon = !member;
+						const name = member
+							? `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() ||
+								"Unnamed"
+							: "Anonymous";
+						const typeLabel = TYPE_UI[t.type] as
+							| "Tithe"
+							| "Offering"
+							| "Mission"
+							| "First Fruit"
+							| "Commitment"
+							| "Donation"
+							| "Other";
 
-					return (
-						<div
-							key={t.id}
-							className={cn(
-								"grid grid-cols-[36px_1fr_auto_auto] items-center gap-3 rounded-[10px] px-2 py-2.5 transition-colors duration-150",
-							)}
-						>
-							{isAnon ? (
-								<div className="grid size-8 place-items-center rounded-full bg-secondary text-xs text-muted-foreground">
-									?
-								</div>
-							) : (
-								<Avatar name={name} size={32} />
-							)}
-							<div>
-								<div
-									className={cn(
-										"text-sm font-medium",
-										isAnon ? "italic text-muted-foreground" : "text-foreground",
-									)}
+						return (
+							<li key={t.id}>
+								<Pressable
+									onClick={() =>
+										router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
+									}
+									className="grid w-full grid-cols-[36px_1fr_auto] items-center gap-3 rounded-md px-2 py-2.5 text-left transition-colors hover:bg-muted/60"
 								>
-									{name}
-								</div>
-								<div className="text-xs text-muted-foreground">
-									{relativeDate(t.date)}
-								</div>
-							</div>
-							<TypeBadge type={typeLabel} />
-							<Amount value={t.amount} />
-						</div>
-					);
-				})
+									{isAnon ? (
+										<div className="grid size-8 place-items-center rounded-full bg-secondary text-xs text-muted-foreground">
+											?
+										</div>
+									) : (
+										<Avatar name={name} size={32} />
+									)}
+									<div className="min-w-0">
+										<div className="flex items-baseline gap-2">
+											{!isAnon && memberId ? (
+												<Link
+													href={`/${tenantSlug}/admin/members/${memberId}`}
+													onClick={(e) => e.stopPropagation()}
+													className="truncate text-sm font-medium text-foreground hover:underline"
+												>
+													{name}
+												</Link>
+											) : (
+												<span
+													className={cn(
+														"truncate text-sm font-medium",
+														isAnon
+															? "italic text-muted-foreground"
+															: "text-foreground",
+													)}
+												>
+													{name}
+												</span>
+											)}
+											<TypeBadge type={typeLabel} />
+										</div>
+										<div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+											<span>{relativeDate(t.date)}</span>
+											<span aria-hidden>·</span>
+											{campaign ? (
+												<Link
+													href={`/${tenantSlug}/admin/campaigns/${campaign.id}`}
+													onClick={(e) => e.stopPropagation()}
+													className="truncate hover:underline"
+												>
+													{campaign.title}
+												</Link>
+											) : (
+												<span className="italic text-amber-600">
+													No campaign
+												</span>
+											)}
+										</div>
+									</div>
+									<Amount value={t.amount} />
+								</Pressable>
+							</li>
+						);
+					})}
+				</ul>
 			)}
 		</Card>
 	);

@@ -1,5 +1,6 @@
 export { AdminDashboardPage } from "./AdminDashboardPage";
-export { DashboardActiveCampaigns } from "./DashboardActiveCampaigns";
-export { DashboardCharts } from "./DashboardCharts";
-export { DashboardKpiStrip } from "./DashboardKpiStrip";
 export { DashboardRecentGifts } from "./DashboardRecentGifts";
+export { DeadlineWatchCard } from "./DeadlineWatchCard";
+export { NowSnapshotStrip } from "./NowSnapshotStrip";
+export { OutstandingPledgesCard } from "./OutstandingPledgesCard";
+export { UnattributedCallout } from "./UnattributedCallout";

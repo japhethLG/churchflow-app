@@ -83,22 +83,28 @@ export const getCurrencySymbol = (currency = "PHP"): string => {
  *   formatCompact(800, { currency: "USD" }) // "$800"
  */
 export const formatCompact = (
-	value: number,
+	value: number | string,
 	options: Pick<FormatCurrencyOptions, "currency"> = {},
 ): string => {
 	const { currency = "PHP" } = options;
 	const symbol = getCurrencySymbol(currency);
 
-	if (value >= 1_000_000) {
-		return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
+	// Backend serializes Prisma Decimal as JSON strings. Coerce defensively.
+	const num = typeof value === "string" ? Number(value) : value;
+	if (!Number.isFinite(num)) {
+		return "—";
 	}
-	if (value >= 10_000) {
-		return `${symbol}${(value / 1_000).toFixed(0)}k`;
+
+	if (num >= 1_000_000) {
+		return `${symbol}${(num / 1_000_000).toFixed(1)}M`;
 	}
-	if (value >= 1_000) {
-		return `${symbol}${(value / 1_000).toFixed(1)}k`;
+	if (num >= 10_000) {
+		return `${symbol}${(num / 1_000).toFixed(0)}k`;
 	}
-	return `${symbol}${value.toFixed(0)}`;
+	if (num >= 1_000) {
+		return `${symbol}${(num / 1_000).toFixed(1)}k`;
+	}
+	return `${symbol}${num.toFixed(0)}`;
 };
 
 /**

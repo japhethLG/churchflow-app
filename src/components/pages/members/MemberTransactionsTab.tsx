@@ -3,26 +3,25 @@
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
-	Button,
 	DataTableShell,
 	DateRangePicker,
 	type DateRangeValue,
-	PageHeader,
 	type StateFilterValue,
 	toStateFilterFlags,
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
-import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
+import { useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
-import { TransactionsSummaryCard } from "./TransactionsSummaryCard";
-import { type TransactionRow, transactionColumns } from "./TransactionsTable";
+import {
+	type TransactionRow,
+	transactionColumns,
+} from "../transactions/TransactionsTable";
 
 type Member = components["schemas"]["MemberResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
 
 type TransactionType = TransactionRow["type"];
 type TypeFilter = "all" | TransactionType;
@@ -38,11 +37,6 @@ const TYPE_OPTIONS = [
 	{ value: "OTHER", label: "Other" },
 ];
 
-const DEFAULT_RANGE: DateRangeValue = {
-	from: dayjs().utc().startOf("month").format("YYYY-MM-DD"),
-	to: dayjs().utc().endOf("month").format("YYYY-MM-DD"),
-};
-
 const toWireRange = (range: DateRangeValue) => ({
 	dateFrom: range.from
 		? dayjs.utc(range.from).startOf("day").toISOString()
@@ -50,13 +44,13 @@ const toWireRange = (range: DateRangeValue) => ({
 	dateTo: range.to ? dayjs.utc(range.to).endOf("day").toISOString() : undefined,
 });
 
-export const TransactionsListPage = () => {
+export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
 	const [search, setSearch] = useState("");
 	const [type, setType] = useState<TypeFilter>("all");
-	const [range, setRange] = useState<DateRangeValue>(DEFAULT_RANGE);
+	const [range, setRange] = useState<DateRangeValue>({});
 	const [campaignId, setCampaignId] = useState<string>("all");
 	const [state, setState] = useState<StateFilterValue>("active");
 	const [offset, setOffset] = useState(0);
@@ -70,22 +64,15 @@ export const TransactionsListPage = () => {
 		includeDeleted: true,
 	});
 
-	const campaigns: Campaign[] = campaignsData?.items ?? [];
-	const members: Member[] = membersData?.items ?? [];
-	const campaignsById: Record<string, Campaign> = Object.fromEntries(
-		campaigns.map((c) => [c.id, c]),
-	);
-	const membersById: Record<string, Member> = Object.fromEntries(
-		members.map((m) => [m.id, m]),
-	);
+	const campaigns = campaignsData?.items ?? [];
+	const members = membersData?.items ?? [];
+	const campaignsById = Object.fromEntries(campaigns.map((c) => [c.id, c]));
+	const membersById = Object.fromEntries(members.map((m) => [m.id, m]));
 
 	const wireRange = toWireRange(range);
-	const summary = useTransactionSummary(tenantSlug, {
-		dateFrom: wireRange.dateFrom,
-		dateTo: wireRange.dateTo,
-	});
 
 	const list = useTransactions(tenantSlug, {
+		memberId: member.id,
 		type: type === "all" ? undefined : type,
 		campaignId: campaignId === "all" ? undefined : campaignId,
 		dateFrom: wireRange.dateFrom,
@@ -111,7 +98,6 @@ export const TransactionsListPage = () => {
 		);
 	}, [allItems, search]);
 
-	const openRecord = () => openModal("record-gift", { tenantSlug });
 	const openView = (t: TransactionRow) =>
 		router.push(`/${tenantSlug}/admin/transactions/${t.id}`);
 	const openDelete = (t: TransactionRow) =>
@@ -147,115 +133,84 @@ export const TransactionsListPage = () => {
 	];
 
 	return (
-		<div className="h-full flex flex-col">
-			<PageHeader
-				className="px-8"
-				overline="Ledger"
-				title="Transactions"
-				subtitle="Every gift recorded at this church."
-				action={
-					<>
-						<Button variant="secondary" icon="download" disabled>
-							Export
-						</Button>
-						<Button variant="primary" icon="plus" onClick={openRecord}>
-							Record gift
-						</Button>
-					</>
-				}
-			/>
-
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
-				<TransactionsSummaryCard
-					summary={summary.data}
-					loading={summary.isLoading}
+		<DataTableShell<TransactionRow>
+			search={{
+				value: search,
+				onChange: (v) => {
+					setSearch(v);
+					setOffset(0);
+				},
+				placeholder: "Search note or reference…",
+			}}
+			filters={[
+				{
+					key: "type",
+					label: "Type",
+					value: type,
+					onChange: (v) => {
+						setType(v as TypeFilter);
+						setOffset(0);
+					},
+					options: TYPE_OPTIONS,
+				},
+				{
+					key: "campaignId",
+					label: "Campaign",
+					value: campaignId,
+					onChange: (v) => {
+						setCampaignId(v);
+						setOffset(0);
+					},
+					options: campaignFilterOptions,
+				},
+			]}
+			onClearFilters={() => {
+				setType("all");
+				setCampaignId("all");
+				setRange({});
+			}}
+			state={{
+				value: state,
+				onChange: (v) => {
+					setState(v);
+					setOffset(0);
+				},
+			}}
+			toolbar={
+				<DateRangePicker
+					value={range}
+					onChange={(v) => {
+						setRange(v);
+						setOffset(0);
+					}}
+					placeholder="Date range"
+					size="sm"
+					autoWidth
+					clearable
 				/>
-
-				<DataTableShell<TransactionRow>
-					search={{
-						value: search,
-						onChange: (v) => {
-							setSearch(v);
-							setOffset(0);
-						},
-						placeholder: "Search note or reference…",
-					}}
-					filters={[
-						{
-							key: "type",
-							label: "Type",
-							value: type,
-							onChange: (v) => {
-								setType(v as TypeFilter);
-								setOffset(0);
-							},
-							options: TYPE_OPTIONS,
-						},
-						{
-							key: "campaignId",
-							label: "Campaign",
-							value: campaignId,
-							onChange: (v) => {
-								setCampaignId(v);
-								setOffset(0);
-							},
-							options: campaignFilterOptions,
-						},
-					]}
-					onClearFilters={() => {
-						setType("all");
-						setCampaignId("all");
-						setRange(DEFAULT_RANGE);
-					}}
-					state={{
-						value: state,
-						onChange: (v) => {
-							setState(v);
-							setOffset(0);
-						},
-					}}
-					toolbar={
-						<DateRangePicker
-							value={range}
-							onChange={(v) => {
-								setRange(v);
-								setOffset(0);
-							}}
-							placeholder="Date range"
-							size="sm"
-							autoWidth
-							clearable
-						/>
-					}
-					stats={[
-						{ label: "in view", value: total },
-						{
-							label: "page sum",
-							value: formatCurrency(pageSum, { decimals: 0 }),
-						},
-					]}
-					columns={columns}
-					rows={visible}
-					rowKey={(t) => t.id}
-					loading={list.isLoading}
-					onRowClick={openView}
-					rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
-					emptyTitle="No transactions in range"
-					emptySubtitle="Widen the date range or record a gift to get started."
-					emptyAction={
-						<Button icon="plus" onClick={openRecord}>
-							Record gift
-						</Button>
-					}
-					pagination={{
-						total,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-					}}
-				/>
-			</div>
-		</div>
+			}
+			stats={[
+				{ label: "in view", value: total },
+				{
+					label: "page sum",
+					value: formatCurrency(pageSum, { decimals: 0 }),
+				},
+			]}
+			columns={columns}
+			rows={visible}
+			rowKey={(t) => t.id}
+			loading={list.isLoading}
+			onRowClick={openView}
+			rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
+			emptyTitle="No transactions"
+			emptySubtitle="No giving recorded by this member in this range."
+			pagination={{
+				total,
+				offset,
+				limit,
+				onOffsetChange: setOffset,
+				onLimitChange: setLimit,
+			}}
+		/>
 	);
 };

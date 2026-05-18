@@ -3,41 +3,53 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
+	Badge,
 	Button,
 	EntityRestoreBanner,
+	PageActionsMenu,
 	PageHeader,
-	StateFilter,
-	type StateFilterValue,
-	toStateFilterFlags,
+	SegmentedControl,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaign, useCampaignProgress } from "@/lib/api/campaigns";
+import dayjs from "@/lib/dayjs";
 import { openModal } from "@/lib/modals/store";
-import { CampaignHero } from "./CampaignHero";
-import { CampaignItemsList } from "./CampaignItemsList";
-import { CampaignPledgesList } from "./CampaignPledgesList";
-import { CampaignProgressCard } from "./CampaignProgressCard";
+import { daysUntil } from "../admin-shared";
+import { CampaignItemsTab } from "./CampaignItemsTab";
+import { CampaignOverviewTab } from "./CampaignOverviewTab";
+import { CampaignPledgesTab } from "./CampaignPledgesTab";
 
-type Item = components["schemas"]["CampaignItemResponseDto"];
 type ItemProgress = components["schemas"]["CampaignItemProgressDto"];
-type Pledge = components["schemas"]["PledgeResponseDto"];
+
+type Tab = "overview" | "items" | "pledges";
+
+const TABS = [
+	{ value: "overview", label: "Overview" },
+	{ value: "items", label: "Line items" },
+	{ value: "pledges", label: "Pledges" },
+];
+
+const STATUS_BADGE: Record<
+	"DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED",
+	"neutral" | "green" | "blue" | "red"
+> = {
+	DRAFT: "neutral",
+	ACTIVE: "green",
+	COMPLETED: "blue",
+	CANCELLED: "red",
+};
 
 export const CampaignDetailPage = () => {
 	const router = useRouter();
 	const { tenantSlug, id } = useParams<{ tenantSlug: string; id: string }>();
-	const [itemsState, setItemsState] = useState<StateFilterValue>("active");
-	// Fetch with `includeDeleted` so the page resolves for archived
-	// campaigns (banner + read-only view). Items list is filtered inline
-	// via `itemsState`.
+	const [tab, setTab] = useState<Tab>("overview");
+
 	const {
 		data: campaign,
 		isLoading,
 		error,
-	} = useCampaign(tenantSlug, id, {
-		includeDeleted: true,
-		...toStateFilterFlags(itemsState),
-	});
-	const { data: progress, isLoading: progressLoading } = useCampaignProgress(
+	} = useCampaign(tenantSlug, id, { includeDeleted: true });
+	const { data: progress } = useCampaignProgress(
 		tenantSlug,
 		id,
 		Boolean(campaign),
@@ -48,11 +60,11 @@ export const CampaignDetailPage = () => {
 			<div className="h-full flex flex-col">
 				<PageHeader
 					className="px-8"
-					overline="Fundraising / Campaigns"
-					title="Loading..."
-					subtitle="Fetching campaign details..."
+					back={{ href: `/${tenantSlug}/admin/campaigns`, label: "Campaigns" }}
+					title="Loading…"
+					subtitle="Fetching campaign details…"
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+				<div className="overflow-auto flex-1 px-8 pb-8">
 					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
 				</div>
 			</div>
@@ -64,8 +76,8 @@ export const CampaignDetailPage = () => {
 			<div className="h-full flex flex-col">
 				<PageHeader
 					className="px-8"
-					overline="Fundraising / Campaigns"
-					title="Not Found"
+					back={{ href: `/${tenantSlug}/admin/campaigns`, label: "Campaigns" }}
+					title="Not found"
 					subtitle="This campaign may have been deleted."
 				/>
 				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
@@ -83,110 +95,100 @@ export const CampaignDetailPage = () => {
 		);
 	}
 
-	const items: Item[] = campaign.items;
+	const isDeleted = Boolean(campaign.deletedAt);
+	const canCancel = campaign.status === "ACTIVE" || campaign.status === "DRAFT";
+
 	const progressByItemId: Record<string, ItemProgress> = Object.fromEntries(
 		(progress?.items ?? []).map((p) => [p.itemId, p]),
 	);
 
-	const canCancel = campaign.status === "ACTIVE" || campaign.status === "DRAFT";
+	const deadlineStr =
+		typeof campaign.deadline === "string" ? campaign.deadline : null;
+	const days = daysUntil(deadlineStr);
+	const deadlineBadge = (() => {
+		if (!deadlineStr) {
+			return null;
+		}
+		if (campaign.status !== "ACTIVE") {
+			return null;
+		}
+		if (days === null) {
+			return null;
+		}
+		if (days < 0) {
+			return { color: "red" as const, text: `${Math.abs(days)}d past due` };
+		}
+		if (days <= 14) {
+			return { color: "amber" as const, text: `Due in ${days}d` };
+		}
+		return { color: "neutral" as const, text: `${days}d left` };
+	})();
 
-	const askCancel = () =>
-		openModal("confirm-cancel-campaign", {
-			tenantSlug,
-			campaignId: campaign.id,
-			campaignTitle: campaign.title,
-		});
-	const askDelete = () =>
-		openModal("confirm-delete-campaign", {
-			tenantSlug,
-			campaignId: campaign.id,
-			campaignTitle: campaign.title,
-			onDeleted: () => router.push(`/${tenantSlug}/admin/campaigns`),
-		});
-	const askRestore = () =>
-		openModal("confirm-restore-campaign", {
-			tenantId: tenantSlug,
-			campaignId: campaign.id,
-			campaignTitle: campaign.title,
-		});
+	const subtitle = (
+		<span className="inline-flex flex-wrap items-center gap-2">
+			<Badge color={STATUS_BADGE[campaign.status]}>{campaign.status}</Badge>
+			{deadlineStr ? (
+				<>
+					<span>Deadline · {dayjs(deadlineStr).format("MMMM D, YYYY")}</span>
+					{deadlineBadge && (
+						<Badge color={deadlineBadge.color}>{deadlineBadge.text}</Badge>
+					)}
+				</>
+			) : (
+				<span>Open-ended · no deadline</span>
+			)}
+		</span>
+	);
 
-	const isDeleted = Boolean(campaign.deletedAt);
-
-	const openAddItem = () =>
-		openModal("add-campaign-item", {
-			tenantSlug,
-			campaignId: campaign.id,
-			defaultSortOrder: items.length,
-		});
-	const openEditItem = (item: Item) =>
-		openModal("edit-campaign-item", {
-			tenantSlug,
-			campaignId: campaign.id,
-			item,
-		});
-	const openDeleteItem = (item: Item) =>
-		openModal("confirm-delete-campaign-item", {
-			tenantSlug,
-			campaignId: campaign.id,
-			itemId: item.id,
-			itemTitle: item.title,
-		});
-
-	const openCreatePledge = () =>
-		openModal("create-pledge", {
-			tenantSlug,
-			campaignId: campaign.id,
-			campaignTitle: campaign.title,
-			items,
-		});
-	const openEditPledge = (pledge: Pledge) =>
-		openModal("edit-pledge", { tenantSlug, pledge });
-	const openDeletePledge = (pledge: Pledge) =>
-		openModal("confirm-delete-pledge", { tenantSlug, pledgeId: pledge.id });
+	const action = !isDeleted ? (
+		<>
+			<Button
+				variant="primary"
+				icon="edit"
+				onClick={() => router.push(`/${tenantSlug}/admin/campaigns/${id}/edit`)}
+			>
+				Edit
+			</Button>
+			<PageActionsMenu
+				actions={[
+					...(canCancel
+						? [
+								{
+									label: "Cancel campaign",
+									onClick: () =>
+										openModal("confirm-cancel-campaign", {
+											tenantSlug,
+											campaignId: campaign.id,
+											campaignTitle: campaign.title,
+										}),
+								},
+							]
+						: []),
+					{
+						label: "Delete campaign",
+						onClick: () =>
+							openModal("confirm-delete-campaign", {
+								tenantSlug,
+								campaignId: campaign.id,
+								campaignTitle: campaign.title,
+								onDeleted: () => router.push(`/${tenantSlug}/admin/campaigns`),
+							}),
+						destructive: true,
+						separatorBefore: canCancel,
+					},
+				]}
+			/>
+		</>
+	) : undefined;
 
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
 				className="px-8"
-				overline="Fundraising / Campaigns"
+				back={{ href: `/${tenantSlug}/admin/campaigns`, label: "Campaigns" }}
 				title={campaign.title}
-				subtitle="Goal, items, and pledges for this campaign."
-				action={
-					<>
-						<Button
-							variant="secondary"
-							onClick={() => router.push(`/${tenantSlug}/admin/campaigns`)}
-						>
-							Back
-						</Button>
-						{!isDeleted && (
-							<>
-								<Button
-									variant="secondary"
-									icon="edit"
-									onClick={() =>
-										router.push(`/${tenantSlug}/admin/campaigns/${id}/edit`)
-									}
-								>
-									Edit
-								</Button>
-								{canCancel && (
-									<Button variant="tertiary" onClick={askCancel}>
-										Cancel campaign
-									</Button>
-								)}
-								<Button
-									variant="tertiary"
-									destructive
-									icon="trash"
-									onClick={askDelete}
-								>
-									Delete
-								</Button>
-							</>
-						)}
-					</>
-				}
+				subtitle={subtitle}
+				action={action}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
@@ -195,48 +197,46 @@ export const CampaignDetailPage = () => {
 						className="mb-4"
 						entityLabel="Campaign"
 						deletedAt={campaign.deletedAt}
-						onRestore={askRestore}
+						onRestore={() =>
+							openModal("confirm-restore-campaign", {
+								tenantId: tenantSlug,
+								campaignId: campaign.id,
+								campaignTitle: campaign.title,
+							})
+						}
 					/>
 				)}
 
-				<CampaignHero campaign={campaign} />
-
-				<div className="grid gap-4">
-					<CampaignProgressCard progress={progress} loading={progressLoading} />
-
-					<CampaignItemsList
-						items={items}
-						progressByItemId={progressByItemId}
-						onAdd={openAddItem}
-						onEdit={openEditItem}
-						onDelete={openDeleteItem}
-						onRestore={(item) =>
-							openModal("confirm-restore-campaign-item", {
-								tenantId: tenantSlug,
-								campaignId: campaign.id,
-								itemId: item.id,
-								itemTitle: item.title,
-							})
-						}
-						disabled={isDeleted}
-						stateFilter={
-							!isDeleted ? (
-								<StateFilter value={itemsState} onChange={setItemsState} />
-							) : undefined
-						}
-					/>
-
-					<CampaignPledgesList
-						tenantSlug={tenantSlug}
-						campaignId={campaign.id}
-						campaignTitle={campaign.title}
-						items={items}
-						onCreate={openCreatePledge}
-						onEdit={openEditPledge}
-						onDelete={openDeletePledge}
-						parentDeleted={isDeleted}
+				<div className="mb-6">
+					<SegmentedControl
+						options={TABS}
+						value={tab}
+						onChange={(v) => setTab(v as Tab)}
 					/>
 				</div>
+
+				{tab === "overview" && (
+					<CampaignOverviewTab
+						campaign={campaign}
+						progress={progress}
+						tenantSlug={tenantSlug}
+					/>
+				)}
+				{tab === "items" && (
+					<CampaignItemsTab
+						campaign={campaign}
+						progressByItemId={progressByItemId}
+						tenantSlug={tenantSlug}
+						parentDeleted={isDeleted}
+					/>
+				)}
+				{tab === "pledges" && (
+					<CampaignPledgesTab
+						campaign={campaign}
+						tenantSlug={tenantSlug}
+						parentDeleted={isDeleted}
+					/>
+				)}
 			</div>
 		</div>
 	);

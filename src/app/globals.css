@@ -110,12 +110,20 @@
 	--sidebar-border: #c2c7ce22;
 	--sidebar-ring: #4f46e5;
 
-	/* Charts */
+	/* Charts — categorical palette (for series with no semantic role) */
 	--chart-1: #4f46e5;
 	--chart-2: #16a34a;
 	--chart-3: #2563eb;
 	--chart-4: #d97706;
 	--chart-5: #9333ea;
+
+	/* Chart role tokens — name what the color means, not what brand color it is. */
+	--chart-current: var(--primary);
+	--chart-prior: #9aa1a9;
+	--chart-goal: var(--warning);
+	--chart-positive: var(--success);
+	--chart-negative: var(--destructive);
+	--chart-track: var(--input);
 
 	/* Semantic */
 	--success: #156b3d;

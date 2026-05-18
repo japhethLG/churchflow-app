@@ -1,10 +1,5 @@
 export { MemberDetailPage } from "./MemberDetailPage";
-export { MemberInfoCard } from "./MemberInfoCard";
-export { MemberPledges } from "./MemberPledges";
-export { MemberRecentGiving } from "./MemberRecentGiving";
+export { MemberOverviewTab } from "./MemberOverviewTab";
+export { MemberPledgesTab } from "./MemberPledgesTab";
 export { MembersListPage } from "./MembersListPage";
-export {
-	type MemberRow,
-	type MembersTableHandlers,
-	memberColumns,
-} from "./MembersTable";
+export { MemberTransactionsTab } from "./MemberTransactionsTab";

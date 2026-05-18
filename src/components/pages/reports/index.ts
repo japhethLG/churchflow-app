@@ -1,5 +1,4 @@
 export { AdminReportsPage } from "./AdminReportsPage";
-export { ReportsByCampaign } from "./ReportsByCampaign";
-export { ReportsByMember } from "./ReportsByMember";
-export { ReportsByMonth } from "./ReportsByMonth";
-export { ReportsByType } from "./ReportsByType";
+export { GiversTab } from "./GiversTab";
+export { PledgeDynamicsTab } from "./PledgeDynamicsTab";
+export { TrendTab } from "./TrendTab";

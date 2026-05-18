@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
 	Amount,
 	Avatar,
@@ -48,10 +49,15 @@ export const transactionColumns = ({
 	handlers,
 	membersById,
 	campaignsById,
+	tenantSlug,
 }: {
 	handlers: TransactionsTableHandlers;
 	membersById: Record<string, Member>;
 	campaignsById: Record<string, Campaign>;
+	// When set, member + campaign cells render as `<Link>`s to their detail
+	// pages. Existing callers can omit this — the cells fall back to the
+	// original non-clickable rendering.
+	tenantSlug?: string;
 }): DataTableColumn<TransactionRow>[] => [
 	{
 		key: "date",
@@ -73,15 +79,24 @@ export const transactionColumns = ({
 			}
 			const m = membersById[memberId];
 			const isDeleted = Boolean(m?.deletedAt);
+			const name = fullName(m);
 			return (
 				<span className="inline-flex min-w-0 items-center gap-2">
-					<Avatar name={fullName(m)} size={26} />
+					<Avatar name={name} size={26} />
 					{isDeleted ? (
 						<DeletedLabel deletedAt={m?.deletedAt} className="truncate text-sm">
-							{fullName(m)}
+							{name}
 						</DeletedLabel>
+					) : tenantSlug ? (
+						<Link
+							href={`/${tenantSlug}/admin/members/${memberId}`}
+							onClick={(e) => e.stopPropagation()}
+							className="truncate text-sm hover:underline"
+						>
+							{name}
+						</Link>
 					) : (
-						<span className="truncate text-sm">{fullName(m)}</span>
+						<span className="truncate text-sm">{name}</span>
 					)}
 				</span>
 			);
@@ -113,10 +128,17 @@ export const transactionColumns = ({
 					</DeletedLabel>
 				);
 			}
-			return (
-				<span className="block truncate text-sm text-primary">
-					{c?.title ?? "Campaign"}
-				</span>
+			const label = c?.title ?? "Campaign";
+			return tenantSlug ? (
+				<Link
+					href={`/${tenantSlug}/admin/campaigns/${cid}`}
+					onClick={(e) => e.stopPropagation()}
+					className="block truncate text-sm text-primary hover:underline"
+				>
+					{label}
+				</Link>
+			) : (
+				<span className="block truncate text-sm text-primary">{label}</span>
 			);
 		},
 	},

@@ -3,8 +3,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Form, FormInput, FormOptionGroup } from "@/components/formElements";
-import type { components } from "@/lib/api";
+import {
+	Form,
+	FormAmountInput,
+	FormOptionGroup,
+	FormTextArea,
+} from "@/components/formElements";
+import { type components, nstr } from "@/lib/api";
+import { useCampaign } from "@/lib/api/campaigns";
+import { useMembers } from "@/lib/api/members";
 import { useUpdatePledge } from "@/lib/api/pledges";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import { BaseModal } from "../BaseModal";
@@ -36,6 +43,21 @@ export const EditPledgeModal = ({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const { mutateAsync, isPending } = useUpdatePledge(tenantSlug);
 
+	const { data: campaign } = useCampaign(tenantSlug, pledge.campaignId, {
+		includeDeleted: true,
+	});
+	const { data: membersData } = useMembers(tenantSlug, {
+		limit: 500,
+		includeDeleted: true,
+	});
+	const member = membersData?.items.find((m) => m.id === pledge.memberId);
+
+	const itemId = nstr(pledge.campaignItemId);
+	const earmarkedItem =
+		itemId && campaign?.items
+			? campaign.items.find((it) => it.id === itemId)
+			: undefined;
+
 	const methods = useForm<EditPledgeFormValues>({
 		defaultValues: buildEditPledgeDefaults(pledge),
 		resolver: zodResolver(editPledgeSchema),
@@ -61,9 +83,12 @@ export const EditPledgeModal = ({
 		}
 	};
 
+	const memberName = member
+		? `${member.firstName} ${member.lastName}`.trim() || "Unnamed"
+		: "—";
+
 	return (
 		<BaseModal
-			overline="Pledge"
 			title="Edit pledge"
 			size="md"
 			onClose={onClose}
@@ -79,8 +104,24 @@ export const EditPledgeModal = ({
 				disabled: isPending,
 			}}
 		>
+			<div className="mb-4 rounded-lg bg-muted/40 px-4 py-3 text-sm">
+				<div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+					Pledge
+				</div>
+				<div className="mt-1 text-foreground">
+					<span className="font-medium">{memberName}</span>
+					<span className="text-muted-foreground"> · </span>
+					<span>{campaign?.title ?? "—"}</span>
+				</div>
+				{earmarkedItem && (
+					<div className="mt-0.5 text-xs text-muted-foreground">
+						Earmarked to {earmarkedItem.title}
+					</div>
+				)}
+			</div>
+
 			<Form methods={methods} onSubmit={onSubmit}>
-				<FormInput inputName="amount" label="Amount" type="number" />
+				<FormAmountInput inputName="amount" label="Pledged amount" />
 				<FormOptionGroup
 					inputName="status"
 					label="Status"
@@ -91,7 +132,12 @@ export const EditPledgeModal = ({
 						description: o.description,
 					}))}
 				/>
-				<FormInput inputName="note" label="Note" />
+				<FormTextArea
+					inputName="note"
+					label="Note (optional)"
+					rows={3}
+					placeholder="e.g. paying over 6 months"
+				/>
 				{submitError && (
 					<p className="m-0 text-sm text-destructive">{submitError}</p>
 				)}

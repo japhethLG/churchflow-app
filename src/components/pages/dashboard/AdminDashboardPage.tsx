@@ -1,21 +1,26 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo } from "react";
 import { Button, PageHeader } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
+import { usePledges } from "@/lib/api/pledges";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import dayjs from "@/lib/dayjs";
 import { openModal } from "@/lib/modals/store";
-import { DashboardActiveCampaigns } from "./DashboardActiveCampaigns";
-import { DashboardCharts } from "./DashboardCharts";
-import { DashboardKpiStrip } from "./DashboardKpiStrip";
+import { daysUntil, num } from "../admin-shared";
 import { DashboardRecentGifts } from "./DashboardRecentGifts";
+import { DeadlineWatchCard } from "./DeadlineWatchCard";
+import { NowSnapshotStrip } from "./NowSnapshotStrip";
+import { OutstandingPledgesCard } from "./OutstandingPledgesCard";
+import { UnattributedCallout } from "./UnattributedCallout";
+import { useCampaignProgressMany } from "./useCampaignProgressMany";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
+type Member = components["schemas"]["MemberResponseDto"];
 
 const getGreeting = (): string => {
 	const h = dayjs().hour();
@@ -32,35 +37,114 @@ export const AdminDashboardPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const { user } = useAuth();
 
-	const [chartMonths, setChartMonths] = useState(12);
+	const weekFrom = dayjs().startOf("week").toISOString();
+	const weekTo = dayjs().endOf("week").toISOString();
+	const priorWeekFrom = dayjs()
+		.subtract(1, "week")
+		.startOf("week")
+		.toISOString();
+	const priorWeekTo = dayjs().subtract(1, "week").endOf("week").toISOString();
 
-	// Data hooks
-	const currentMonthSummary = useTransactionSummary(tenantSlug, 1);
-	const previousMonthSummary = useTransactionSummary(tenantSlug, 2);
-	const chartSummary = useTransactionSummary(tenantSlug, chartMonths);
+	const weekSummary = useTransactionSummary(tenantSlug, {
+		dateFrom: weekFrom,
+		dateTo: weekTo,
+	});
+	const priorWeekSummary = useTransactionSummary(tenantSlug, {
+		dateFrom: priorWeekFrom,
+		dateTo: priorWeekTo,
+	});
+
+	const weekTransactions = useTransactions(tenantSlug, {
+		dateFrom: weekFrom,
+		dateTo: weekTo,
+		limit: 500,
+	});
+
 	const recentTx = useTransactions(tenantSlug, { limit: 6 });
 	const membersQ = useMembers(tenantSlug, { limit: 200 });
 	const campaignsQ = useCampaigns(tenantSlug);
+	const activePledgesQ = usePledges(tenantSlug, {
+		status: "ACTIVE",
+		limit: 200,
+	});
 
-	const members = membersQ.data?.items ?? [];
-	const campaigns: Campaign[] = campaignsQ.data?.items ?? [];
-	const membersById: Record<string, (typeof members)[number]> =
-		Object.fromEntries(members.map((m) => [m.id, m]));
-
-	// Active campaigns for the campaigns widget
-	const activeCampaigns = campaigns.filter(
-		(c) => c.status === "ACTIVE" || c.status === "DRAFT",
+	const members: Member[] = useMemo(
+		() => membersQ.data?.items ?? [],
+		[membersQ.data],
+	);
+	const campaigns: Campaign[] = useMemo(
+		() => campaignsQ.data?.items ?? [],
+		[campaignsQ.data],
+	);
+	const pledges = useMemo(
+		() => activePledgesQ.data?.items ?? [],
+		[activePledgesQ.data],
 	);
 
-	// Member stats
-	const memberCount = membersQ.data?.meta?.total ?? members.length;
+	const membersById = useMemo(
+		() => Object.fromEntries(members.map((m) => [m.id, m])),
+		[members],
+	);
+	const campaignsById = useMemo(
+		() => Object.fromEntries(campaigns.map((c) => [c.id, c])),
+		[campaigns],
+	);
 
-	// Campaign progress — fetch progress for each active campaign
-	// We'll use a simple approach: get progress for first 5 active campaigns
-	const progressMap: Record<
-		string,
-		{ goalAmount: number; raisedAmount: number; pledgedAmount: number }
-	> = {};
+	// Fan-out campaign progress for active, deadlined campaigns only.
+	const deadlinedCampaignIds = useMemo(
+		() =>
+			campaigns
+				.filter((c) => c.status === "ACTIVE" && typeof c.deadline === "string")
+				.map((c) => c.id),
+		[campaigns],
+	);
+	const { progressById } = useCampaignProgressMany(
+		tenantSlug,
+		deadlinedCampaignIds,
+	);
+
+	// Unattributed counts — derived from this week's transactions.
+	const { anonCount, anonTotal, noCampCount, noCampTotal } = useMemo(() => {
+		let aC = 0;
+		let aT = 0;
+		let nC = 0;
+		let nT = 0;
+		for (const t of weekTransactions.data?.items ?? []) {
+			const amt = num(t.amount);
+			if (!t.memberId) {
+				aC += 1;
+				aT += amt;
+			}
+			if (!t.campaignId) {
+				nC += 1;
+				nT += amt;
+			}
+		}
+		return { anonCount: aC, anonTotal: aT, noCampCount: nC, noCampTotal: nT };
+	}, [weekTransactions.data]);
+
+	const activeCampaignCount = campaigns.filter(
+		(c) => c.status === "ACTIVE",
+	).length;
+
+	const deadlineSoonCount = useMemo(
+		() =>
+			campaigns.filter((c) => {
+				if (c.status !== "ACTIVE" || typeof c.deadline !== "string") {
+					return false;
+				}
+				const d = daysUntil(c.deadline);
+				return d !== null && d >= 0 && d <= 14;
+			}).length,
+		[campaigns],
+	);
+
+	const newMembersThisWeek = useMemo(
+		() =>
+			members.filter((m) => dayjs(m.createdAt).isAfter(dayjs().startOf("week")))
+				.length,
+		[members],
+	);
 
 	const firstName = user?.displayName?.split(" ")[0] ?? "Admin";
 
@@ -68,9 +152,9 @@ export const AdminDashboardPage = () => {
 		<div className="h-full flex flex-col">
 			<PageHeader
 				className="px-8"
-				overline={`Overview · ${dayjs().format("MMMM YYYY")}`}
+				overline={`Act · ${dayjs().format("dddd, MMMM D")}`}
 				title={`${getGreeting()}, ${firstName}`}
-				subtitle={`Here's how giving is trending at your church.`}
+				subtitle="What needs your attention this week."
 				action={
 					<Button
 						variant="primary"
@@ -81,40 +165,53 @@ export const AdminDashboardPage = () => {
 					</Button>
 				}
 			/>
-			{/* Content Wrapper */}
+
 			<div className="overflow-auto flex-1 px-8 pb-8">
-				{/* KPI strip */}
-				<DashboardKpiStrip
-					summary={currentMonthSummary.data}
-					previousSummary={previousMonthSummary.data}
-					memberCount={memberCount}
-					activeCampaignCount={activeCampaigns.length}
-					loading={currentMonthSummary.isLoading}
+				<NowSnapshotStrip
+					weekSummary={weekSummary.data}
+					priorWeekSummary={priorWeekSummary.data}
+					memberCount={membersQ.data?.meta?.total ?? members.length}
+					newMembersThisWeek={newMembersThisWeek}
+					activeCampaigns={activeCampaignCount}
+					deadlineSoonCount={deadlineSoonCount}
+					loading={weekSummary.isLoading || priorWeekSummary.isLoading}
 				/>
 
-				{/* Charts row */}
-				<DashboardCharts
-					summary={chartSummary.data}
-					loading={chartSummary.isLoading}
-					months={chartMonths}
-					onMonthsChange={setChartMonths}
+				<UnattributedCallout
+					anonymousCount={anonCount}
+					anonymousTotal={anonTotal}
+					noCampaignCount={noCampCount}
+					noCampaignTotal={noCampTotal}
+					tenantSlug={tenantSlug}
 				/>
 
-				{/* Bottom row: Recent gifts + Active campaigns */}
-				<div className="mb-4 grid grid-cols-2 gap-4">
-					<DashboardRecentGifts
-						transactions={recentTx.data?.items ?? []}
+				<div className="mb-6 grid gap-4 lg:grid-cols-2">
+					<OutstandingPledgesCard
+						pledges={pledges}
+						campaignsById={campaignsById}
 						membersById={membersById}
-						loading={recentTx.isLoading}
 						tenantSlug={tenantSlug}
+						loading={
+							activePledgesQ.isLoading ||
+							campaignsQ.isLoading ||
+							membersQ.isLoading
+						}
 					/>
-					<DashboardActiveCampaigns
+					<DeadlineWatchCard
 						campaigns={campaigns}
-						progressMap={progressMap}
-						loading={campaignsQ.isLoading}
+						progressById={progressById}
 						tenantSlug={tenantSlug}
+						loading={campaignsQ.isLoading}
 					/>
 				</div>
+
+				<DashboardRecentGifts
+					transactions={recentTx.data?.items ?? []}
+					membersById={membersById}
+					campaignsById={campaignsById}
+					loading={recentTx.isLoading}
+					tenantSlug={tenantSlug}
+				/>
 			</div>
 		</div>
 	);

@@ -16,11 +16,12 @@ import { type components, nstr } from "@/lib/api";
 import { useCampaign } from "@/lib/api/campaigns";
 import { useMember } from "@/lib/api/members";
 import { usePledge } from "@/lib/api/pledges";
-import { useTransaction } from "@/lib/api/transactions";
+import { useTransaction, useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
 import { cn } from "@/lib/utils";
+import { num } from "../admin-shared";
 
 type Tx = components["schemas"]["TransactionResponseDto"];
 
@@ -74,6 +75,15 @@ export const TransactionDetailPage = () => {
 		includeDeleted: true,
 	});
 
+	// Context strip — surface "this gift in the context of the member's
+	// lifetime giving" so the admin can tell from one line whether the
+	// amount is typical, unusual, or a first-time gift.
+	const memberTxQ = useTransactions(
+		tenantSlug,
+		{ memberId: memberId ?? "", limit: 500 },
+		Boolean(memberId),
+	);
+
 	if (isLoading) {
 		return (
 			<div className="h-full flex flex-col">
@@ -124,40 +134,62 @@ export const TransactionDetailPage = () => {
 
 	const isDeleted = Boolean(tx.deletedAt);
 
+	// Context strip — order this gift in the member's history and sum lifetime.
+	const memberContext = (() => {
+		if (!memberId) {
+			return null;
+		}
+		const items = memberTxQ.data?.items ?? [];
+		if (items.length === 0) {
+			return null;
+		}
+		// Sort by date ascending and find the 1-based index of this gift.
+		const sorted = [...items].sort(
+			(a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf(),
+		);
+		const giftNumber = sorted.findIndex((t) => t.id === tx.id) + 1;
+		const lifetime = sorted.reduce((s, t) => s + num(t.amount), 0);
+		const firstDate = sorted[0]?.date;
+		const monthsSince = firstDate
+			? Math.max(1, dayjs(tx.date).diff(dayjs(firstDate), "month"))
+			: null;
+		return {
+			giftNumber: giftNumber > 0 ? giftNumber : null,
+			total: items.length,
+			lifetime,
+			monthsSince,
+		};
+	})();
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
 				className="px-8"
-				overline="Ledger / Transactions"
+				back={{
+					href: `/${tenantSlug}/admin/transactions`,
+					label: "Transactions",
+				}}
 				title={formatCurrency(tx.amount)}
 				subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${dayjs(tx.date).format("dddd, MMMM D, YYYY")}`}
 				action={
-					<>
+					!isDeleted ? (
 						<Button
-							variant="secondary"
-							onClick={() => router.push(`/${tenantSlug}/admin/transactions`)}
+							variant="tertiary"
+							destructive
+							icon="trash"
+							onClick={() =>
+								openModal("confirm-delete-transaction", {
+									tenantSlug,
+									transactionId: tx.id,
+									amountLabel: formatCurrency(tx.amount),
+									onDeleted: () =>
+										router.push(`/${tenantSlug}/admin/transactions`),
+								})
+							}
 						>
-							Back
+							Delete
 						</Button>
-						{!isDeleted && (
-							<Button
-								variant="tertiary"
-								destructive
-								icon="trash"
-								onClick={() =>
-									openModal("confirm-delete-transaction", {
-										tenantSlug,
-										transactionId: tx.id,
-										amountLabel: formatCurrency(tx.amount),
-										onDeleted: () =>
-											router.push(`/${tenantSlug}/admin/transactions`),
-									})
-								}
-							>
-								Delete
-							</Button>
-						)}
-					</>
+					) : undefined
 				}
 			/>
 
@@ -176,7 +208,37 @@ export const TransactionDetailPage = () => {
 						}
 					/>
 				)}
-				<div className="grid grid-cols-[1.5fr_1fr] items-start gap-4">
+				{memberContext && member && (
+					<div className="mb-4 rounded-lg bg-muted/40 px-4 py-2.5 text-sm text-muted-foreground">
+						{memberContext.giftNumber !== null && (
+							<>
+								Gift{" "}
+								<span className="font-semibold text-foreground">
+									#{memberContext.giftNumber}
+								</span>{" "}
+								from{" "}
+								<span className="font-semibold text-foreground">
+									{member.firstName} {member.lastName}
+								</span>{" "}
+								·{" "}
+							</>
+						)}
+						<span className="font-semibold text-foreground">
+							{formatCompact(memberContext.lifetime)}
+						</span>{" "}
+						lifetime across {memberContext.total}{" "}
+						{memberContext.total === 1 ? "gift" : "gifts"}
+						{memberContext.monthsSince !== null &&
+							memberContext.monthsSince > 0 && (
+								<>
+									{" "}
+									over {memberContext.monthsSince}{" "}
+									{memberContext.monthsSince === 1 ? "month" : "months"}
+								</>
+							)}
+					</div>
+				)}
+				<div className="grid items-start gap-4 lg:grid-cols-[1.5fr_1fr]">
 					<Card padding={24}>
 						<SectionTitle title="Details" />
 						<DetailRow label="Amount" value={<Amount value={tx.amount} />} />

@@ -1,201 +1,217 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Card, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCompact, formatCurrency } from "@/lib/format-currency";
+import { num, pct, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
-type ByType = components["schemas"]["TransactionSummaryByTypeDto"];
 
-const TYPE_LABEL: Record<ByType["type"], string> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
+type DonutTooltipPayload = {
+	active?: boolean;
+	payload?: {
+		payload: {
+			label: string;
+			amount: number;
+			count: number;
+			color: string;
+			share: number;
+		};
+	}[];
 };
 
-const TYPE_COLOR: Record<ByType["type"], string> = {
-	TITHE: "var(--tx-tithe)",
-	OFFERING: "var(--tx-offering)",
-	MISSION_GIVING: "var(--tx-mission)",
-	FIRST_FRUIT: "var(--tx-first-fruit)",
-	COMMITMENT: "var(--tx-commitment)",
-	DONATION: "var(--tx-donation)",
-	OTHER: "var(--tx-other)",
-};
-
-const tooltipChrome = {
-	backgroundColor: "var(--input)",
-	border: "none",
-	borderRadius: 8,
-	fontSize: 12,
-} as const;
-
-export const TransactionsSummaryCard = ({
-	summary,
-	loading,
-}: {
-	summary: Summary | undefined;
-	loading?: boolean;
-}) => {
-	if (loading || !summary) {
-		return (
-			<div className="mb-4 min-h-[168px] rounded-2xl border border-secondary bg-card p-6">
-				<div className="flex gap-8">
-					{[0, 1, 2].map((i) => (
-						<div key={i}>
-							<div className="mb-2 h-3 w-[60px] animate-pulse rounded bg-secondary" />
-							<div className="h-7 w-[120px] animate-pulse rounded-md bg-secondary" />
-						</div>
-					))}
-				</div>
-			</div>
-		);
+const DonutTooltip = ({ active, payload }: DonutTooltipPayload) => {
+	if (!active || !payload?.length) {
+		return null;
 	}
-
-	const total = summary.total;
-	const count = summary.count;
-	const average = count > 0 ? total / count : 0;
-	const chartData = (
-		summary.byType.length > 0
-			? summary.byType
-			: ([{ type: "OTHER", total: 1, count: 0 }] as ByType[])
-	).map((b) => ({
-		name: TYPE_LABEL[b.type],
-		value: b.total,
-		color: TYPE_COLOR[b.type],
-		pct: total > 0 ? (b.total / total) * 100 : 0,
-		count: b.count,
-	}));
-
+	const d = payload[0]?.payload;
+	if (!d) {
+		return null;
+	}
 	return (
-		<div className="mb-4 grid grid-cols-[1fr_auto] items-center gap-8 rounded-2xl border border-secondary bg-card p-6">
-			<div>
-				<div className="grid grid-cols-[repeat(3,minmax(140px,1fr))] gap-8">
-					<Kpi
-						label="Total received"
-						value={
-							<span className="bg-[linear-gradient(135deg,var(--ring),var(--primary))] bg-clip-text text-2xl font-semibold tabular-nums tracking-tight">
-								{formatCurrency(total)}
-							</span>
-						}
-					/>
-					<Kpi
-						label="Gifts"
-						value={
-							<span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
-								{count}
-							</span>
-						}
-						caption={count === 1 ? "transaction" : "transactions"}
-					/>
-					<Kpi
-						label="Average"
-						value={
-							<span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
-								{formatCurrency(average)}
-							</span>
-						}
-						caption="per gift"
-					/>
-				</div>
+		<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
+			<div className="flex items-center gap-1.5 font-medium">
+				<span
+					className="inline-block size-2 rounded-sm"
+					style={{ background: d.color }}
+				/>
+				{d.label}
 			</div>
-
-			<div className="flex items-center gap-6">
-				<div className="flex min-w-[160px] flex-col gap-2">
-					{chartData.slice(0, 4).map((d) => (
-						<div key={d.name} className="flex items-center gap-2 text-xs">
-							<span
-								className="size-2 rounded-sm shrink-0"
-								style={{ backgroundColor: d.color }}
-							/>
-							<span className="min-w-0 flex-1 text-secondary-foreground">
-								{d.name}
-							</span>
-							<span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-								{d.pct.toFixed(0)}%
-							</span>
-						</div>
-					))}
-					{chartData.length > 4 && (
-						<div className="mt-0.5 text-xs text-muted-foreground">
-							+ {chartData.length - 4} more
-						</div>
-					)}
-				</div>
-
-				<div className="relative h-[140px] w-[140px] shrink-0">
-					<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-						<div>
-							<div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-								Total
-							</div>
-							<div className="mt-0.5 text-base font-semibold tabular-nums tracking-tight text-foreground">
-								{formatCurrency(total)}
-							</div>
-						</div>
-					</div>
-					<ResponsiveContainer width="100%" height="100%">
-						<PieChart>
-							<Pie
-								data={chartData}
-								dataKey="value"
-								cx="50%"
-								cy="50%"
-								innerRadius={48}
-								outerRadius={68}
-								paddingAngle={1}
-								stroke="none"
-							>
-								{chartData.map((d) => (
-									<Cell key={d.name} fill={d.color} />
-								))}
-							</Pie>
-							<Tooltip
-								formatter={(v, _name, ctx) => {
-									const payload = (
-										ctx as
-											| { payload?: { name?: string; pct?: number } }
-											| undefined
-									)?.payload;
-									const num = typeof v === "number" ? v : 0;
-									return [
-										`${formatCurrency(num)} (${(payload?.pct ?? 0).toFixed(0)}%)`,
-										payload?.name ?? "",
-									];
-								}}
-								contentStyle={tooltipChrome}
-							/>
-						</PieChart>
-					</ResponsiveContainer>
-				</div>
+			<div className="mt-0.5 tabular-nums">
+				{formatCurrency(d.amount, { decimals: 0 })}
+				<span className="ml-2 opacity-70">{d.share}%</span>
+			</div>
+			<div className="mt-0.5 opacity-70">
+				{d.count} {d.count === 1 ? "gift" : "gifts"}
 			</div>
 		</div>
 	);
 };
 
-const Kpi = ({
-	label,
-	value,
-	caption,
+export const TransactionsSummaryCard = ({
+	summary,
+	loading,
 }: {
-	label: string;
-	value: ReactNode;
-	caption?: string;
+	summary?: Summary;
+	loading?: boolean;
 }) => {
+	const total = num(summary?.total);
+	const count = summary?.count ?? 0;
+	const avg = count > 0 ? total / count : 0;
+
+	const segments = (summary?.byType ?? [])
+		.filter((b) => num(b.total) > 0)
+		.sort((a, b) => num(b.total) - num(a.total))
+		.map((b) => {
+			const amount = num(b.total);
+			return {
+				key: b.type,
+				label: TYPE_LABEL[b.type],
+				color: TYPE_COLOR[b.type],
+				amount,
+				count: b.count,
+				share: pct(amount, total),
+				avg: b.count > 0 ? amount / b.count : 0,
+			};
+		});
+
+	const placeholder = [
+		{
+			key: "empty",
+			label: "No data",
+			color: "var(--chart-track)",
+			amount: 1,
+			count: 0,
+			share: 0,
+			avg: 0,
+		},
+	];
+
+	if (loading) {
+		return (
+			<Card>
+				<div className="py-8 text-center text-sm text-muted-foreground">
+					Loading…
+				</div>
+			</Card>
+		);
+	}
+
 	return (
-		<div>
-			<div className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-				{label}
+		<Card>
+			<SectionTitle title="In this filter" />
+
+			{/* Summary row — terse, scannable, no nested cards */}
+			<div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+				<div>
+					<div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+						Total
+					</div>
+					<div className="mt-1 text-3xl font-bold tabular-nums text-foreground">
+						{formatCurrency(total, { decimals: 0 })}
+					</div>
+				</div>
+				<div>
+					<div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+						Gifts
+					</div>
+					<div className="mt-1 text-3xl font-bold tabular-nums text-foreground">
+						{count.toLocaleString()}
+					</div>
+				</div>
+				<div>
+					<div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+						Average gift
+					</div>
+					<div className="mt-1 text-3xl font-bold tabular-nums text-foreground">
+						{count > 0 ? formatCurrency(avg, { decimals: 0 }) : "—"}
+					</div>
+				</div>
 			</div>
-			<div>{value}</div>
-			{caption && (
-				<div className="mt-1 text-xs text-muted-foreground">{caption}</div>
-			)}
-		</div>
+
+			{/* Donut + per-type breakdown table */}
+			<div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+				<div className="grid place-items-center">
+					<div className="relative size-[220px]">
+						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+							<div>
+								<div className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
+									Mix by type
+								</div>
+								<div className="mt-1 text-xl font-bold tabular-nums text-foreground">
+									{formatCompact(total)}
+								</div>
+							</div>
+						</div>
+						<ResponsiveContainer width="100%" height="100%">
+							<PieChart>
+								<Pie
+									data={segments.length > 0 ? segments : placeholder}
+									dataKey="amount"
+									cx="50%"
+									cy="50%"
+									innerRadius={64}
+									outerRadius={94}
+									paddingAngle={1.5}
+									stroke="none"
+								>
+									{(segments.length > 0 ? segments : placeholder).map((s) => (
+										<Cell key={s.key} fill={s.color} />
+									))}
+								</Pie>
+								<Tooltip content={<DonutTooltip />} />
+							</PieChart>
+						</ResponsiveContainer>
+					</div>
+				</div>
+
+				{segments.length > 0 ? (
+					<div className="flex flex-col">
+						<div className="mb-2 grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+							<span>Type</span>
+							<span className="text-right">Total</span>
+							<span className="text-right">Gifts</span>
+							<span className="text-right">Avg</span>
+							<span className="text-right">Share</span>
+						</div>
+						<ul className="divide-y divide-border">
+							{segments.map((s) => (
+								<li
+									key={s.key}
+									className="grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] items-center gap-3 py-2.5 text-sm"
+								>
+									<div className="flex items-center gap-2">
+										<span
+											className="size-2.5 shrink-0 rounded-sm"
+											style={{ background: s.color }}
+										/>
+										<span className="font-medium text-foreground">
+											{s.label}
+										</span>
+									</div>
+									<span className="text-right tabular-nums font-medium text-foreground">
+										{formatCurrency(s.amount, { decimals: 0 })}
+									</span>
+									<span className="text-right tabular-nums text-muted-foreground">
+										{s.count}
+									</span>
+									<span className="text-right tabular-nums text-muted-foreground">
+										{formatCurrency(s.avg, { decimals: 0 })}
+									</span>
+									<span className="text-right tabular-nums font-semibold text-foreground">
+										{s.share}%
+									</span>
+								</li>
+							))}
+						</ul>
+					</div>
+				) : (
+					<div className="grid place-items-center text-sm text-muted-foreground">
+						No transactions in this range.
+					</div>
+				)}
+			</div>
+		</Card>
 	);
 };

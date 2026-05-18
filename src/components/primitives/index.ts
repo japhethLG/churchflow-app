@@ -20,6 +20,10 @@ export { Card } from "./Card";
 export { BarChart, type BarDatum, Donut, type DonutDatum } from "./Charts";
 export { Chip } from "./Chip";
 export {
+	ConsistencyDots,
+	type ConsistencyDotsProps,
+} from "./ConsistencyDots";
+export {
 	DataTable,
 	type DataTableColumn,
 	type DataTablePagination,
@@ -67,7 +71,12 @@ export {
 	type OptionGroupVariant,
 } from "./OptionGroup";
 export { OptionRow, type OptionRowProps } from "./OptionRow";
-export { PageHeader, SectionTitle } from "./PageHeader";
+export { PageActionsMenu } from "./PageActionsMenu";
+export {
+	PageHeader,
+	type PageHeaderBack,
+	SectionTitle,
+} from "./PageHeader";
 export { Pill, type PillProps } from "./Pill";
 export { Pressable, type PressableProps } from "./Pressable";
 export { type RowAction, RowActionsMenu } from "./RowActionsMenu";
@@ -76,6 +85,14 @@ export {
 	type SegmentedOption,
 } from "./SegmentedControl";
 export { Select, type SelectOption, type SelectProps } from "./Select";
+export { Sparkline, type SparklineProps } from "./Sparkline";
+export {
+	MixBar,
+	type ProgressSegment,
+	StackedProgressBar,
+	type StackedProgressBarProps,
+} from "./StackedProgressBar";
+export { StatBand, type StatBandItem, type StatBandProps } from "./StatBand";
 export { StatCard } from "./StatCard";
 export {
 	StateFilter,

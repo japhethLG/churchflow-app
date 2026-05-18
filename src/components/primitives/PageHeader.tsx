@@ -1,13 +1,23 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+export type PageHeaderBack = {
+	href: string;
+	label: string;
+};
+
 export const PageHeader = ({
-	overline,
+	back,
+	overline: _overline,
 	title,
 	subtitle,
 	action,
 	className,
 }: {
+	/** Back-to-parent link, rendered above the title in breadcrumb style. */
+	back?: PageHeaderBack;
+	/** Deprecated. Kept for backward compat with list / dashboard pages — not rendered. Detail pages should use `back`. */
 	overline?: string;
 	title: ReactNode;
 	subtitle?: ReactNode;
@@ -17,11 +27,15 @@ export const PageHeader = ({
 	return (
 		<div className={cn("flex items-end justify-between mb-8 gap-6", className)}>
 			<div className="flex-1 min-w-0">
-				{/* {overline && (
-					<div className="text-xs font-bold tracking-[0.08em] uppercase text-muted-foreground mb-2.5">
-						{overline}
-					</div>
-				)} */}
+				{back && (
+					<Link
+						href={back.href}
+						className="mb-2.5 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground"
+					>
+						<span aria-hidden>←</span>
+						{back.label}
+					</Link>
+				)}
 				<h1 className="text-4xl font-bold tracking-tight text-foreground leading-[1.1] m-0">
 					{title}
 				</h1>
