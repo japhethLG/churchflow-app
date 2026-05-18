@@ -20,7 +20,9 @@ import {
 	Avatar,
 	Badge,
 	Card,
-	Pressable,
+	type DataTableColumn,
+	DataTableShell,
+	DeletedLabel,
 	type ProgressSegment,
 	SectionTitle,
 	SegmentedControl,
@@ -210,6 +212,67 @@ export const MemberOverviewTab = ({
 	}, [mixMode, lifetime.byType, lifetime.byCampaign, campaignsById]);
 
 	const recent = transactions.slice(0, 8);
+
+	const recentGiftColumns: DataTableColumn<Transaction>[] = [
+		{
+			key: "date",
+			label: "Date",
+			width: "140px",
+			render: (t) => (
+				<span className="text-sm text-muted-foreground">
+					{relativeDate(t.date)}
+				</span>
+			),
+		},
+		{
+			key: "type",
+			label: "Type",
+			width: "130px",
+			render: (t) => <TypeBadge type={TX_BADGE_LABEL[t.type]} />,
+		},
+		{
+			key: "campaign",
+			label: "Campaign",
+			render: (t) => {
+				const cid = nstr(t.campaignId);
+				if (!cid) {
+					return (
+						<span className="text-sm italic text-muted-foreground">
+							No campaign
+						</span>
+					);
+				}
+				const c = campaignsById[cid];
+				if (c?.deletedAt) {
+					return (
+						<DeletedLabel
+							deletedAt={c.deletedAt}
+							className="block truncate text-sm"
+						>
+							{c.title}
+						</DeletedLabel>
+					);
+				}
+				return (
+					<Link
+						href={`/${tenantSlug}/admin/campaigns/${cid}`}
+						onClick={(e) => e.stopPropagation()}
+						className="block truncate text-sm text-primary hover:underline"
+					>
+						{c?.title ?? "Campaign"}
+					</Link>
+				);
+			},
+		},
+		{
+			key: "amount",
+			label: "Amount",
+			width: "120px",
+			align: "right",
+			render: (t) => <Amount value={t.amount} />,
+		},
+	];
+
 	const fullName = `${member.firstName} ${member.lastName}`.trim() || "Unnamed";
 	const email = nstr(member.email);
 	const phone = nstr(member.phone);
@@ -499,70 +562,29 @@ export const MemberOverviewTab = ({
 			</div>
 
 			{/* Recent gifts */}
-			<Card padding={24}>
-				<SectionTitle
-					title="Recent gifts"
-					action={
-						transactions.length > 8 ? (
-							<span className="text-xs text-muted-foreground">
-								Showing 8 of {transactions.length}. Open the Transactions tab to
-								see all.
-							</span>
-						) : null
+			<div>
+				<div className="mb-3 flex items-baseline justify-between px-1">
+					<h2 className="text-base font-semibold">Recent gifts</h2>
+					{transactions.length > 8 && (
+						<span className="text-xs text-muted-foreground">
+							Showing 8 of {transactions.length}. Open the Transactions tab to
+							see all.
+						</span>
+					)}
+				</div>
+				<DataTableShell<Transaction>
+					columns={recentGiftColumns}
+					rows={recent}
+					rowKey={(t) => t.id}
+					loading={txQ.isLoading}
+					loadingRows={5}
+					onRowClick={(t) =>
+						router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
 					}
+					rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
+					emptyTitle="No gifts recorded yet"
 				/>
-				{txQ.isLoading ? (
-					<div className="py-6 text-center text-sm text-muted-foreground">
-						Loading…
-					</div>
-				) : recent.length === 0 ? (
-					<div className="py-6 text-center text-sm text-muted-foreground">
-						No gifts recorded yet.
-					</div>
-				) : (
-					<ul className="divide-y divide-border">
-						{recent.map((t) => {
-							const campaignId = nstr(t.campaignId);
-							const campaign = campaignId
-								? campaignsById[campaignId]
-								: undefined;
-							return (
-								<li key={t.id}>
-									<Pressable
-										onClick={() =>
-											router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
-										}
-										className="grid w-full grid-cols-[1fr_auto] items-center gap-3 rounded-md px-2 py-2.5 text-left transition-colors hover:bg-muted/60"
-									>
-										<div className="min-w-0">
-											<div className="flex items-baseline gap-2">
-												<TypeBadge type={TX_BADGE_LABEL[t.type]} />
-												<span className="text-xs text-muted-foreground">
-													{relativeDate(t.date)}
-												</span>
-											</div>
-											<div className="mt-0.5 text-xs text-muted-foreground">
-												{campaign ? (
-													<Link
-														href={`/${tenantSlug}/admin/campaigns/${campaign.id}`}
-														onClick={(e) => e.stopPropagation()}
-														className="truncate hover:underline"
-													>
-														{campaign.title}
-													</Link>
-												) : (
-													<span className="italic">No campaign</span>
-												)}
-											</div>
-										</div>
-										<Amount value={t.amount} />
-									</Pressable>
-								</li>
-							);
-						})}
-					</ul>
-				)}
-			</Card>
+			</div>
 
 			{/* Contact card — reference data, kept low */}
 			{(email || phone || address) && (

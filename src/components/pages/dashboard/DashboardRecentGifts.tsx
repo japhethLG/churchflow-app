@@ -5,21 +5,20 @@ import { useRouter } from "next/navigation";
 import {
 	Amount,
 	Avatar,
-	Card,
-	Pressable,
-	SectionTitle,
+	type TransactionType as BadgeType,
+	type DataTableColumn,
+	DataTableShell,
+	DeletedLabel,
 	TypeBadge,
 } from "@/components/primitives";
-import type { components } from "@/lib/api";
-import { nstr } from "@/lib/api/coerce";
+import { type components, nstr } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
-import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 type Member = components["schemas"]["MemberResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-const TYPE_UI: Record<Transaction["type"], string> = {
+const TYPE_BADGE_LABEL: Record<Transaction["type"], BadgeType> = {
 	TITHE: "Tithe",
 	OFFERING: "Offering",
 	MISSION_GIVING: "Mission",
@@ -61,130 +60,128 @@ export const DashboardRecentGifts = ({
 	const router = useRouter();
 	const recent = transactions.slice(0, 8);
 
-	if (loading) {
-		return (
-			<Card>
-				<SectionTitle title="Recent gifts" />
-				{[0, 1, 2, 3, 4].map((i) => (
-					<div
-						key={i}
-						className="grid grid-cols-[36px_1fr_auto_auto] items-center gap-3 px-2 py-2.5"
+	const columns: DataTableColumn<Transaction>[] = [
+		{
+			key: "date",
+			label: "Date",
+			width: "120px",
+			render: (t) => (
+				<span className="text-sm text-muted-foreground">
+					{relativeDate(t.date)}
+				</span>
+			),
+		},
+		{
+			key: "member",
+			label: "Member",
+			render: (t) => {
+				const memberId = nstr(t.memberId);
+				if (!memberId) {
+					return (
+						<span className="text-sm italic text-muted-foreground">
+							Anonymous
+						</span>
+					);
+				}
+				const m = membersById[memberId];
+				const name = m
+					? `${m.firstName ?? ""} ${m.lastName ?? ""}`.trim() || "Unnamed"
+					: "Unknown";
+				const isDeleted = Boolean(m?.deletedAt);
+				return (
+					<span className="inline-flex min-w-0 items-center gap-2">
+						<Avatar name={name} size={26} />
+						{isDeleted ? (
+							<DeletedLabel
+								deletedAt={m?.deletedAt}
+								className="truncate text-sm"
+							>
+								{name}
+							</DeletedLabel>
+						) : (
+							<Link
+								href={`/${tenantSlug}/admin/members/${memberId}`}
+								onClick={(e) => e.stopPropagation()}
+								className="truncate text-sm hover:underline"
+							>
+								{name}
+							</Link>
+						)}
+					</span>
+				);
+			},
+		},
+		{
+			key: "type",
+			label: "Type",
+			width: "130px",
+			render: (t) => <TypeBadge type={TYPE_BADGE_LABEL[t.type]} />,
+		},
+		{
+			key: "campaign",
+			label: "Campaign",
+			width: "200px",
+			render: (t) => {
+				const cid = nstr(t.campaignId);
+				if (!cid) {
+					return (
+						<span className="text-sm italic text-amber-600">No campaign</span>
+					);
+				}
+				const c = campaignsById[cid];
+				if (c?.deletedAt) {
+					return (
+						<DeletedLabel
+							deletedAt={c.deletedAt}
+							className="block truncate text-sm"
+						>
+							{c.title}
+						</DeletedLabel>
+					);
+				}
+				return (
+					<Link
+						href={`/${tenantSlug}/admin/campaigns/${cid}`}
+						onClick={(e) => e.stopPropagation()}
+						className="block truncate text-sm text-primary hover:underline"
 					>
-						<div className="size-8 rounded-full bg-secondary" />
-						<div>
-							<div className="mb-1 h-3.5 w-[120px] rounded bg-secondary" />
-							<div className="h-2.5 w-20 rounded bg-secondary" />
-						</div>
-						<div className="h-5 w-[50px] rounded-full bg-secondary" />
-						<div className="h-3.5 w-[60px] rounded bg-secondary" />
-					</div>
-				))}
-			</Card>
-		);
-	}
+						{c?.title ?? "Campaign"}
+					</Link>
+				);
+			},
+		},
+		{
+			key: "amount",
+			label: "Amount",
+			width: "120px",
+			align: "right",
+			render: (t) => <Amount value={t.amount} />,
+		},
+	];
 
 	return (
-		<Card>
-			<SectionTitle
-				title="Recent gifts"
-				action={
-					<Link
-						href={`/${tenantSlug}/admin/transactions`}
-						className="text-sm font-medium text-primary hover:underline"
-					>
-						View all →
-					</Link>
+		<div>
+			<div className="mb-3 flex items-baseline justify-between px-1">
+				<h2 className="text-base font-semibold">Recent gifts</h2>
+				<Link
+					href={`/${tenantSlug}/admin/transactions`}
+					className="text-sm font-medium text-primary hover:underline"
+				>
+					View all →
+				</Link>
+			</div>
+			<DataTableShell<Transaction>
+				columns={columns}
+				rows={recent}
+				rowKey={(t) => t.id}
+				loading={loading}
+				loadingRows={5}
+				onRowClick={(t) =>
+					router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
 				}
+				rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
+				emptyTitle="No transactions recorded yet"
 			/>
-			{recent.length === 0 ? (
-				<div className="py-8 text-center text-sm text-muted-foreground">
-					No transactions recorded yet.
-				</div>
-			) : (
-				<ul className="divide-y divide-border">
-					{recent.map((t) => {
-						const memberId = nstr(t.memberId);
-						const member = memberId ? membersById[memberId] : null;
-						const campaignId = nstr(t.campaignId);
-						const campaign = campaignId ? campaignsById[campaignId] : undefined;
-						const isAnon = !member;
-						const name = member
-							? `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() ||
-								"Unnamed"
-							: "Anonymous";
-						const typeLabel = TYPE_UI[t.type] as
-							| "Tithe"
-							| "Offering"
-							| "Mission"
-							| "First Fruit"
-							| "Commitment"
-							| "Donation"
-							| "Other";
-
-						return (
-							<li key={t.id}>
-								<Pressable
-									onClick={() =>
-										router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
-									}
-									className="grid w-full grid-cols-[36px_1fr_auto] items-center gap-3 rounded-md px-2 py-2.5 text-left transition-colors hover:bg-muted/60"
-								>
-									{isAnon ? (
-										<div className="grid size-8 place-items-center rounded-full bg-secondary text-xs text-muted-foreground">
-											?
-										</div>
-									) : (
-										<Avatar name={name} size={32} />
-									)}
-									<div className="min-w-0">
-										<div className="flex items-baseline gap-2">
-											{!isAnon && memberId ? (
-												<Link
-													href={`/${tenantSlug}/admin/members/${memberId}`}
-													onClick={(e) => e.stopPropagation()}
-													className="truncate text-sm font-medium text-foreground hover:underline"
-												>
-													{name}
-												</Link>
-											) : (
-												<span
-													className={cn(
-														"truncate text-sm font-medium",
-														isAnon
-															? "italic text-muted-foreground"
-															: "text-foreground",
-													)}
-												>
-													{name}
-												</span>
-											)}
-											<TypeBadge type={typeLabel} />
-										</div>
-										<div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-											<span>{relativeDate(t.date)}</span>
-											<span aria-hidden>·</span>
-											{campaign ? (
-												<Link
-													href={`/${tenantSlug}/admin/campaigns/${campaign.id}`}
-													onClick={(e) => e.stopPropagation()}
-													className="truncate hover:underline"
-												>
-													{campaign.title}
-												</Link>
-											) : (
-												<span className="italic text-amber-600">
-													No campaign
-												</span>
-											)}
-										</div>
-									</div>
-									<Amount value={t.amount} />
-								</Pressable>
-							</li>
-						);
-					})}
-				</ul>
-			)}
-		</Card>
+		</div>
 	);
 };
