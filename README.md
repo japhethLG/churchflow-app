@@ -4,7 +4,7 @@ Next.js 16 frontend for the multi-tenant church-management app. Admins
 record tithes, offerings, and fundraising campaigns; members pledge and
 pay against them. Super-admins run platform ops across every tenant.
 
-Backend lives in [../church-app-backend](../church-app-backend).
+Backend lives in [../church-app-backend](../church-app-backend). 
 
 ## Stack
 
