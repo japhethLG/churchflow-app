@@ -14,7 +14,7 @@ export const AuthMarketingShell = ({
 	return (
 		<>
 			<div className="px-10 py-7">
-				<Wordmark />
+				<Wordmark size="lg" />
 			</div>
 			<div className="flex flex-1 flex-col items-center justify-center p-10">
 				<div

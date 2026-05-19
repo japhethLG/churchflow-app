@@ -35,7 +35,7 @@ const Shell = ({ children }: { children: React.ReactNode }) => (
 	<div className="flex min-h-dvh justify-center bg-muted px-6 py-12">
 		<div className="w-full max-w-[560px]">
 			<div className="mb-8">
-				<Wordmark />
+				<Wordmark size="lg" />
 			</div>
 			{children}
 		</div>

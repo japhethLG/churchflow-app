@@ -8,7 +8,7 @@ export default () => {
 	return (
 		<>
 			<div className="flex items-center justify-between px-6 py-7 animate-in fade-in duration-700 lg:px-10">
-				<Wordmark size="md" />
+				<Wordmark size="lg" />
 			</div>
 
 			<div className="flex flex-1 flex-col items-center justify-center gap-12 px-6 lg:grid lg:grid-cols-[1fr_1.1fr] lg:gap-20 lg:px-10">
