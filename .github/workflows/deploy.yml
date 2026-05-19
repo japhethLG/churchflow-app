@@ -18,6 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Generate API types from deployed BE
+        run: |
+          npx -y openapi-typescript@7 https://api.churchflow.crabdance.com/api-docs-json -o src/lib/api/schema.d.ts
+          test -s src/lib/api/schema.d.ts
+
       - uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
