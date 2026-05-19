@@ -14,7 +14,7 @@ env:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
 
@@ -22,10 +22,6 @@ jobs:
         run: |
           npx -y openapi-typescript@7 https://api.churchflow.crabdance.com/api-docs-json -o src/lib/api/schema.d.ts
           test -s src/lib/api/schema.d.ts
-
-      - uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
 
       - uses: docker/setup-buildx-action@v3
 
