@@ -107,7 +107,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 							<span className="text-sm font-medium text-success">✓ Saved</span>
 						)}
 						<Button
-							variant="primary"
+							role="primary"
 							onClick={handleSubmit(onSubmit)}
 							disabled={!isDirty || updateTenant.isPending}
 						>

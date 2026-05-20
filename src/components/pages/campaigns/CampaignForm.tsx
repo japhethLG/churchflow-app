@@ -131,7 +131,7 @@ export const CampaignForm = ({
 					<SectionTitle title="Line items" />
 					{itemsEditable && (
 						<Button
-							variant="secondary"
+							role="secondary"
 							size="sm"
 							icon="plus"
 							onClick={() => append(newItemDraft())}
@@ -203,10 +203,15 @@ export const CampaignForm = ({
 			)}
 
 			<div className="flex justify-end gap-2">
-				<Button variant="tertiary" onClick={onCancel} disabled={isSubmitting}>
+				<Button
+					role="secondary"
+					recipe="outline"
+					onClick={onCancel}
+					disabled={isSubmitting}
+				>
 					Cancel
 				</Button>
-				<FormButton variant="primary" loadingLabel="Saving…">
+				<FormButton role="primary" loadingLabel="Saving…">
 					{submitLabel}
 				</FormButton>
 			</div>

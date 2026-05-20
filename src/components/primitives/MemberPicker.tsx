@@ -97,7 +97,8 @@ export const MemberPicker = ({
 						</div>
 					</div>
 					<Button
-						variant="ghost"
+						role="secondary"
+						recipe="ghost"
 						size="sm"
 						icon="x"
 						aria-label="Remove"

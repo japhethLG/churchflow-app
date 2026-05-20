@@ -105,7 +105,7 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 				</p>
 				<div className="mt-7">
 					<Button
-						variant="secondary"
+						role="secondary"
 						size="lg"
 						fullWidth
 						onClick={() => router.push("/login")}
@@ -134,7 +134,7 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 				{slug && (
 					<div className="mt-7">
 						<Button
-							variant="primary"
+							role="primary"
 							size="lg"
 							fullWidth
 							onClick={() =>
@@ -151,7 +151,8 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 				)}
 				<div className="mt-4 text-center">
 					<Button
-						variant="ghost"
+						role="secondary"
+						recipe="ghost"
 						size="sm"
 						onClick={() => router.push("/login")}
 					>
@@ -169,7 +170,12 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 					No problem — simply close this tab.
 				</p>
 				<div className="mt-5 text-center">
-					<Button variant="ghost" size="sm" onClick={() => setDismissed(false)}>
+					<Button
+						role="secondary"
+						recipe="ghost"
+						size="sm"
+						onClick={() => setDismissed(false)}
+					>
 						← Go back
 					</Button>
 				</div>
@@ -246,7 +252,8 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 					</span>
 					<Button
 						type="button"
-						variant="tertiary"
+						role="secondary"
+						recipe="outline"
 						size="sm"
 						className="h-auto shrink-0 border-none bg-transparent p-0 text-xs font-normal text-primary shadow-none hover:bg-transparent hover:text-primary hover:underline"
 						onClick={handleSwitchAccount}
@@ -262,7 +269,7 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 
 			<div className="mt-5">
 				<Button
-					variant="primary"
+					role="primary"
 					size="lg"
 					fullWidth
 					icon={firebaseUser ? undefined : "google"}
@@ -275,7 +282,8 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 
 			<Button
 				type="button"
-				variant="ghost"
+				role="secondary"
+				recipe="ghost"
 				size="sm"
 				className="mt-4 h-auto w-full text-sm font-normal text-muted-foreground hover:text-foreground"
 				onClick={() => setDismissed(true)}

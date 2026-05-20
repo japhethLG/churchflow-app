@@ -50,7 +50,7 @@ export const ConfirmToggleSuperAdminModal = ({
 				label: promoting ? "Promote to super admin" : "Demote from super admin",
 				onClick: handleToggle,
 				loading: isPending,
-				destructive: !promoting,
+				role: promoting ? "primary" : "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

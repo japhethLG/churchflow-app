@@ -34,7 +34,7 @@ export const LoginButton = () => {
 	return (
 		<>
 			<Button
-				variant="primary"
+				role="primary"
 				size="lg"
 				fullWidth
 				icon="google"

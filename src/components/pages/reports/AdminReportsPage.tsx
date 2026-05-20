@@ -193,7 +193,7 @@ export const AdminReportsPage = () => {
 							clearable
 							presets={RANGE_PRESETS}
 						/>
-						<Button variant="secondary" icon="download" size="sm" disabled>
+						<Button role="secondary" icon="download" size="sm" disabled>
 							Export
 						</Button>
 					</div>

@@ -118,7 +118,7 @@ export const MemberCampaignDetailPage = () => {
 					subtitle="This campaign may have been removed."
 					action={
 						<Button
-							variant="secondary"
+							role="secondary"
 							onClick={() => router.push(`/${tenantSlug}/member/campaigns`)}
 						>
 							Back to campaigns
@@ -185,13 +185,13 @@ export const MemberCampaignDetailPage = () => {
 				action={
 					<>
 						<Button
-							variant="secondary"
+							role="secondary"
 							onClick={() => router.push(`/${tenantSlug}/member/campaigns`)}
 						>
 							Back
 						</Button>
 						{canPledge && (
-							<Button onClick={openPledgeModal}>
+							<Button role="primary" onClick={openPledgeModal}>
 								{myActivePledges.length > 0
 									? "Add another pledge"
 									: "Make a pledge"}

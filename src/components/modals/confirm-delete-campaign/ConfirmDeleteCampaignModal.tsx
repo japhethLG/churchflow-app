@@ -51,7 +51,7 @@ export const ConfirmDeleteCampaignModal = ({
 				label: "Delete campaign",
 				onClick: handleDelete,
 				loading: isPending,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

@@ -51,7 +51,7 @@ export const ConfirmDeleteTransactionModal = ({
 				label: "Delete gift",
 				onClick: handleDelete,
 				loading: isPending,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

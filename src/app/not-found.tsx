@@ -11,7 +11,7 @@ export default () => (
 			</p>
 		</div>
 		<Link href="/">
-			<Button>Back to dashboard</Button>
+			<Button role="primary">Back to dashboard</Button>
 		</Link>
 	</div>
 );

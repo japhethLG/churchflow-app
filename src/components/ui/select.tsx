@@ -60,7 +60,7 @@ function SelectContent({
 	children,
 	side = "bottom",
 	sideOffset = 4,
-	align = "center",
+	align = "start",
 	alignOffset = 0,
 	alignItemWithTrigger = true,
 	...props
@@ -77,6 +77,10 @@ function SelectContent({
 				align={align}
 				alignOffset={alignOffset}
 				alignItemWithTrigger={alignItemWithTrigger}
+				collisionAvoidance={{
+					side: "flip",
+					align: "shift",
+				}}
 				className="isolate z-50"
 			>
 				<SelectPrimitive.Popup

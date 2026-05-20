@@ -99,14 +99,14 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 				action={
 					<div className="flex gap-2">
 						<Button
-							variant="secondary"
+							role="secondary"
 							onClick={() => router.push(`/super-admin/tenants/${id}/admins`)}
 						>
 							Manage admins
 						</Button>
 						{!isDeleted && (
 							<Button
-								variant="secondary"
+								role="secondary"
 								onClick={() =>
 									openModal("edit-tenant", {
 										tenantId: tenant.id,
@@ -119,8 +119,8 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 						)}
 						{!isDeleted ? (
 							<Button
-								variant="tertiary"
-								destructive
+								role="danger"
+								recipe="outline"
 								onClick={() =>
 									openModal("confirm-delete-tenant", {
 										tenantId: tenant.id,
@@ -133,7 +133,7 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 							</Button>
 						) : (
 							<Button
-								variant="secondary"
+								role="secondary"
 								onClick={() =>
 									openModal("confirm-restore-tenant", {
 										tenantId: tenant.id,
@@ -203,7 +203,7 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 
 						<div className="mt-4 flex flex-wrap gap-2">
 							<Button
-								variant="secondary"
+								role="secondary"
 								size="sm"
 								onClick={() =>
 									openModal("rename-tenant-slug", {

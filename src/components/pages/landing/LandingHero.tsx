@@ -52,7 +52,7 @@ export const LandingHero = ({
 
 				<div className="mt-9 flex flex-col items-center gap-3 sm:flex-row animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 fill-mode-both">
 					<Button
-						variant="primary"
+						role="primary"
 						size="lg"
 						iconRight="arrowRight"
 						onClick={() => router.push(primaryHref)}
@@ -61,7 +61,7 @@ export const LandingHero = ({
 					</Button>
 					<Button
 						recipe="outline"
-						variant="secondary"
+						role="secondary"
 						size="lg"
 						onClick={() => {
 							const el = document.querySelector("#features");

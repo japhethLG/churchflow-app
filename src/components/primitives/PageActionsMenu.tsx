@@ -32,7 +32,7 @@ export const PageActionsMenu = ({
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				render={
-					<Button variant="secondary" icon="moreHorizontal" aria-label={label}>
+					<Button role="secondary" icon="moreHorizontal" aria-label={label}>
 						More
 					</Button>
 				}

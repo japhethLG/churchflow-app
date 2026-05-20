@@ -51,7 +51,7 @@ export const ConfirmDeleteMemberModal = ({
 				label: "Remove member",
 				onClick: handleDelete,
 				loading: isPending,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

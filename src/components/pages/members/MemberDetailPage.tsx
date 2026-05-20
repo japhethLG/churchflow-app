@@ -74,7 +74,7 @@ export const MemberDetailPage = () => {
 						Member not found
 					</p>
 					<Button
-						variant="secondary"
+						role="secondary"
 						onClick={() => router.push(`/${tenantSlug}/admin/members`)}
 					>
 						Back to members
@@ -104,11 +104,11 @@ export const MemberDetailPage = () => {
 
 	const action = !isDeleted ? (
 		<>
-			<Button variant="primary" icon="plus" onClick={openRecordGift}>
+			<Button role="primary" icon="plus" onClick={openRecordGift}>
 				Record gift
 			</Button>
 			<Button
-				variant="secondary"
+				role="secondary"
 				icon="book"
 				onClick={openRecordPledge}
 				disabled={!activeCampaign}

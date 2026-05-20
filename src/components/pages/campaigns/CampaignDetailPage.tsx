@@ -85,7 +85,7 @@ export const CampaignDetailPage = () => {
 						Campaign not found
 					</p>
 					<Button
-						variant="secondary"
+						role="secondary"
 						onClick={() => router.push(`/${tenantSlug}/admin/campaigns`)}
 					>
 						Back to campaigns
@@ -143,7 +143,7 @@ export const CampaignDetailPage = () => {
 	const action = !isDeleted ? (
 		<>
 			<Button
-				variant="primary"
+				role="primary"
 				icon="edit"
 				onClick={() => router.push(`/${tenantSlug}/admin/campaigns/${id}/edit`)}
 			>

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useMemo } from "react";
-import { Button, PageHeader } from "@/components/primitives";
+import { PageHeader } from "@/components/primitives";
 import { nstr } from "@/lib/api";
 import { useCampaign, useUpdateCampaign } from "@/lib/api/campaigns";
 import dayjs from "@/lib/dayjs";
@@ -81,14 +81,10 @@ export const CampaignEditPage = () => {
 				overline="Fundraising / Campaigns"
 				title="Edit campaign"
 				subtitle="Items are managed from the campaign detail page after saving."
-				action={
-					<Button
-						variant="tertiary"
-						onClick={() => router.push(`/${tenantSlug}/admin/campaigns/${id}`)}
-					>
-						Back to campaign
-					</Button>
-				}
+				back={{
+					href: `/${tenantSlug}/admin/campaigns/${id}`,
+					label: "Back to campaign",
+				}}
 			/>
 			<div className="overflow-auto flex-1 px-8 pb-8">
 				<CampaignForm

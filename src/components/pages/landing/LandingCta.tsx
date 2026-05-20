@@ -33,7 +33,7 @@ export const LandingCta = ({
 					</p>
 					<div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
 						<Button
-							variant="secondary"
+							role="secondary"
 							size="lg"
 							iconRight="arrowRight"
 							onClick={() => router.push(href)}

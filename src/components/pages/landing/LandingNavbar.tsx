@@ -213,7 +213,7 @@ export const LandingNavbar = ({
 					) : (
 						<>
 							<Button
-								variant="secondary"
+								role="secondary"
 								size="sm"
 								className="hidden sm:inline-flex"
 								onClick={() => router.push("/login")}
@@ -221,7 +221,7 @@ export const LandingNavbar = ({
 								Sign in
 							</Button>
 							<Button
-								variant="primary"
+								role="primary"
 								size="sm"
 								iconRight="arrowRight"
 								onClick={() => router.push("/login")}
@@ -233,7 +233,7 @@ export const LandingNavbar = ({
 
 					{showNavItems && (
 						<Button
-							variant="secondary"
+							role="secondary"
 							size="sm"
 							className="px-2 md:hidden"
 							aria-label="Toggle navigation"
@@ -282,7 +282,8 @@ export const LandingNavbar = ({
 						{!user && (
 							<div className="mt-2 flex items-center gap-2 border-t border-border/50 pt-3 sm:hidden">
 								<Button
-									variant="tertiary"
+									role="secondary"
+									recipe="outline"
 									size="md"
 									fullWidth
 									onClick={() => {

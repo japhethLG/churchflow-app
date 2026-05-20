@@ -2,22 +2,26 @@
 
 import type { ReactNode } from "react";
 import { useFormContext } from "react-hook-form";
-import { Button } from "@/components/primitives/Button";
+import {
+	Button,
+	type ButtonRecipe,
+	type ButtonRole,
+} from "@/components/primitives/Button";
 
 type FormSubmitProps = {
 	children: ReactNode;
 	isLoading?: boolean;
 	disabled?: boolean;
-	variant?: "primary" | "secondary" | "tertiary";
-	destructive?: boolean;
+	role?: ButtonRole;
+	recipe?: ButtonRecipe;
 };
 
 export const FormSubmit = ({
 	children,
 	isLoading,
 	disabled,
-	variant = "primary",
-	destructive,
+	role = "primary",
+	recipe,
 }: FormSubmitProps) => {
 	const {
 		formState: { isSubmitting },
@@ -26,8 +30,8 @@ export const FormSubmit = ({
 	return (
 		<Button
 			type="submit"
-			variant={variant}
-			destructive={destructive}
+			role={role}
+			recipe={recipe}
 			disabled={disabled || busy}
 		>
 			{busy ? "Saving…" : children}

@@ -47,7 +47,7 @@ export const ConfirmDeleteTenantModal = ({
 				label: "Delete church",
 				onClick: handleDelete,
 				loading: isPending,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

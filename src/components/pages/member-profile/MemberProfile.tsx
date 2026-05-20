@@ -127,6 +127,7 @@ export const MemberProfile = ({
 								)}
 							</div>
 							<Button
+								role="primary"
 								onClick={handleSave}
 								loading={updateM.isPending}
 								disabled={updateM.isPending}

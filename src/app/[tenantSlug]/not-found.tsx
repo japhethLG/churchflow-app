@@ -13,7 +13,7 @@ export default () => (
 			</p>
 		</div>
 		<Link href="/">
-			<Button>Back to your churches</Button>
+			<Button role="primary">Back to your churches</Button>
 		</Link>
 	</div>
 );

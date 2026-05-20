@@ -157,7 +157,7 @@ export const AdminDashboardPage = () => {
 				subtitle="What needs your attention this week."
 				action={
 					<Button
-						variant="primary"
+						role="primary"
 						icon="plus"
 						onClick={() => openModal("record-gift", { tenantSlug })}
 					>

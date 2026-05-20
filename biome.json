@@ -38,6 +38,12 @@
 			},
 			"correctness": {
 				"noUnusedVariables": "warn"
+			},
+			"a11y": {
+				"useValidAriaRole": {
+					"level": "error",
+					"options": { "ignoreNonDom": true }
+				}
 			}
 		}
 	},

@@ -276,7 +276,7 @@ export const CampaignItemsTab = ({
 		<div className="space-y-4">
 			<div className="flex justify-end">
 				<Button
-					variant="primary"
+					role="primary"
 					icon="plus"
 					onClick={openAdd}
 					disabled={parentDeleted}
@@ -295,7 +295,7 @@ export const CampaignItemsTab = ({
 				emptySubtitle="The campaign goal is the sum of its items' targets — add at least one to start tracking pledges."
 				emptyAction={
 					!parentDeleted ? (
-						<Button icon="plus" onClick={openAdd}>
+						<Button role="primary" icon="plus" onClick={openAdd}>
 							Add item
 						</Button>
 					) : undefined

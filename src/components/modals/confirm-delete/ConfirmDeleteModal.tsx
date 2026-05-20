@@ -49,7 +49,7 @@ export const ConfirmDeleteModal = ({
 				label: confirmLabel,
 				onClick: handleConfirm,
 				loading: busy,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{ label: "Cancel", onClick: onClose, disabled: busy }}
 		>

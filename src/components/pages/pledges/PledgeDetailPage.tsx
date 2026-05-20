@@ -295,7 +295,7 @@ export const PledgeDetailPage = () => {
 					pledge && !pledgeDeleted ? (
 						<>
 							<Button
-								variant="primary"
+								role="primary"
 								icon="plus"
 								onClick={openRecordPayment}
 								disabled={!canRecordPayment}

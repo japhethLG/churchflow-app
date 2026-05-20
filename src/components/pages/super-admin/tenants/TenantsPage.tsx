@@ -213,7 +213,7 @@ export const TenantsPage = () => {
 				action={
 					<Button
 						icon="plus"
-						variant="primary"
+						role="primary"
 						onClick={() => router.push("/super-admin/tenants/new")}
 					>
 						Create church

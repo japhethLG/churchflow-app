@@ -228,7 +228,7 @@ export const WelcomePage = () => {
 
 			<div className="mt-6 flex gap-3">
 				<Button
-					variant="primary"
+					role="primary"
 					size="lg"
 					fullWidth
 					onClick={handleContinue}

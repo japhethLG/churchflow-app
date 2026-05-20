@@ -327,7 +327,7 @@ export const PledgesListPage = () => {
 				subtitle="Pledged · paid · remaining · lifecycle. The AR view for incoming giving."
 				action={
 					<Button
-						variant="primary"
+						role="primary"
 						icon="plus"
 						disabled={(campaignsQ.data?.items.length ?? 0) === 0}
 						onClick={() => {

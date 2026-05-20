@@ -3,6 +3,7 @@ import type {
 	FocusEventHandler,
 	HTMLInputTypeAttribute,
 	KeyboardEventHandler,
+	ReactNode,
 } from "react";
 import { Input as ShadedInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,7 +56,7 @@ export const Input = ({
 	disabled,
 	readOnly,
 }: {
-	label?: string;
+	label?: ReactNode;
 	icon?: IconName;
 	value?: string;
 	placeholder?: string;

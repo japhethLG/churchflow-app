@@ -81,9 +81,9 @@ export const invitationColumns = ({
 		render: (row) =>
 			row.status === "PENDING" ? (
 				<Button
-					variant="tertiary"
+					role="danger"
+					recipe="outline"
 					size="sm"
-					destructive
 					onClick={() => onCancel(row)}
 				>
 					Cancel

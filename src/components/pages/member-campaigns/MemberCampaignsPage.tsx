@@ -279,6 +279,7 @@ const CampaignCard = ({
 
 			{!past && memberId && (
 				<Button
+					role="primary"
 					className="w-full"
 					onClick={() =>
 						onPledge("member-pledge", {

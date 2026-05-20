@@ -46,7 +46,7 @@ export const ConfirmDeletePledgeModal = ({
 				label: "Delete pledge",
 				onClick: handleDelete,
 				loading: isPending,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

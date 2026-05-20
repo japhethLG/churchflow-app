@@ -196,7 +196,7 @@ const Pagination = ({
 
 			<div className="flex items-center gap-2">
 				<Button
-					variant="secondary"
+					role="secondary"
 					size="sm"
 					disabled={page <= 1}
 					onClick={() => goto(page - 1)}
@@ -217,7 +217,7 @@ const Pagination = ({
 									</span>
 								)}
 								<Button
-									variant={p === page ? "primary" : "secondary"}
+									role={p === page ? "primary" : "secondary"}
 									size="sm"
 									onClick={() => goto(p)}
 									className={cn(
@@ -233,7 +233,7 @@ const Pagination = ({
 				</div>
 
 				<Button
-					variant="secondary"
+					role="secondary"
 					size="sm"
 					disabled={page >= pages}
 					onClick={() => goto(page + 1)}

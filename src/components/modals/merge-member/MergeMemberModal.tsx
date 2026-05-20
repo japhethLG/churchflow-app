@@ -93,7 +93,7 @@ export const MergeMemberModal = ({
 				onClick: handleMerge,
 				loading: isPending,
 				disabled: !dropId || !preview || previewing,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

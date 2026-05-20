@@ -23,39 +23,17 @@ export type ButtonRecipe =
 
 type ButtonProps = {
 	children?: ReactNode;
+	/** Color role — required. Determines the palette used. */
+	role: ButtonRole;
 	/**
-	 * Color role. Determines the palette used.
-	 * Defaults to "primary".
-	 */
-	role?: ButtonRole;
-	/**
-	 * Visual recipe (style).
-	 *   "primary"   → gradient
-	 *   "secondary" → soft
-	 *   "tertiary"  → outline (secondary palette)
-	 *   "ghost"     → ghost  (secondary palette)
+	 * Visual recipe. Defaults per role (see DEFAULT_RECIPE_BY_ROLE).
+	 * "gradient" on a role without a gradient (secondary) falls back to "filled".
 	 */
 	recipe?: ButtonRecipe;
-	/**
-	 * Legacy shorthand for backward compat.
-	 *   "primary"   → role=primary   recipe=gradient
-	 *   "secondary" → role=secondary recipe=soft
-	 *   "tertiary"  → role=secondary recipe=outline
-	 *   "ghost"     → role=secondary recipe=ghost
-	 */
-	variant?:
-		| "primary"
-		| "secondary"
-		| "tertiary"
-		| "ghost"
-		| "danger"
-		| "danger-outline";
 	size?: "sm" | "md" | "lg";
 	icon?: IconName;
 	iconRight?: IconName;
 	fullWidth?: boolean;
-	/** Shorthand for role="danger" recipe="filled". */
-	destructive?: boolean;
 	loading?: boolean;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size" | "role">;
 
@@ -225,7 +203,22 @@ const ROLE_CLASSES: Record<ButtonRole, string> = {
 	].join(" "),
 };
 
-// Roles that support gradient (secondary is solid only).
+// Per-role default recipe — the role's canonical emphasis level.
+// Primary/tertiary lean on their signature gradient; secondary has no
+// gradient so its workhorse is soft; the rest default to filled, the
+// most prominent solid recipe.
+const DEFAULT_RECIPE_BY_ROLE: Record<ButtonRole, ButtonRecipe> = {
+	primary: "gradient",
+	secondary: "soft",
+	tertiary: "gradient",
+	success: "filled",
+	warning: "filled",
+	danger: "filled",
+	info: "filled",
+};
+
+// Roles without a gradient pair (secondary). "gradient" on these falls
+// back to "filled" rather than rendering broken.
 const GRADIENT_CAPABLE = new Set<ButtonRole>([
 	"primary",
 	"tertiary",
@@ -234,19 +227,6 @@ const GRADIENT_CAPABLE = new Set<ButtonRole>([
 	"danger",
 	"info",
 ]);
-
-// Legacy variant → [role, recipe] for backward compat.
-const VARIANT_MAP: Record<
-	NonNullable<ButtonProps["variant"]>,
-	[ButtonRole, ButtonRecipe]
-> = {
-	primary: ["primary", "gradient"],
-	secondary: ["secondary", "soft"],
-	tertiary: ["secondary", "outline"],
-	ghost: ["secondary", "ghost"],
-	danger: ["danger", "filled"],
-	"danger-outline": ["danger", "outline"],
-};
 
 const RECIPE_VARIANT: Record<
 	ButtonRecipe,
@@ -269,35 +249,19 @@ const SIZE_MAP = { sm: "sm", md: "default", lg: "lg" } as const;
 
 export const Button = ({
 	children,
-	variant,
-	role: roleProp,
-	recipe: recipeProp,
+	role,
+	recipe,
 	size = "md",
 	icon,
 	iconRight,
 	fullWidth,
 	disabled,
-	destructive,
 	loading,
 	className,
 	...rest
 }: ButtonProps) => {
-	let effectiveRole: ButtonRole;
-	let effectiveRecipe: ButtonRecipe;
-
-	if (destructive) {
-		effectiveRole = roleProp ?? "danger";
-		effectiveRecipe = recipeProp ?? "filled";
-	} else if (roleProp || recipeProp) {
-		effectiveRole = roleProp ?? "primary";
-		effectiveRecipe = recipeProp ?? "gradient";
-	} else {
-		const [mappedRole, mappedRecipe] = VARIANT_MAP[variant ?? "primary"];
-		effectiveRole = mappedRole;
-		effectiveRecipe = mappedRecipe;
-	}
-
-	if (effectiveRecipe === "gradient" && !GRADIENT_CAPABLE.has(effectiveRole)) {
+	let effectiveRecipe = recipe ?? DEFAULT_RECIPE_BY_ROLE[role];
+	if (effectiveRecipe === "gradient" && !GRADIENT_CAPABLE.has(role)) {
 		effectiveRecipe = "filled";
 	}
 
@@ -309,7 +273,7 @@ export const Button = ({
 			size={SIZE_MAP[size]}
 			disabled={disabled || loading}
 			className={cn(
-				ROLE_CLASSES[effectiveRole],
+				ROLE_CLASSES[role],
 				fullWidth && "w-full",
 				className,
 				"cursor-pointer",

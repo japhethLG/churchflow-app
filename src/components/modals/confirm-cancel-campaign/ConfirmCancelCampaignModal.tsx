@@ -52,7 +52,7 @@ export const ConfirmCancelCampaignModal = ({
 				label: "Cancel campaign",
 				onClick: handleCancel,
 				loading: isPending,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Keep open",

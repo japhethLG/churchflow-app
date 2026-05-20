@@ -215,7 +215,7 @@ export const CampaignsListPage = () => {
 				subtitle="Goal-driven drives with pledge tracking. Click a row to drill into items."
 				action={
 					<Button
-						variant="primary"
+						role="primary"
 						icon="plus"
 						onClick={() => router.push(`/${tenantSlug}/admin/campaigns/new`)}
 					>
@@ -281,6 +281,7 @@ export const CampaignsListPage = () => {
 					emptySubtitle="Create your first campaign to start tracking goals."
 					emptyAction={
 						<Button
+							role="primary"
 							icon="plus"
 							onClick={() => router.push(`/${tenantSlug}/admin/campaigns/new`)}
 						>

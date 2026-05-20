@@ -29,7 +29,7 @@ export const AccountMenuTrigger = forwardRef<
 			ref={ref}
 			{...restFromTrigger}
 			type="button"
-			variant="secondary"
+			variant="ghost"
 			className={cn(
 				"h-auto w-full shrink-0 justify-start gap-2.5 rounded-xl border-0 px-3 py-2.5 text-left font-normal shadow-none",
 				menuOpen ? "bg-secondary" : "bg-muted hover:bg-muted/50",

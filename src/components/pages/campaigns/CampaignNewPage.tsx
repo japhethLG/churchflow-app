@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Button, PageHeader } from "@/components/primitives";
+import { PageHeader } from "@/components/primitives";
 import { useAddCampaignItem, useCreateCampaign } from "@/lib/api/campaigns";
 import dayjs from "@/lib/dayjs";
 import { CampaignForm } from "./CampaignForm";
@@ -55,14 +55,10 @@ export const CampaignNewPage = () => {
 				overline="Fundraising / Campaigns"
 				title="New campaign"
 				subtitle="Set the goal in line items so members can pledge to specific needs."
-				action={
-					<Button
-						variant="tertiary"
-						onClick={() => router.push(`/${tenantSlug}/admin/campaigns`)}
-					>
-						Back to campaigns
-					</Button>
-				}
+				back={{
+					href: `/${tenantSlug}/admin/campaigns`,
+					label: "Back to campaigns",
+				}}
 			/>
 			<div className="overflow-auto flex-1 px-8 pb-8">
 				<CampaignForm

@@ -155,10 +155,10 @@ export const TransactionsListPage = () => {
 				subtitle="Every gift recorded at this church."
 				action={
 					<>
-						<Button variant="secondary" icon="download" disabled>
+						<Button role="secondary" icon="download" disabled>
 							Export
 						</Button>
-						<Button variant="primary" icon="plus" onClick={openRecord}>
+						<Button role="primary" icon="plus" onClick={openRecord}>
 							Record gift
 						</Button>
 					</>
@@ -243,7 +243,7 @@ export const TransactionsListPage = () => {
 					emptyTitle="No transactions in range"
 					emptySubtitle="Widen the date range or record a gift to get started."
 					emptyAction={
-						<Button icon="plus" onClick={openRecord}>
+						<Button role="primary" icon="plus" onClick={openRecord}>
 							Record gift
 						</Button>
 					}

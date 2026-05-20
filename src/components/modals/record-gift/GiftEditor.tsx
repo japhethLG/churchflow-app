@@ -202,7 +202,7 @@ export const GiftEditor = ({
 				<div className="flex shrink-0 items-center gap-1.5">
 					<FormButton
 						type="button"
-						variant="primary"
+						role="primary"
 						size="sm"
 						disabled={!rowIsValid}
 						onClick={onSave}
@@ -210,7 +210,8 @@ export const GiftEditor = ({
 						{isEditing ? "Update" : "Add"}
 					</FormButton>
 					<Button
-						variant="danger-outline"
+						role="danger"
+						recipe="outline"
 						size="sm"
 						icon={isEditing ? "close" : "eraser"}
 						aria-label="Clear form"

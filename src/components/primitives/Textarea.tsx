@@ -1,4 +1,4 @@
-import type { ChangeEventHandler } from "react";
+import type { ChangeEventHandler, ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea as ShadedTextarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ export const Textarea = ({
 	disabled,
 	readOnly,
 }: {
-	label?: string;
+	label?: ReactNode;
 	value?: string;
 	placeholder?: string;
 	helper?: string;
@@ -32,28 +32,38 @@ export const Textarea = ({
 }) => (
 	<div className={cn("flex flex-col gap-2", fullWidth ? "w-full" : "w-fit")}>
 		{label && (
-			<Label className="text-sm font-medium text-muted-foreground ml-1">
+			<Label className="text-[13px] font-medium text-on-surface-variant">
 				{label}
 			</Label>
 		)}
-		<ShadedTextarea
-			value={value ?? ""}
-			placeholder={placeholder}
-			onChange={onChange}
-			onBlur={onBlur}
-			disabled={disabled}
-			readOnly={readOnly}
-			rows={rows}
+		<div
 			className={cn(
-				"box-border resize-y rounded-xl border-1.5 px-3.5 py-3 text-sm text-foreground transition-all focus-visible:ring-2 focus-visible:ring-ring/20",
-				disabled ? "bg-secondary opacity-60" : "bg-input",
-				error ? "border-destructive ring-destructive/10" : "border-transparent",
+				"rounded-xl border-1.5 border-transparent transition-all",
+				disabled
+					? "bg-secondary cursor-not-allowed shadow-[inset_0_0_0_1px_var(--color-input)]"
+					: [
+							"bg-card",
+							error
+								? "shadow-[inset_0_0_0_2px_var(--color-destructive)]"
+								: "shadow-[inset_0_0_0_1px_var(--color-input)] hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)] focus-within:shadow-[inset_0_0_0_2px_var(--color-ring)]",
+						],
 				className,
 			)}
-		/>
+		>
+			<ShadedTextarea
+				value={value ?? ""}
+				placeholder={placeholder}
+				onChange={onChange}
+				onBlur={onBlur}
+				disabled={disabled}
+				readOnly={readOnly}
+				rows={rows}
+				className="w-full resize-y border-none bg-transparent px-3.5 py-3 text-sm text-foreground shadow-none outline-none focus-visible:ring-0 placeholder:text-muted-foreground"
+			/>
+		</div>
 		{helper && !error && (
-			<p className="ml-1 text-sm text-muted-foreground">{helper}</p>
+			<p className="text-xs text-muted-foreground">{helper}</p>
 		)}
-		{error && <p className="ml-1 text-sm text-destructive">{error}</p>}
+		{error && <p className="text-xs text-destructive">{error}</p>}
 	</div>
 );

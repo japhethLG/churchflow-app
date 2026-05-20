@@ -129,7 +129,7 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 				action={
 					<div className="flex gap-2">
 						<Button
-							variant="secondary"
+							role="secondary"
 							onClick={() => router.push(`/super-admin/tenants/${tenantId}`)}
 						>
 							← Back to church
@@ -137,7 +137,7 @@ export const TenantAdminsPage = ({ tenantId }: { tenantId: string }) => {
 						{tenant && (
 							<Button
 								icon="plus"
-								variant="primary"
+								role="primary"
 								onClick={() =>
 									openModal("invite-tenant-admin", {
 										tenantId: tenant.id,

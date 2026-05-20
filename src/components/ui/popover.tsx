@@ -32,6 +32,10 @@ function PopoverContent({
 				alignOffset={alignOffset}
 				side={side}
 				sideOffset={sideOffset}
+				collisionAvoidance={{
+					side: "flip",
+					align: "shift",
+				}}
 				className="isolate z-50"
 			>
 				<PopoverPrimitive.Popup

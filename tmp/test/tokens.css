@@ -1,0 +1,226 @@
+/* ChurchFlow · Sanctuary — full token system
+ * Source: Color Palette.html (design handoff)
+ * Default: light. Dark overrides applied via [data-theme="dark"] OR prefers-color-scheme: dark.
+ */
+
+:root {
+  /* Brand */
+  --primary:              #3525CD;
+  --primary-container:    #4F46E5;
+  --primary-fixed:        #E6E6FA;
+  --on-primary:           #FFFFFF;
+  --on-primary-fixed:     #2A1DA8;
+  --tertiary:             #7E3000;
+  --tertiary-container:   #FBE9DD;
+  --on-tertiary:          #FFFFFF;
+  --on-tertiary-container:#7E3000;
+
+  /* Surfaces (warm-cool neutrals — light) */
+  --surface:                   #F7F9FB;
+  --surface-container-lowest:  #FFFFFF;
+  --surface-container-low:     #F1F3F6;
+  --surface-container:         #ECEEF0;
+  --surface-container-high:    #E4E7EB;
+  --surface-container-highest: #DCE0E5;
+  --surface-inverse:           #191C1E;
+  --on-surface-inverse:        #F1F3F6;
+
+  /* Text */
+  --on-surface:          #191C1E;
+  --on-surface-variant:  #42474E;
+  --on-surface-muted:    #6B7280;
+  --outline:             #72787E;
+  --outline-variant:     #C2C7CE;
+
+  /* Status */
+  --success:             #156B3D;
+  --success-container:   #C8EFD4;
+  --on-success:          #FFFFFF;
+  --on-success-container:#0F4D2C;
+  --warning:             #8B5A00;
+  --warning-container:   #FDE8B8;
+  --on-warning:          #FFFFFF;
+  --on-warning-container:#6B4500;
+  --error:               #8C1D18;
+  --error-container:     #F9DEDC;
+  --on-error:            #FFFFFF;
+  --on-error-container:  #6B130F;
+  --info:                #1B4C8C;
+  --info-container:      #D6E6FB;
+  --on-info:             #FFFFFF;
+  --on-info-container:   #143768;
+
+  /* Transaction types */
+  --tx-tithe:        #4F46E5;
+  --tx-tithe-bg:     #E0E7FF;
+  --tx-tithe-fg:     #3730A3;
+  --tx-offering:     #16A34A;
+  --tx-offering-bg:  #D1FAE5;
+  --tx-offering-fg:  #065F46;
+  --tx-mission:      #2563EB;
+  --tx-mission-bg:   #DBEAFE;
+  --tx-mission-fg:   #1E40AF;
+  --tx-first-fruit:    #D97706;
+  --tx-first-fruit-bg: #FEF3C7;
+  --tx-first-fruit-fg: #92400E;
+  --tx-commitment:     #9333EA;
+  --tx-commitment-bg:  #EDE9FE;
+  --tx-commitment-fg:  #5B21B6;
+  --tx-donation:    #0D9488;
+  --tx-donation-bg: #CCFBF1;
+  --tx-donation-fg: #115E59;
+  --tx-other:       #6B7280;
+  --tx-other-bg:    #ECEEF0;
+  --tx-other-fg:    #42474E;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+
+[data-theme="dark"] {
+  /* Brand — primary lightens for legibility; container becomes mid-tone; "fixed" stays deep brand */
+  --primary:              #A29DEE;
+  --primary-container:    #2A1DA8;
+  --primary-fixed:        #1F1583;
+  --on-primary:           #1F1583;
+  --on-primary-fixed:     #C5C2F5;
+  --tertiary:             #EFB585;
+  --tertiary-container:   #5E2300;
+  --on-tertiary:          #3F1700;
+  --on-tertiary-container:#FBE9DD;
+
+  /* Surfaces — cool blacks stepping UP in lightness with elevation (M3 model) */
+  --surface:                   #0F1214;
+  --surface-container-lowest:  #0A0C0E;
+  --surface-container-low:     #16191C;
+  --surface-container:         #1A1D20;
+  --surface-container-high:    #23272B;
+  --surface-container-highest: #2D3136;
+  --surface-inverse:           #DCE0E5;
+  --on-surface-inverse:        #191C1E;
+
+  /* Text */
+  --on-surface:          #E4E7EB;
+  --on-surface-variant:  #B1B6BD;
+  --on-surface-muted:    #7E848B;
+  --outline:             #5C6168;
+  --outline-variant:     #2D3136;
+
+  /* Status — base brightened to read on dark; containers deepen with light fg */
+  --success:             #71D295;
+  --success-container:   #0A381F;
+  --on-success:          #062414;
+  --on-success-container:#A1E3B8;
+  --warning:             #F4BC3F;
+  --warning-container:   #4D3200;
+  --on-warning:          #332100;
+  --on-warning-container:#FDE8B8;
+  --error:               #E68B86;
+  --error-container:     #4D0B08;
+  --on-error:            #330603;
+  --on-error-container:  #F2B8B5;
+  --info:                #80AFEE;
+  --info-container:      #0D2647;
+  --on-info:             #07182E;
+  --on-info-container:   #AFCDF7;
+
+  /* Transaction types — base brightened; container deep tint */
+  --tx-tithe:        #A29DEE;
+  --tx-tithe-bg:     #1F1583;
+  --tx-tithe-fg:     #C5C2F5;
+  --tx-offering:     #71D295;
+  --tx-offering-bg:  #0A381F;
+  --tx-offering-fg:  #A1E3B8;
+  --tx-mission:      #80AFEE;
+  --tx-mission-bg:   #0D2647;
+  --tx-mission-fg:   #AFCDF7;
+  --tx-first-fruit:    #F4BC3F;
+  --tx-first-fruit-bg: #4D3200;
+  --tx-first-fruit-fg: #FDE8B8;
+  --tx-commitment:     #C9A4F2;
+  --tx-commitment-bg:  #3B1E63;
+  --tx-commitment-fg:  #E2D2F9;
+  --tx-donation:    #5EEAD4;
+  --tx-donation-bg: #0F3B36;
+  --tx-donation-fg: #A4F1E2;
+  --tx-other:       #9AA1A9;
+  --tx-other-bg:    #23272B;
+  --tx-other-fg:    #B1B6BD;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Brand */
+    --primary:              #A29DEE;
+    --primary-container:    #2A1DA8;
+    --primary-fixed:        #1F1583;
+    --on-primary:           #1F1583;
+    --on-primary-fixed:     #C5C2F5;
+    --tertiary:             #EFB585;
+    --tertiary-container:   #5E2300;
+    --on-tertiary:          #3F1700;
+    --on-tertiary-container:#FBE9DD;
+
+    /* Surfaces */
+    --surface:                   #0F1214;
+    --surface-container-lowest:  #0A0C0E;
+    --surface-container-low:     #16191C;
+    --surface-container:         #1A1D20;
+    --surface-container-high:    #23272B;
+    --surface-container-highest: #2D3136;
+    --surface-inverse:           #DCE0E5;
+    --on-surface-inverse:        #191C1E;
+
+    /* Text */
+    --on-surface:          #E4E7EB;
+    --on-surface-variant:  #B1B6BD;
+    --on-surface-muted:    #7E848B;
+    --outline:             #5C6168;
+    --outline-variant:     #2D3136;
+
+    /* Status */
+    --success:             #71D295;
+    --success-container:   #0A381F;
+    --on-success:          #062414;
+    --on-success-container:#A1E3B8;
+    --warning:             #F4BC3F;
+    --warning-container:   #4D3200;
+    --on-warning:          #332100;
+    --on-warning-container:#FDE8B8;
+    --error:               #E68B86;
+    --error-container:     #4D0B08;
+    --on-error:            #330603;
+    --on-error-container:  #F2B8B5;
+    --info:                #80AFEE;
+    --info-container:      #0D2647;
+    --on-info:             #07182E;
+    --on-info-container:   #AFCDF7;
+
+    /* Transaction types */
+    --tx-tithe:        #A29DEE;
+    --tx-tithe-bg:     #1F1583;
+    --tx-tithe-fg:     #C5C2F5;
+    --tx-offering:     #71D295;
+    --tx-offering-bg:  #0A381F;
+    --tx-offering-fg:  #A1E3B8;
+    --tx-mission:      #80AFEE;
+    --tx-mission-bg:   #0D2647;
+    --tx-mission-fg:   #AFCDF7;
+    --tx-first-fruit:    #F4BC3F;
+    --tx-first-fruit-bg: #4D3200;
+    --tx-first-fruit-fg: #FDE8B8;
+    --tx-commitment:     #C9A4F2;
+    --tx-commitment-bg:  #3B1E63;
+    --tx-commitment-fg:  #E2D2F9;
+    --tx-donation:    #5EEAD4;
+    --tx-donation-bg: #0F3B36;
+    --tx-donation-fg: #A4F1E2;
+    --tx-other:       #9AA1A9;
+    --tx-other-bg:    #23272B;
+    --tx-other-fg:    #B1B6BD;
+  }
+}

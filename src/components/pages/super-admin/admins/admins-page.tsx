@@ -11,7 +11,6 @@ import {
 	PageHeader,
 	RowActionsMenu,
 	type StateFilterValue,
-	StatPill,
 	toStateFilterFlags,
 } from "@/components/primitives";
 import { useAdminStats, useAdminUsers } from "@/lib/api/admin";
@@ -168,7 +167,7 @@ export const AdminsPage = () => {
 				action={
 					<Button
 						icon="plus"
-						variant="primary"
+						role="primary"
 						onClick={() => openModal("invite-admin-global", {})}
 					>
 						Invite admin
@@ -176,14 +175,12 @@ export const AdminsPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
-				<div className="flex flex-wrap gap-2.5">
-					<StatPill label="Super admins" value={stats?.superAdmins ?? "—"} />
-					<StatPill label="Tenant admins" value={stats?.totalAdmins ?? "—"} />
-					{!isLoading && <StatPill label="Showing" value={total} />}
-				</div>
-
+			<div className="overflow-auto flex-1 px-8 pb-8">
 				<DataTableShell<AdminUser>
+					stats={[
+						{ label: "Super admins", value: stats?.superAdmins ?? "—" },
+						{ label: "Tenant admins", value: stats?.totalAdmins ?? "—" },
+					]}
 					search={{
 						value: search,
 						onChange: (v) => {

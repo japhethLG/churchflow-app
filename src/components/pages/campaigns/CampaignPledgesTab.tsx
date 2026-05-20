@@ -286,7 +286,7 @@ export const CampaignPledgesTab = ({
 		<div className="space-y-4">
 			<div className="flex justify-end">
 				<Button
-					variant="primary"
+					role="primary"
 					icon="plus"
 					onClick={openCreate}
 					disabled={parentDeleted}

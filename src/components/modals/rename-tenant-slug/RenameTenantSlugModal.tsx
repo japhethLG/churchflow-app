@@ -65,7 +65,7 @@ export const RenameTenantSlugModal = ({
 				onClick: methods.handleSubmit(onSubmit),
 				loading: isPending,
 				disabled: unchanged,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",

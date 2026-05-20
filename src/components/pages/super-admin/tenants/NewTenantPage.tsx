@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { Button, Input, Pressable, Textarea } from "@/components/primitives";
 import { useIssueInvitation } from "@/lib/api/invitations";
 import { useCreateTenant, useSlugSuggestion } from "@/lib/api/tenants";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { cn } from "@/lib/utils";
 
 type Step = 1 | 2 | 3;
@@ -53,21 +54,28 @@ const Step1Details = ({
 	onCancel,
 }: {
 	draft: Draft;
-	setDraft: (d: Draft) => void;
+	setDraft: Dispatch<SetStateAction<Draft>>;
 	onNext: () => void;
 	onCancel: () => void;
 }) => {
-	const { data: suggestion } = useSlugSuggestion(
-		draft.name,
-		draft.name.length >= 3 && !draft.slug,
-	);
 	const [slugEdited, setSlugEdited] = useState(false);
+	const debouncedName = useDebouncedValue(draft.name, 300);
+	const { data: suggestion } = useSlugSuggestion(
+		debouncedName,
+		debouncedName.length >= 3 && !slugEdited,
+	);
 
 	useEffect(() => {
-		if (!slugEdited && suggestion?.slug) {
-			setDraft({ ...draft, slug: suggestion.slug });
+		const suggestionSlug = suggestion?.slug;
+		if (!slugEdited && suggestionSlug) {
+			setDraft((prev) => {
+				if (prev.slug === suggestionSlug) {
+					return prev;
+				}
+				return { ...prev, slug: suggestionSlug };
+			});
 		}
-	}, [suggestion?.slug, slugEdited, setDraft, draft]);
+	}, [suggestion?.slug, slugEdited, setDraft]);
 
 	return (
 		<>
@@ -109,30 +117,30 @@ const Step1Details = ({
 						</div>
 					)}
 				</div>
-				<div>
-					<div className="mb-2 text-sm font-medium text-secondary-foreground">
-						Description{" "}
-						<span className="font-normal text-muted-foreground">
-							(optional)
-						</span>
-					</div>
-					<Textarea
-						value={draft.description}
-						onChange={(e) =>
-							setDraft({ ...draft, description: e.target.value })
-						}
-						rows={3}
-						placeholder="Brief description of this church…"
-					/>
-				</div>
+				<Textarea
+					label={
+						<>
+							Description{" "}
+							<span className="font-normal text-muted-foreground">
+								(optional)
+							</span>
+						</>
+					}
+					value={draft.description}
+					onChange={(e) =>
+						setDraft((prev) => ({ ...prev, description: e.target.value }))
+					}
+					rows={3}
+					placeholder="Brief description of this church…"
+				/>
 			</div>
 
 			<div className="mt-8 flex justify-between">
-				<Button variant="tertiary" onClick={onCancel}>
+				<Button role="secondary" recipe="outline" onClick={onCancel}>
 					Cancel
 				</Button>
 				<Button
-					variant="primary"
+					role="primary"
 					onClick={onNext}
 					disabled={!draft.name.trim() || !draft.slug.trim()}
 				>
@@ -227,11 +235,7 @@ const Step2Invites = ({
 						}}
 						placeholder="admin@example.com"
 					/>
-					<Button
-						variant="secondary"
-						onClick={addEmail}
-						disabled={!input.trim()}
-					>
+					<Button role="secondary" onClick={addEmail} disabled={!input.trim()}>
 						Add
 					</Button>
 				</div>
@@ -265,19 +269,20 @@ const Step2Invites = ({
 			</div>
 
 			<div className="mt-8 flex justify-between">
-				<Button variant="tertiary" onClick={onBack} disabled={sending}>
+				<Button
+					role="secondary"
+					recipe="outline"
+					onClick={onBack}
+					disabled={sending}
+				>
 					← Back
 				</Button>
 				<div className="flex gap-2">
-					<Button
-						variant="secondary"
-						onClick={() => onNext(0)}
-						disabled={sending}
-					>
+					<Button role="secondary" onClick={() => onNext(0)} disabled={sending}>
 						Skip
 					</Button>
 					{emails.length > 0 && (
-						<Button variant="primary" onClick={handleSend} disabled={sending}>
+						<Button role="primary" onClick={handleSend} disabled={sending}>
 							{sending
 								? "Sending…"
 								: `Send ${emails.length} invite${emails.length !== 1 ? "s" : ""}`}
@@ -312,13 +317,13 @@ const Step3Success = ({
 			)}
 			<div className="mt-8 flex flex-wrap justify-center gap-3">
 				<Button
-					variant="secondary"
+					role="secondary"
 					onClick={() => router.push("/super-admin/tenants")}
 				>
 					Back to churches
 				</Button>
 				<Button
-					variant="primary"
+					role="primary"
 					onClick={() => router.push(`/super-admin/tenants/${tenantSlug}`)}
 				>
 					Go to {tenantName} →

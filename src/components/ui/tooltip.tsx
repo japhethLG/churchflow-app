@@ -45,6 +45,10 @@ function TooltipContent({
 				alignOffset={alignOffset}
 				side={side}
 				sideOffset={sideOffset}
+				collisionAvoidance={{
+					side: "flip",
+					align: "shift",
+				}}
 				className="isolate z-50"
 			>
 				<TooltipPrimitive.Popup

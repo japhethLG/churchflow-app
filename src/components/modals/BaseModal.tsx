@@ -1,7 +1,11 @@
 "use client";
 
 import { type ReactNode, useEffect } from "react";
-import { Button } from "@/components/primitives/Button";
+import {
+	Button,
+	type ButtonRecipe,
+	type ButtonRole,
+} from "@/components/primitives/Button";
 import { Pressable } from "@/components/primitives/Pressable";
 import { cn } from "@/lib/utils";
 
@@ -15,8 +19,8 @@ export type ModalAction = {
 	onClick: () => void;
 	loading?: boolean;
 	disabled?: boolean;
-	variant?: "primary" | "secondary" | "tertiary";
-	destructive?: boolean;
+	role?: ButtonRole;
+	recipe?: ButtonRecipe;
 };
 
 type BaseModalProps = {
@@ -161,8 +165,8 @@ export const BaseModal = ({
 						<div className="flex gap-2">
 							{secondaryAction && (
 								<Button
-									variant={secondaryAction.variant ?? "tertiary"}
-									destructive={secondaryAction.destructive}
+									role={secondaryAction.role ?? "secondary"}
+									recipe={secondaryAction.recipe ?? "outline"}
 									onClick={secondaryAction.onClick}
 									disabled={secondaryAction.disabled || secondaryAction.loading}
 								>
@@ -171,8 +175,8 @@ export const BaseModal = ({
 							)}
 							{primaryAction && (
 								<Button
-									variant={primaryAction.variant ?? "primary"}
-									destructive={primaryAction.destructive}
+									role={primaryAction.role ?? "primary"}
+									recipe={primaryAction.recipe}
 									onClick={primaryAction.onClick}
 									disabled={primaryAction.disabled || primaryAction.loading}
 								>

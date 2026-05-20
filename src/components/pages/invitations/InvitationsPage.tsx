@@ -97,7 +97,7 @@ export const InvitationsPage = () => {
 				title="Invitations"
 				subtitle="Manage member and admin access to your church account."
 				action={
-					<Button variant="primary" icon="plus" onClick={handleInvite}>
+					<Button role="primary" icon="plus" onClick={handleInvite}>
 						Invite member
 					</Button>
 				}

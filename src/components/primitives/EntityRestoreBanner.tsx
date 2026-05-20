@@ -69,11 +69,7 @@ export const EntityRestoreBanner = ({
 				)}
 			</div>
 			{onRestore && !memberVariant && (
-				<Button
-					variant="secondary"
-					onClick={onRestore}
-					loading={restoreLoading}
-				>
+				<Button role="secondary" onClick={onRestore} loading={restoreLoading}>
 					Restore
 				</Button>
 			)}

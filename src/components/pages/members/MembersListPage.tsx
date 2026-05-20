@@ -197,7 +197,7 @@ export const MembersListPage = () => {
 				action={
 					<>
 						<Button
-							variant="secondary"
+							role="secondary"
 							recipe="outline"
 							icon="mail"
 							onClick={() =>
@@ -207,7 +207,7 @@ export const MembersListPage = () => {
 							Invite
 						</Button>
 						<Button
-							variant="primary"
+							role="primary"
 							icon="plus"
 							onClick={() => openModal("add-member", { tenantSlug })}
 						>

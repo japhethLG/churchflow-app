@@ -114,7 +114,7 @@ export const TransactionDetailPage = () => {
 						Transaction not found
 					</p>
 					<Button
-						variant="secondary"
+						role="secondary"
 						onClick={() => router.push(`/${tenantSlug}/admin/transactions`)}
 					>
 						Back to transactions
@@ -174,8 +174,8 @@ export const TransactionDetailPage = () => {
 				action={
 					!isDeleted ? (
 						<Button
-							variant="tertiary"
-							destructive
+							role="danger"
+							recipe="outline"
 							icon="trash"
 							onClick={() =>
 								openModal("confirm-delete-transaction", {
@@ -300,7 +300,8 @@ export const TransactionDetailPage = () => {
 									) : (
 										<Button
 											type="button"
-											variant="ghost"
+											role="secondary"
+											recipe="ghost"
 											size="sm"
 											className="h-auto gap-2.5 bg-transparent p-0 text-left font-sans shadow-none hover:bg-muted/60"
 											onClick={() =>
@@ -340,7 +341,8 @@ export const TransactionDetailPage = () => {
 									) : (
 										<Button
 											type="button"
-											variant="ghost"
+											role="secondary"
+											recipe="ghost"
 											size="sm"
 											className="h-auto px-0 py-0 text-sm font-medium text-primary shadow-none hover:bg-transparent hover:text-primary/90 hover:underline"
 											onClick={() =>

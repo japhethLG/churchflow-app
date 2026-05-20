@@ -50,7 +50,7 @@ export const ConfirmDeleteCampaignItemModal = ({
 				label: "Remove item",
 				onClick: handleDelete,
 				loading: isPending,
-				destructive: true,
+				role: "danger",
 			}}
 			secondaryAction={{
 				label: "Cancel",
