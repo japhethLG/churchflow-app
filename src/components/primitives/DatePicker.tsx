@@ -82,7 +82,7 @@ export const DatePicker = ({
 						disabled
 							? "bg-secondary cursor-not-allowed shadow-[inset_0_0_0_1px_var(--color-input)]"
 							: [
-									"bg-card",
+									"bg-card dark:bg-muted",
 									error
 										? "shadow-[inset_0_0_0_2px_var(--color-destructive)]"
 										: "shadow-[inset_0_0_0_1px_var(--color-input)] hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)] focus-visible:shadow-[inset_0_0_0_2px_var(--color-ring)]",

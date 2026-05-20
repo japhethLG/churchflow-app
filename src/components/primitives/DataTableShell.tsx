@@ -270,7 +270,7 @@ const SearchInput = ({
 				placeholder={placeholder}
 				onChange={(e) => setLocal(e.target.value)}
 				className={cn(
-					"h-9 w-full rounded-xl border-1.5 border-transparent bg-card pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground",
+					"h-9 w-full rounded-xl border-1.5 border-transparent bg-card dark:bg-muted pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground",
 					"shadow-[inset_0_0_0_1px_var(--color-input)] outline-none transition-all",
 					"hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)] focus:shadow-[inset_0_0_0_2px_var(--color-ring)]",
 				)}

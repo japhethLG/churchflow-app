@@ -42,7 +42,7 @@ export const Textarea = ({
 				disabled
 					? "bg-secondary cursor-not-allowed shadow-[inset_0_0_0_1px_var(--color-input)]"
 					: [
-							"bg-card",
+							"bg-card dark:bg-muted",
 							error
 								? "shadow-[inset_0_0_0_2px_var(--color-destructive)]"
 								: "shadow-[inset_0_0_0_1px_var(--color-input)] hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)] focus-within:shadow-[inset_0_0_0_2px_var(--color-ring)]",
@@ -58,7 +58,7 @@ export const Textarea = ({
 				disabled={disabled}
 				readOnly={readOnly}
 				rows={rows}
-				className="w-full resize-y border-none bg-transparent px-3.5 py-3 text-sm text-foreground shadow-none outline-none focus-visible:ring-0 placeholder:text-muted-foreground"
+				className="w-full resize-y border-none dark:border-none bg-transparent dark:bg-transparent px-3.5 py-3 text-sm text-foreground shadow-none dark:shadow-none outline-none focus-visible:ring-0 placeholder:text-muted-foreground"
 			/>
 		</div>
 		{helper && !error && (

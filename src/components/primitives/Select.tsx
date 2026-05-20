@@ -83,7 +83,7 @@ export const Select = ({
 					{showEmptyOption && (
 						<SelectItem
 							value=""
-							className="cursor-pointer rounded-none mx-1 py-2 text-muted-foreground italic"
+							className="cursor-pointer rounded-none mx-1 py-2 text-muted-foreground italic focus:bg-muted focus:text-foreground"
 						>
 							{emptyOptionLabel || placeholder}
 						</SelectItem>
@@ -92,7 +92,7 @@ export const Select = ({
 						<SelectItem
 							key={opt.value}
 							value={opt.value}
-							className="cursor-pointer rounded-none mx-1 py-2"
+							className="cursor-pointer rounded-none mx-1 py-2 focus:bg-muted focus:text-foreground"
 						>
 							{opt.label}
 						</SelectItem>

@@ -296,6 +296,196 @@
 	--palette-info-grad-b: #1b4c8c;
 }
 
+.dark,
+[data-theme="dark"] {
+	/* Map Sanctuary → shadcn core slots in dark mode */
+	--background: #111417; /* surface (slightly softer slate dark instead of pitch black) */
+	--foreground: #e4e7eb; /* onSurface */
+	--card: #171a1d; /* surfaceContainerLow (elevated shade lighter than background) */
+	--card-foreground: #e4e7eb;
+	--popover: #1c1f22; /* surfaceContainer (elevated dropdowns/popovers) */
+	--popover-foreground: #e4e7eb;
+	--primary: #a29dee; /* primary */
+	--primary-foreground: #1f1583; /* onPrimary */
+	--secondary: #1d2024; /* surfaceContainer */
+	--secondary-foreground: #e4e7eb;
+	--muted: #232730; /* raised surface — lifts above card so fields/hovers don't disappear on bg-card containers */
+	--muted-foreground: #9298a0; /* onSurfaceMuted (more readable placeholders/descriptions) */
+	--on-surface-variant: #b1b6bd; /* onSurfaceVariant */
+	--accent: #1f1583; /* primaryFixed */
+	--accent-foreground: #c5c2f5; /* onPrimaryFixed */
+	--destructive: #e68b86; /* error */
+	--destructive-foreground: #330603; /* onError */
+	--border: #2e3339; /* outlineVariant (clean divider color) */
+	--input: #3e444c; /* surfaceContainerHigh (visible and accessible outline border for inputs) */
+	--ring: #a29dee; /* primary (highly visible luminous lavender focus ring) */
+
+	/* Sidebar in dark mode */
+	--sidebar: #0f1214; /* Keep sidebar deep dark for elegant multi-layered contrast */
+	--sidebar-foreground: #e4e7eb;
+	--sidebar-primary: #a29dee;
+	--sidebar-primary-foreground: #1f1583;
+	--sidebar-accent: #1f1583;
+	--sidebar-accent-foreground: #c5c2f5;
+	--sidebar-border: #2d313622;
+	--sidebar-ring: #a29dee;
+
+	/* Semantic in dark mode */
+	--success: #71d295;
+	--success-foreground: #0a381f; /* successContainer */
+	--warning: #f4bc3f;
+	--warning-foreground: #4d3200; /* warningContainer */
+	--info: #80afee;
+	--info-foreground: #0d2647; /* infoContainer */
+
+	/* Tertiary / clay in dark mode */
+	--tertiary: #efb585;
+	--tertiary-container: #5e2300;
+
+	/* Transaction types in dark mode */
+	--tx-tithe: #a29dee;
+	--tx-offering: #71d295;
+	--tx-mission: #80afee;
+	--tx-first-fruit: #f4bc3f;
+	--tx-commitment: #c9a4f2;
+	--tx-donation: #5eead4;
+	--tx-other: #9aa1a9;
+
+	/* ── Button palette scales (Dark Mode overrides) ── */
+	/* primary · Indigo */
+	--palette-primary-50: #1f1583;
+	--palette-primary-100: #1f1583;
+	--palette-primary-200: #c5c2f5;
+	--palette-primary-300: #2a1da8;
+	--palette-primary-400: #1f1583;
+	--palette-primary-700: #a29dee;
+	--palette-primary-800: #c5c2f5;
+	--palette-primary-soft-bg: #1f1583;
+	--palette-primary-soft-fg: #c5c2f5;
+	--palette-primary-softhv-bg: #2a1da8;
+	--palette-primary-softhv-fg: #a29dee;
+	--palette-primary-tonal-bg: #1f1583;
+	--palette-primary-tonal-fg: #c5c2f5;
+	--palette-primary-tonalhv-bg: #2a1da8;
+	--palette-primary-tonalhv-fg: #a29dee;
+	--palette-primary-grad-a: #4f46e5;
+	--palette-primary-grad-b: #3525cd;
+
+	/* secondary · Slate */
+	--palette-secondary-50: #1f2227;
+	--palette-secondary-100: #1f2227;
+	--palette-secondary-200: #e4e7eb;
+	--palette-secondary-300: #42474e;
+	--palette-secondary-400: #72787e;
+	--palette-secondary-700: #e4e7eb;
+	--palette-secondary-800: #f1f3f6;
+	--palette-secondary-soft-bg: #1f2227;
+	--palette-secondary-soft-fg: #e4e7eb;
+	--palette-secondary-softhv-bg: #2e3338;
+	--palette-secondary-softhv-fg: #f1f3f6;
+	--palette-secondary-tonal-bg: #1f2227;
+	--palette-secondary-tonal-fg: #e4e7eb;
+	--palette-secondary-tonalhv-bg: #2e3338;
+	--palette-secondary-tonalhv-fg: #f1f3f6;
+	--palette-secondary-grad-a: #42474e;
+	--palette-secondary-grad-b: #2e3338;
+
+	/* tertiary · Clay */
+	--palette-tertiary-50: #5e2300;
+	--palette-tertiary-100: #5e2300;
+	--palette-tertiary-200: #efb585;
+	--palette-tertiary-300: #a04e0f;
+	--palette-tertiary-400: #c66e20;
+	--palette-tertiary-700: #efb585;
+	--palette-tertiary-800: #f6d2b5;
+	--palette-tertiary-soft-bg: #5e2300;
+	--palette-tertiary-soft-fg: #f6d2b5;
+	--palette-tertiary-softhv-bg: #a04e0f;
+	--palette-tertiary-softhv-fg: #fff4ed;
+	--palette-tertiary-tonal-bg: #5e2300;
+	--palette-tertiary-tonal-fg: #efb585;
+	--palette-tertiary-tonalhv-bg: #a04e0f;
+	--palette-tertiary-tonalhv-fg: #f6d2b5;
+	--palette-tertiary-grad-a: #efb585;
+	--palette-tertiary-grad-b: #c66e20;
+
+	/* success · Forest */
+	--palette-success-50: #0a381f;
+	--palette-success-100: #0a381f;
+	--palette-success-200: #71d295;
+	--palette-success-300: #156b3d;
+	--palette-success-400: #1f9a56;
+	--palette-success-700: #71d295;
+	--palette-success-800: #a1e3b8;
+	--palette-success-soft-bg: #0a381f;
+	--palette-success-soft-fg: #a1e3b8;
+	--palette-success-softhv-bg: #0f4d2c;
+	--palette-success-softhv-fg: #ecfdf3;
+	--palette-success-tonal-bg: #0a381f;
+	--palette-success-tonal-fg: #71d295;
+	--palette-success-tonalhv-bg: #0f4d2c;
+	--palette-success-tonalhv-fg: #a1e3b8;
+	--palette-success-grad-a: #71d295;
+	--palette-success-grad-b: #1f9a56;
+
+	/* warning · Honey */
+	--palette-warning-50: #4d3200;
+	--palette-warning-100: #4d3200;
+	--palette-warning-200: #f4bc3f;
+	--palette-warning-300: #8b5a00;
+	--palette-warning-400: #b07700;
+	--palette-warning-700: #f4bc3f;
+	--palette-warning-800: #fbd77f;
+	--palette-warning-soft-bg: #4d3200;
+	--palette-warning-soft-fg: #fbd77f;
+	--palette-warning-softhv-bg: #6b4500;
+	--palette-warning-softhv-fg: #fffbeb;
+	--palette-warning-tonal-bg: #4d3200;
+	--palette-warning-tonal-fg: #f4bc3f;
+	--palette-warning-tonalhv-bg: #6b4500;
+	--palette-warning-tonalhv-fg: #fbd77f;
+	--palette-warning-grad-a: #f4bc3f;
+	--palette-warning-grad-b: #b07700;
+
+	/* danger · Brick */
+	--palette-danger-50: #4d0b08;
+	--palette-danger-100: #4d0b08;
+	--palette-danger-200: #e68b86;
+	--palette-danger-300: #8c1d18;
+	--palette-danger-400: #b72f29;
+	--palette-danger-700: #e68b86;
+	--palette-danger-800: #f2b8b5;
+	--palette-danger-soft-bg: #4d0b08;
+	--palette-danger-soft-fg: #f2b8b5;
+	--palette-danger-softhv-bg: #6b130f;
+	--palette-danger-softhv-fg: #fdedec;
+	--palette-danger-tonal-bg: #4d0b08;
+	--palette-danger-tonal-fg: #e68b86;
+	--palette-danger-tonalhv-bg: #6b130f;
+	--palette-danger-tonalhv-fg: #f2b8b5;
+	--palette-danger-grad-a: #e68b86;
+	--palette-danger-grad-b: #b72f29;
+
+	/* info · Blue */
+	--palette-info-50: #0d2647;
+	--palette-info-100: #0d2647;
+	--palette-info-200: #80afee;
+	--palette-info-300: #1b4c8c;
+	--palette-info-400: #2a66c7;
+	--palette-info-700: #80afee;
+	--palette-info-800: #afcdf7;
+	--palette-info-soft-bg: #0d2647;
+	--palette-info-soft-fg: #afcdf7;
+	--palette-info-softhv-bg: #143768;
+	--palette-info-softhv-fg: #eff5fe;
+	--palette-info-tonal-bg: #0d2647;
+	--palette-info-tonal-fg: #80afee;
+	--palette-info-tonalhv-bg: #143768;
+	--palette-info-tonalhv-fg: #afcdf7;
+	--palette-info-grad-a: #80afee;
+	--palette-info-grad-b: #2a66c7;
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
@@ -311,6 +501,9 @@
 	height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-	background: rgba(0, 0, 0, 0.1);
+	background: rgba(0, 0, 0, 0.15);
 	border-radius: 4px;
+}
+.dark *::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.15);
 }

@@ -95,7 +95,7 @@ export const Input = ({
 					disabled
 						? "bg-secondary cursor-not-allowed shadow-[inset_0_0_0_1px_var(--color-input)]"
 						: [
-								"bg-card",
+								"bg-card dark:bg-muted",
 								error
 									? "shadow-[inset_0_0_0_2px_var(--color-destructive)]"
 									: "shadow-[inset_0_0_0_1px_var(--color-input)] hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)] focus-within:shadow-[inset_0_0_0_2px_var(--color-ring)]",
@@ -127,7 +127,7 @@ export const Input = ({
 						disabled={disabled}
 						readOnly={readOnly}
 						className={cn(
-							"border-none bg-transparent p-0 shadow-none outline-none focus-visible:ring-0 tabular-nums placeholder:text-muted-foreground",
+							"border-none dark:border-none bg-transparent dark:bg-transparent p-0 dark:p-0 shadow-none dark:shadow-none outline-none focus-visible:ring-0 tabular-nums placeholder:text-muted-foreground",
 							FIELD_BY_SIZE[size],
 							inputClassName,
 						)}

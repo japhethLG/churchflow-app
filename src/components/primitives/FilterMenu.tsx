@@ -63,7 +63,7 @@ export const FilterMenu = ({
 					<button
 						type="button"
 						className={cn(
-							"inline-flex h-9 items-center gap-2 rounded-xl border-1.5 border-transparent bg-card px-3.5 text-sm font-medium text-foreground transition-all",
+							"inline-flex h-9 items-center gap-2 rounded-xl border-1.5 border-transparent bg-card dark:bg-muted px-3.5 text-sm font-medium text-foreground transition-all",
 							"shadow-[inset_0_0_0_1px_var(--color-input)] hover:shadow-[inset_0_0_0_1px_var(--color-muted-foreground)]",
 							hasActive &&
 								"shadow-[inset_0_0_0_1.5px_var(--color-ring)] text-foreground",

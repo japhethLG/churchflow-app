@@ -12,7 +12,7 @@ export const TopBar = () => {
 			<div className="flex-1" />
 			<div
 				className={cn(
-					"flex w-[280px] items-center gap-2.5 rounded-full bg-card py-2 px-4",
+					"flex w-[280px] items-center gap-2.5 rounded-full bg-muted py-2 px-4",
 					"border border-border/60",
 				)}
 			>

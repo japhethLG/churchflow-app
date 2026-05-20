@@ -1,9 +1,12 @@
 "use client";
 
+import * as Lucide from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type ReactElement, useState } from "react";
 
 import { Icon } from "@/components/primitives/Icon";
+import { Pressable } from "@/components/primitives/Pressable";
+import { useTheme } from "@/components/theme-provider";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -14,6 +17,7 @@ import {
 
 import { signOut, signOutEverywhere } from "@/lib/auth/actions";
 import { openModal } from "@/lib/modals/store";
+import { cn } from "@/lib/utils";
 import type { Perspective, TenantSummary } from "../types";
 import { AccountIdentityHeader } from "./AccountIdentityHeader";
 import { AccountMenuSectionLabel } from "./AccountMenuSectionLabel";
@@ -61,6 +65,7 @@ export const AccountMenu = ({
 }) => {
 	const router = useRouter();
 	const [menuOpen, setMenuOpen] = useState(false);
+	const { theme, setTheme } = useTheme();
 
 	const adminTenants = memberships.filter((m) => m.role === "ADMIN");
 	const memberTenants = memberships;
@@ -160,6 +165,50 @@ export const AccountMenu = ({
 						onPickTenant={(slug, dash) => goTenant(slug, dash)}
 					/>
 				)}
+
+				<DropdownMenuSeparator className="my-1" />
+
+				<AccountMenuSectionLabel>Appearance</AccountMenuSectionLabel>
+				<div className="px-2 py-1">
+					<div className="flex items-center gap-1 rounded-[10px] bg-muted p-1">
+						<Pressable
+							onClick={() => setTheme("light")}
+							className={cn(
+								"flex flex-1 items-center justify-center gap-0.5 rounded-[6px] py-1.5 text-xs font-semibold transition-all cursor-pointer",
+								theme === "light"
+									? "bg-card text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground hover:bg-card/40",
+							)}
+						>
+							<Lucide.Sun size={13} className="shrink-0" />
+							Light
+						</Pressable>
+						<Pressable
+							onClick={() => setTheme("dark")}
+							className={cn(
+								"flex flex-1 items-center justify-center gap-0.5 rounded-[6px] py-1.5 text-xs font-semibold transition-all cursor-pointer",
+								theme === "dark"
+									? "bg-card text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground hover:bg-card/40",
+							)}
+						>
+							<Lucide.Moon size={13} className="shrink-0" />
+							Dark
+						</Pressable>
+						<Pressable
+							onClick={() => setTheme("system")}
+							className={cn(
+								"flex flex-1 items-center justify-center gap-0.5 rounded-[6px] py-1.5 text-xs font-semibold transition-all cursor-pointer",
+								theme === "system"
+									? "bg-card text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground hover:bg-card/40",
+							)}
+						>
+							<Lucide.Monitor size={13} className="shrink-0" />
+							System
+						</Pressable>
+					</div>
+				</div>
 
 				<DropdownMenuSeparator className="my-1" />
 
