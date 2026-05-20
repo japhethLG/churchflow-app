@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/primitives";
-import { signInWithGoogle } from "@/lib/auth/actions";
+import { isAuthCancellationError, signInWithGoogle } from "@/lib/auth/actions";
 
 // After sign-in, let /launch decide where to send the user. The
 // post-login redirect already knows the rules (super-admin →
@@ -24,6 +24,9 @@ export const LoginButton = () => {
 			router.push("/launch");
 			router.refresh();
 		} catch (err) {
+			if (isAuthCancellationError(err)) {
+				return;
+			}
 			console.error(err);
 			setError(err instanceof Error ? err.message : "Sign-in failed");
 		} finally {

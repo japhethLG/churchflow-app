@@ -68,6 +68,21 @@ export const signInWithGoogle = async (): Promise<SignInResult> => {
 	};
 };
 
+export const isAuthCancellationError = (err: unknown): boolean => {
+	if (!err || typeof err !== "object") {
+		return false;
+	}
+	const code = (err as { code?: string }).code;
+	const message = (err as { message?: string }).message;
+	return (
+		code === "auth/popup-closed-by-user" ||
+		code === "auth/cancelled-popup-request" ||
+		(typeof message === "string" &&
+			(message.includes("auth/popup-closed-by-user") ||
+				message.includes("auth/cancelled-popup-request")))
+	);
+};
+
 export const signOut = async (): Promise<void> => {
 	await fbSignOut(getClientAuth());
 	await fetch("/api/auth/session", { method: "DELETE" });

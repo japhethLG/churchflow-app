@@ -10,7 +10,12 @@ import {
 	useLookupInvitation,
 } from "@/lib/api/invitations";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { refreshSession, signInWithGoogle, signOut } from "@/lib/auth/actions";
+import {
+	isAuthCancellationError,
+	refreshSession,
+	signInWithGoogle,
+	signOut,
+} from "@/lib/auth/actions";
 import dayjs from "@/lib/dayjs";
 import { tenantInitials, tenantLogoGradient } from "@/lib/design/logo-gradient";
 
@@ -57,6 +62,9 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 				router.push("/");
 			}
 		} catch (err) {
+			if (isAuthCancellationError(err)) {
+				return;
+			}
 			setActionError(
 				err instanceof Error
 					? err.message
