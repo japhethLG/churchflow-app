@@ -12,6 +12,7 @@ export const TENANT_PATHS = [
 	"/api/v1/platform/tenants/slug-suggestion",
 	"/api/v1/tenants/{tenantId}",
 	"/api/v1/tenants/{tenantId}/me/church",
+	"/api/v1/tenants/{tenantId}/me/church/summary",
 ] as const;
 
 export const invalidateTenants = (qc: QueryClient) => {

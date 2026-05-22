@@ -2,24 +2,20 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useApiMutation, useApiQuery } from "../../hooks";
+import { type GetQuery, useApiMutation, useApiQuery } from "../../hooks";
 import { invalidateMembers } from "../keys";
 
 // Tenant intent — admin-facing member management hooks. The caller's own
 // member profile lives on the self intent (useMyProfile / useUpdateMyProfile).
 
-export type MembersListQuery = {
-	status?: "ACTIVE" | "INACTIVE";
-	search?: string;
-	offset?: number;
-	limit?: number;
-	// 3-state archive filter — FE encodes as:
-	//   Active   → both flags omitted (default)
-	//   Deleted  → onlyDeleted: true
-	//   All      → includeDeleted: true
-	includeDeleted?: boolean;
-	onlyDeleted?: boolean;
-};
+// 3-state archive filter — FE encodes as:
+//   Active   → both flags omitted (default)
+//   Deleted  → onlyDeleted: true
+//   All      → includeDeleted: true
+export type MembersListQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/members",
+	"get"
+>;
 
 export const useMembers = (
 	tenantId: string,

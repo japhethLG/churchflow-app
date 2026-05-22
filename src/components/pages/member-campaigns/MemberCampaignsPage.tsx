@@ -1,30 +1,38 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import type { MemberPledgeProps } from "@/components/modals/member-pledge";
+import { useParams, useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
 	Badge,
-	Button,
-	Card,
+	type DataTableColumn,
+	DataTableShell,
 	PageHeader,
+	StackedProgressBar,
+	type Status,
 	StatusBadge,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useMyCampaignProgress, useMyCampaigns } from "@/lib/api/campaigns";
+import { useMyCampaigns } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
-import { useMyProfile } from "@/lib/api/members";
 import { useMyPledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
-import { formatCompact } from "@/lib/format-currency";
-import { useModalStore } from "@/lib/modals/store";
-import { cn } from "@/lib/utils";
+import { formatCompact, formatCurrency } from "@/lib/format-currency";
+import { daysUntil, num, pct } from "../admin-shared";
+import { useMyCampaignProgressMany } from "../member-dashboard/useMyCampaignProgressMany";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-const STATUS_MAP: Record<
-	Campaign["status"],
-	"Active" | "Upcoming" | "Completed" | "Cancelled"
-> = {
+type StatusFilter = "all" | "ACTIVE" | "DRAFT" | "COMPLETED" | "CANCELLED";
+
+const STATUS_OPTIONS = [
+	{ value: "all", label: "All statuses" },
+	{ value: "ACTIVE", label: "Active" },
+	{ value: "DRAFT", label: "Upcoming" },
+	{ value: "COMPLETED", label: "Completed" },
+	{ value: "CANCELLED", label: "Cancelled" },
+];
+
+const STATUS_MAP: Record<Campaign["status"], Status> = {
 	DRAFT: "Upcoming",
 	ACTIVE: "Active",
 	COMPLETED: "Completed",
@@ -32,35 +40,187 @@ const STATUS_MAP: Record<
 };
 
 export const MemberCampaignsPage = () => {
+	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
-	const open = useModalStore((s) => s.open);
 
-	const memberQ = useMyProfile(tenantSlug);
-	const memberId = memberQ.data?.id;
+	const [search, setSearch] = useState("");
+	const [status, setStatus] = useState<StatusFilter>("all");
+	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
 	const campaignsQ = useMyCampaigns(tenantSlug);
 	const campaigns = campaignsQ.data?.items ?? [];
 
-	// Self-scoped automatically by URL prefix.
 	const pledgesQ = useMyPledges(tenantSlug);
 	const pledges = pledgesQ.data?.items ?? [];
 
-	const pledgeByCampaign: Record<string, typeof pledges> = {};
-	for (const p of pledges) {
-		if (!pledgeByCampaign[p.campaignId]) {
-			pledgeByCampaign[p.campaignId] = [];
+	// Member's pledged total per campaign — used to surface a small
+	// "your pledge" chip in the campaign row.
+	const myPledgeByCampaign = useMemo(() => {
+		const map: Record<string, { active: number; total: number }> = {};
+		for (const p of pledges) {
+			const entry = map[p.campaignId] ?? { active: 0, total: 0 };
+			entry.total += num(p.pledgedAmount);
+			if (p.status === "ACTIVE") {
+				entry.active += num(p.pledgedAmount);
+			}
+			map[p.campaignId] = entry;
 		}
-		pledgeByCampaign[p.campaignId].push(p);
-	}
+		return map;
+	}, [pledges]);
 
-	const activeCampaigns = campaigns.filter(
-		(c) => c.status === "ACTIVE" || c.status === "DRAFT",
-	);
-	const pastCampaigns = campaigns.filter(
-		(c) => c.status === "COMPLETED" || c.status === "CANCELLED",
-	);
+	const filtered = useMemo(() => {
+		let out = campaigns;
+		if (status !== "all") {
+			out = out.filter((c) => c.status === status);
+		}
+		const q = search.trim().toLowerCase();
+		if (q) {
+			out = out.filter((c) => c.title.toLowerCase().includes(q));
+		}
+		return out;
+	}, [campaigns, status, search]);
 
-	const loading = campaignsQ.isLoading;
+	const visible = filtered.slice(offset, offset + limit);
+
+	// Batch progress for the campaigns visible on the current page.
+	const visibleIds = visible.map((c) => c.id);
+	const { progressById } = useMyCampaignProgressMany(tenantSlug, visibleIds);
+
+	// Aggregate stats — across active campaigns (using the progress map
+	// for the rows we actually have data for).
+	const activeCount = campaigns.filter((c) => c.status === "ACTIVE").length;
+	const upcomingCount = campaigns.filter((c) => c.status === "DRAFT").length;
+	const aggregate = useMemo(() => {
+		let goal = 0;
+		let raised = 0;
+		for (const c of campaigns) {
+			if (c.status !== "ACTIVE") {
+				continue;
+			}
+			const p = progressById[c.id];
+			if (!p) {
+				continue;
+			}
+			goal += num(p.goalAmount);
+			raised += num(p.raisedAmount);
+		}
+		return { goal, raised };
+	}, [campaigns, progressById]);
+
+	const columns: DataTableColumn<Campaign>[] = [
+		{
+			key: "campaign",
+			label: "Campaign",
+			render: (c) => {
+				const description = nstr(c.description);
+				const mine = myPledgeByCampaign[c.id];
+				return (
+					<div className="min-w-0">
+						<div className="truncate text-sm font-medium text-foreground">
+							{c.title}
+						</div>
+						{description && (
+							<div className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+								{description}
+							</div>
+						)}
+						{mine && mine.active > 0 && (
+							<Badge color="indigo" className="mt-1.5">
+								Your pledge · {formatCurrency(mine.active, { decimals: 0 })}
+							</Badge>
+						)}
+					</div>
+				);
+			},
+		},
+		{
+			key: "progress",
+			label: "Progress",
+			width: "260px",
+			render: (c) => {
+				const p = progressById[c.id];
+				if (!p || p.goalAmount === 0) {
+					return (
+						<span className="text-xs text-muted-foreground">no goal set</span>
+					);
+				}
+				const raisedPct = pct(p.raisedAmount, p.goalAmount);
+				return (
+					<div>
+						<StackedProgressBar
+							size="sm"
+							total={p.goalAmount}
+							segments={[
+								{
+									value: p.pledgedAmount,
+									color:
+										"color-mix(in srgb, var(--chart-current) 28%, transparent)",
+									label: "Pledged",
+								},
+								{
+									value: p.raisedAmount,
+									color: "var(--chart-current)",
+									label: "Raised",
+								},
+							]}
+						/>
+						<div className="mt-1 flex items-baseline justify-between text-xs">
+							<span className="tabular-nums text-muted-foreground">
+								{formatCompact(p.raisedAmount)} / {formatCompact(p.goalAmount)}
+							</span>
+							<span className="font-semibold tabular-nums text-foreground">
+								{raisedPct}%
+							</span>
+						</div>
+					</div>
+				);
+			},
+		},
+		{
+			key: "deadline",
+			label: "Deadline",
+			width: "130px",
+			render: (c) => {
+				const deadline = nstr(c.deadline);
+				if (!deadline) {
+					return <span className="text-xs text-muted-foreground">open</span>;
+				}
+				const days = daysUntil(deadline);
+				if (c.status === "COMPLETED" || c.status === "CANCELLED") {
+					return (
+						<div className="text-xs text-muted-foreground">
+							{dayjs(deadline).format("MMM D, YYYY")}
+						</div>
+					);
+				}
+				const tone =
+					days !== null && days < 0
+						? "red"
+						: days !== null && days <= 14
+							? "amber"
+							: "neutral";
+				return (
+					<div>
+						<div className="text-xs text-muted-foreground">
+							{dayjs(deadline).format("MMM D, YYYY")}
+						</div>
+						<Badge color={tone} className="mt-0.5">
+							{days !== null && days < 0
+								? `${Math.abs(days)}d past`
+								: `${days}d left`}
+						</Badge>
+					</div>
+				);
+			},
+		},
+		{
+			key: "status",
+			label: "Status",
+			width: "120px",
+			render: (c) => <StatusBadge status={STATUS_MAP[c.status]} />,
+		},
+	];
 
 	return (
 		<div className="h-full flex flex-col">
@@ -68,245 +228,64 @@ export const MemberCampaignsPage = () => {
 				className="px-8"
 				overline="Campaigns"
 				title="Church campaigns"
-				subtitle="Browse active fundraising campaigns, view progress, and make pledges."
+				subtitle="Browse fundraising campaigns at your church and track progress."
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
-				{loading ? (
-					<div className="grid grid-cols-2 gap-4">
-						{[1, 2, 3, 4].map((skeletonId) => (
-							<Card key={skeletonId}>
-								<div className="mb-3 h-5 w-[180px] rounded bg-secondary" />
-								<div className="mb-4 h-3.5 w-[260px] rounded bg-secondary" />
-								<div className="mb-2 h-1.5 rounded bg-secondary" />
-								<div className="h-3 w-[100px] rounded bg-secondary" />
-							</Card>
-						))}
-					</div>
-				) : campaigns.length === 0 ? (
-					<Card>
-						<div className="py-12 text-center">
-							<div className="mb-3 text-5xl leading-none">🎯</div>
-							<div className="mb-1 text-base font-medium text-foreground">
-								No campaigns yet
-							</div>
-							<div className="text-sm text-muted-foreground">
-								Your church hasn&apos;t started any campaigns. Check back later!
-							</div>
-						</div>
-					</Card>
-				) : (
-					<>
-						{activeCampaigns.length > 0 && (
-							<>
-								<div className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-									Active campaigns
-								</div>
-								<div className="mb-8 grid grid-cols-2 gap-4">
-									{activeCampaigns.map((c) => (
-										<CampaignCard
-											key={c.id}
-											campaign={c}
-											myPledges={pledgeByCampaign[c.id] ?? []}
-											tenantSlug={tenantSlug}
-											memberId={memberId}
-											onPledge={open}
-										/>
-									))}
-								</div>
-							</>
-						)}
-
-						{pastCampaigns.length > 0 && (
-							<>
-								<div className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-									Past campaigns
-								</div>
-								<div className="mb-8 grid grid-cols-2 gap-4">
-									{pastCampaigns.map((c) => (
-										<CampaignCard
-											key={c.id}
-											campaign={c}
-											myPledges={pledgeByCampaign[c.id] ?? []}
-											tenantSlug={tenantSlug}
-											memberId={memberId}
-											onPledge={open}
-											past
-										/>
-									))}
-								</div>
-							</>
-						)}
-					</>
-				)}
+				<DataTableShell<Campaign>
+					search={{
+						value: search,
+						onChange: (v) => {
+							setSearch(v);
+							setOffset(0);
+						},
+						placeholder: "Search by title…",
+					}}
+					filters={[
+						{
+							key: "status",
+							label: "Status",
+							value: status,
+							onChange: (v) => {
+								setStatus(v as StatusFilter);
+								setOffset(0);
+							},
+							options: STATUS_OPTIONS,
+						},
+					]}
+					onClearFilters={() => {
+						setStatus("all");
+						setOffset(0);
+					}}
+					stats={[
+						{ label: "active", value: activeCount, tone: "success" },
+						{ label: "upcoming", value: upcomingCount },
+						{
+							label: "raised / goal (active)",
+							value:
+								aggregate.goal > 0
+									? `${formatCompact(aggregate.raised)} / ${formatCompact(aggregate.goal)}`
+									: "—",
+						},
+					]}
+					columns={columns}
+					rows={visible}
+					rowKey={(c) => c.id}
+					loading={campaignsQ.isLoading}
+					onRowClick={(c) =>
+						router.push(`/${tenantSlug}/member/campaigns/${c.id}`)
+					}
+					emptyTitle="No campaigns yet"
+					emptySubtitle="Your church hasn't started any campaigns. Check back later!"
+					pagination={{
+						total: filtered.length,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
+					}}
+				/>
 			</div>
 		</div>
-	);
-};
-
-const CampaignCard = ({
-	campaign: c,
-	myPledges,
-	tenantSlug,
-	memberId,
-	onPledge,
-	past,
-}: {
-	campaign: Campaign;
-	myPledges: components["schemas"]["PledgeResponseDto"][];
-	tenantSlug: string;
-	memberId?: string;
-	onPledge: (name: "member-pledge", props: MemberPledgeProps) => void;
-	past?: boolean;
-}) => {
-	const progressQ = useMyCampaignProgress(tenantSlug, c.id, Boolean(c.id));
-	const progress = progressQ.data;
-	const goal = Number(progress?.goalAmount ?? 0);
-	const raised = Number(progress?.raisedAmount ?? 0);
-	const pledged = Number(progress?.pledgedAmount ?? 0);
-	const pct = goal > 0 ? Math.min((raised / goal) * 100, 100) : 0;
-
-	const items = progress?.items ?? [];
-	const description = nstr(c.description);
-	const deadline = nstr(c.deadline);
-
-	const myPledgeTotal = myPledges.reduce(
-		(s, p) => s + Number(p.pledgedAmount),
-		0,
-	);
-	const myActivePledges = myPledges.filter((p) => p.status === "ACTIVE");
-
-	return (
-		<Card padding={24} className="flex h-full flex-col">
-			<div className="mb-1.5 flex items-center gap-2">
-				<h3 className="min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-foreground">
-					{c.title}
-				</h3>
-				<StatusBadge status={STATUS_MAP[c.status]} />
-			</div>
-
-			<div className="mb-3.5 line-clamp-2 min-h-[2.8em] text-sm leading-snug text-secondary-foreground">
-				{description || "\u00A0"}
-			</div>
-
-			<div className="mb-3">
-				<div className="mb-2 h-2 overflow-hidden rounded bg-muted">
-					<div
-						className={cn(
-							"h-full rounded transition-[width] duration-500 ease-out",
-							past
-								? "bg-muted-foreground"
-								: "bg-linear-to-r from-ring to-primary",
-						)}
-						style={{ width: goal > 0 ? `${pct}%` : "0%" }}
-					/>
-				</div>
-				<div className="flex justify-between text-xs tabular-nums text-muted-foreground">
-					<span>
-						{formatCompact(raised)} raised
-						{pledged > 0 && ` · ${formatCompact(pledged)} pledged`}
-					</span>
-					<span>
-						{goal > 0 ? `Goal: ${formatCompact(goal)}` : "No goal set"}
-					</span>
-				</div>
-			</div>
-
-			{items.length > 0 && (
-				<div className="mb-3.5">
-					<div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-						Campaign items
-					</div>
-					<div className="flex flex-col gap-1.5">
-						{items.map((item) => {
-							const itemPct =
-								Number(item.targetAmount) > 0
-									? Math.min(
-											(Number(item.raisedAmount) / Number(item.targetAmount)) *
-												100,
-											100,
-										)
-									: 0;
-							return (
-								<div key={item.itemId} className="flex items-center gap-2.5">
-									<div className="min-w-0 flex-1">
-										<div className="mb-0.5 flex justify-between text-xs">
-											<span className="font-medium text-foreground">
-												{item.title}
-											</span>
-											<span className="tabular-nums text-muted-foreground">
-												{`${item.raisedAmount} / ${formatCompact(Number(item.targetAmount))}`}
-											</span>
-										</div>
-										<div className="h-1 rounded-sm bg-muted">
-											<div
-												className="h-full rounded-sm bg-primary transition-[width] duration-500"
-												style={{ width: `${itemPct}%` }}
-											/>
-										</div>
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				</div>
-			)}
-
-			<div className="flex-1" />
-
-			<div className="-mx-6 mb-3.5 h-px bg-secondary" />
-
-			<div className="mb-3.5 flex flex-wrap gap-1.5">
-				{myActivePledges.length > 0 ? (
-					<Badge color="indigo">
-						Your pledge: {formatCompact(myPledgeTotal)}
-					</Badge>
-				) : (
-					!past && <Badge color="neutral">No pledge yet</Badge>
-				)}
-				{deadline && (
-					<Badge color="gray">
-						{past ? "Ended" : "Ends"} {dayjs(deadline).format("MMM D, YYYY")}
-					</Badge>
-				)}
-				{progress && (
-					<Badge color="gray">
-						{progress.pledgeCount} pledge
-						{progress.pledgeCount !== 1 ? "s" : ""}
-					</Badge>
-				)}
-			</div>
-
-			{!past && memberId && (
-				<Button
-					role="primary"
-					className="w-full"
-					onClick={() =>
-						onPledge("member-pledge", {
-							tenantSlug,
-							campaignId: c.id,
-							campaignTitle: c.title,
-							items: items.map((i) => ({
-								id: i.itemId,
-								tenantId: c.tenantId,
-								campaignId: c.id,
-								title: i.title,
-								targetAmount: i.targetAmount,
-								sortOrder: 0,
-								createdAt: c.createdAt,
-								updatedAt: c.updatedAt,
-								// Items synthesized from /progress aren't real DB rows, but
-								// the typed shape now requires the soft-delete fields.
-								deletedAt: null,
-								deletedBy: null,
-								deletedByCascade: false,
-							})),
-						})
-					}
-				>
-					{myActivePledges.length > 0 ? "Add another pledge" : "Make a pledge"}
-				</Button>
-			)}
-		</Card>
 	);
 };

@@ -8,6 +8,7 @@ export const TRANSACTION_PATHS = [
 	"/api/v1/tenants/{tenantId}/transactions/summary",
 	"/api/v1/tenants/{tenantId}/me/transactions",
 	"/api/v1/tenants/{tenantId}/me/transactions/{id}",
+	"/api/v1/tenants/{tenantId}/me/transactions/summary",
 ] as const;
 
 // Transactions are always tenant-scoped, so invalidation is scoped too:

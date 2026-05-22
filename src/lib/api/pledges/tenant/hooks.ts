@@ -3,27 +3,17 @@
 import { useQueryClient } from "@tanstack/react-query";
 
 import { invalidateCampaigns } from "../../campaigns/keys";
-import { useApiMutation, useApiQuery } from "../../hooks";
+import { type GetQuery, useApiMutation, useApiQuery } from "../../hooks";
 import { invalidatePledges } from "../keys";
 
 // Tenant intent — admin-facing pledge management hooks. Members consume
 // the self-intent variants (useMyPledges, etc.) which scope to the
 // caller automatically.
 
-export type PledgesListQuery = {
-	campaignId?: string;
-	campaignItemId?: string;
-	memberId?: string;
-	status?: "ACTIVE" | "FULFILLED" | "CANCELLED";
-	// ISO 8601 UTC, both inclusive — bracket the pledge's createdAt.
-	dateFrom?: string;
-	dateTo?: string;
-	offset?: number;
-	limit?: number;
-	// 3-state archive filter — see members/tenant/hooks for encoding.
-	includeDeleted?: boolean;
-	onlyDeleted?: boolean;
-};
+export type PledgesListQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/pledges",
+	"get"
+>;
 
 export const usePledges = (
 	tenantId: string,

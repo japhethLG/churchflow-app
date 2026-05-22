@@ -16,7 +16,9 @@ import {
 	type PledgeLifecycle,
 	pct,
 	pledgeLifecycle,
+	resolvePledgeDeadline,
 } from "../admin-shared";
+import { useCampaignsManyWithItems } from "../dashboard/useCampaignsManyWithItems";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -81,11 +83,27 @@ export const PledgeDynamicsTab = ({
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const pledgesHref = `/${tenantSlug}/admin/pledges`;
 
+	// Item deadline takes precedence over campaign deadline — fan out item
+	// metadata for the unique campaigns referenced by the pledges in view.
+	const pledgeCampaignIds = useMemo(() => {
+		const set = new Set<string>();
+		for (const p of pledges) {
+			if (p.campaignId) {
+				set.add(p.campaignId);
+			}
+		}
+		return Array.from(set);
+	}, [pledges]);
+	const { itemDeadlinesById } = useCampaignsManyWithItems(
+		tenantSlug,
+		pledgeCampaignIds,
+	);
+
 	const enriched = useMemo(
 		() =>
 			pledges.map((p) => {
 				const c = campaignsById[p.campaignId];
-				const deadline = typeof c?.deadline === "string" ? c.deadline : null;
+				const deadline = resolvePledgeDeadline(p, c, itemDeadlinesById);
 				return {
 					p,
 					deadline,
@@ -98,7 +116,7 @@ export const PledgeDynamicsTab = ({
 					),
 				};
 			}),
-		[pledges, campaignsById],
+		[pledges, campaignsById, itemDeadlinesById],
 	);
 
 	const active = enriched.filter((r) => r.p.status === "ACTIVE");

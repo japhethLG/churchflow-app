@@ -1,5 +1,6 @@
-export { MemberCampaignsPledges } from "./MemberCampaignsPledges";
+export { MemberChurchMixCard } from "./MemberChurchMixCard";
+export { MemberChurchPulseStrip } from "./MemberChurchPulseStrip";
 export { MemberDashboardPage } from "./MemberDashboardPage";
-export { MemberKpiStrip } from "./MemberKpiStrip";
+export { MemberDeadlinesWatchCard } from "./MemberDeadlinesWatchCard";
+export { MemberOutstandingPledgesCard } from "./MemberOutstandingPledgesCard";
 export { MemberRecentGiving } from "./MemberRecentGiving";
-export { MemberThankYou } from "./MemberThankYou";

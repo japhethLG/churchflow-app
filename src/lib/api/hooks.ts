@@ -44,6 +44,37 @@ type GetResponse<P, M extends HttpMethod> = P extends keyof paths
 		: unknown
 	: unknown;
 
+// Schema-derived helpers — wrapper hooks should pluck these from `paths`
+// instead of redeclaring query/path/body shapes by hand. Keeps the OpenAPI
+// schema as the single source of truth.
+type GetParams<P, M extends HttpMethod> = P extends keyof paths
+	? paths[P] extends { [_ in M]: infer Op }
+		? Op extends { parameters: infer Params }
+			? Params
+			: never
+		: never
+	: never;
+
+export type GetQuery<P, M extends HttpMethod> =
+	GetParams<P, M> extends {
+		query?: infer Q;
+	}
+		? Q
+		: never;
+
+export type GetPathParams<P, M extends HttpMethod> =
+	GetParams<P, M> extends { path: infer Pp } ? Pp : never;
+
+export type GetBody<P, M extends HttpMethod> = P extends keyof paths
+	? paths[P] extends { [_ in M]: infer Op }
+		? Op extends {
+				requestBody: { content: { "application/json": infer B } };
+			}
+			? B
+			: never
+		: never
+	: never;
+
 export const useApiQuery = <P extends PathsWithMethod<"get">>(
 	path: P,
 	init?: GetInit<P, "get">,

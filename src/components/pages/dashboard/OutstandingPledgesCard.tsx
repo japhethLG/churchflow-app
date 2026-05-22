@@ -18,6 +18,7 @@ import {
 	LIFECYCLE_LABEL,
 	num,
 	pledgeLifecycle,
+	resolvePledgeDeadline,
 } from "../admin-shared";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
@@ -28,12 +29,14 @@ export const OutstandingPledgesCard = ({
 	pledges,
 	campaignsById,
 	membersById,
+	itemDeadlinesById,
 	tenantSlug,
 	loading,
 }: {
 	pledges: Pledge[];
 	campaignsById: Record<string, Campaign>;
 	membersById: Record<string, Member>;
+	itemDeadlinesById: Record<string, string | null>;
 	tenantSlug: string;
 	loading?: boolean;
 }) => {
@@ -42,8 +45,7 @@ export const OutstandingPledgesCard = ({
 	const enriched = pledges
 		.map((p) => {
 			const c = campaignsById[p.campaignId];
-			const deadline =
-				typeof c?.deadline === "string" ? (c.deadline as string) : null;
+			const deadline = resolvePledgeDeadline(p, c, itemDeadlinesById);
 			return {
 				p,
 				member: membersById[p.memberId],

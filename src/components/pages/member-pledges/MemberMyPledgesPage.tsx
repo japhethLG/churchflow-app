@@ -7,24 +7,25 @@ import {
 	DateRangePicker,
 	type DateRangeValue,
 	PageHeader,
+	SegmentedControl,
 } from "@/components/primitives";
 import { useMyCampaigns } from "@/lib/api/campaigns";
-import { useMyProfile } from "@/lib/api/members";
 import { useMyPledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
+import { num, pct } from "../admin-shared";
+import { useMyCampaignsManyWithItems } from "../member-dashboard/useMyCampaignsManyWithItems";
 import {
 	type MemberPledgeRow,
 	memberPledgeColumns,
 } from "./MemberPledgesTable";
 
-type StatusFilter = "all" | "ACTIVE" | "FULFILLED" | "CANCELLED";
+type LifecycleTab = "active" | "past" | "all";
 
-const STATUS_OPTIONS = [
-	{ value: "all", label: "All statuses" },
-	{ value: "ACTIVE", label: "Active" },
-	{ value: "FULFILLED", label: "Fulfilled" },
-	{ value: "CANCELLED", label: "Cancelled" },
+const TAB_OPTIONS = [
+	{ value: "active", label: "Active" },
+	{ value: "past", label: "Past" },
+	{ value: "all", label: "All" },
 ];
 
 export const MemberMyPledgesPage = () => {
@@ -32,13 +33,11 @@ export const MemberMyPledgesPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
 	const [search, setSearch] = useState("");
-	const [status, setStatus] = useState<StatusFilter>("all");
+	const [tab, setTab] = useState<LifecycleTab>("active");
 	const [campaignId, setCampaignId] = useState<string>("all");
 	const [range, setRange] = useState<DateRangeValue>({});
 	const [offset, setOffset] = useState(0);
 	const [limit, setLimit] = useState(20);
-
-	const memberQ = useMyProfile(tenantSlug);
 
 	// Self-scoped automatically by URL prefix.
 	const pledgesQ = useMyPledges(tenantSlug, {
@@ -55,12 +54,35 @@ export const MemberMyPledgesPage = () => {
 	// Mode-B (DeletedLabel) with the original title.
 	const campaignsQ = useMyCampaigns(tenantSlug, { includeDeleted: true });
 	const campaigns = campaignsQ.data?.items ?? [];
-	const campaignMap = Object.fromEntries(campaigns.map((c) => [c.id, c]));
+	const campaignMap = useMemo(
+		() => Object.fromEntries(campaigns.map((c) => [c.id, c])),
+		[campaigns],
+	);
+
+	// Item deadlines for the campaigns referenced by these pledges — item
+	// deadline wins over campaign deadline when set.
+	const pledgeCampaignIds = useMemo(() => {
+		const set = new Set<string>();
+		for (const p of pledges) {
+			if (p.campaignId) {
+				set.add(p.campaignId);
+			}
+		}
+		return Array.from(set);
+	}, [pledges]);
+	const { itemDeadlinesById } = useMyCampaignsManyWithItems(
+		tenantSlug,
+		pledgeCampaignIds,
+	);
 
 	const filtered = useMemo<MemberPledgeRow[]>(() => {
 		let out = pledges;
-		if (status !== "all") {
-			out = out.filter((p) => p.status === status);
+		if (tab === "active") {
+			out = out.filter((p) => p.status === "ACTIVE");
+		} else if (tab === "past") {
+			out = out.filter(
+				(p) => p.status === "FULFILLED" || p.status === "CANCELLED",
+			);
 		}
 		if (campaignId !== "all") {
 			out = out.filter((p) => p.campaignId === campaignId);
@@ -73,20 +95,33 @@ export const MemberMyPledgesPage = () => {
 			});
 		}
 		return out;
-	}, [pledges, status, campaignId, search, campaignMap]);
+	}, [pledges, tab, campaignId, search, campaignMap]);
 
 	const visible = filtered.slice(offset, offset + limit);
 
-	const activePledges = pledges.filter((p) => p.status === "ACTIVE");
-	const totalActive = activePledges.reduce(
-		(s, p) => s + Number(p.pledgedAmount),
-		0,
-	);
+	// Header stats scope to the *current view*, so the numbers always
+	// describe what the member is looking at.
+	const stats = useMemo(() => {
+		let pledged = 0;
+		let paid = 0;
+		let remaining = 0;
+		for (const p of filtered) {
+			pledged += num(p.pledgedAmount);
+			paid += num(p.paidAmount);
+			remaining += num(p.remainingAmount);
+		}
+		return {
+			count: filtered.length,
+			pledged,
+			paid,
+			remaining,
+			fulfillment: pct(paid, pledged),
+		};
+	}, [filtered]);
 
-	const loading =
-		pledgesQ.isLoading || memberQ.isLoading || campaignsQ.isLoading;
+	const loading = pledgesQ.isLoading || campaignsQ.isLoading;
 
-	const columns = memberPledgeColumns({ campaignMap });
+	const columns = memberPledgeColumns({ campaignMap, itemDeadlinesById });
 
 	const resetOffset = () => setOffset(0);
 
@@ -100,6 +135,17 @@ export const MemberMyPledgesPage = () => {
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="mb-4">
+					<SegmentedControl
+						options={TAB_OPTIONS}
+						value={tab}
+						onChange={(v) => {
+							setTab(v as LifecycleTab);
+							resetOffset();
+						}}
+					/>
+				</div>
+
 				<DataTableShell<MemberPledgeRow>
 					search={{
 						value: search,
@@ -110,16 +156,6 @@ export const MemberMyPledgesPage = () => {
 						placeholder: "Search by campaign…",
 					}}
 					filters={[
-						{
-							key: "status",
-							label: "Status",
-							value: status,
-							onChange: (v) => {
-								setStatus(v as StatusFilter);
-								resetOffset();
-							},
-							options: STATUS_OPTIONS,
-						},
 						{
 							key: "campaign",
 							label: "Campaign",
@@ -148,19 +184,20 @@ export const MemberMyPledgesPage = () => {
 						/>
 					}
 					onClearFilters={() => {
-						setStatus("all");
 						setCampaignId("all");
 						setRange({});
 						resetOffset();
 					}}
 					stats={[
-						{ label: "pledges", value: pledges.length },
+						{ label: "pledges", value: stats.count },
+						{ label: "pledged", value: formatCurrency(stats.pledged) },
 						{
-							label: "active",
-							value: activePledges.length,
+							label: "paid",
+							value: formatCurrency(stats.paid),
 							tone: "success",
 						},
-						{ label: "total active", value: formatCurrency(totalActive) },
+						{ label: "remaining", value: formatCurrency(stats.remaining) },
+						{ label: "fulfillment", value: `${stats.fulfillment}%` },
 					]}
 					columns={columns}
 					rows={visible}
@@ -169,8 +206,12 @@ export const MemberMyPledgesPage = () => {
 					onRowClick={(r) =>
 						router.push(`/${tenantSlug}/member/my-pledges/${r.id}`)
 					}
-					emptyTitle="No pledges yet"
-					emptySubtitle="When you pledge to a campaign, it'll appear here."
+					emptyTitle={tab === "past" ? "No past pledges yet" : "No pledges yet"}
+					emptySubtitle={
+						tab === "past"
+							? "Fulfilled and cancelled pledges will appear here."
+							: "When you pledge to a campaign, it'll appear here."
+					}
 					pagination={{
 						total: filtered.length,
 						offset,

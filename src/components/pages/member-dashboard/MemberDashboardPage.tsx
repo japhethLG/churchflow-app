@@ -1,124 +1,144 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useMemo } from "react";
 import { PageHeader } from "@/components/primitives";
-import { useMyCampaignProgress, useMyCampaigns } from "@/lib/api/campaigns";
+import type { components } from "@/lib/api";
+import { useMyCampaigns } from "@/lib/api/campaigns";
 import { useMyProfile } from "@/lib/api/members";
 import { useMyPledges } from "@/lib/api/pledges";
-import { useMyChurch } from "@/lib/api/tenants";
+import { useMyChurch, useMyChurchSummary } from "@/lib/api/tenants";
 import { useMyTransactions } from "@/lib/api/transactions";
-import { MemberCampaignsPledges } from "./MemberCampaignsPledges";
-import { MemberKpiStrip } from "./MemberKpiStrip";
+import dayjs from "@/lib/dayjs";
+import { num } from "../admin-shared";
+import { MemberChurchMixCard } from "./MemberChurchMixCard";
+import { MemberChurchPulseStrip } from "./MemberChurchPulseStrip";
+import { MemberDeadlinesWatchCard } from "./MemberDeadlinesWatchCard";
+import { MemberOutstandingPledgesCard } from "./MemberOutstandingPledgesCard";
 import { MemberRecentGiving } from "./MemberRecentGiving";
-import { MemberThankYou } from "./MemberThankYou";
+import { useMyCampaignProgressMany } from "./useMyCampaignProgressMany";
+import { useMyCampaignsManyWithItems } from "./useMyCampaignsManyWithItems";
+
+type Campaign = components["schemas"]["CampaignResponseDto"];
+
+const getGreeting = (): string => {
+	const h = dayjs().hour();
+	if (h < 12) {
+		return "Good morning";
+	}
+	if (h < 17) {
+		return "Good afternoon";
+	}
+	return "Good evening";
+};
 
 export const MemberDashboardPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	// Tenant name for greeting (member-perspective read)
 	const tenantQ = useMyChurch(tenantSlug);
+	const summaryQ = useMyChurchSummary(tenantSlug);
 
-	// Current member
 	const memberQ = useMyProfile(tenantSlug);
-	const memberId = memberQ.data?.id;
 	const firstName = memberQ.data?.firstName ?? "there";
 
-	// Member's transactions — self-scoped automatically by URL
+	// Caller's transactions — used for "your giving this year" + Recent
+	// giving table. Self-scoped automatically by URL prefix.
 	const txQ = useMyTransactions(tenantSlug, { limit: 500 });
 	const transactions = txQ.data?.items ?? [];
 
-	// Active campaigns (member-visible)
-	const campaignsQ = useMyCampaigns(tenantSlug);
-	const campaigns = campaignsQ.data?.items ?? [];
-	const activeCampaigns = campaigns.filter((c) => c.status === "ACTIVE");
+	const myYearTotal = useMemo(() => {
+		const yearStart = dayjs().startOf("year");
+		return transactions
+			.filter((t) => dayjs(t.date).isSameOrAfter(yearStart))
+			.reduce((s, t) => s + num(t.amount), 0);
+	}, [transactions]);
 
-	// Campaign progress for the first three active campaigns
-	const firstCampaignId = activeCampaigns[0]?.id ?? "";
-	const secondCampaignId = activeCampaigns[1]?.id ?? "";
-	const thirdCampaignId = activeCampaigns[2]?.id ?? "";
-
-	const progress1 = useMyCampaignProgress(
-		tenantSlug,
-		firstCampaignId,
-		Boolean(firstCampaignId),
-	);
-	const progress2 = useMyCampaignProgress(
-		tenantSlug,
-		secondCampaignId,
-		Boolean(secondCampaignId),
-	);
-	const progress3 = useMyCampaignProgress(
-		tenantSlug,
-		thirdCampaignId,
-		Boolean(thirdCampaignId),
+	// Campaigns — used by DeadlinesWatch + lookup for Recent giving.
+	// includeDeleted so a deleted-campaign reference renders Mode-B.
+	const campaignsQ = useMyCampaigns(tenantSlug, { includeDeleted: true });
+	const campaigns: Campaign[] = campaignsQ.data?.items ?? [];
+	const campaignsById = useMemo(
+		() => Object.fromEntries(campaigns.map((c) => [c.id, c])),
+		[campaigns],
 	);
 
-	const progressMap: Record<
-		string,
-		{ goalAmount: number; raisedAmount: number; pledgedAmount: number }
-	> = {};
-	if (progress1.data && firstCampaignId) {
-		progressMap[firstCampaignId] = {
-			goalAmount: progress1.data.goalAmount ?? 0,
-			raisedAmount: progress1.data.raisedAmount ?? 0,
-			pledgedAmount: progress1.data.pledgedAmount ?? 0,
-		};
-	}
-	if (progress2.data && secondCampaignId) {
-		progressMap[secondCampaignId] = {
-			goalAmount: progress2.data.goalAmount ?? 0,
-			raisedAmount: progress2.data.raisedAmount ?? 0,
-			pledgedAmount: progress2.data.pledgedAmount ?? 0,
-		};
-	}
-	if (progress3.data && thirdCampaignId) {
-		progressMap[thirdCampaignId] = {
-			goalAmount: progress3.data.goalAmount ?? 0,
-			raisedAmount: progress3.data.raisedAmount ?? 0,
-			pledgedAmount: progress3.data.pledgedAmount ?? 0,
-		};
-	}
+	// Active + deadlined campaigns → batch their progress for the
+	// DeadlinesWatch card.
+	const deadlinedActiveIds = useMemo(
+		() =>
+			campaigns
+				.filter((c) => c.status === "ACTIVE" && typeof c.deadline === "string")
+				.map((c) => c.id),
+		[campaigns],
+	);
+	const { progressById } = useMyCampaignProgressMany(
+		tenantSlug,
+		deadlinedActiveIds,
+	);
 
-	// Member's pledges — self-scoped automatically by URL
-	const pledgesQ = useMyPledges(tenantSlug);
+	// Pledges + per-campaign item deadlines for the OutstandingPledges
+	// card. Filtering to ACTIVE here keeps the fan-out lean.
+	const pledgesQ = useMyPledges(tenantSlug, { status: "ACTIVE" });
 	const pledges = pledgesQ.data?.items ?? [];
-
-	const loading = memberQ.isLoading || txQ.isLoading;
+	const pledgeCampaignIds = useMemo(() => {
+		const set = new Set<string>();
+		for (const p of pledges) {
+			if (p.campaignId) {
+				set.add(p.campaignId);
+			}
+		}
+		return Array.from(set);
+	}, [pledges]);
+	const { itemDeadlinesById } = useMyCampaignsManyWithItems(
+		tenantSlug,
+		pledgeCampaignIds,
+	);
 
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
 				className="px-8"
-				overline="Welcome"
-				title={`Hello, ${firstName}`}
-				subtitle={`Here's a gentle summary of your giving and campaigns at ${tenantQ.data?.name ?? "your church"}.`}
+				overline={`Orient · ${dayjs().format("dddd, MMMM D")}`}
+				title={`${getGreeting()}, ${firstName}`}
+				subtitle={`Here's how things are at ${tenantQ.data?.name ?? "your church"} and where you stand.`}
 			/>
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
-				{/* Row 1: KPI strip */}
-				<MemberKpiStrip transactions={transactions} loading={loading} />
+				<MemberChurchPulseStrip
+					summary={summaryQ.data}
+					myYearTotal={myYearTotal}
+					loading={summaryQ.isLoading || txQ.isLoading}
+				/>
 
-				{/* Row 2: Recent giving + Campaigns & Pledges */}
-				<div className="mb-6 grid grid-cols-[1.5fr_1fr] gap-4">
-					<MemberRecentGiving
-						transactions={transactions}
-						loading={loading}
-						tenantSlug={tenantSlug}
-					/>
-					<MemberCampaignsPledges
-						campaigns={campaigns}
-						pledges={pledges}
-						progressMap={progressMap}
-						loading={campaignsQ.isLoading}
-						tenantSlug={tenantSlug}
-						memberId={memberId}
+				<div className="mb-6">
+					<MemberChurchMixCard
+						summary={summaryQ.data}
+						loading={summaryQ.isLoading}
 					/>
 				</div>
 
-				{/* Row 3: Thank-you banner */}
-				{!loading && transactions.length > 0 && (
-					<MemberThankYou name={firstName} />
-				)}
+				<div className="mb-6 grid gap-4 lg:grid-cols-2">
+					<MemberOutstandingPledgesCard
+						pledges={pledges}
+						campaignsById={campaignsById}
+						itemDeadlinesById={itemDeadlinesById}
+						tenantSlug={tenantSlug}
+						loading={pledgesQ.isLoading || campaignsQ.isLoading}
+					/>
+					<MemberDeadlinesWatchCard
+						campaigns={campaigns}
+						progressById={progressById}
+						tenantSlug={tenantSlug}
+						loading={campaignsQ.isLoading}
+					/>
+				</div>
+
+				<MemberRecentGiving
+					transactions={transactions}
+					campaignsById={campaignsById}
+					loading={txQ.isLoading}
+					tenantSlug={tenantSlug}
+				/>
 			</div>
 		</div>
 	);

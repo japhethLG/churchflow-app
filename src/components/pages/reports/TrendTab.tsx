@@ -3,12 +3,9 @@
 import {
 	Bar,
 	CartesianGrid,
-	Cell,
 	ComposedChart,
 	Legend,
 	Line,
-	Pie,
-	PieChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -18,6 +15,7 @@ import { Card, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { num, pct, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import { TransactionMixCard } from "../TransactionMixCard";
 
 type Summary = components["schemas"]["TransactionSummaryResponseDto"];
 
@@ -116,18 +114,6 @@ export const TrendTab = ({
 			};
 		});
 
-	const typePlaceholder = [
-		{
-			key: "empty",
-			label: "No data",
-			color: "var(--chart-track)",
-			amount: 1,
-			count: 0,
-			share: 0,
-			avg: 0,
-		},
-	];
-
 	return (
 		<>
 			<Card className="mb-6">
@@ -200,133 +186,12 @@ export const TrendTab = ({
 				)}
 			</Card>
 
-			<Card className="mb-6">
-				<SectionTitle title="Where the money came from" />
-				<p className="-mt-3 mb-5 text-sm text-muted-foreground">
-					Mix of total received by transaction type for the selected period.
-				</p>
-				{typeSegments.length === 0 ? (
-					<div className="py-12 text-center text-sm text-muted-foreground">
-						No transactions in this range.
-					</div>
-				) : (
-					<div className="grid items-center gap-8 lg:grid-cols-[300px_1fr]">
-						<div className="grid place-items-center">
-							<div className="relative size-[260px]">
-								<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-									<div>
-										<div className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
-											Total
-										</div>
-										<div className="mt-1 text-2xl font-bold tabular-nums text-foreground">
-											{formatCompact(totalThisPeriod)}
-										</div>
-										<div className="mt-0.5 text-xs text-muted-foreground">
-											{currentSummary?.count ?? 0} gifts
-										</div>
-									</div>
-								</div>
-								<ResponsiveContainer width="100%" height="100%">
-									<PieChart>
-										<Pie
-											data={
-												typeSegments.length > 0 ? typeSegments : typePlaceholder
-											}
-											dataKey="amount"
-											cx="50%"
-											cy="50%"
-											innerRadius={78}
-											outerRadius={112}
-											paddingAngle={1.5}
-											stroke="none"
-										>
-											{(typeSegments.length > 0
-												? typeSegments
-												: typePlaceholder
-											).map((s) => (
-												<Cell key={s.key} fill={s.color} />
-											))}
-										</Pie>
-										<Tooltip
-											content={({ active, payload }) => {
-												if (!active || !payload?.length) {
-													return null;
-												}
-												const d = payload[0]?.payload as
-													| (typeof typeSegments)[number]
-													| undefined;
-												if (!d) {
-													return null;
-												}
-												return (
-													<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
-														<div className="flex items-center gap-1.5 font-medium">
-															<span
-																className="inline-block size-2 rounded-sm"
-																style={{ background: d.color }}
-															/>
-															{d.label}
-														</div>
-														<div className="mt-0.5 tabular-nums">
-															{formatCurrency(d.amount, { decimals: 0 })}
-															<span className="ml-2 opacity-70">
-																{d.share}%
-															</span>
-														</div>
-														<div className="mt-0.5 opacity-70">
-															{d.count} gifts · avg {formatCompact(d.avg)}
-														</div>
-													</div>
-												);
-											}}
-										/>
-									</PieChart>
-								</ResponsiveContainer>
-							</div>
-						</div>
-
-						<div className="flex flex-col">
-							<div className="mb-2 grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-								<span>Type</span>
-								<span className="text-right">Total</span>
-								<span className="text-right">Gifts</span>
-								<span className="text-right">Avg</span>
-								<span className="text-right">Share</span>
-							</div>
-							<ul className="divide-y divide-border">
-								{typeSegments.map((s) => (
-									<li
-										key={s.key}
-										className="grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] items-center gap-3 py-3 text-sm"
-									>
-										<div className="flex items-center gap-2">
-											<span
-												className="size-3 shrink-0 rounded-sm"
-												style={{ background: s.color }}
-											/>
-											<span className="font-medium text-foreground">
-												{s.label}
-											</span>
-										</div>
-										<span className="text-right tabular-nums font-medium text-foreground">
-											{formatCurrency(s.amount, { decimals: 0 })}
-										</span>
-										<span className="text-right tabular-nums text-muted-foreground">
-											{s.count}
-										</span>
-										<span className="text-right tabular-nums text-muted-foreground">
-											{formatCurrency(s.avg, { decimals: 0 })}
-										</span>
-										<span className="text-right tabular-nums font-semibold text-foreground">
-											{s.share}%
-										</span>
-									</li>
-								))}
-							</ul>
-						</div>
-					</div>
-				)}
-			</Card>
+			<TransactionMixCard
+				className="mb-6"
+				segments={typeSegments}
+				total={totalThisPeriod}
+				count={currentSummary?.count ?? 0}
+			/>
 		</>
 	);
 };

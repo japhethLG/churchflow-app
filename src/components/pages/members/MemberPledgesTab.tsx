@@ -23,7 +23,9 @@ import {
 	type PledgeLifecycle,
 	pct,
 	pledgeLifecycle,
+	resolvePledgeDeadline,
 } from "../admin-shared";
+import { useCampaignsManyWithItems } from "../dashboard/useCampaignsManyWithItems";
 
 type Member = components["schemas"]["MemberResponseDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
@@ -89,11 +91,26 @@ export const MemberPledgesTab = ({
 		[campaignsQ.data],
 	);
 
+	// Item deadline wins over campaign deadline when set — fan-out fetches
+	// items for the campaigns this member has pledged to.
+	const memberCampaignIds = useMemo(() => {
+		const set = new Set<string>();
+		for (const p of data?.items ?? []) {
+			if (p.campaignId) {
+				set.add(p.campaignId);
+			}
+		}
+		return Array.from(set);
+	}, [data]);
+	const { itemDeadlinesById } = useCampaignsManyWithItems(
+		tenantSlug,
+		memberCampaignIds,
+	);
+
 	const rows: Row[] = useMemo(() => {
 		return (data?.items ?? []).map((p) => {
 			const campaign = campaignsById[p.campaignId];
-			const deadline =
-				typeof campaign?.deadline === "string" ? campaign.deadline : null;
+			const deadline = resolvePledgeDeadline(p, campaign, itemDeadlinesById);
 			return {
 				p,
 				deadline,
@@ -107,7 +124,7 @@ export const MemberPledgesTab = ({
 				campaign,
 			};
 		});
-	}, [data, campaignsById]);
+	}, [data, campaignsById, itemDeadlinesById]);
 
 	const agg = useMemo(() => {
 		let pledged = 0;

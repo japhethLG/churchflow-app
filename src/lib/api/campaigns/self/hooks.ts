@@ -1,21 +1,15 @@
 "use client";
 
-import { useApiQuery } from "../../hooks";
+import { type GetQuery, useApiQuery } from "../../hooks";
 
 // Self intent — read-only access to campaigns visible to any member.
 // Member-facing dashboards and the pledge flow use these hooks; admin
 // management surfaces use the tenant hooks.
 
-export type MyCampaignsListQuery = {
-	status?: "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
-	// ISO 8601 UTC, both inclusive — bracket the campaign's createdAt.
-	dateFrom?: string;
-	dateTo?: string;
-	offset?: number;
-	limit?: number;
-	includeDeleted?: boolean;
-	onlyDeleted?: boolean;
-};
+export type MyCampaignsListQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/me/campaigns",
+	"get"
+>;
 
 export const useMyCampaigns = (
 	tenantId: string,

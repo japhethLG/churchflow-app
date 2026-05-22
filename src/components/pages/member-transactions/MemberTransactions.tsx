@@ -15,14 +15,15 @@ import { type TransactionType, TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
 import { useMyCampaigns } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
-import { useMyProfile } from "@/lib/api/members";
 import { useMyTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
+import { num, pct, type TxType, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import { TransactionMixCard } from "../TransactionMixCard";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
-const TYPE_MAP: Record<string, TransactionType> = {
+const TYPE_BADGE: Record<TxType, TransactionType> = {
 	TITHE: "Tithe",
 	OFFERING: "Offering",
 	MISSION_GIVING: "Mission",
@@ -32,7 +33,7 @@ const TYPE_MAP: Record<string, TransactionType> = {
 	OTHER: "Other",
 };
 
-type TypeFilter = "all" | Transaction["type"];
+type TypeFilter = "all" | TxType;
 
 const TYPE_OPTIONS = [
 	{ value: "all", label: "All types" },
@@ -60,27 +61,19 @@ export const MemberTransactions = ({
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
 	const [type, setType] = useState<TypeFilter>("all");
+	const [campaignId, setCampaignId] = useState<string>("all");
 	const [range, setRange] = useState<DateRangeValue>(DEFAULT_RANGE);
 	const [offset, setOffset] = useState(0);
 	const [limit, setLimit] = useState(20);
 
-	// Current member (kept around for any downstream side effects)
-	useMyProfile(tenantSlug);
-
-	// Campaigns to resolve titles (member-visible). Include archived
-	// campaigns so deleted references can render Mode-B (DeletedLabel)
-	// instead of falling back to the em-dash placeholder.
+	// Campaigns to resolve titles + drive the filter dropdown. Include
+	// archived so deleted references can render Mode-B (DeletedLabel).
 	const campaignsQ = useMyCampaigns(tenantSlug, { includeDeleted: true });
 	const campaigns = campaignsQ.data?.items ?? [];
-	const campaignMap = useMemo(() => {
-		return campaigns.reduce(
-			(acc, c) => {
-				acc[c.id] = c;
-				return acc;
-			},
-			{} as Record<string, (typeof campaigns)[number]>,
-		);
-	}, [campaigns]);
+	const campaignMap = useMemo(
+		() => Object.fromEntries(campaigns.map((c) => [c.id, c])),
+		[campaigns],
+	);
 
 	const dateFrom = range.from
 		? dayjs.utc(range.from).startOf("day").toISOString()
@@ -89,8 +82,11 @@ export const MemberTransactions = ({
 		? dayjs.utc(range.to).endOf("day").toISOString()
 		: undefined;
 
+	// Filtered query — table + mix bar both consume this. The 12-month
+	// sparkline below uses a separate query (stable trailing window).
 	const txQ = useMyTransactions(tenantSlug, {
 		type: type === "all" ? undefined : type,
+		campaignId: campaignId === "all" ? undefined : campaignId,
 		dateFrom,
 		dateTo,
 		limit: 1000,
@@ -98,10 +94,38 @@ export const MemberTransactions = ({
 	const transactions: Transaction[] = txQ.data?.items ?? [];
 
 	const stats = useMemo(() => {
-		const total = transactions.reduce((s, t) => s + Number(t.amount), 0);
+		const total = transactions.reduce((s, t) => s + num(t.amount), 0);
 		const count = transactions.length;
 		const avg = count > 0 ? total / count : 0;
 		return { total, count, avg };
+	}, [transactions]);
+
+	// Mix breakdown of the filtered transactions, by type. Shape matches
+	// the shared TransactionMixCard (same donut + table used on the admin
+	// reports page and the member insights page).
+	const mixSegments = useMemo(() => {
+		const byType = new Map<TxType, { amount: number; count: number }>();
+		let total = 0;
+		for (const t of transactions) {
+			const cur = byType.get(t.type) ?? { amount: 0, count: 0 };
+			const amount = num(t.amount);
+			cur.amount += amount;
+			cur.count += 1;
+			byType.set(t.type, cur);
+			total += amount;
+		}
+		return Array.from(byType.entries())
+			.filter(([, v]) => v.amount > 0)
+			.sort((a, b) => b[1].amount - a[1].amount)
+			.map(([k, v]) => ({
+				key: k,
+				label: TYPE_LABEL[k],
+				color: TYPE_COLOR[k],
+				amount: v.amount,
+				count: v.count,
+				share: pct(v.amount, total),
+				avg: v.count > 0 ? v.amount / v.count : 0,
+			}));
 	}, [transactions]);
 
 	const visible = transactions.slice(offset, offset + limit);
@@ -121,7 +145,7 @@ export const MemberTransactions = ({
 			key: "type",
 			label: "Type",
 			width: "140px",
-			render: (t) => <TypeBadge type={TYPE_MAP[t.type] || "Other"} />,
+			render: (t) => <TypeBadge type={TYPE_BADGE[t.type] || "Other"} />,
 		},
 		{
 			key: "campaign",
@@ -152,14 +176,14 @@ export const MemberTransactions = ({
 			},
 		},
 		{
-			key: "ref",
+			key: "reference",
 			label: "Reference #",
 			width: "140px",
 			render: (t) => {
-				const n = nstr(t.note);
+				const ref = nstr(t.referenceNumber);
 				return (
 					<span className="font-mono text-xs text-muted-foreground">
-						{n ? n.slice(0, 10) : "—"}
+						{ref ?? "—"}
 					</span>
 				);
 			},
@@ -175,16 +199,29 @@ export const MemberTransactions = ({
 
 	const resetOffset = () => setOffset(0);
 
+	const hasMix = mixSegments.length > 0;
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
 				className="px-8"
 				overline="My Giving"
-				title="Your giving history."
-				subtitle={`Everything ${tenantSlug} has recorded for you — private, and always yours.`}
+				title="Your giving history"
+				subtitle={`Everything your church has recorded for you — private, and always yours.`}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
+				{hasMix && (
+					<TransactionMixCard
+						segments={mixSegments}
+						total={stats.total}
+						count={stats.count}
+						title="Where your giving went"
+						subtitle="Mix of your giving by transaction type in the current view."
+						emptyMessage="No transactions in the selected range."
+					/>
+				)}
+
 				<DataTableShell<Transaction>
 					filters={[
 						{
@@ -196,6 +233,19 @@ export const MemberTransactions = ({
 								resetOffset();
 							},
 							options: TYPE_OPTIONS,
+						},
+						{
+							key: "campaign",
+							label: "Campaign",
+							value: campaignId,
+							onChange: (v) => {
+								setCampaignId(v);
+								resetOffset();
+							},
+							options: [
+								{ value: "all", label: "All campaigns" },
+								...campaigns.map((c) => ({ value: c.id, label: c.title })),
+							],
 						},
 					]}
 					toolbar={
@@ -214,6 +264,7 @@ export const MemberTransactions = ({
 					onClearFilters={() => {
 						setRange({});
 						setType("all");
+						setCampaignId("all");
 						resetOffset();
 					}}
 					stats={[

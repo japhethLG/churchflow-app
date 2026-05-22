@@ -30,7 +30,9 @@ import {
 	type PledgeLifecycle,
 	pct,
 	pledgeLifecycle,
+	resolvePledgeDeadline,
 } from "../admin-shared";
+import { useCampaignsManyWithItems } from "../dashboard/useCampaignsManyWithItems";
 
 type StatusFilter = "all" | "ACTIVE" | "FULFILLED" | "CANCELLED";
 type LifecycleFilter = "all" | PledgeLifecycle;
@@ -118,10 +120,26 @@ export const PledgesListPage = () => {
 	const rows = data?.items ?? [];
 	const total = data?.meta.total ?? 0;
 
+	// Item deadlines for the campaigns in view — item deadline wins over
+	// campaign deadline when set (advance-deadline use case).
+	const visibleCampaignIds = useMemo(() => {
+		const set = new Set<string>();
+		for (const p of rows) {
+			if (p.campaignId) {
+				set.add(p.campaignId);
+			}
+		}
+		return Array.from(set);
+	}, [rows]);
+	const { itemDeadlinesById } = useCampaignsManyWithItems(
+		tenantSlug,
+		visibleCampaignIds,
+	);
+
 	const enriched = useMemo(() => {
 		return rows.map((p) => {
 			const c = campaignsById[p.campaignId];
-			const deadline = typeof c?.deadline === "string" ? c.deadline : null;
+			const deadline = resolvePledgeDeadline(p, c, itemDeadlinesById);
 			return {
 				p,
 				deadline,
@@ -141,7 +159,7 @@ export const PledgesListPage = () => {
 				campaignTitle: c?.title ?? "Unknown campaign",
 			};
 		});
-	}, [rows, campaignsById, membersById]);
+	}, [rows, campaignsById, membersById, itemDeadlinesById]);
 
 	const filtered = useMemo(() => {
 		let out = enriched;

@@ -54,6 +54,7 @@ export const buildNav = (
 			label: "My giving",
 			href: `${prefix}/member/my-transactions`,
 		},
+		{ icon: "chart", label: "Insights", href: `${prefix}/member/insights` },
 		{ icon: "user", label: "Profile", href: `${prefix}/member/profile` },
 	];
 };

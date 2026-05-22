@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useMemo } from "react";
 import {
 	Amount,
 	Badge,
@@ -17,7 +18,7 @@ import {
 	StatBand,
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
-import { useCampaigns } from "@/lib/api/campaigns";
+import { useCampaign } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { usePledge } from "@/lib/api/pledges";
 import { useTransactions } from "@/lib/api/transactions";
@@ -31,6 +32,7 @@ import {
 	type PledgeLifecycle,
 	pct,
 	pledgeLifecycle,
+	resolvePledgeDeadline,
 } from "../admin-shared";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
@@ -176,10 +178,18 @@ export const PledgeDetailPage = () => {
 	});
 	const member = membersQ.data?.items.find((m) => m.id === pledge?.memberId);
 
-	const campaignsQ = useCampaigns(tenantSlug, { includeDeleted: true });
-	const campaign = campaignsQ.data?.items.find(
-		(c) => c.id === pledge?.campaignId,
-	);
+	const campaignQ = useCampaign(tenantSlug, pledge?.campaignId ?? "", {
+		includeDeleted: true,
+		enabled: Boolean(pledge?.campaignId),
+	});
+	const campaign = campaignQ.data;
+	const itemDeadlinesById = useMemo<Record<string, string | null>>(() => {
+		const map: Record<string, string | null> = {};
+		for (const item of campaign?.items ?? []) {
+			map[item.id] = typeof item.deadline === "string" ? item.deadline : null;
+		}
+		return map;
+	}, [campaign]);
 
 	const memberName = member
 		? `${member.firstName} ${member.lastName}`.trim()
@@ -191,8 +201,9 @@ export const PledgeDetailPage = () => {
 	// pledge edits are off-limits (the campaign's books are closed).
 	const parentBlocked = campaignDeleted || memberDeleted;
 
-	const deadline =
-		typeof campaign?.deadline === "string" ? campaign.deadline : null;
+	const deadline = pledge
+		? resolvePledgeDeadline(pledge, campaign, itemDeadlinesById)
+		: null;
 	const days = daysUntil(deadline);
 	const lifecycle: PledgeLifecycle | null = pledge
 		? pledgeLifecycle(

@@ -2,22 +2,15 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useApiMutation, useApiQuery } from "../../hooks";
+import { type GetQuery, useApiMutation, useApiQuery } from "../../hooks";
 import { invalidateCampaigns } from "../keys";
 
 // Tenant intent — admin-facing campaign management hooks.
 
-export type CampaignsListQuery = {
-	status?: "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
-	// ISO 8601 UTC, both inclusive — bracket the campaign's createdAt.
-	dateFrom?: string;
-	dateTo?: string;
-	offset?: number;
-	limit?: number;
-	// 3-state archive filter — see members/tenant/hooks for encoding.
-	includeDeleted?: boolean;
-	onlyDeleted?: boolean;
-};
+export type CampaignsListQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/campaigns",
+	"get"
+>;
 
 export const useCampaigns = (
 	tenantId: string,

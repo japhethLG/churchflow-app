@@ -87,9 +87,32 @@ export const daysUntil = (
 	return dayjs(deadline).startOf("day").diff(dayjs().startOf("day"), "day");
 };
 
-// Lifecycle bucket for a single pledge given pledge fields + campaign
-// deadline. "Days remaining" is computed against the pledge's campaign /
-// campaign-item deadline; pledges inherit that deadline (no own dueDate).
+// Resolve the deadline a pledge is operating against. Item deadline
+// wins when present — items can carry an *advance* deadline relative to
+// the campaign (e.g. a material that's needed before the campaign as a
+// whole closes). Falls through to the campaign deadline when the pledge
+// is unscoped or its item has no deadline of its own.
+// Generator emits nullable strings as `Record<string, never> | null` —
+// accept `unknown` on the wire-typed fields and normalize internally.
+export const resolvePledgeDeadline = (
+	pledge: { campaignItemId?: unknown },
+	campaign: { deadline?: unknown } | undefined,
+	itemDeadlinesById: Record<string, string | null | undefined>,
+): string | null => {
+	const itemId =
+		typeof pledge.campaignItemId === "string" ? pledge.campaignItemId : null;
+	if (itemId) {
+		const itemDeadline = itemDeadlinesById[itemId];
+		if (typeof itemDeadline === "string") {
+			return itemDeadline;
+		}
+	}
+	return typeof campaign?.deadline === "string" ? campaign.deadline : null;
+};
+
+// Lifecycle bucket for a single pledge given pledge fields + the
+// resolved deadline (use `resolvePledgeDeadline` above). Pledges have no
+// own dueDate — they inherit campaign-item deadline > campaign deadline.
 export type PledgeLifecycle =
 	| "fulfilled"
 	| "on-track"

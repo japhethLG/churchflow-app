@@ -3,33 +3,16 @@
 import { useQueryClient } from "@tanstack/react-query";
 
 import { invalidateCampaigns } from "../../campaigns/keys";
-import { useApiMutation, useApiQuery } from "../../hooks";
+import { type GetQuery, useApiMutation, useApiQuery } from "../../hooks";
 import { invalidatePledges } from "../../pledges/keys";
 import { invalidateTransactions } from "../keys";
 
 // Tenant intent — admin-facing transaction recording / reporting hooks.
 
-export type TransactionsListQuery = {
-	memberId?: string;
-	campaignId?: string;
-	campaignItemId?: string;
-	pledgeId?: string;
-	type?:
-		| "TITHE"
-		| "OFFERING"
-		| "MISSION_GIVING"
-		| "FIRST_FRUIT"
-		| "COMMITMENT"
-		| "DONATION"
-		| "OTHER";
-	dateFrom?: string;
-	dateTo?: string;
-	offset?: number;
-	limit?: number;
-	// 3-state archive filter — see members/tenant/hooks for encoding.
-	includeDeleted?: boolean;
-	onlyDeleted?: boolean;
-};
+export type TransactionsListQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/transactions",
+	"get"
+>;
 
 export const useTransactions = (
 	tenantId: string,
@@ -43,14 +26,10 @@ export const useTransactions = (
 	);
 };
 
-export type TransactionSummaryQuery = {
-	// Either supply an explicit ISO 8601 UTC range (both inclusive, both
-	// optional), or `months` for a rolling window. The range takes
-	// precedence when both are present.
-	dateFrom?: string;
-	dateTo?: string;
-	months?: number;
-};
+export type TransactionSummaryQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/transactions/summary",
+	"get"
+>;
 
 // Summary KPIs + per-type / per-month breakdowns. Admin-only on the
 // backend — members do not call this.

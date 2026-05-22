@@ -18,6 +18,7 @@ import { NowSnapshotStrip } from "./NowSnapshotStrip";
 import { OutstandingPledgesCard } from "./OutstandingPledgesCard";
 import { UnattributedCallout } from "./UnattributedCallout";
 import { useCampaignProgressMany } from "./useCampaignProgressMany";
+import { useCampaignsManyWithItems } from "./useCampaignsManyWithItems";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 type Member = components["schemas"]["MemberResponseDto"];
@@ -101,6 +102,23 @@ export const AdminDashboardPage = () => {
 	const { progressById } = useCampaignProgressMany(
 		tenantSlug,
 		deadlinedCampaignIds,
+	);
+
+	// Item deadlines for the campaigns referenced by active pledges —
+	// `resolvePledgeDeadline` needs them to compute lifecycle correctly
+	// (item deadline takes precedence over campaign deadline).
+	const pledgeCampaignIds = useMemo(() => {
+		const set = new Set<string>();
+		for (const p of pledges) {
+			if (p.campaignId) {
+				set.add(p.campaignId);
+			}
+		}
+		return Array.from(set);
+	}, [pledges]);
+	const { itemDeadlinesById } = useCampaignsManyWithItems(
+		tenantSlug,
+		pledgeCampaignIds,
 	);
 
 	// Unattributed counts — derived from this week's transactions.
@@ -190,6 +208,7 @@ export const AdminDashboardPage = () => {
 						pledges={pledges}
 						campaignsById={campaignsById}
 						membersById={membersById}
+						itemDeadlinesById={itemDeadlinesById}
 						tenantSlug={tenantSlug}
 						loading={
 							activePledgesQ.isLoading ||

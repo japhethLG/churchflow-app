@@ -2,22 +2,16 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useApiMutation, useApiQuery } from "../../hooks";
+import { type GetQuery, useApiMutation, useApiQuery } from "../../hooks";
 import { invalidateInvitations } from "../keys";
 
 // Tenant intent — admin issues, lists, filters, and cancels invitations.
 // Public-facing lookup/accept lives under invitations/public.
 
-export type InvitationsListQuery = {
-	status?: "PENDING" | "ACCEPTED" | "EXPIRED" | "CANCELLED";
-	role?: "ADMIN" | "USER";
-	search?: string;
-	// ISO 8601 UTC, both inclusive — bracket the invitation's createdAt.
-	dateFrom?: string;
-	dateTo?: string;
-	offset?: number;
-	limit?: number;
-};
+export type InvitationsListQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/invitations",
+	"get"
+>;
 
 export const useInvitations = (
 	tenantId: string,
