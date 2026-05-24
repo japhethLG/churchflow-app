@@ -31,7 +31,7 @@ Backend lives in [../church-app-backend](../church-app-backend).
 
 ```bash
 # 1. Install
-npm install
+npm install 
 
 # 2. Configure env — fill .env.local with:
 #    - NEXT_PUBLIC_FIREBASE_*       (client SDK config)
