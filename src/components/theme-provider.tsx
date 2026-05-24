@@ -77,6 +77,10 @@ export function ThemeProvider({
 
 	const setTheme = (t: Theme) => {
 		localStorage.setItem(storageKey, t);
+		try {
+			// biome-ignore lint: document.cookie is used for maximum browser compatibility
+			document.cookie = `${storageKey}=${t}; path=/; max-age=31536000; SameSite=Lax`;
+		} catch {}
 		setThemeState(t);
 	};
 

@@ -13,15 +13,12 @@ import {
 	TypeBadge,
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
-import { useCampaign } from "@/lib/api/campaigns";
-import { useMember } from "@/lib/api/members";
 import { usePledge } from "@/lib/api/pledges";
-import { useTransaction, useTransactions } from "@/lib/api/transactions";
+import { useTransaction, useTransactionSummary } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
 import { cn } from "@/lib/utils";
-import { num } from "../admin-shared";
 
 type Tx = components["schemas"]["TransactionResponseDto"];
 
@@ -55,32 +52,27 @@ export const TransactionDetailPage = () => {
 		includeDeleted: true,
 	});
 
-	const memberId = nstr(tx?.memberId);
-	const campaignId = nstr(tx?.campaignId);
+	// Member / campaign / campaign-item now arrive embedded in the
+	// transaction response — no extra lookup queries.
+	const member = tx?.member ?? null;
+	const campaign = tx?.campaign ?? null;
+	const campaignItem = tx?.campaignItem ?? null;
+	const memberId = member?.id ?? null;
 	const pledgeId = nstr(tx?.pledgeId);
-	const campaignItemId = nstr(tx?.campaignItemId);
 
-	// Include deleted so attribution still resolves when the referenced
-	// member / campaign / pledge has been archived (Mode-B treatment).
-	const memberQ = useMember(tenantSlug, memberId ?? "", {
-		enabled: Boolean(memberId),
-		includeDeleted: true,
-	});
-	const campaignQ = useCampaign(tenantSlug, campaignId ?? "", {
-		enabled: Boolean(campaignId),
-		includeDeleted: true,
-	});
+	// Pledge is the only attribution row that is not embedded — we still
+	// need its `status` and `pledgedAmount` to render the line.
 	const pledgeQ = usePledge(tenantSlug, pledgeId ?? "", {
 		enabled: Boolean(pledgeId),
 		includeDeleted: true,
 	});
 
-	// Context strip — surface "this gift in the context of the member's
-	// lifetime giving" so the admin can tell from one line whether the
-	// amount is typical, unusual, or a first-time gift.
-	const memberTxQ = useTransactions(
+	// Member lifetime context for the "Gift #N of M / $X lifetime" strip.
+	// The summary endpoint is uncapped — replaces the previous 500-tx fetch
+	// + JS reduce, which silently truncated long-tenure members.
+	const memberSummaryQ = useTransactionSummary(
 		tenantSlug,
-		{ memberId: memberId ?? "", limit: 500 },
+		{ memberId: memberId ?? undefined },
 		Boolean(memberId),
 	);
 
@@ -124,38 +116,22 @@ export const TransactionDetailPage = () => {
 		);
 	}
 
-	const member = memberQ.data;
-	const campaign = campaignQ.data;
 	const pledge = pledgeQ.data;
-	const itemTitle =
-		campaignItemId && campaign?.items
-			? (campaign.items.find((it) => it.id === campaignItemId)?.title ?? null)
-			: null;
-
 	const isDeleted = Boolean(tx.deletedAt);
 
-	// Context strip — order this gift in the member's history and sum lifetime.
 	const memberContext = (() => {
-		if (!memberId) {
+		if (!memberId || !memberSummaryQ.data) {
 			return null;
 		}
-		const items = memberTxQ.data?.items ?? [];
-		if (items.length === 0) {
-			return null;
-		}
-		// Sort by date ascending and find the 1-based index of this gift.
-		const sorted = [...items].sort(
-			(a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf(),
-		);
-		const giftNumber = sorted.findIndex((t) => t.id === tx.id) + 1;
-		const lifetime = sorted.reduce((s, t) => s + num(t.amount), 0);
-		const firstDate = sorted[0]?.date;
+		const s = memberSummaryQ.data;
+		const total = s.count;
+		const lifetime = s.total;
+		const firstDate = s.firstDate;
 		const monthsSince = firstDate
 			? Math.max(1, dayjs(tx.date).diff(dayjs(firstDate), "month"))
 			: null;
 		return {
-			giftNumber: giftNumber > 0 ? giftNumber : null,
-			total: items.length,
+			total,
 			lifetime,
 			monthsSince,
 		};
@@ -210,19 +186,11 @@ export const TransactionDetailPage = () => {
 				)}
 				{memberContext && member && (
 					<div className="mb-4 rounded-lg bg-muted/40 px-4 py-2.5 text-sm text-muted-foreground">
-						{memberContext.giftNumber !== null && (
-							<>
-								Gift{" "}
-								<span className="font-semibold text-foreground">
-									#{memberContext.giftNumber}
-								</span>{" "}
-								from{" "}
-								<span className="font-semibold text-foreground">
-									{member.firstName} {member.lastName}
-								</span>{" "}
-								·{" "}
-							</>
-						)}
+						Gifts from{" "}
+						<span className="font-semibold text-foreground">
+							{member.firstName} {member.lastName}
+						</span>{" "}
+						·{" "}
 						<span className="font-semibold text-foreground">
 							{formatCompact(memberContext.lifetime)}
 						</span>{" "}
@@ -359,9 +327,9 @@ export const TransactionDetailPage = () => {
 										Not attributed
 									</span>
 								)}
-								{itemTitle && (
+								{campaignItem && (
 									<div className="mt-1 text-xs text-muted-foreground">
-										Earmarked to <strong>{itemTitle}</strong>
+										Earmarked to <strong>{campaignItem.title}</strong>
 									</div>
 								)}
 							</div>

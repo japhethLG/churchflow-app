@@ -47,6 +47,20 @@ export const useMember = (
 	);
 };
 
+// Aggregate giving + pledge stats for the admin Member Detail page.
+// Computed server-side so we don't paginate-and-reduce on the FE.
+export const useMemberSummary = (
+	tenantId: string,
+	memberId: string,
+	enabled = true,
+) => {
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/members/{id}/summary",
+		{ params: { path: { tenantId, id: memberId } } },
+		{ enabled: enabled && Boolean(tenantId) && Boolean(memberId) },
+	);
+};
+
 export const useCreateMember = (tenantId: string) => {
 	const qc = useQueryClient();
 	return useApiMutation("/api/v1/tenants/{tenantId}/members", "post", {

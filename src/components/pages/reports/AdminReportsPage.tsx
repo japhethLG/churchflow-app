@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
 	Button,
 	DateRangePicker,
@@ -9,11 +9,8 @@ import {
 	PageHeader,
 	SegmentedControl,
 } from "@/components/primitives";
-import type { components } from "@/lib/api";
-import { useCampaigns } from "@/lib/api/campaigns";
-import { useMembers } from "@/lib/api/members";
-import { usePledges } from "@/lib/api/pledges";
-import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
+import { usePledgesDynamicsReport } from "@/lib/api/pledges";
+import { useGiversReport, useTransactionSummary } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { GiversTab } from "./GiversTab";
 import { PledgeDynamicsTab } from "./PledgeDynamicsTab";
@@ -26,9 +23,6 @@ const TABS: { value: Tab; label: string }[] = [
 	{ value: "givers", label: "Givers" },
 	{ value: "pledges", label: "Pledge dynamics" },
 ];
-
-type Member = components["schemas"]["MemberResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const DEFAULT_RANGE: DateRangeValue = {
 	from: dayjs().subtract(11, "month").startOf("month").format("YYYY-MM-DD"),
@@ -97,7 +91,6 @@ const toIso = (range: DateRangeValue) => ({
 	dateTo: range.to ? dayjs.utc(range.to).endOf("day").toISOString() : undefined,
 });
 
-// Build the prior-year range (offset by 12 months) for YoY overlay.
 const priorYearRange = (range: DateRangeValue): DateRangeValue => ({
 	from: range.from
 		? dayjs(range.from).subtract(1, "year").format("YYYY-MM-DD")
@@ -128,43 +121,26 @@ export const AdminReportsPage = () => {
 		tab === "trend",
 	);
 
-	const giversTxQ = useTransactions(
+	// Single roundtrip — BE does GROUP BY memberId, returns per-type +
+	// per-campaign + monthly buckets aligned to the date range.
+	const giversReportQ = useGiversReport(
 		tenantSlug,
 		{
 			dateFrom: currentRange.dateFrom,
 			dateTo: currentRange.dateTo,
-			limit: 500,
+			limit: 50,
 		},
 		tab === "givers",
 	);
 
-	const membersQ = useMembers(
+	// Cohort-style: pledges whose createdAt falls in the range.
+	const pledgesReportQ = usePledgesDynamicsReport(
 		tenantSlug,
-		{ limit: 500, includeDeleted: true },
-		tab === "givers",
-	);
-	const campaignsQ = useCampaigns(
-		tenantSlug,
-		{ includeDeleted: true },
-		tab === "givers" || tab === "pledges",
-	);
-
-	const pledgesQ = usePledges(
-		tenantSlug,
-		{ limit: 500, includeDeleted: true },
+		{
+			dateFrom: currentRange.dateFrom,
+			dateTo: currentRange.dateTo,
+		},
 		tab === "pledges",
-	);
-
-	const members: Member[] = membersQ.data?.items ?? [];
-	const campaigns: Campaign[] = campaignsQ.data?.items ?? [];
-
-	const membersById = useMemo(
-		() => Object.fromEntries(members.map((m) => [m.id, m])),
-		[members],
-	);
-	const campaignsById = useMemo(
-		() => Object.fromEntries(campaigns.map((c) => [c.id, c])),
-		[campaigns],
 	);
 
 	return (
@@ -209,20 +185,15 @@ export const AdminReportsPage = () => {
 
 				{tab === "givers" && (
 					<GiversTab
-						transactions={giversTxQ.data?.items ?? []}
-						membersById={membersById}
-						campaignsById={campaignsById}
-						loading={
-							giversTxQ.isLoading || membersQ.isLoading || campaignsQ.isLoading
-						}
+						report={giversReportQ.data}
+						loading={giversReportQ.isLoading}
 					/>
 				)}
 
 				{tab === "pledges" && (
 					<PledgeDynamicsTab
-						pledges={pledgesQ.data?.items ?? []}
-						campaignsById={campaignsById}
-						loading={pledgesQ.isLoading || campaignsQ.isLoading}
+						report={pledgesReportQ.data}
+						loading={pledgesReportQ.isLoading}
 					/>
 				)}
 			</div>

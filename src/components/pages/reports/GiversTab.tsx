@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
 	Avatar,
 	Card,
+	DeletedLabel,
 	MixBar,
 	type ProgressSegment,
 	SectionTitle,
@@ -14,18 +15,9 @@ import {
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
-import {
-	bucketSmallSegments,
-	num,
-	pickCategorical,
-	type TxType,
-	TYPE_COLOR,
-	TYPE_LABEL,
-} from "../admin-shared";
+import { num, pickCategorical, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
 
-type Transaction = components["schemas"]["TransactionResponseDto"];
-type Member = components["schemas"]["MemberResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
+type Report = components["schemas"]["GiversReportResponseDto"];
 
 type MixMode = "type" | "campaign";
 
@@ -34,67 +26,8 @@ const MIX_OPTIONS = [
 	{ value: "campaign", label: "By campaign" },
 ];
 
-type GiverRow = {
-	memberId: string;
-	name: string;
-	total: number;
-	count: number;
-	byType: Partial<Record<TxType, number>>;
-	byCampaign: Record<string, number>;
-	// 6 monthly amounts, oldest first → newest. Shown as mini-bars so the
-	// admin sees both *consistency* (how many months had giving) and
-	// *magnitude* (which months were bigger) in one glance.
-	monthly: number[];
-};
-
-const buildGivers = (
-	transactions: Transaction[],
-	membersById: Record<string, Member>,
-): GiverRow[] => {
-	const startMonth = dayjs().startOf("month").subtract(5, "month");
-	const byMember = new Map<string, GiverRow>();
-
-	for (const t of transactions) {
-		const mid = typeof t.memberId === "string" ? t.memberId : null;
-		if (!mid) {
-			continue;
-		}
-		const m = membersById[mid];
-		const name = m
-			? `${m.firstName} ${m.lastName}`.trim() || "Unnamed"
-			: "Unknown";
-		let row = byMember.get(mid);
-		if (!row) {
-			row = {
-				memberId: mid,
-				name,
-				total: 0,
-				count: 0,
-				byType: {},
-				byCampaign: {},
-				monthly: Array.from({ length: 6 }, () => 0),
-			};
-			byMember.set(mid, row);
-		}
-		const amt = num(t.amount);
-		row.total += amt;
-		row.count += 1;
-		row.byType[t.type] = (row.byType[t.type] ?? 0) + amt;
-		const cKey = typeof t.campaignId === "string" ? t.campaignId : "__none";
-		row.byCampaign[cKey] = (row.byCampaign[cKey] ?? 0) + amt;
-		const monthDelta = dayjs(t.date).startOf("month").diff(startMonth, "month");
-		if (monthDelta >= 0 && monthDelta <= 5) {
-			row.monthly[monthDelta] = (row.monthly[monthDelta] ?? 0) + amt;
-		}
-	}
-
-	return Array.from(byMember.values()).sort((a, b) => b.total - a.total);
-};
-
-// Tiny inline monthly-bars: 6 vertical bars, height ∝ that month's giving.
-// On hover the parent shows a small floating tooltip with the month name +
-// formatted amount; empty months show as a hairline track and read "no
-// gift" in the tooltip.
+// Tiny inline monthly-bars — one bar per month in the report's `months`
+// list, height ∝ amount. Bar count matches the selected date range.
 const MonthlyBars = ({
 	values,
 	periodLabels,
@@ -111,7 +44,7 @@ const MonthlyBars = ({
 
 	return (
 		<figure
-			aria-label="Last 6 months of giving"
+			aria-label="Monthly giving in the selected range"
 			className="relative m-0"
 			onMouseLeave={() => setHovered(null)}
 		>
@@ -164,30 +97,18 @@ const MonthlyBars = ({
 };
 
 export const GiversTab = ({
-	transactions,
-	membersById,
-	campaignsById,
+	report,
 	loading,
 }: {
-	transactions: Transaction[];
-	membersById: Record<string, Member>;
-	campaignsById: Record<string, Campaign>;
+	report?: Report;
 	loading?: boolean;
 }) => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const [mode, setMode] = useState<MixMode>("type");
-	const givers = useMemo(
-		() => buildGivers(transactions, membersById),
-		[transactions, membersById],
-	);
-	const top = givers.slice(0, 15);
 
-	const periodLabels = useMemo(() => {
-		const start = dayjs().startOf("month").subtract(5, "month");
-		return Array.from({ length: 6 }, (_, i) =>
-			start.add(i, "month").format("MMM YYYY"),
-		);
-	}, []);
+	const items = report?.items ?? [];
+	const months = report?.months ?? [];
+	const periodLabels = months.map((m) => dayjs(`${m}-01`).format("MMM YYYY"));
 
 	return (
 		<Card className="mb-6">
@@ -205,14 +126,14 @@ export const GiversTab = ({
 			/>
 			<p className="-mt-3 mb-5 text-sm text-muted-foreground">
 				Each bar shows what a giver gave to (hover for details). Mini bars on
-				the right show the last 6 months — height is amount given that month.
+				the right show monthly giving across the selected range.
 			</p>
 
 			{loading ? (
 				<div className="py-12 text-center text-sm text-muted-foreground">
 					Loading…
 				</div>
-			) : top.length === 0 ? (
+			) : items.length === 0 ? (
 				<div className="py-12 text-center text-sm text-muted-foreground">
 					No identified givers in this window.
 				</div>
@@ -223,57 +144,39 @@ export const GiversTab = ({
 						<span />
 						<span>Giver · mix</span>
 						<span className="text-right">Total</span>
-						<span className="text-right">Last 6 months</span>
+						<span className="text-right">Monthly</span>
 					</div>
 					<ul className="divide-y divide-border">
-						{top.map((g, idx) => {
+						{items.map((g, idx) => {
+							const name =
+								`${g.memberFirstName} ${g.memberLastName}`.trim() || "Unnamed";
+							const isDeleted = Boolean(g.memberDeletedAt);
 							const segments: ProgressSegment[] =
 								mode === "type"
-									? Object.entries(g.byType)
-											.map(([key, value]) => {
-												const k = key as TxType;
-												return {
-													value,
-													color: TYPE_COLOR[k],
-													label: TYPE_LABEL[k],
-													displayValue: formatCurrency(value, { decimals: 0 }),
-												};
-											})
+									? g.byType
+											.map((b) => ({
+												value: b.amount,
+												color: TYPE_COLOR[b.type],
+												label: TYPE_LABEL[b.type],
+												displayValue: formatCurrency(b.amount, {
+													decimals: 0,
+												}),
+											}))
 											.sort((a, b) => num(b.value) - num(a.value))
-									: bucketSmallSegments(
-											Object.entries(g.byCampaign)
-												.map(([key, value], i) => {
-													const c = key !== "__none" && campaignsById[key];
-													return {
-														value,
-														color: pickCategorical(i),
-														label: c ? c.title : "No campaign",
-														displayValue: formatCurrency(value, {
-															decimals: 0,
-														}),
-													};
-												})
-												.sort((a, b) => num(b.value) - num(a.value)),
-											0.02,
-											(dropped) => ({
-												value: dropped,
-												color: "var(--chart-prior)",
-												label: "Other",
-												displayValue: formatCurrency(dropped, { decimals: 0 }),
-											}),
-										);
+									: g.byCampaign.map((c, i) => ({
+											value: c.amount,
+											color: pickCategorical(i),
+											label: c.campaignTitle,
+											displayValue: formatCurrency(c.amount, { decimals: 0 }),
+										}));
 
-							// Top breakdown chips — show the largest 4 segments inline as
-							// `● Label · ₱amount` so admins read amounts at a glance
-							// without hovering. Remaining segments collapse into a
-							// "+N more" pill with the full list in its native title.
 							const TOP_CHIPS = 4;
 							const visibleChips = segments.slice(0, TOP_CHIPS);
 							const restChips = segments.slice(TOP_CHIPS);
 							const restTitle = restChips
 								.map((r) => `${r.label}: ${r.displayValue ?? ""}`)
 								.join(" · ");
-							const avg = g.count > 0 ? g.total / g.count : 0;
+							const monthlyValues = g.monthlyTotals.map((m) => m.amount);
 
 							return (
 								<li
@@ -284,19 +187,28 @@ export const GiversTab = ({
 										#{idx + 1}
 									</span>
 									<div className="pt-0.5">
-										<Avatar name={g.name} size={32} />
+										<Avatar name={name} size={32} />
 									</div>
 									<div className="min-w-0">
 										<div className="flex items-baseline justify-between gap-3">
-											<Link
-												href={`/${tenantSlug}/admin/members/${g.memberId}`}
-												className="truncate text-sm font-medium text-foreground hover:underline"
-											>
-												{g.name}
-											</Link>
+											{isDeleted ? (
+												<DeletedLabel
+													deletedAt={g.memberDeletedAt}
+													className="truncate text-sm font-medium"
+												>
+													{name}
+												</DeletedLabel>
+											) : (
+												<Link
+													href={`/${tenantSlug}/admin/members/${g.memberId}`}
+													className="truncate text-sm font-medium text-foreground hover:underline"
+												>
+													{name}
+												</Link>
+											)}
 											<span className="text-xs text-muted-foreground">
 												{g.count} {g.count === 1 ? "gift" : "gifts"} · avg{" "}
-												{formatCompact(avg)}
+												{formatCompact(g.avg)}
 											</span>
 										</div>
 										<div className="mt-1.5">
@@ -331,7 +243,7 @@ export const GiversTab = ({
 									</span>
 									<div className="flex justify-end pt-1">
 										<MonthlyBars
-											values={g.monthly}
+											values={monthlyValues}
 											periodLabels={periodLabels}
 											highlight="var(--chart-current)"
 										/>

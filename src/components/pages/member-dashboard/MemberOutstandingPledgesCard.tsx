@@ -20,7 +20,7 @@ import {
 	resolvePledgeDeadline,
 } from "../admin-shared";
 
-type Pledge = components["schemas"]["PledgeResponseDto"];
+type Pledge = components["schemas"]["MyPledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
 // Member-side mirror of the admin OutstandingPledgesCard. Surfaces the

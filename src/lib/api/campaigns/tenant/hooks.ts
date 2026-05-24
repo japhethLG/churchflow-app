@@ -1,7 +1,8 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { api } from "../../client";
 import { type GetQuery, useApiMutation, useApiQuery } from "../../hooks";
 import { invalidateCampaigns } from "../keys";
 
@@ -75,6 +76,39 @@ export const useCampaignProgress = (
 		{ params: { path: { tenantId, id } } },
 		{ enabled: enabled && Boolean(tenantId) && Boolean(id) },
 	);
+};
+
+// Batch progress for many campaigns. Replaces the per-campaign fan-out
+// the dashboard used to do for its deadline-watch card. Uses POST so we
+// can carry an arbitrarily large id list in the body — we wrap it in a
+// useQuery so callers consume it like any other read.
+export const useCampaignsProgressBatch = (
+	tenantId: string,
+	campaignIds: string[],
+	enabled = true,
+) => {
+	const idsKey = [...campaignIds].sort().join(",");
+	return useQuery({
+		queryKey: [
+			"/api/v1/tenants/{tenantId}/campaigns/progress/batch",
+			tenantId,
+			idsKey,
+		],
+		queryFn: async () => {
+			const { data, error } = await api.POST(
+				"/api/v1/tenants/{tenantId}/campaigns/progress/batch",
+				{
+					params: { path: { tenantId } },
+					body: { campaignIds },
+				},
+			);
+			if (error) {
+				throw error;
+			}
+			return data;
+		},
+		enabled: enabled && Boolean(tenantId) && campaignIds.length > 0,
+	});
 };
 
 export const useCreateCampaign = (tenantId: string) => {

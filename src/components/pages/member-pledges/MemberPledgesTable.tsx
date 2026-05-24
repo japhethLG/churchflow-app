@@ -17,7 +17,7 @@ import {
 	resolvePledgeDeadline,
 } from "../admin-shared";
 
-export type MemberPledgeRow = components["schemas"]["PledgeResponseDto"];
+export type MemberPledgeRow = components["schemas"]["MyPledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const lifecycleBadgeColor = (

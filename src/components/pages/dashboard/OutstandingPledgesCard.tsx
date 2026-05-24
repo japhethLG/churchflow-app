@@ -13,81 +13,30 @@ import {
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
-	daysUntil,
 	LIFECYCLE_COLOR,
 	LIFECYCLE_LABEL,
 	num,
-	pledgeLifecycle,
-	resolvePledgeDeadline,
+	type PledgeLifecycle,
 } from "../admin-shared";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
-type Member = components["schemas"]["MemberResponseDto"];
 
+// Outstanding pledges. The BE's /pledges/urgent endpoint returns the
+// already-filtered, lifecycle-resolved list (past-due, due-soon, or
+// on-track within 30 days), sorted by urgency. We just render.
 export const OutstandingPledgesCard = ({
 	pledges,
-	campaignsById,
-	membersById,
-	itemDeadlinesById,
 	tenantSlug,
 	loading,
 }: {
 	pledges: Pledge[];
-	campaignsById: Record<string, Campaign>;
-	membersById: Record<string, Member>;
-	itemDeadlinesById: Record<string, string | null>;
 	tenantSlug: string;
 	loading?: boolean;
 }) => {
 	const router = useRouter();
+	const top = pledges.slice(0, 8);
 
-	const enriched = pledges
-		.map((p) => {
-			const c = campaignsById[p.campaignId];
-			const deadline = resolvePledgeDeadline(p, c, itemDeadlinesById);
-			return {
-				p,
-				member: membersById[p.memberId],
-				campaign: c,
-				deadline,
-				days: daysUntil(deadline),
-				lifecycle: pledgeLifecycle(
-					p.pledgedAmount,
-					p.paidAmount,
-					p.status,
-					deadline,
-				),
-			};
-		})
-		.filter(
-			(x) =>
-				x.p.status === "ACTIVE" &&
-				num(x.p.remainingAmount) > 0 &&
-				(x.lifecycle === "past-due" ||
-					x.lifecycle === "due-soon" ||
-					(x.lifecycle === "on-track" &&
-						(x.days ?? Number.POSITIVE_INFINITY) <= 30)),
-		)
-		.sort((a, b) => {
-			const aPast = a.lifecycle === "past-due" ? 0 : 1;
-			const bPast = b.lifecycle === "past-due" ? 0 : 1;
-			if (aPast !== bPast) {
-				return aPast - bPast;
-			}
-			const aDays = a.days ?? Number.POSITIVE_INFINITY;
-			const bDays = b.days ?? Number.POSITIVE_INFINITY;
-			if (aDays !== bDays) {
-				return aDays - bDays;
-			}
-			return num(b.p.remainingAmount) - num(a.p.remainingAmount);
-		})
-		.slice(0, 8);
-
-	const totalOutstanding = enriched.reduce(
-		(s, x) => s + num(x.p.remainingAmount),
-		0,
-	);
+	const totalOutstanding = top.reduce((s, p) => s + num(p.remainingAmount), 0);
 
 	return (
 		<Card>
@@ -114,16 +63,20 @@ export const OutstandingPledgesCard = ({
 				<div className="py-6 text-center text-sm text-muted-foreground">
 					Loading…
 				</div>
-			) : enriched.length === 0 ? (
+			) : top.length === 0 ? (
 				<div className="py-6 text-center text-sm text-muted-foreground">
 					Nothing urgent — every active pledge has &gt; 30 days remaining.
 				</div>
 			) : (
 				<ul className="divide-y divide-border">
-					{enriched.map(({ p, member, campaign, days, lifecycle }) => {
+					{top.map((p) => {
+						const member = p.member;
+						const campaign = p.campaign;
 						const memberName = member
 							? `${member.firstName} ${member.lastName}`.trim() || "Unnamed"
 							: "Unknown member";
+						const lifecycle = p.lifecycle as PledgeLifecycle;
+						const days = p.daysUntil ?? null;
 						return (
 							<li key={p.id}>
 								<Pressable

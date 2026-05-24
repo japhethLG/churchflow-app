@@ -13,7 +13,6 @@ import {
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
-import { useMembers } from "@/lib/api/members";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
@@ -21,7 +20,6 @@ import { openModal } from "@/lib/modals/store";
 import { TransactionsSummaryCard } from "./TransactionsSummaryCard";
 import { type TransactionRow, transactionColumns } from "./TransactionsTable";
 
-type Member = components["schemas"]["MemberResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
 type TransactionType = TransactionRow["type"];
@@ -62,37 +60,30 @@ export const TransactionsListPage = () => {
 	const [offset, setOffset] = useState(0);
 	const [limit, setLimit] = useState(20);
 
+	// Campaigns drive the filter dropdown — no longer used as a lookup map
+	// for row labels (each transaction now carries an embedded campaign).
 	const { data: campaignsData } = useCampaigns(tenantSlug, {
 		includeDeleted: true,
 	});
-	const { data: membersData } = useMembers(tenantSlug, {
-		limit: 500,
-		includeDeleted: true,
-	});
-
 	const campaigns: Campaign[] = campaignsData?.items ?? [];
-	const members: Member[] = membersData?.items ?? [];
-	const campaignsById: Record<string, Campaign> = Object.fromEntries(
-		campaigns.map((c) => [c.id, c]),
-	);
-	const membersById: Record<string, Member> = Object.fromEntries(
-		members.map((m) => [m.id, m]),
-	);
 
 	const wireRange = toWireRange(range);
-	const summary = useTransactionSummary(tenantSlug, {
-		dateFrom: wireRange.dateFrom,
-		dateTo: wireRange.dateTo,
-	});
-
-	const list = useTransactions(tenantSlug, {
+	const stateFlags = toStateFilterFlags(state);
+	const filters = {
 		type: type === "all" ? undefined : type,
 		campaignId: campaignId === "all" ? undefined : campaignId,
 		dateFrom: wireRange.dateFrom,
 		dateTo: wireRange.dateTo,
+		...stateFlags,
+	};
+
+	// Summary and list now receive the same filter object so the KPI card
+	// never drifts from the table.
+	const summary = useTransactionSummary(tenantSlug, filters);
+	const list = useTransactions(tenantSlug, {
+		...filters,
 		offset,
 		limit,
-		...toStateFilterFlags(state),
 	});
 
 	const allItems: TransactionRow[] = list.data?.items ?? [];
@@ -134,8 +125,6 @@ export const TransactionsListPage = () => {
 			onDelete: openDelete,
 			onRestore: openRestore,
 		},
-		membersById,
-		campaignsById,
 		tenantSlug,
 	});
 

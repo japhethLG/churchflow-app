@@ -58,7 +58,9 @@ export const TransactionsSummaryCard = ({
 }) => {
 	const total = num(summary?.total);
 	const count = summary?.count ?? 0;
-	const avg = count > 0 ? total / count : 0;
+	// `avg` is computed server-side now — fall back to local division so
+	// the placeholder/loading transition is still smooth on first paint.
+	const avg = num(summary?.avg) || (count > 0 ? total / count : 0);
 
 	const segments = (summary?.byType ?? [])
 		.filter((b) => num(b.total) > 0)
@@ -72,7 +74,7 @@ export const TransactionsSummaryCard = ({
 				amount,
 				count: b.count,
 				share: pct(amount, total),
-				avg: b.count > 0 ? amount / b.count : 0,
+				avg: num(b.avg) || (b.count > 0 ? amount / b.count : 0),
 			};
 		});
 
@@ -100,7 +102,7 @@ export const TransactionsSummaryCard = ({
 
 	return (
 		<Card>
-			<SectionTitle title="In this filter" />
+			<SectionTitle title="Period totals (matches current filters)" />
 
 			{/* Summary row — terse, scannable, no nested cards */}
 			<div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">

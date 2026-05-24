@@ -47,6 +47,44 @@ export const useTransactionSummary = (
 	);
 };
 
+// Counts + totals of unattributed gifts (no member / no campaign) for
+// the dashboard callout. BE filters server-side — no fetch-and-count.
+export type UnattributedSummaryQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/transactions/unattributed",
+	"get"
+>;
+
+export const useUnattributedSummary = (
+	tenantId: string,
+	query: UnattributedSummaryQuery = {},
+	enabled = true,
+) => {
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/transactions/unattributed",
+		{ params: { path: { tenantId }, query } },
+		{ enabled: enabled && Boolean(tenantId) },
+	);
+};
+
+// Top-N givers report for the admin Reports → Givers tab. BE returns
+// the per-member breakdown + monthly buckets aligned to the date range.
+export type GiversReportQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/transactions/reports/givers",
+	"get"
+>;
+
+export const useGiversReport = (
+	tenantId: string,
+	query: GiversReportQuery = {},
+	enabled = true,
+) => {
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/transactions/reports/givers",
+		{ params: { path: { tenantId }, query } },
+		{ enabled: enabled && Boolean(tenantId) },
+	);
+};
+
 export const useTransaction = (
 	tenantId: string,
 	id: string,

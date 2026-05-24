@@ -27,6 +27,39 @@ export const usePledges = (
 	);
 };
 
+// Most urgent active pledges for the dashboard outstanding-pledges card.
+// BE computes lifecycle + resolved deadline server-side; FE just renders.
+export const useUrgentPledges = (
+	tenantId: string,
+	query: { limit?: number } = {},
+	enabled = true,
+) => {
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/pledges/urgent",
+		{ params: { path: { tenantId }, query } },
+		{ enabled: enabled && Boolean(tenantId) },
+	);
+};
+
+// Cohort-style pledge dynamics report for the admin Reports tab. Date
+// range applies to `pledge.createdAt`.
+export type PledgesDynamicsQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/pledges/reports/dynamics",
+	"get"
+>;
+
+export const usePledgesDynamicsReport = (
+	tenantId: string,
+	query: PledgesDynamicsQuery = {},
+	enabled = true,
+) => {
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/pledges/reports/dynamics",
+		{ params: { path: { tenantId }, query } },
+		{ enabled: enabled && Boolean(tenantId) },
+	);
+};
+
 export const usePledge = (
 	tenantId: string,
 	id: string,

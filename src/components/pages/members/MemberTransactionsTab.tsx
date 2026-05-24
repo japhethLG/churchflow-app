@@ -11,7 +11,6 @@ import {
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
-import { useMembers } from "@/lib/api/members";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
@@ -58,18 +57,12 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 	const [offset, setOffset] = useState(0);
 	const [limit, setLimit] = useState(20);
 
+	// Campaigns drive the filter dropdown only; row labels come from the
+	// embedded `campaign` on each TransactionResponseDto.
 	const { data: campaignsData } = useCampaigns(tenantSlug, {
 		includeDeleted: true,
 	});
-	const { data: membersData } = useMembers(tenantSlug, {
-		limit: 500,
-		includeDeleted: true,
-	});
-
 	const campaigns = campaignsData?.items ?? [];
-	const members = membersData?.items ?? [];
-	const campaignsById = Object.fromEntries(campaigns.map((c) => [c.id, c]));
-	const membersById = Object.fromEntries(members.map((m) => [m.id, m]));
 
 	const wireRange = toWireRange(range);
 
@@ -153,8 +146,6 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 			onDelete: openDelete,
 			onRestore: openRestore,
 		},
-		membersById,
-		campaignsById,
 		tenantSlug,
 	});
 

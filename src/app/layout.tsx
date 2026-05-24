@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { cookies, headers } from "next/headers";
 import { connection } from "next/server";
 import { Toaster } from "@/components/primitives/Toaster";
-import { ThemeProvider } from "@/components/theme-provider";
+import { type Theme, ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryProvider } from "@/lib/api/providers";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
@@ -22,6 +23,13 @@ export default async ({ children }: { children: React.ReactNode }) => {
 	// per-request nonce to its generated inline scripts.
 	await connection();
 
+	const cookieStore = await cookies();
+	const themeCookie = (cookieStore.get("theme")?.value || "system") as Theme;
+	const isDark = themeCookie === "dark";
+
+	const headerList = await headers();
+	const _nonce = headerList.get("x-nonce") || undefined;
+
 	return (
 		// `scroll-smooth` makes in-page anchor navigation (e.g. landing
 		// nav items linking to #features) glide instead of jumping. It's
@@ -32,12 +40,15 @@ export default async ({ children }: { children: React.ReactNode }) => {
 			lang="en"
 			className={cn(
 				"scroll-smooth motion-reduce:scroll-auto font-sans",
+				isDark && "dark",
 				geist.variable,
 			)}
+			data-theme={themeCookie !== "system" ? themeCookie : undefined}
 			suppressHydrationWarning
 		>
 			<head>
 				<script
+					// nonce={nonce}
 					// biome-ignore lint/security/noDangerouslySetInnerHtml: inline blocking script to prevent theme flash
 					dangerouslySetInnerHTML={{
 						__html: `(function() {
@@ -56,7 +67,7 @@ export default async ({ children }: { children: React.ReactNode }) => {
 				/>
 			</head>
 			<body>
-				<ThemeProvider>
+				<ThemeProvider defaultTheme={themeCookie}>
 					<TooltipProvider>
 						<AuthProvider>
 							<QueryProvider>

@@ -32,9 +32,8 @@ import {
 } from "@/components/primitives";
 import type { TransactionType as BadgeType } from "@/components/primitives/Badge";
 import { type components, nstr } from "@/lib/api";
-import { useCampaigns } from "@/lib/api/campaigns";
-import { usePledges } from "@/lib/api/pledges";
-import { useTransactions } from "@/lib/api/transactions";
+import { useMemberSummary } from "@/lib/api/members";
+import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
@@ -92,92 +91,115 @@ export const MemberOverviewTab = ({
 	const router = useRouter();
 	const [mixMode, setMixMode] = useState<MixMode>("type");
 
-	// Lifetime giving — 500-row cap is preview-quality. At scale we'd want a
-	// backend rollup; for typical churches this covers every transaction the
-	// member has made.
-	const txQ = useTransactions(tenantSlug, { memberId: member.id, limit: 500 });
-	const transactions: Transaction[] = txQ.data?.items ?? [];
+	// Aggregate stats — replaces the previous 500-row fetch + JS reduce,
+	// which silently truncated for members with long lifetime histories.
+	const summaryQ = useMemberSummary(tenantSlug, member.id);
 
-	const pledgesQ = usePledges(tenantSlug, { memberId: member.id, limit: 200 });
-	const pledges = pledgesQ.data?.items ?? [];
+	// 12-month chart data + by-type breakdown — server-side groupBy.
+	const last12From = dayjs()
+		.utc()
+		.startOf("month")
+		.subtract(11, "month")
+		.toISOString();
+	const last12To = dayjs().utc().endOf("month").toISOString();
+	const last12Q = useTransactionSummary(tenantSlug, {
+		memberId: member.id,
+		dateFrom: last12From,
+		dateTo: last12To,
+	});
 
-	const campaignsQ = useCampaigns(tenantSlug, { includeDeleted: true });
-	const campaignsById = useMemo(
-		() =>
-			Object.fromEntries((campaignsQ.data?.items ?? []).map((c) => [c.id, c])),
-		[campaignsQ.data],
-	);
+	// Recent gifts + by-campaign breakdown still come from a list query.
+	// `limit: 2000` is generous for any one member; embedded campaign
+	// names on each row mean no separate campaigns lookup is needed.
+	const txListQ = useTransactions(tenantSlug, {
+		memberId: member.id,
+		limit: 2000,
+	});
+	const transactions: Transaction[] = txListQ.data?.items ?? [];
 
-	// Aggregate giving relationship — lifetime numbers.
-	const lifetime = useMemo(() => {
-		let total = 0;
-		let firstISO: string | null = null;
-		let lastISO: string | null = null;
-		const byType: Partial<Record<TxType, number>> = {};
-		const byCampaign: Record<string, number> = {};
+	const summary = summaryQ.data;
+	const lifetimeTotal = summary?.lifetimeGiving ?? 0;
+	const lifetimeCount = summary?.transactionCount ?? 0;
+	const lifetimeAvg = summary?.avgGift ?? 0;
+	const firstISO = summary?.firstGiftDate ?? null;
+	const lastISO = summary?.lastGiftDate ?? null;
+	const activePledgesCount = summary?.activePledgesCount ?? 0;
+	const fulfilledPledgesCount = summary?.fulfilledPledgesCount ?? 0;
+
+	// By-type from the last-12-months summary. For a "lifetime breakdown"
+	// we'd want a no-date summary, but the 12-month window matches the
+	// chart users are looking at and is more actionable than all-time.
+	const byTypeMap = useMemo<Partial<Record<TxType, number>>>(() => {
+		const out: Partial<Record<TxType, number>> = {};
+		for (const b of last12Q.data?.byType ?? []) {
+			out[b.type] = b.total;
+		}
+		return out;
+	}, [last12Q.data]);
+
+	// By-campaign breakdown computed across the list rows (using embedded
+	// campaign labels, so no fan-out lookups). Limited to what's in the
+	// 2000-row window — acceptable for a single member's giving history.
+	const byCampaign = useMemo(() => {
+		const map = new Map<
+			string,
+			{ amount: number; title: string; deletedAt: string | null }
+		>();
 		for (const t of transactions) {
 			const amt = num(t.amount);
-			total += amt;
-			byType[t.type] = (byType[t.type] ?? 0) + amt;
-			const cKey = typeof t.campaignId === "string" ? t.campaignId : "__none";
-			byCampaign[cKey] = (byCampaign[cKey] ?? 0) + amt;
-			if (!firstISO || dayjs(t.date).isBefore(firstISO)) {
-				firstISO = t.date;
-			}
-			if (!lastISO || dayjs(t.date).isAfter(lastISO)) {
-				lastISO = t.date;
+			if (t.campaign) {
+				const key = t.campaign.id;
+				const entry = map.get(key) ?? {
+					amount: 0,
+					title: t.campaign.title,
+					deletedAt: t.campaign.deletedAt as string | null,
+				};
+				entry.amount += amt;
+				map.set(key, entry);
+			} else {
+				const entry = map.get("__none") ?? {
+					amount: 0,
+					title: "No campaign",
+					deletedAt: null,
+				};
+				entry.amount += amt;
+				map.set("__none", entry);
 			}
 		}
-		return {
-			total,
-			count: transactions.length,
-			avg: transactions.length > 0 ? total / transactions.length : 0,
-			firstISO,
-			lastISO,
-			byType,
-			byCampaign,
-		};
+		return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
 	}, [transactions]);
 
-	const pledgeStats = useMemo(() => {
-		const active = pledges.filter((p) => p.status === "ACTIVE").length;
-		const fulfilled = pledges.filter((p) => p.status === "FULFILLED").length;
-		return { active, fulfilled };
-	}, [pledges]);
-
-	// 12-month chart series + consistency caption. Each entry has both a
-	// short axis label ("Mar") and a full label ("Mar 2025") for the tooltip.
+	// 12-month chart series + consistency caption — values come from the
+	// BE byMonth aggregation. Skeleton of 12 buckets so empty months show.
 	const monthly = useMemo(() => {
-		const start = dayjs().startOf("month").subtract(11, "month");
-		const data = Array.from({ length: 12 }, (_, i) => {
+		const start = dayjs().utc().startOf("month").subtract(11, "month");
+		const skel = Array.from({ length: 12 }, (_, i) => {
 			const d = start.add(i, "month");
 			return {
+				key: d.format("YYYY-MM"),
 				label: d.format("MMM"),
 				labelLong: d.format("MMM YYYY"),
 				value: 0,
 			};
 		});
-		for (const t of transactions) {
-			const idx = dayjs(t.date).startOf("month").diff(start, "month");
-			if (idx >= 0 && idx <= 11) {
-				const slot = data[idx];
-				if (slot) {
-					slot.value += num(t.amount);
-				}
+		const byKey = new Map(skel.map((s) => [s.key, s] as const));
+		for (const b of last12Q.data?.byMonth ?? []) {
+			const slot = byKey.get(b.month);
+			if (slot) {
+				slot.value = b.total;
 			}
 		}
-		const monthsWithGiving = data.filter((d) => d.value > 0).length;
-		const peakAmount = data.reduce((m, d) => Math.max(m, d.value), 0);
-		const peakIdx = data.findIndex((d) => d.value === peakAmount);
+		const monthsWithGiving = skel.filter((d) => d.value > 0).length;
+		const peakAmount = skel.reduce((m, d) => Math.max(m, d.value), 0);
+		const peakIdx = skel.findIndex((d) => d.value === peakAmount);
 		const peakMonth =
-			peakAmount > 0 && peakIdx >= 0 ? data[peakIdx]?.labelLong : null;
-		return { data, monthsWithGiving, peakAmount, peakMonth };
-	}, [transactions]);
+			peakAmount > 0 && peakIdx >= 0 ? skel[peakIdx]?.labelLong : null;
+		return { data: skel, monthsWithGiving, peakAmount, peakMonth };
+	}, [last12Q.data]);
 
-	// Mix segments — bucketed at 2% so the chart isn't a confetti.
 	const mixSegments = useMemo<ProgressSegment[]>(() => {
 		if (mixMode === "type") {
-			return Object.entries(lifetime.byType)
+			return Object.entries(byTypeMap)
 				.map(([key, value]) => {
 					const k = key as TxType;
 					return {
@@ -190,17 +212,12 @@ export const MemberOverviewTab = ({
 				.sort((a, b) => num(b.value) - num(a.value));
 		}
 		return bucketSmallSegments(
-			Object.entries(lifetime.byCampaign)
-				.map(([key, value], i) => {
-					const c = key !== "__none" && campaignsById[key];
-					return {
-						value,
-						color: pickCategorical(i),
-						label: c ? c.title : "No campaign",
-						displayValue: formatCurrency(value, { decimals: 0 }),
-					};
-				})
-				.sort((a, b) => num(b.value) - num(a.value)),
+			byCampaign.map((c, i) => ({
+				value: c.amount,
+				color: pickCategorical(i),
+				label: c.title,
+				displayValue: formatCurrency(c.amount, { decimals: 0 }),
+			})),
 			0.02,
 			(dropped) => ({
 				value: dropped,
@@ -209,7 +226,9 @@ export const MemberOverviewTab = ({
 				displayValue: formatCurrency(dropped, { decimals: 0 }),
 			}),
 		);
-	}, [mixMode, lifetime.byType, lifetime.byCampaign, campaignsById]);
+	}, [mixMode, byTypeMap, byCampaign]);
+
+	const breakdownTotal = mixSegments.reduce((s, x) => s + num(x.value), 0);
 
 	const recent = transactions.slice(0, 8);
 
@@ -234,16 +253,15 @@ export const MemberOverviewTab = ({
 			key: "campaign",
 			label: "Campaign",
 			render: (t) => {
-				const cid = nstr(t.campaignId);
-				if (!cid) {
+				const c = t.campaign;
+				if (!c) {
 					return (
 						<span className="text-sm italic text-muted-foreground">
 							No campaign
 						</span>
 					);
 				}
-				const c = campaignsById[cid];
-				if (c?.deletedAt) {
+				if (c.deletedAt) {
 					return (
 						<DeletedLabel
 							deletedAt={c.deletedAt}
@@ -255,11 +273,11 @@ export const MemberOverviewTab = ({
 				}
 				return (
 					<Link
-						href={`/${tenantSlug}/admin/campaigns/${cid}`}
+						href={`/${tenantSlug}/admin/campaigns/${c.id}`}
 						onClick={(e) => e.stopPropagation()}
 						className="block truncate text-sm text-primary hover:underline"
 					>
-						{c?.title ?? "Campaign"}
+						{c.title}
 					</Link>
 				);
 			},
@@ -311,40 +329,36 @@ export const MemberOverviewTab = ({
 					items={[
 						{
 							label: "Lifetime",
-							value: formatCompact(lifetime.total),
-							caption: txQ.isLoading ? "Loading…" : "All-time given",
+							value: formatCompact(lifetimeTotal),
+							caption: summaryQ.isLoading ? "Loading…" : "All-time given",
 						},
 						{
 							label: "Gifts",
-							value: lifetime.count.toLocaleString(),
-							caption: `Avg ${formatCompact(lifetime.avg)}`,
+							value: lifetimeCount.toLocaleString(),
+							caption: `Avg ${formatCompact(lifetimeAvg)}`,
 						},
 						{
 							label: "First gift",
-							value: lifetime.firstISO
-								? dayjs(lifetime.firstISO).format("MMM YYYY")
-								: "—",
-							caption: lifetime.firstISO
-								? `${dayjs().diff(dayjs(lifetime.firstISO), "month")} months ago`
+							value: firstISO ? dayjs(firstISO).format("MMM YYYY") : "—",
+							caption: firstISO
+								? `${dayjs().diff(dayjs(firstISO), "month")} months ago`
 								: "No gifts yet",
 						},
 						{
 							label: "Last gift",
-							value: lifetime.lastISO
-								? dayjs(lifetime.lastISO).format("MMM D")
-								: "—",
-							caption: lifetime.lastISO ? relativeDate(lifetime.lastISO) : "—",
+							value: lastISO ? dayjs(lastISO).format("MMM D") : "—",
+							caption: lastISO ? relativeDate(lastISO) : "—",
 						},
 						{
 							label: "Pledges",
-							value: pledgeStats.active.toLocaleString(),
-							caption: `${pledgeStats.fulfilled} fulfilled`,
+							value: activePledgesCount.toLocaleString(),
+							caption: `${fulfilledPledgesCount} fulfilled`,
 						},
 					]}
 				/>
 			</Card>
 
-			{/* Last 12 months + Breakdown — side-by-side on wide screens */}
+			{/* Last 12 months + Breakdown */}
 			<div className="grid gap-6 lg:grid-cols-2">
 				<Card padding={24}>
 					<SectionTitle title="Last 12 months" />
@@ -402,7 +416,7 @@ export const MemberOverviewTab = ({
 								<Bar dataKey="value" radius={[4, 4, 0, 0]}>
 									{monthly.data.map((d) => (
 										<Cell
-											key={d.label}
+											key={d.key}
 											fill={
 												d.value > 0
 													? "var(--chart-current)"
@@ -440,7 +454,7 @@ export const MemberOverviewTab = ({
 
 				<Card padding={24}>
 					<SectionTitle
-						title="Breakdown"
+						title="Breakdown (last 12 months)"
 						action={
 							<div className="w-[200px]">
 								<SegmentedControl
@@ -487,9 +501,9 @@ export const MemberOverviewTab = ({
 														return null;
 													}
 													const share =
-														lifetime.total > 0
+														breakdownTotal > 0
 															? Math.round(
-																	(num(d.value) / lifetime.total) * 100,
+																	(num(d.value) / breakdownTotal) * 100,
 																)
 															: 0;
 													return (
@@ -517,10 +531,10 @@ export const MemberOverviewTab = ({
 									<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 										<div>
 											<div className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-												Lifetime
+												Total
 											</div>
 											<div className="mt-0.5 text-base font-bold tabular-nums text-foreground">
-												{formatCompact(lifetime.total)}
+												{formatCompact(breakdownTotal)}
 											</div>
 										</div>
 									</div>
@@ -530,8 +544,8 @@ export const MemberOverviewTab = ({
 								{mixSegments.map((s) => {
 									const value = num(s.value);
 									const share =
-										lifetime.total > 0
-											? Math.round((value / lifetime.total) * 100)
+										breakdownTotal > 0
+											? Math.round((value / breakdownTotal) * 100)
 											: 0;
 									return (
 										<li
@@ -565,10 +579,10 @@ export const MemberOverviewTab = ({
 			<div>
 				<div className="mb-3 flex items-baseline justify-between px-1">
 					<h2 className="text-base font-semibold">Recent gifts</h2>
-					{transactions.length > 8 && (
+					{lifetimeCount > 8 && (
 						<span className="text-xs text-muted-foreground">
-							Showing 8 of {transactions.length}. Open the Transactions tab to
-							see all.
+							Showing 8 of {lifetimeCount}. Open the Transactions tab to see
+							all.
 						</span>
 					)}
 				</div>
@@ -576,7 +590,7 @@ export const MemberOverviewTab = ({
 					columns={recentGiftColumns}
 					rows={recent}
 					rowKey={(t) => t.id}
-					loading={txQ.isLoading}
+					loading={txListQ.isLoading}
 					loadingRows={5}
 					onRowClick={(t) =>
 						router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
@@ -586,7 +600,6 @@ export const MemberOverviewTab = ({
 				/>
 			</div>
 
-			{/* Contact card — reference data, kept low */}
 			{(email || phone || address) && (
 				<Card padding={24}>
 					<SectionTitle title="Contact" />

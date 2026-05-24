@@ -2,21 +2,22 @@
 
 import Link from "next/link";
 import { Card, Icon } from "@/components/primitives";
+import type { components } from "@/lib/api";
 import { formatCompact } from "@/lib/format-currency";
 
+type Summary = components["schemas"]["UnattributedSummaryResponseDto"];
+
 export const UnattributedCallout = ({
-	anonymousCount,
-	anonymousTotal,
-	noCampaignCount,
-	noCampaignTotal,
+	summary,
 	tenantSlug,
 }: {
-	anonymousCount: number;
-	anonymousTotal: number;
-	noCampaignCount: number;
-	noCampaignTotal: number;
+	summary: Summary | undefined;
 	tenantSlug: string;
 }) => {
+	const anonymousCount = summary?.anonymousCount ?? 0;
+	const anonymousTotal = summary?.anonymousTotal ?? 0;
+	const noCampaignCount = summary?.noCampaignCount ?? 0;
+	const noCampaignTotal = summary?.noCampaignTotal ?? 0;
 	const hasAnon = anonymousCount > 0;
 	const hasNoCampaign = noCampaignCount > 0;
 

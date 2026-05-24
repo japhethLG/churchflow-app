@@ -2,27 +2,23 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, SectionTitle, StatBand } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { buildFilterUrl } from "@/lib/url-filters";
 import {
-	daysUntil,
 	LIFECYCLE_COLOR,
 	LIFECYCLE_LABEL,
-	num,
 	type PledgeLifecycle,
-	pct,
-	pledgeLifecycle,
-	resolvePledgeDeadline,
 } from "../admin-shared";
-import { useCampaignsManyWithItems } from "../dashboard/useCampaignsManyWithItems";
 
-type Pledge = components["schemas"]["PledgeResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
+type Report = components["schemas"]["PledgesReportResponseDto"];
 
+// Aging buckets we render in the donut. cancelled / fulfilled are NOT
+// part of "active outstanding" — they belong to the status breakdown
+// below. no-deadline is included because those pledges have outstanding
+// amounts that aren't time-bound but still need attention.
 const BUCKETS: PledgeLifecycle[] = [
 	"on-track",
 	"due-soon",
@@ -72,102 +68,49 @@ const DonutTooltip = ({ active, payload }: DonutTooltipPayload) => {
 };
 
 export const PledgeDynamicsTab = ({
-	pledges,
-	campaignsById,
+	report,
 	loading,
 }: {
-	pledges: Pledge[];
-	campaignsById: Record<string, Campaign>;
+	report?: Report;
 	loading?: boolean;
 }) => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const pledgesHref = `/${tenantSlug}/admin/pledges`;
 
-	// Item deadline takes precedence over campaign deadline — fan out item
-	// metadata for the unique campaigns referenced by the pledges in view.
-	const pledgeCampaignIds = useMemo(() => {
-		const set = new Set<string>();
-		for (const p of pledges) {
-			if (p.campaignId) {
-				set.add(p.campaignId);
-			}
-		}
-		return Array.from(set);
-	}, [pledges]);
-	const { itemDeadlinesById } = useCampaignsManyWithItems(
-		tenantSlug,
-		pledgeCampaignIds,
+	const totalPledged = report?.totalPledged ?? 0;
+	const totalPaid = report?.totalPaid ?? 0;
+	const totalRemaining = report?.totalRemaining ?? 0;
+	const fulfillmentPct = report ? Math.round(report.fulfillmentPct * 100) : 0;
+	const totalCount = report?.totalCount ?? 0;
+
+	const statusBy = new Map(
+		(report?.statusBreakdown ?? []).map((s) => [s.status, s]),
 	);
+	const active = statusBy.get("ACTIVE");
+	const fulfilled = statusBy.get("FULFILLED");
+	const cancelled = statusBy.get("CANCELLED");
 
-	const enriched = useMemo(
-		() =>
-			pledges.map((p) => {
-				const c = campaignsById[p.campaignId];
-				const deadline = resolvePledgeDeadline(p, c, itemDeadlinesById);
-				return {
-					p,
-					deadline,
-					days: daysUntil(deadline),
-					lifecycle: pledgeLifecycle(
-						p.pledgedAmount,
-						p.paidAmount,
-						p.status,
-						deadline,
-					),
-				};
-			}),
-		[pledges, campaignsById, itemDeadlinesById],
+	type AgingBucket = NonNullable<Report["aging"]>[number];
+	const agingByBucket = new Map<string, AgingBucket>(
+		(report?.aging ?? []).map((b) => [b.lifecycle as string, b]),
 	);
-
-	const active = enriched.filter((r) => r.p.status === "ACTIVE");
-	const fulfilled = enriched.filter((r) => r.p.status === "FULFILLED");
-	const cancelled = enriched.filter((r) => r.p.status === "CANCELLED");
-
-	const totalPledged = enriched.reduce((s, r) => s + num(r.p.pledgedAmount), 0);
-	const totalPaid = enriched.reduce((s, r) => s + num(r.p.paidAmount), 0);
-	const totalRemaining = enriched.reduce(
-		(s, r) => s + num(r.p.remainingAmount),
-		0,
-	);
-	const fulfillmentPct = pct(totalPaid, totalPledged);
-
-	// Aging is computed against active pledges' OUTSTANDING amount — the
-	// thing that's still owed. Fulfilled / cancelled excluded.
-	const agingByBucket = useMemo(() => {
-		const buckets: Record<PledgeLifecycle, { amount: number; count: number }> =
-			{
-				fulfilled: { amount: 0, count: 0 },
-				"on-track": { amount: 0, count: 0 },
-				"due-soon": { amount: 0, count: 0 },
-				"past-due": { amount: 0, count: 0 },
-				"no-deadline": { amount: 0, count: 0 },
-				cancelled: { amount: 0, count: 0 },
-			};
-		for (const r of active) {
-			buckets[r.lifecycle].amount += num(r.p.remainingAmount);
-			buckets[r.lifecycle].count += 1;
-		}
-		return buckets;
-	}, [active]);
-
-	const totalActiveOutstanding = BUCKETS.reduce(
-		(s, k) => s + agingByBucket[k].amount,
+	const totalActiveOutstanding = (report?.aging ?? []).reduce(
+		(s, b) => s + b.outstanding,
 		0,
 	);
 
 	const donutSegments = BUCKETS.map((b) => {
-		const amount = agingByBucket[b].amount;
-		const count = agingByBucket[b].count;
+		const bucket = agingByBucket.get(b);
+		const amount = bucket?.outstanding ?? 0;
+		const count = bucket?.count ?? 0;
+		const share = bucket ? Math.round(bucket.share * 100) : 0;
 		return {
 			key: b,
 			label: LIFECYCLE_LABEL[b],
 			color: LIFECYCLE_COLOR[b],
 			amount,
 			count,
-			share:
-				totalActiveOutstanding > 0
-					? Math.round((amount / totalActiveOutstanding) * 100)
-					: 0,
+			share,
 		};
 	});
 
@@ -182,22 +125,21 @@ export const PledgeDynamicsTab = ({
 		},
 	];
 
-	const cancellationRate = pct(
-		cancelled.length,
-		enriched.filter((r) => r.p.status !== "ACTIVE").length || 1,
-	);
-
 	return (
 		<>
 			<Card className="mb-6">
-				<SectionTitle title="Pledge fulfillment" />
+				<SectionTitle title="Pledge fulfillment (cohort starting in range)" />
+				<p className="-mt-3 mb-4 text-sm text-muted-foreground">
+					Of pledges created in the selected range, how much has been delivered
+					and how much remains.
+				</p>
 				<StatBand
 					size="md"
 					items={[
 						{
 							label: "Pledged",
 							value: formatCompact(totalPledged),
-							caption: `${enriched.length} pledges`,
+							caption: `${totalCount} pledges`,
 						},
 						{
 							label: "Paid",
@@ -207,12 +149,7 @@ export const PledgeDynamicsTab = ({
 						{
 							label: "Outstanding",
 							value: formatCompact(totalRemaining),
-							caption: `${active.length} active pledges`,
-						},
-						{
-							label: "Cancellation rate",
-							value: `${cancellationRate}%`,
-							caption: "Cancelled vs. closed (fulfilled + cancelled)",
+							caption: `${active?.count ?? 0} active pledges`,
 						},
 					]}
 				/>
@@ -228,13 +165,12 @@ export const PledgeDynamicsTab = ({
 					<div className="py-12 text-center text-sm text-muted-foreground">
 						Loading…
 					</div>
-				) : active.length === 0 ? (
+				) : !active || active.count === 0 ? (
 					<div className="py-12 text-center text-sm text-muted-foreground">
 						No active pledges in scope.
 					</div>
 				) : (
 					<div className="grid items-center gap-6 lg:grid-cols-[280px_1fr]">
-						{/* Donut */}
 						<div className="grid place-items-center">
 							<div className="relative size-[240px]">
 								<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
@@ -246,8 +182,7 @@ export const PledgeDynamicsTab = ({
 											{formatCompact(totalActiveOutstanding)}
 										</div>
 										<div className="mt-0.5 text-xs text-muted-foreground">
-											{active.length}{" "}
-											{active.length === 1 ? "pledge" : "pledges"}
+											{active.count} {active.count === 1 ? "pledge" : "pledges"}
 										</div>
 									</div>
 								</div>
@@ -278,7 +213,6 @@ export const PledgeDynamicsTab = ({
 							</div>
 						</div>
 
-						{/* Clickable bucket cards */}
 						<div className="grid grid-cols-2 gap-3">
 							{donutSegments.map((s) => (
 								<Link
@@ -326,27 +260,22 @@ export const PledgeDynamicsTab = ({
 					items={[
 						{
 							label: "Active",
-							value: active.length.toLocaleString(),
-							caption: formatCurrency(
-								active.reduce((s, r) => s + num(r.p.pledgedAmount), 0),
-								{ decimals: 0 },
-							),
+							value: (active?.count ?? 0).toLocaleString(),
+							caption: formatCurrency(active?.pledged ?? 0, { decimals: 0 }),
 						},
 						{
 							label: "Fulfilled",
-							value: fulfilled.length.toLocaleString(),
-							caption: formatCurrency(
-								fulfilled.reduce((s, r) => s + num(r.p.pledgedAmount), 0),
-								{ decimals: 0 },
-							),
+							value: (fulfilled?.count ?? 0).toLocaleString(),
+							caption: formatCurrency(fulfilled?.pledged ?? 0, {
+								decimals: 0,
+							}),
 						},
 						{
 							label: "Cancelled",
-							value: cancelled.length.toLocaleString(),
-							caption: formatCurrency(
-								cancelled.reduce((s, r) => s + num(r.p.pledgedAmount), 0),
-								{ decimals: 0 },
-							),
+							value: (cancelled?.count ?? 0).toLocaleString(),
+							caption: formatCurrency(cancelled?.pledged ?? 0, {
+								decimals: 0,
+							}),
 						},
 					]}
 				/>

@@ -4,24 +4,25 @@ import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import { Button, PageHeader } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useCampaigns } from "@/lib/api/campaigns";
+import { useCampaigns, useCampaignsProgressBatch } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
-import { usePledges } from "@/lib/api/pledges";
-import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
+import { useUrgentPledges } from "@/lib/api/pledges";
+import {
+	useTransactionSummary,
+	useTransactions,
+	useUnattributedSummary,
+} from "@/lib/api/transactions";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import dayjs from "@/lib/dayjs";
 import { openModal } from "@/lib/modals/store";
-import { daysUntil, num } from "../admin-shared";
+import { daysUntil } from "../admin-shared";
 import { DashboardRecentGifts } from "./DashboardRecentGifts";
 import { DeadlineWatchCard } from "./DeadlineWatchCard";
 import { NowSnapshotStrip } from "./NowSnapshotStrip";
 import { OutstandingPledgesCard } from "./OutstandingPledgesCard";
 import { UnattributedCallout } from "./UnattributedCallout";
-import { useCampaignProgressMany } from "./useCampaignProgressMany";
-import { useCampaignsManyWithItems } from "./useCampaignsManyWithItems";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
-type Member = components["schemas"]["MemberResponseDto"];
 
 const getGreeting = (): string => {
 	const h = dayjs().hour();
@@ -55,96 +56,70 @@ export const AdminDashboardPage = () => {
 		dateTo: priorWeekTo,
 	});
 
-	const weekTransactions = useTransactions(tenantSlug, {
+	// Server-aggregated callout — replaces the previous limit-500 fetch + JS
+	// count, which silently truncated for high-traffic weeks.
+	const unattributedQ = useUnattributedSummary(tenantSlug, {
 		dateFrom: weekFrom,
 		dateTo: weekTo,
-		limit: 500,
 	});
 
+	// Recent gifts come with embedded member/campaign relations, so we no
+	// longer prefetch the full member/campaign roster just to render row
+	// labels.
 	const recentTx = useTransactions(tenantSlug, { limit: 6 });
-	const membersQ = useMembers(tenantSlug, { limit: 200 });
-	const campaignsQ = useCampaigns(tenantSlug);
-	const activePledgesQ = usePledges(tenantSlug, {
-		status: "ACTIVE",
-		limit: 200,
-	});
 
-	const members: Member[] = useMemo(
-		() => membersQ.data?.items ?? [],
-		[membersQ.data],
-	);
+	const campaignsQ = useCampaigns(tenantSlug);
 	const campaigns: Campaign[] = useMemo(
 		() => campaignsQ.data?.items ?? [],
 		[campaignsQ.data],
 	);
-	const pledges = useMemo(
-		() => activePledgesQ.data?.items ?? [],
-		[activePledgesQ.data],
-	);
 
-	const membersById = useMemo(
-		() => Object.fromEntries(members.map((m) => [m.id, m])),
-		[members],
-	);
-	const campaignsById = useMemo(
-		() => Object.fromEntries(campaigns.map((c) => [c.id, c])),
-		[campaigns],
-	);
-
-	// Fan-out campaign progress for active, deadlined campaigns only.
+	// Active campaigns near deadline → batch progress in one roundtrip.
 	const deadlinedCampaignIds = useMemo(
 		() =>
 			campaigns
-				.filter((c) => c.status === "ACTIVE" && typeof c.deadline === "string")
+				.filter((c) => {
+					if (c.status !== "ACTIVE" || typeof c.deadline !== "string") {
+						return false;
+					}
+					const d = daysUntil(c.deadline);
+					return d !== null && d <= 30;
+				})
+				.sort((a, b) => {
+					const ad = daysUntil(a.deadline as unknown as string) ?? 0;
+					const bd = daysUntil(b.deadline as unknown as string) ?? 0;
+					return ad - bd;
+				})
+				.slice(0, 5)
 				.map((c) => c.id),
 		[campaigns],
 	);
-	const { progressById } = useCampaignProgressMany(
+	const progressBatchQ = useCampaignsProgressBatch(
 		tenantSlug,
 		deadlinedCampaignIds,
 	);
-
-	// Item deadlines for the campaigns referenced by active pledges —
-	// `resolvePledgeDeadline` needs them to compute lifecycle correctly
-	// (item deadline takes precedence over campaign deadline).
-	const pledgeCampaignIds = useMemo(() => {
-		const set = new Set<string>();
-		for (const p of pledges) {
-			if (p.campaignId) {
-				set.add(p.campaignId);
-			}
+	const progressById = useMemo(() => {
+		const map: Record<
+			string,
+			{ goalAmount: number; pledgedAmount: number; raisedAmount: number }
+		> = {};
+		for (const e of progressBatchQ.data?.items ?? []) {
+			map[e.campaignId] = {
+				goalAmount: e.goalAmount,
+				pledgedAmount: e.pledgedAmount,
+				raisedAmount: e.raisedAmount,
+			};
 		}
-		return Array.from(set);
-	}, [pledges]);
-	const { itemDeadlinesById } = useCampaignsManyWithItems(
-		tenantSlug,
-		pledgeCampaignIds,
-	);
+		return map;
+	}, [progressBatchQ.data]);
 
-	// Unattributed counts — derived from this week's transactions.
-	const { anonCount, anonTotal, noCampCount, noCampTotal } = useMemo(() => {
-		let aC = 0;
-		let aT = 0;
-		let nC = 0;
-		let nT = 0;
-		for (const t of weekTransactions.data?.items ?? []) {
-			const amt = num(t.amount);
-			if (!t.memberId) {
-				aC += 1;
-				aT += amt;
-			}
-			if (!t.campaignId) {
-				nC += 1;
-				nT += amt;
-			}
-		}
-		return { anonCount: aC, anonTotal: aT, noCampCount: nC, noCampTotal: nT };
-	}, [weekTransactions.data]);
+	// Urgent pledges — BE computes lifecycle + resolved deadline and sorts
+	// by urgency. No more fan-out of campaign-item lookups on the FE.
+	const urgentPledgesQ = useUrgentPledges(tenantSlug, { limit: 8 });
 
 	const activeCampaignCount = campaigns.filter(
 		(c) => c.status === "ACTIVE",
 	).length;
-
 	const deadlineSoonCount = useMemo(
 		() =>
 			campaigns.filter((c) => {
@@ -157,12 +132,17 @@ export const AdminDashboardPage = () => {
 		[campaigns],
 	);
 
-	const newMembersThisWeek = useMemo(
-		() =>
-			members.filter((m) => dayjs(m.createdAt).isAfter(dayjs().startOf("week")))
-				.length,
-		[members],
-	);
+	// Total member count + new-this-week numbers from the existing list
+	// endpoint. `limit: 1` so we only fetch a single row — we just need
+	// `meta.total` from each response.
+	const totalMembersQ = useMembers(tenantSlug, { limit: 1 });
+	const newMembersThisWeekQ = useMembers(tenantSlug, {
+		limit: 1,
+		dateFrom: weekFrom,
+		dateTo: weekTo,
+	});
+	const totalMembers = totalMembersQ.data?.meta.total ?? 0;
+	const newMembersThisWeek = newMembersThisWeekQ.data?.meta.total ?? 0;
 
 	const firstName = user?.displayName?.split(" ")[0] ?? "Admin";
 
@@ -188,7 +168,7 @@ export const AdminDashboardPage = () => {
 				<NowSnapshotStrip
 					weekSummary={weekSummary.data}
 					priorWeekSummary={priorWeekSummary.data}
-					memberCount={membersQ.data?.meta?.total ?? members.length}
+					memberCount={totalMembers}
 					newMembersThisWeek={newMembersThisWeek}
 					activeCampaigns={activeCampaignCount}
 					deadlineSoonCount={deadlineSoonCount}
@@ -196,38 +176,26 @@ export const AdminDashboardPage = () => {
 				/>
 
 				<UnattributedCallout
-					anonymousCount={anonCount}
-					anonymousTotal={anonTotal}
-					noCampaignCount={noCampCount}
-					noCampaignTotal={noCampTotal}
+					summary={unattributedQ.data}
 					tenantSlug={tenantSlug}
 				/>
 
 				<div className="mb-6 grid gap-4 lg:grid-cols-2">
 					<OutstandingPledgesCard
-						pledges={pledges}
-						campaignsById={campaignsById}
-						membersById={membersById}
-						itemDeadlinesById={itemDeadlinesById}
+						pledges={urgentPledgesQ.data?.items ?? []}
 						tenantSlug={tenantSlug}
-						loading={
-							activePledgesQ.isLoading ||
-							campaignsQ.isLoading ||
-							membersQ.isLoading
-						}
+						loading={urgentPledgesQ.isLoading}
 					/>
 					<DeadlineWatchCard
 						campaigns={campaigns}
 						progressById={progressById}
 						tenantSlug={tenantSlug}
-						loading={campaignsQ.isLoading}
+						loading={campaignsQ.isLoading || progressBatchQ.isLoading}
 					/>
 				</div>
 
 				<DashboardRecentGifts
 					transactions={recentTx.data?.items ?? []}
-					membersById={membersById}
-					campaignsById={campaignsById}
 					loading={recentTx.isLoading}
 					tenantSlug={tenantSlug}
 				/>

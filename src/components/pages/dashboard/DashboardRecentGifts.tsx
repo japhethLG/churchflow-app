@@ -11,12 +11,10 @@ import {
 	DeletedLabel,
 	TypeBadge,
 } from "@/components/primitives";
-import { type components, nstr } from "@/lib/api";
+import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
-type Member = components["schemas"]["MemberResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
 
 const TYPE_BADGE_LABEL: Record<Transaction["type"], BadgeType> = {
 	TITHE: "Tithe",
@@ -46,14 +44,10 @@ const relativeDate = (iso: string): string => {
 
 export const DashboardRecentGifts = ({
 	transactions,
-	membersById,
-	campaignsById,
 	loading,
 	tenantSlug,
 }: {
 	transactions: Transaction[];
-	membersById: Record<string, Member>;
-	campaignsById: Record<string, Campaign>;
 	loading?: boolean;
 	tenantSlug: string;
 }) => {
@@ -75,32 +69,30 @@ export const DashboardRecentGifts = ({
 			key: "member",
 			label: "Member",
 			render: (t) => {
-				const memberId = nstr(t.memberId);
-				if (!memberId) {
+				const m = t.member;
+				if (!m) {
 					return (
 						<span className="text-sm italic text-muted-foreground">
 							Anonymous
 						</span>
 					);
 				}
-				const m = membersById[memberId];
-				const name = m
-					? `${m.firstName ?? ""} ${m.lastName ?? ""}`.trim() || "Unnamed"
-					: "Unknown";
-				const isDeleted = Boolean(m?.deletedAt);
+				const name =
+					`${m.firstName ?? ""} ${m.lastName ?? ""}`.trim() || "Unnamed";
+				const isDeleted = Boolean(m.deletedAt);
 				return (
 					<span className="inline-flex min-w-0 items-center gap-2">
 						<Avatar name={name} size={26} />
 						{isDeleted ? (
 							<DeletedLabel
-								deletedAt={m?.deletedAt}
+								deletedAt={m.deletedAt}
 								className="truncate text-sm"
 							>
 								{name}
 							</DeletedLabel>
 						) : (
 							<Link
-								href={`/${tenantSlug}/admin/members/${memberId}`}
+								href={`/${tenantSlug}/admin/members/${m.id}`}
 								onClick={(e) => e.stopPropagation()}
 								className="truncate text-sm hover:underline"
 							>
@@ -122,14 +114,13 @@ export const DashboardRecentGifts = ({
 			label: "Campaign",
 			width: "200px",
 			render: (t) => {
-				const cid = nstr(t.campaignId);
-				if (!cid) {
+				const c = t.campaign;
+				if (!c) {
 					return (
 						<span className="text-sm italic text-amber-600">No campaign</span>
 					);
 				}
-				const c = campaignsById[cid];
-				if (c?.deletedAt) {
+				if (c.deletedAt) {
 					return (
 						<DeletedLabel
 							deletedAt={c.deletedAt}
@@ -141,11 +132,11 @@ export const DashboardRecentGifts = ({
 				}
 				return (
 					<Link
-						href={`/${tenantSlug}/admin/campaigns/${cid}`}
+						href={`/${tenantSlug}/admin/campaigns/${c.id}`}
 						onClick={(e) => e.stopPropagation()}
 						className="block truncate text-sm text-primary hover:underline"
 					>
-						{c?.title ?? "Campaign"}
+						{c.title}
 					</Link>
 				);
 			},

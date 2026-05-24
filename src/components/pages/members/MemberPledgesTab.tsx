@@ -7,29 +7,24 @@ import {
 	Badge,
 	type DataTableColumn,
 	DataTableShell,
+	DeletedLabel,
 	StackedProgressBar,
 	type StateFilterValue,
 	toStateFilterFlags,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useCampaigns } from "@/lib/api/campaigns";
 import { usePledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
-	daysUntil,
 	LIFECYCLE_LABEL,
 	num,
 	type PledgeLifecycle,
 	pct,
-	pledgeLifecycle,
-	resolvePledgeDeadline,
 } from "../admin-shared";
-import { useCampaignsManyWithItems } from "../dashboard/useCampaignsManyWithItems";
 
 type Member = components["schemas"]["MemberResponseDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
 
 type StatusFilter = "all" | "ACTIVE" | "FULFILLED" | "CANCELLED";
 
@@ -58,14 +53,6 @@ const lifecycleBadgeColor = (
 	return "neutral";
 };
 
-type Row = {
-	p: Pledge;
-	deadline: string | null;
-	days: number | null;
-	lifecycle: PledgeLifecycle;
-	campaign: Campaign | undefined;
-};
-
 export const MemberPledgesTab = ({
 	member,
 	tenantSlug,
@@ -77,6 +64,9 @@ export const MemberPledgesTab = ({
 	const [status, setStatus] = useState<StatusFilter>("all");
 	const [state, setState] = useState<StateFilterValue>("active");
 
+	// PledgeResponseDto now carries embedded member/campaign/campaign-item
+	// + resolved deadline + lifecycle + daysUntil. No more FE fan-out to
+	// fetch item deadlines and no more local lifecycle re-derivation.
 	const { data, isLoading } = usePledges(tenantSlug, {
 		memberId: member.id,
 		status: status === "all" ? undefined : status,
@@ -84,79 +74,43 @@ export const MemberPledgesTab = ({
 		...toStateFilterFlags(state),
 	});
 
-	const campaignsQ = useCampaigns(tenantSlug, { includeDeleted: true });
-	const campaignsById = useMemo(
-		() =>
-			Object.fromEntries((campaignsQ.data?.items ?? []).map((c) => [c.id, c])),
-		[campaignsQ.data],
-	);
-
-	// Item deadline wins over campaign deadline when set — fan-out fetches
-	// items for the campaigns this member has pledged to.
-	const memberCampaignIds = useMemo(() => {
-		const set = new Set<string>();
-		for (const p of data?.items ?? []) {
-			if (p.campaignId) {
-				set.add(p.campaignId);
-			}
-		}
-		return Array.from(set);
-	}, [data]);
-	const { itemDeadlinesById } = useCampaignsManyWithItems(
-		tenantSlug,
-		memberCampaignIds,
-	);
-
-	const rows: Row[] = useMemo(() => {
-		return (data?.items ?? []).map((p) => {
-			const campaign = campaignsById[p.campaignId];
-			const deadline = resolvePledgeDeadline(p, campaign, itemDeadlinesById);
-			return {
-				p,
-				deadline,
-				days: daysUntil(deadline),
-				lifecycle: pledgeLifecycle(
-					p.pledgedAmount,
-					p.paidAmount,
-					p.status,
-					deadline,
-				),
-				campaign,
-			};
-		});
-	}, [data, campaignsById, itemDeadlinesById]);
+	const rows: Pledge[] = data?.items ?? [];
 
 	const agg = useMemo(() => {
 		let pledged = 0;
 		let paid = 0;
 		let remaining = 0;
-		for (const r of rows) {
-			pledged += num(r.p.pledgedAmount);
-			paid += num(r.p.paidAmount);
-			remaining += num(r.p.remainingAmount);
+		for (const p of rows) {
+			pledged += num(p.pledgedAmount);
+			paid += num(p.paidAmount);
+			remaining += num(p.remainingAmount);
 		}
 		return { pledged, paid, remaining };
 	}, [rows]);
 
-	const columns: DataTableColumn<Row>[] = [
+	const columns: DataTableColumn<Pledge>[] = [
 		{
 			key: "campaign",
 			label: "Campaign",
-			render: (r) => {
-				if (!r.campaign) {
+			render: (p) => {
+				const c = p.campaign;
+				if (c.deletedAt) {
 					return (
-						<span className="text-sm text-muted-foreground">
-							{r.p.campaignId.slice(0, 8)}…
-						</span>
+						<DeletedLabel
+							deletedAt={c.deletedAt}
+							className="text-sm font-medium"
+						>
+							{c.title}
+						</DeletedLabel>
 					);
 				}
 				return (
 					<Link
-						href={`/${tenantSlug}/admin/campaigns/${r.campaign.id}`}
+						href={`/${tenantSlug}/admin/campaigns/${c.id}`}
 						onClick={(e) => e.stopPropagation()}
 						className="text-sm font-medium text-foreground hover:underline"
 					>
-						{r.campaign.title}
+						{c.title}
 					</Link>
 				);
 			},
@@ -166,9 +120,9 @@ export const MemberPledgesTab = ({
 			label: "Pledged",
 			width: "110px",
 			align: "right",
-			render: (r) => (
+			render: (p) => (
 				<span className="text-sm font-medium tabular-nums text-foreground">
-					{formatCurrency(r.p.pledgedAmount, { decimals: 0 })}
+					{formatCurrency(p.pledgedAmount, { decimals: 0 })}
 				</span>
 			),
 		},
@@ -176,16 +130,16 @@ export const MemberPledgesTab = ({
 			key: "paid",
 			label: "Paid",
 			width: "240px",
-			render: (r) => {
-				const fPct = pct(r.p.paidAmount, r.p.pledgedAmount);
+			render: (p) => {
+				const fPct = pct(p.paidAmount, p.pledgedAmount);
 				return (
 					<div>
 						<StackedProgressBar
 							size="sm"
-							total={r.p.pledgedAmount}
+							total={p.pledgedAmount}
 							segments={[
 								{
-									value: r.p.paidAmount,
+									value: p.paidAmount,
 									color: "var(--chart-current)",
 									label: "Paid",
 								},
@@ -193,7 +147,7 @@ export const MemberPledgesTab = ({
 						/>
 						<div className="mt-1 flex items-baseline justify-between text-xs tabular-nums">
 							<span className="text-muted-foreground">
-								{formatCompact(r.p.paidAmount)}
+								{formatCompact(p.paidAmount)}
 							</span>
 							<span className="font-semibold text-foreground">{fPct}%</span>
 						</div>
@@ -206,15 +160,13 @@ export const MemberPledgesTab = ({
 			label: "Remaining",
 			width: "110px",
 			align: "right",
-			render: (r) => (
+			render: (p) => (
 				<span
 					className={`text-sm font-medium tabular-nums ${
-						r.p.remainingAmount > 0
-							? "text-foreground"
-							: "text-muted-foreground"
+						p.remainingAmount > 0 ? "text-foreground" : "text-muted-foreground"
 					}`}
 				>
-					{formatCurrency(r.p.remainingAmount, { decimals: 0 })}
+					{formatCurrency(p.remainingAmount, { decimals: 0 })}
 				</span>
 			),
 		},
@@ -222,26 +174,28 @@ export const MemberPledgesTab = ({
 			key: "deadline",
 			label: "Deadline",
 			width: "110px",
-			render: (r) => {
-				if (!r.deadline) {
+			render: (p) => {
+				const deadline = p.resolvedDeadline;
+				const days = p.daysUntil ?? null;
+				if (!deadline) {
 					return <span className="text-xs text-muted-foreground">—</span>;
 				}
 				return (
 					<div className="text-xs">
 						<div className="text-muted-foreground">
-							{dayjs(r.deadline).format("MMM D, YYYY")}
+							{dayjs(deadline).format("MMM D, YYYY")}
 						</div>
-						{r.days !== null && r.p.status === "ACTIVE" && (
+						{days !== null && p.status === "ACTIVE" && (
 							<div
 								className={`tabular-nums ${
-									r.days < 0
+									days < 0
 										? "text-(--chart-negative) font-semibold"
-										: r.days <= 14
+										: days <= 14
 											? "text-(--chart-goal) font-semibold"
 											: "text-muted-foreground"
 								}`}
 							>
-								{r.days < 0 ? `${Math.abs(r.days)}d past` : `${r.days}d left`}
+								{days < 0 ? `${Math.abs(days)}d past` : `${days}d left`}
 							</div>
 						)}
 					</div>
@@ -252,16 +206,17 @@ export const MemberPledgesTab = ({
 			key: "lifecycle",
 			label: "Lifecycle",
 			width: "130px",
-			render: (r) => (
-				<Badge color={lifecycleBadgeColor(r.lifecycle)}>
-					{LIFECYCLE_LABEL[r.lifecycle]}
-				</Badge>
-			),
+			render: (p) => {
+				const l = p.lifecycle as PledgeLifecycle;
+				return (
+					<Badge color={lifecycleBadgeColor(l)}>{LIFECYCLE_LABEL[l]}</Badge>
+				);
+			},
 		},
 	];
 
 	return (
-		<DataTableShell<Row>
+		<DataTableShell<Pledge>
 			filters={[
 				{
 					key: "status",
@@ -289,10 +244,10 @@ export const MemberPledgesTab = ({
 			]}
 			columns={columns}
 			rows={rows}
-			rowKey={(r) => r.p.id}
-			loading={isLoading || campaignsQ.isLoading}
-			onRowClick={(r) => router.push(`/${tenantSlug}/admin/pledges/${r.p.id}`)}
-			rowClassName={(r) => (r.p.deletedAt ? "bg-muted/30" : undefined)}
+			rowKey={(p) => p.id}
+			loading={isLoading}
+			onRowClick={(p) => router.push(`/${tenantSlug}/admin/pledges/${p.id}`)}
+			rowClassName={(p) => (p.deletedAt ? "bg-muted/30" : undefined)}
 			emptyTitle="No pledges yet"
 			emptySubtitle="This member has not committed to any campaign yet."
 		/>

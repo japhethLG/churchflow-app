@@ -14,8 +14,7 @@ import { type components, nstr } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 
 export type TransactionRow = components["schemas"]["TransactionResponseDto"];
-type Member = components["schemas"]["MemberResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
+type EmbeddedMember = NonNullable<TransactionRow["member"]>;
 
 const TYPE_BADGE_LABEL: Record<TransactionRow["type"], BadgeType> = {
 	TITHE: "Tithe",
@@ -31,7 +30,7 @@ const fmtDate = (iso: string): string => {
 	return dayjs(iso).format("MMM D");
 };
 
-const fullName = (m: Member | undefined): string => {
+const fullName = (m: EmbeddedMember | undefined | null): string => {
 	if (!m) {
 		return "—";
 	}
@@ -45,18 +44,16 @@ export type TransactionsTableHandlers = {
 	onRestore: (t: TransactionRow) => void;
 };
 
+// Member + campaign labels now come from each row's embedded relation —
+// no need for caller-supplied lookup maps. Tombstoned references still
+// surface (BE opts into withDeleted) so DeletedLabel can render them.
 export const transactionColumns = ({
 	handlers,
-	membersById,
-	campaignsById,
 	tenantSlug,
 }: {
 	handlers: TransactionsTableHandlers;
-	membersById: Record<string, Member>;
-	campaignsById: Record<string, Campaign>;
 	// When set, member + campaign cells render as `<Link>`s to their detail
-	// pages. Existing callers can omit this — the cells fall back to the
-	// original non-clickable rendering.
+	// pages. Omit on standalone tables that have no per-tenant context.
 	tenantSlug?: string;
 }): DataTableColumn<TransactionRow>[] => [
 	{
@@ -69,27 +66,26 @@ export const transactionColumns = ({
 		key: "member",
 		label: "Member",
 		render: (t) => {
-			const memberId = nstr(t.memberId);
-			if (!memberId) {
+			const m = t.member;
+			if (!m) {
 				return (
 					<span className="text-sm italic text-muted-foreground">
 						Anonymous
 					</span>
 				);
 			}
-			const m = membersById[memberId];
-			const isDeleted = Boolean(m?.deletedAt);
+			const isDeleted = Boolean(m.deletedAt);
 			const name = fullName(m);
 			return (
 				<span className="inline-flex min-w-0 items-center gap-2">
 					<Avatar name={name} size={26} />
 					{isDeleted ? (
-						<DeletedLabel deletedAt={m?.deletedAt} className="truncate text-sm">
+						<DeletedLabel deletedAt={m.deletedAt} className="truncate text-sm">
 							{name}
 						</DeletedLabel>
 					) : tenantSlug ? (
 						<Link
-							href={`/${tenantSlug}/admin/members/${memberId}`}
+							href={`/${tenantSlug}/admin/members/${m.id}`}
 							onClick={(e) => e.stopPropagation()}
 							className="truncate text-sm hover:underline"
 						>
@@ -113,12 +109,11 @@ export const transactionColumns = ({
 		label: "Campaign",
 		width: "180px",
 		render: (t) => {
-			const cid = nstr(t.campaignId);
-			if (!cid) {
+			const c = t.campaign;
+			if (!c) {
 				return <span className="text-muted-foreground">—</span>;
 			}
-			const c = campaignsById[cid];
-			if (c?.deletedAt) {
+			if (c.deletedAt) {
 				return (
 					<DeletedLabel
 						deletedAt={c.deletedAt}
@@ -128,17 +123,16 @@ export const transactionColumns = ({
 					</DeletedLabel>
 				);
 			}
-			const label = c?.title ?? "Campaign";
 			return tenantSlug ? (
 				<Link
-					href={`/${tenantSlug}/admin/campaigns/${cid}`}
+					href={`/${tenantSlug}/admin/campaigns/${c.id}`}
 					onClick={(e) => e.stopPropagation()}
 					className="block truncate text-sm text-primary hover:underline"
 				>
-					{label}
+					{c.title}
 				</Link>
 			) : (
-				<span className="block truncate text-sm text-primary">{label}</span>
+				<span className="block truncate text-sm text-primary">{c.title}</span>
 			);
 		},
 	},
