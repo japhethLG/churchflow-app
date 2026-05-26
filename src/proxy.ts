@@ -46,6 +46,10 @@ const buildCsp = (nonce: string, isDev: boolean): string => {
 		`img-src 'self' data: blob: https://*.googleusercontent.com https://lh3.googleusercontent.com https://www.gstatic.com`,
 		`connect-src 'self' ${apiBaseUrl} https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com`,
 		`frame-src 'self' https://accounts.google.com https://*.firebaseapp.com`,
+		// PWA: the service worker runs in a worker context and the
+		// browser fetches /manifest.webmanifest separately.
+		`worker-src 'self'`,
+		`manifest-src 'self'`,
 		`object-src 'none'`,
 		`base-uri 'self'`,
 		`form-action 'self'`,
@@ -111,7 +115,8 @@ export const config = {
 		// be wasted (and a stale prefetched nonce can cause CSP violations
 		// when the link is followed). See Next's CSP guide.
 		{
-			source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
+			source:
+				"/((?!api|_next/static|_next/image|favicon.ico|serwist|manifest.webmanifest|icons).*)",
 			missing: [
 				{ type: "header", key: "next-router-prefetch" },
 				{ type: "header", key: "purpose", value: "prefetch" },

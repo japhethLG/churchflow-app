@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import { SerwistProvider } from "@serwist/turbopack/react";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import { connection } from "next/server";
@@ -16,6 +17,20 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
 	title: "ChurchFlow",
 	description: "Record tithes, offerings, and giving for your church.",
+	applicationName: "ChurchFlow",
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "default",
+		title: "ChurchFlow",
+	},
+	formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+	themeColor: [
+		{ media: "(prefers-color-scheme: light)", color: "#ffffff" },
+		{ media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+	],
 };
 
 export default async ({ children }: { children: React.ReactNode }) => {
@@ -71,7 +86,9 @@ export default async ({ children }: { children: React.ReactNode }) => {
 					<TooltipProvider>
 						<AuthProvider>
 							<QueryProvider>
-								{children}
+								<SerwistProvider swUrl="/serwist/sw.js">
+									{children}
+								</SerwistProvider>
 								<ModalHost />
 								<Toaster />
 							</QueryProvider>

@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# @serwist/turbopack writes esbuild cache here at runtime
+/.serwist/
+
 # production
 /build
 

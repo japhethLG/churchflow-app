@@ -50,15 +50,18 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.14",
+		"@serwist/turbopack": "^9.5.11",
 		"@tailwindcss/postcss": "^4.2.4",
 		"@types/node": "^25.6.0",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"dotenv-cli": "^11.0.0",
+		"esbuild": "^0.28.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.4.0",
 		"openapi-typescript": "^7.13.0",
 		"server-only": "^0.0.1",
+		"serwist": "^9.5.11",
 		"tailwindcss": "^4.2.4",
 		"tsx": "^4.21.0",
 		"typescript": "^6.0.3"
