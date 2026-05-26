@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist } from "serwist";
+import { NetworkOnly, Serwist } from "serwist";
 
 declare global {
 	interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -10,6 +10,18 @@ declare global {
 }
 
 declare const self: ServiceWorkerGlobalScope;
+
+// Firebase Auth (especially signInWithRedirect) breaks if the service
+// worker caches or mishandles its requests. Always go straight to the
+// network for Google/Firebase auth hosts — never cache. Listed first so
+// it wins over defaultCache's cross-origin handler.
+const authPassthrough = {
+	matcher: ({ url }: { url: URL }) =>
+		/(^|\.)(googleapis\.com|firebaseapp\.com|google\.com|gstatic\.com|firebaseio\.com)$/.test(
+			url.hostname,
+		),
+	handler: new NetworkOnly(),
+};
 
 // defaultCache already excludes `/api/` from runtime caching, which
 // matters here: Bearer-gated and session-cookie-gated responses would
@@ -20,7 +32,7 @@ const serwist = new Serwist({
 	skipWaiting: true,
 	clientsClaim: true,
 	navigationPreload: true,
-	runtimeCaching: defaultCache,
+	runtimeCaching: [authPassthrough, ...defaultCache],
 	fallbacks: {
 		entries: [
 			{

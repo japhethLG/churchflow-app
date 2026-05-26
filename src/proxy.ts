@@ -53,7 +53,11 @@ const buildCsp = (nonce: string, isDev: boolean): string => {
 		`style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
 		`font-src 'self' https://fonts.gstatic.com data:`,
 		`img-src 'self' data: blob: https://*.googleusercontent.com https://lh3.googleusercontent.com https://www.gstatic.com`,
-		`connect-src 'self' ${apiBaseUrl} https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com`,
+		// `*.firebaseapp.com` (the Firebase authDomain) is needed by
+		// signInWithRedirect, which fetches the auth handler — unlike the
+		// popup flow, which only loads it as a frame. Without it the redirect
+		// fails with auth/network-request-failed in the installed app.
+		`connect-src 'self' ${apiBaseUrl} https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://*.firebaseapp.com https://apis.google.com https://accounts.google.com`,
 		`frame-src 'self' https://accounts.google.com https://*.firebaseapp.com`,
 		// PWA: the service worker runs in a worker context and the
 		// browser fetches /manifest.webmanifest separately.
