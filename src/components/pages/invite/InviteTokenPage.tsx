@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { AuthMarketingShell } from "@/components/pages/auth";
 import { Avatar } from "@/components/primitives/Avatar";
 import { Button } from "@/components/primitives/Button";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/invitations";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import {
+	completeRedirectSignIn,
 	isAuthCancellationError,
 	refreshSession,
 	signInWithGoogle,
@@ -34,6 +35,17 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 		useAcceptInvitation();
 	const [dismissed, setDismissed] = useState(false);
 	const [actionError, setActionError] = useState<string | null>(null);
+
+	// Standalone/TWA sign-in uses a full-page redirect. When it returns here,
+	// finalize the credential + session so the user lands back signed in and
+	// can accept with a single tap. No-op when no redirect is pending.
+	useEffect(() => {
+		completeRedirectSignIn().catch((err) => {
+			if (!isAuthCancellationError(err)) {
+				setActionError(err instanceof Error ? err.message : "Sign-in failed");
+			}
+		});
+	}, []);
 
 	const handleAccept = async () => {
 		setActionError(null);

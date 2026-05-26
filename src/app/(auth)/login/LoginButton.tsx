@@ -1,9 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/primitives";
-import { isAuthCancellationError, signInWithGoogle } from "@/lib/auth/actions";
+import {
+	completeRedirectSignIn,
+	isAuthCancellationError,
+	signInWithGoogle,
+} from "@/lib/auth/actions";
 
 // After sign-in, let /launch decide where to send the user. The
 // post-login redirect already knows the rules (super-admin →
@@ -16,13 +20,45 @@ export const LoginButton = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	// Standalone/TWA sign-in uses a full-page redirect; finalize it when the
+	// app reloads back here. No-op when no redirect is pending.
+	useEffect(() => {
+		let active = true;
+		setLoading(true);
+		completeRedirectSignIn()
+			.then((result) => {
+				if (active && result) {
+					router.push("/launch");
+					router.refresh();
+				}
+			})
+			.catch((err) => {
+				if (active && !isAuthCancellationError(err)) {
+					console.error(err);
+					setError(err instanceof Error ? err.message : "Sign-in failed");
+				}
+			})
+			.finally(() => {
+				if (active) {
+					setLoading(false);
+				}
+			});
+		return () => {
+			active = false;
+		};
+	}, [router]);
+
 	const handleClick = async () => {
 		setLoading(true);
 		setError(null);
 		try {
-			await signInWithGoogle();
-			router.push("/launch");
-			router.refresh();
+			// In standalone/TWA this redirects away and resolves null; the
+			// effect above completes sign-in after the redirect returns.
+			const result = await signInWithGoogle();
+			if (result) {
+				router.push("/launch");
+				router.refresh();
+			}
 		} catch (err) {
 			if (isAuthCancellationError(err)) {
 				return;
