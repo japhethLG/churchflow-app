@@ -507,3 +507,26 @@
 .dark *::-webkit-scrollbar-thumb {
 	background: rgba(255, 255, 255, 0.15);
 }
+
+/* Native-app feel when launched as an installed PWA / TWA. Scoped to
+   standalone display-mode so the regular browser keeps pinch-zoom and
+   text selection (accessibility + copy/paste). */
+@media all and (display-mode: standalone) {
+	html {
+		/* Kill pinch-zoom and double-tap zoom; panning/scrolling still work. */
+		touch-action: pan-x pan-y;
+	}
+	body {
+		/* Suppress the long-press highlight and the selection/search callout. */
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		user-select: none;
+	}
+	/* Re-enable selection where typing/editing needs it. */
+	input,
+	textarea,
+	[contenteditable="true"] {
+		-webkit-user-select: text;
+		user-select: text;
+	}
+}
