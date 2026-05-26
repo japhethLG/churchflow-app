@@ -21,9 +21,13 @@ import {
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
-// Outstanding pledges. The BE's /pledges/urgent endpoint returns the
-// already-filtered, lifecycle-resolved list (past-due, due-soon, or
-// on-track within 30 days), sorted by urgency. We just render.
+// Outstanding pledges work-queue. The BE's /pledges/urgent endpoint
+// returns the already-filtered, lifecycle-resolved list (past-due,
+// due-soon, or on-track within 30 days), sorted by urgency. We just
+// render — no cohort filter here; this card answers "what needs my
+// attention now?", which is deadline-driven, not creation-driven. For
+// cohort analysis ("of this year's pledges, how are they doing?"),
+// see Reports → Pledge Dynamics.
 export const OutstandingPledgesCard = ({
 	pledges,
 	tenantSlug,

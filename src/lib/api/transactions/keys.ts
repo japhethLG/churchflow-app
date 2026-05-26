@@ -6,6 +6,8 @@ export const TRANSACTION_PATHS = [
 	"/api/v1/tenants/{tenantId}/transactions/{id}",
 	"/api/v1/tenants/{tenantId}/transactions/{id}/restore",
 	"/api/v1/tenants/{tenantId}/transactions/summary",
+	"/api/v1/tenants/{tenantId}/transactions/unattributed",
+	"/api/v1/tenants/{tenantId}/transactions/reports/givers",
 	"/api/v1/tenants/{tenantId}/me/transactions",
 	"/api/v1/tenants/{tenantId}/me/transactions/{id}",
 	"/api/v1/tenants/{tenantId}/me/transactions/summary",

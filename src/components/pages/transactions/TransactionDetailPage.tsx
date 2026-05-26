@@ -67,12 +67,12 @@ export const TransactionDetailPage = () => {
 		includeDeleted: true,
 	});
 
-	// Member lifetime context for the "Gift #N of M / $X lifetime" strip.
-	// The summary endpoint is uncapped — replaces the previous 500-tx fetch
-	// + JS reduce, which silently truncated long-tenure members.
+	// Member lifetime context for the "Gifts from $member / $X lifetime"
+	// strip. `lifetime: true` defeats the BE's 12-month fallback so this
+	// is truly all-time — no FE-side date sentinels.
 	const memberSummaryQ = useTransactionSummary(
 		tenantSlug,
-		{ memberId: memberId ?? undefined },
+		{ memberId: memberId ?? undefined, lifetime: true },
 		Boolean(memberId),
 	);
 

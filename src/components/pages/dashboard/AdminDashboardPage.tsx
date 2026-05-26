@@ -114,7 +114,9 @@ export const AdminDashboardPage = () => {
 	}, [progressBatchQ.data]);
 
 	// Urgent pledges — BE computes lifecycle + resolved deadline and sorts
-	// by urgency. No more fan-out of campaign-item lookups on the FE.
+	// by urgency. No cohort filter here: the dashboard surfaces every
+	// urgent pledge regardless of when it was created. Reports → Pledge
+	// Dynamics is where the cohort question lives.
 	const urgentPledgesQ = useUrgentPledges(tenantSlug, { limit: 8 });
 
 	const activeCampaignCount = campaigns.filter(

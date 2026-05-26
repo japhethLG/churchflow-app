@@ -6,6 +6,8 @@ export const PLEDGE_PATHS = [
 	"/api/v1/tenants/{tenantId}/pledges",
 	"/api/v1/tenants/{tenantId}/pledges/{id}",
 	"/api/v1/tenants/{tenantId}/pledges/{id}/restore",
+	"/api/v1/tenants/{tenantId}/pledges/urgent",
+	"/api/v1/tenants/{tenantId}/pledges/reports/dynamics",
 	"/api/v1/tenants/{tenantId}/me/pledges",
 	"/api/v1/tenants/{tenantId}/me/pledges/{id}",
 ] as const;

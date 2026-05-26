@@ -108,12 +108,12 @@ export const MemberOverviewTab = ({
 		dateTo: last12To,
 	});
 
-	// Recent gifts + by-campaign breakdown still come from a list query.
-	// `limit: 2000` is generous for any one member; embedded campaign
-	// names on each row mean no separate campaigns lookup is needed.
+	// Recent gifts strip — only the 8 most-recent rows. The by-campaign
+	// breakdown comes from the server-side summary (uncapped), so we no
+	// longer need to fan out a wide list query.
 	const txListQ = useTransactions(tenantSlug, {
 		memberId: member.id,
-		limit: 2000,
+		limit: 8,
 	});
 	const transactions: Transaction[] = txListQ.data?.items ?? [];
 
@@ -137,37 +137,18 @@ export const MemberOverviewTab = ({
 		return out;
 	}, [last12Q.data]);
 
-	// By-campaign breakdown computed across the list rows (using embedded
-	// campaign labels, so no fan-out lookups). Limited to what's in the
-	// 2000-row window — acceptable for a single member's giving history.
+	// By-campaign breakdown comes straight from the server-side summary —
+	// 12-month window matches the donut/chart above and is uncapped,
+	// unlike the previous "iterate over a 2000-row list" approach.
 	const byCampaign = useMemo(() => {
-		const map = new Map<
-			string,
-			{ amount: number; title: string; deletedAt: string | null }
-		>();
-		for (const t of transactions) {
-			const amt = num(t.amount);
-			if (t.campaign) {
-				const key = t.campaign.id;
-				const entry = map.get(key) ?? {
-					amount: 0,
-					title: t.campaign.title,
-					deletedAt: t.campaign.deletedAt as string | null,
-				};
-				entry.amount += amt;
-				map.set(key, entry);
-			} else {
-				const entry = map.get("__none") ?? {
-					amount: 0,
-					title: "No campaign",
-					deletedAt: null,
-				};
-				entry.amount += amt;
-				map.set("__none", entry);
-			}
-		}
-		return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
-	}, [transactions]);
+		return (last12Q.data?.byCampaign ?? [])
+			.filter((b) => num(b.total) > 0)
+			.map((b) => ({
+				amount: num(b.total),
+				title: b.campaignTitle,
+				deletedAt: b.campaignDeletedAt ?? null,
+			}));
+	}, [last12Q.data]);
 
 	// 12-month chart series + consistency caption — values come from the
 	// BE byMonth aggregation. Skeleton of 12 buckets so empty months show.

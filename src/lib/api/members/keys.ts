@@ -4,6 +4,9 @@ export const MEMBER_PATHS = [
 	"/api/v1/tenants/{tenantId}/members",
 	"/api/v1/tenants/{tenantId}/members/{id}",
 	"/api/v1/tenants/{tenantId}/members/{id}/restore",
+	"/api/v1/tenants/{tenantId}/members/{id}/summary",
+	"/api/v1/tenants/{tenantId}/members/{id}/merge",
+	"/api/v1/tenants/{tenantId}/members/{id}/merge-preview",
 	"/api/v1/tenants/{tenantId}/me/profile",
 ] as const;
 

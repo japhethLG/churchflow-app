@@ -13,7 +13,7 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "biome lint .",
 		"format": "biome format . --write",
-		"check": "node scripts/enforce-ui-primitives.mjs && biome check --write --unsafe .",
+		"check": "node scripts/enforce-ui-primitives.mjs && node scripts/check-invalidation-paths.mjs && biome check --write --unsafe .",
 		"check:staged": "node scripts/enforce-ui-primitives.mjs && lint-staged",
 		"api:types": "openapi-typescript http://localhost:8000/api-docs-json -o src/lib/api/schema.d.ts",
 		"prepare": "husky"

@@ -67,14 +67,15 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 	const wireRange = toWireRange(range);
 
 	// Member-scoped summary powers the donut + table breakdown above the
-	// transactions list. Tracks the date range (so the admin can scope to a
-	// quarter/year) but ignores type/campaign so the by-type breakdown stays
-	// meaningful — applying a type filter would collapse the donut to a
-	// single slice.
+	// transactions list. Tracks the date range AND the StateFilter (so the
+	// summary card and the list below it agree about archived rows) but
+	// ignores type/campaign so the by-type breakdown stays meaningful —
+	// applying a type filter would collapse the donut to a single slice.
 	const summary = useTransactionSummary(tenantSlug, {
 		memberId: member.id,
 		dateFrom: wireRange.dateFrom,
 		dateTo: wireRange.dateTo,
+		...toStateFilterFlags(state),
 	});
 	const summaryData = summary.data;
 	const mixTotal = num(summaryData?.total);

@@ -29,9 +29,16 @@ export const usePledges = (
 
 // Most urgent active pledges for the dashboard outstanding-pledges card.
 // BE computes lifecycle + resolved deadline server-side; FE just renders.
+// `dateFrom`/`dateTo` (cohort on Pledge.createdAt) scope the card to a
+// pledge-cohort window — e.g. YTD pledges that are now urgent.
+export type UrgentPledgesQuery = GetQuery<
+	"/api/v1/tenants/{tenantId}/pledges/urgent",
+	"get"
+>;
+
 export const useUrgentPledges = (
 	tenantId: string,
-	query: { limit?: number } = {},
+	query: UrgentPledgesQuery = {},
 	enabled = true,
 ) => {
 	return useApiQuery(

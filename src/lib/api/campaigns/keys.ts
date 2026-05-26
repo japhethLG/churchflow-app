@@ -7,6 +7,7 @@ import type { QueryClient } from "@tanstack/react-query";
 export const CAMPAIGN_PATHS = [
 	"/api/v1/tenants/{tenantId}/campaigns",
 	"/api/v1/tenants/{tenantId}/campaigns/{id}",
+	"/api/v1/tenants/{tenantId}/campaigns/progress/batch",
 	"/api/v1/tenants/{tenantId}/campaigns/{id}/progress",
 	"/api/v1/tenants/{tenantId}/campaigns/{id}/restore",
 	"/api/v1/tenants/{tenantId}/campaigns/{id}/restore-preview",
