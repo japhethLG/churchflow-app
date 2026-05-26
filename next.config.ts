@@ -21,8 +21,13 @@ const serviceWorkerHeaders = [
 	{ key: "Content-Type", value: "application/javascript; charset=utf-8" },
 	{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
 	{
+		// This CSP governs the service worker's OWN fetches, not the page's.
+		// `connect-src https:` is required: the SW fetches cross-origin for
+		// runtime caching (fonts/images) and passes Firebase Auth requests
+		// through. Without it, the SW can only fetch same-origin and Google
+		// auth calls fail with auth/network-request-failed.
 		key: "Content-Security-Policy",
-		value: "default-src 'self'; script-src 'self'",
+		value: "default-src 'self'; connect-src 'self' https:; script-src 'self'",
 	},
 ];
 
