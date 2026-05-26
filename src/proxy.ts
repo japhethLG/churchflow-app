@@ -12,7 +12,16 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 // Public, unauthenticated-accessible paths. The landing page (`/`),
 // legal pages, login, invitations, and logout all need to render
 // without a session cookie present.
-const PUBLIC_PATHS = ["/login", "/invite", "/logout", "/privacy", "/terms"];
+const PUBLIC_PATHS = [
+	"/login",
+	"/invite",
+	"/logout",
+	"/privacy",
+	"/terms",
+	// Digital Asset Links — Android's TWA verifier fetches this with no
+	// cookie, so it must never be redirected to /login.
+	"/.well-known",
+];
 
 // `/` is special-cased below because every other path matches as a
 // prefix and `/` would gobble all of them.
