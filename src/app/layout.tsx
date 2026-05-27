@@ -86,7 +86,15 @@ export default async ({ children }: { children: React.ReactNode }) => {
 					<TooltipProvider>
 						<AuthProvider>
 							<QueryProvider>
-								<SerwistProvider swUrl="/serwist/sw.js">
+								{/* Register the SW in production only. A dev SW
+								    persists on localhost and serves a stale app
+								    shell / cached cross-origin API responses,
+								    breaking BE communication. Test the SW via
+								    `npm run start` instead. */}
+								<SerwistProvider
+									swUrl="/serwist/sw.js"
+									disable={process.env.NODE_ENV !== "production"}
+								>
 									{children}
 								</SerwistProvider>
 								<ModalHost />
