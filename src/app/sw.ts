@@ -13,13 +13,15 @@ declare const self: ServiceWorkerGlobalScope;
 
 // Firebase Auth (especially signInWithRedirect) breaks if the service
 // worker caches or mishandles its requests. Always go straight to the
-// network for Google/Firebase auth hosts — never cache. Listed first so
-// it wins over defaultCache's cross-origin handler.
+// network — never cache — for Google/Firebase auth hosts AND our own
+// self-hosted auth handler under /__/auth and /__/firebase (proxied to
+// firebaseapp.com via next.config rewrites). Listed first so it wins over
+// defaultCache's same-origin and cross-origin handlers.
 const authPassthrough = {
 	matcher: ({ url }: { url: URL }) =>
 		/(^|\.)(googleapis\.com|firebaseapp\.com|google\.com|gstatic\.com|firebaseio\.com)$/.test(
 			url.hostname,
-		),
+		) || url.pathname.startsWith("/__/"),
 	handler: new NetworkOnly(),
 };
 

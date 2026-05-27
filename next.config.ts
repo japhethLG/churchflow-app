@@ -31,6 +31,18 @@ const serviceWorkerHeaders = [
 	},
 ];
 
+// Self-host Firebase Auth's handler so signInWithRedirect is first-party.
+// When NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is set to our own domain, the SDK
+// hits /__/auth/* and /__/firebase/* on our origin; these rewrites proxy
+// them to the project's firebaseapp.com. First-party storage means
+// getRedirectResult() can read the credential after the redirect returns
+// (it can't when the handler runs on the cross-origin firebaseapp.com —
+// Chrome partitions its storage). Required for login inside the TWA/APK.
+const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const firebaseAuthHost = firebaseProjectId
+	? `${firebaseProjectId}.firebaseapp.com`
+	: undefined;
+
 const nextConfig: NextConfig = {
 	output: "standalone",
 	typescript: {
@@ -41,6 +53,19 @@ const nextConfig: NextConfig = {
 		// PWA: serwist serves the SW from /serwist/sw.js via a Route Handler.
 		{ source: "/serwist/sw.js", headers: serviceWorkerHeaders },
 	],
+	rewrites: async () =>
+		firebaseAuthHost
+			? [
+					{
+						source: "/__/auth/:path*",
+						destination: `https://${firebaseAuthHost}/__/auth/:path*`,
+					},
+					{
+						source: "/__/firebase/:path*",
+						destination: `https://${firebaseAuthHost}/__/firebase/:path*`,
+					},
+				]
+			: [],
 };
 
 // `withSerwist` adds esbuild to `serverExternalPackages` so Turbopack

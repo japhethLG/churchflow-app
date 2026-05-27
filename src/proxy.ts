@@ -129,7 +129,7 @@ export const config = {
 		// when the link is followed). See Next's CSP guide.
 		{
 			source:
-				"/((?!api|_next/static|_next/image|favicon.ico|serwist|manifest.webmanifest|icons).*)",
+				"/((?!api|_next/static|_next/image|favicon.ico|serwist|manifest.webmanifest|icons|__/).*)",
 			missing: [
 				{ type: "header", key: "next-router-prefetch" },
 				{ type: "header", key: "purpose", value: "prefetch" },
