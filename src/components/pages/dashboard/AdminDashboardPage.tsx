@@ -151,22 +151,25 @@ export const AdminDashboardPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 md:px-8"
 				overline={`Act · ${dayjs().format("dddd, MMMM D")}`}
 				title={`${getGreeting()}, ${firstName}`}
 				subtitle="What needs your attention this week."
 				action={
-					<Button
-						role="primary"
-						icon="plus"
-						onClick={() => openModal("record-gift", { tenantSlug })}
-					>
-						Record a gift
-					</Button>
+					// Hidden on mobile — the bottom-nav FAB already surfaces this.
+					<div className="hidden md:block">
+						<Button
+							role="primary"
+							icon="plus"
+							onClick={() => openModal("record-gift", { tenantSlug })}
+						>
+							Record a gift
+						</Button>
+					</div>
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				<NowSnapshotStrip
 					weekSummary={weekSummary.data}
 					priorWeekSummary={priorWeekSummary.data}

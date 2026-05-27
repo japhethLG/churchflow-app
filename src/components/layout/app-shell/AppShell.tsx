@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { MobileChrome } from "../mobile";
 import { type Perspective, Sidebar, type TenantSummary } from "../sidebar";
 import { TopBar } from "../top-bar";
 
@@ -32,6 +33,7 @@ export const AppShell = ({
 			)}
 		>
 			<Sidebar
+				className="hidden md:flex"
 				perspective={perspective}
 				tenantSlug={tenantSlug}
 				churchName={churchName}
@@ -41,7 +43,16 @@ export const AppShell = ({
 				isSuperAdmin={isSuperAdmin}
 			/>
 			<div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
-				<TopBar />
+				<TopBar className="hidden md:flex" />
+				<MobileChrome
+					perspective={perspective}
+					tenantSlug={tenantSlug}
+					churchName={churchName ?? "ChurchFlow"}
+					userName={userName}
+					userEmail={userEmail}
+					memberships={memberships}
+					isSuperAdmin={isSuperAdmin}
+				/>
 				<div className="flex-1 overflow-auto">{children}</div>
 			</div>
 		</div>

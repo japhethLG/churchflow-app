@@ -6,6 +6,7 @@ import {
 	Amount,
 	Avatar,
 	type TransactionType as BadgeType,
+	Card,
 	type DataTableColumn,
 	DataTableShell,
 	DeletedLabel,
@@ -13,6 +14,7 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
+import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
@@ -150,6 +152,14 @@ export const DashboardRecentGifts = ({
 		},
 	];
 
+	const memberName = (t: Transaction): string | null => {
+		const m = t.member;
+		if (!m) {
+			return null;
+		}
+		return `${m.firstName ?? ""} ${m.lastName ?? ""}`.trim() || "Unnamed";
+	};
+
 	return (
 		<div>
 			<div className="mb-3 flex items-baseline justify-between px-1">
@@ -161,18 +171,84 @@ export const DashboardRecentGifts = ({
 					View all →
 				</Link>
 			</div>
-			<DataTableShell<Transaction>
-				columns={columns}
-				rows={recent}
-				rowKey={(t) => t.id}
-				loading={loading}
-				loadingRows={5}
-				onRowClick={(t) =>
-					router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
-				}
-				rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
-				emptyTitle="No transactions recorded yet"
-			/>
+
+			{/* Desktop: the full data table. */}
+			<div className="hidden md:block">
+				<DataTableShell<Transaction>
+					columns={columns}
+					rows={recent}
+					rowKey={(t) => t.id}
+					loading={loading}
+					loadingRows={5}
+					onRowClick={(t) =>
+						router.push(`/${tenantSlug}/admin/transactions/${t.id}`)
+					}
+					rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
+					emptyTitle="No transactions recorded yet"
+				/>
+			</div>
+
+			{/* Mobile: a tap-through list — a table doesn't fit a phone. */}
+			<div className="md:hidden">
+				{recent.length === 0 ? (
+					<Card padding={20}>
+						<p className="text-center text-sm text-muted-foreground">
+							No transactions recorded yet
+						</p>
+					</Card>
+				) : (
+					<Card padding={8}>
+						{recent.map((t, i) => {
+							const name = memberName(t);
+							const c = t.campaign;
+							return (
+								<Link
+									key={t.id}
+									href={`/${tenantSlug}/admin/transactions/${t.id}`}
+									className={cn(
+										"flex items-center gap-3 rounded-xl p-2.5 no-underline transition-colors hover:bg-muted",
+										t.deletedAt && "opacity-60",
+										i < recent.length - 1 &&
+											"border-b border-border/60 rounded-b-none",
+									)}
+								>
+									<Avatar name={name ?? "?"} size={32} />
+									<div className="min-w-0 flex-1">
+										<div className="flex items-baseline justify-between gap-2">
+											<span
+												className={cn(
+													"truncate text-sm font-semibold",
+													name
+														? "text-foreground"
+														: "italic text-muted-foreground",
+												)}
+											>
+												{name ?? "Anonymous"}
+											</span>
+											<span className="shrink-0 text-sm font-bold tabular-nums">
+												<Amount value={t.amount} />
+											</span>
+										</div>
+										<div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+											<TypeBadge type={TYPE_BADGE_LABEL[t.type]} />
+											{c ? (
+												<span className="truncate text-primary">{c.title}</span>
+											) : (
+												<span className="italic text-amber-600">
+													No campaign
+												</span>
+											)}
+											<span className="ml-auto shrink-0 whitespace-nowrap">
+												{relativeDate(t.date)}
+											</span>
+										</div>
+									</div>
+								</Link>
+							);
+						})}
+					</Card>
+				)}
+			</div>
 		</div>
 	);
 };

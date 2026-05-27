@@ -1,0 +1,144 @@
+/* ChurchFlow mobile design tokens — dark theme.
+   Based on src/app/globals.css (.dark scope), tuned slightly for the
+   richer dark surface the screenshots use. */
+
+:root, .cf-mobile {
+  /* Type */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Core surfaces (slightly deeper than ds dark default — matches screenshots) */
+  --background: #0b0d11;
+  --foreground: #e7e9ee;
+  --card: #161922;
+  --card-2: #1a1d27;             /* slight lift for nested cards */
+  --popover: #1e2230;
+  --muted: #232838;
+  --muted-foreground: #9198a8;
+  --on-surface-variant: #b1b6c2;
+  --border: #2b2f3d;
+  --border-strong: #3a3f51;
+  --input: #2a2e3c;
+  --ring: #8b86ee;
+
+  /* Primary — punchy indigo to match the "Record a gift" CTA in the screenshots.
+     Brighter than DS-dark's lavender so it sings on the dark surface. */
+  --primary: #5b54f0;
+  --primary-foreground: #ffffff;
+  --primary-soft: #232139;
+  --primary-soft-fg: #b8b4f5;
+  --primary-tonal: #1f1d36;
+  --primary-tonal-fg: #c5c2f5;
+
+  /* Accent / semantic */
+  --success: #34c98f;
+  --success-soft: #103129;
+  --success-soft-fg: #6bdfb1;
+  --warning: #f5b74f;
+  --warning-soft: #2e2310;
+  --warning-soft-fg: #fbd884;
+  --danger: #ef6f6a;
+  --danger-soft: #2c1a1c;
+  --danger-soft-fg: #f4a09c;
+  --info: #6aa9f0;
+  --info-soft: #112236;
+  --info-soft-fg: #9dc4f6;
+
+  /* Transaction type chips */
+  --tx-tithe: #8b86ee;
+  --tx-offering: #34c98f;
+  --tx-mission: #6aa9f0;
+  --tx-first-fruit: #f5b74f;
+  --tx-commitment: #c9a4f2;
+  --tx-donation: #5eead4;
+  --tx-other: #9298a0;
+
+  /* Chart roles */
+  --chart-current: var(--primary);
+  --chart-prior: #525766;
+  --chart-track: #232838;
+  --chart-positive: var(--success);
+  --chart-negative: var(--danger);
+  --chart-goal: var(--warning);
+
+  /* Radii */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.02) inset, 0 1px 2px rgba(0,0,0,0.35);
+  --shadow-pop: 0 16px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.35);
+  --shadow-fab: 0 8px 24px rgba(91,84,240,0.45), 0 2px 6px rgba(0,0,0,0.5);
+  --shadow-pill: 0 8px 24px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+
+  /* Spacing scale (used inline) */
+  --gap-1: 4px;
+  --gap-2: 8px;
+  --gap-3: 12px;
+  --gap-4: 16px;
+  --gap-5: 20px;
+  --gap-6: 24px;
+}
+
+/* Density tweaks (set on the root frame element via Tweaks) */
+[data-density="compact"] {
+  --gap-3: 10px;
+  --gap-4: 12px;
+  --gap-5: 16px;
+}
+[data-density="comfy"] {
+  --gap-3: 14px;
+  --gap-4: 20px;
+  --gap-5: 24px;
+}
+
+/* Primary color tweak */
+[data-primary="indigo"] { --primary: #5b54f0; --ring: #8b86ee; --primary-soft: #232139; --primary-soft-fg: #b8b4f5; --primary-tonal: #1f1d36; --primary-tonal-fg: #c5c2f5; --shadow-fab: 0 8px 24px rgba(91,84,240,0.45), 0 2px 6px rgba(0,0,0,0.5); --chart-current: #5b54f0; }
+[data-primary="clay"]   { --primary: #e08f4d; --ring: #efb585; --primary-soft: #2a1a10; --primary-soft-fg: #f6d2b5; --primary-tonal: #2f1f12; --primary-tonal-fg: #f6d2b5; --shadow-fab: 0 8px 24px rgba(224,143,77,0.45), 0 2px 6px rgba(0,0,0,0.5); --chart-current: #e08f4d; }
+[data-primary="forest"] { --primary: #34c98f; --ring: #71d295; --primary-soft: #0d2a1d; --primary-soft-fg: #a1e3b8; --primary-tonal: #102d20; --primary-tonal-fg: #a1e3b8; --shadow-fab: 0 8px 24px rgba(52,201,143,0.45), 0 2px 6px rgba(0,0,0,0.5); --chart-current: #34c98f; }
+[data-primary="ocean"]  { --primary: #5aa2f3; --ring: #afcdf7; --primary-soft: #0f223a; --primary-soft-fg: #afcdf7; --primary-tonal: #142a44; --primary-tonal-fg: #afcdf7; --shadow-fab: 0 8px 24px rgba(90,162,243,0.45), 0 2px 6px rgba(0,0,0,0.5); --chart-current: #5aa2f3; }
+
+/* Base reset within mobile frame */
+.cf-mobile {
+  font-family: var(--font-sans);
+  color: var(--foreground);
+  background: var(--background);
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.cf-mobile * { box-sizing: border-box; }
+.cf-mobile h1, .cf-mobile h2, .cf-mobile h3, .cf-mobile h4 { margin: 0; font-weight: 700; letter-spacing: -0.025em; }
+.cf-mobile p { margin: 0; }
+.cf-mobile button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; padding: 0; }
+.cf-mobile a { color: inherit; text-decoration: none; }
+.cf-mobile .tabular { font-variant-numeric: tabular-nums; }
+.cf-mobile .overline {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.cf-mobile .label-xs {
+  font-size: 11px; font-weight: 600; color: var(--muted-foreground);
+}
+
+/* Scrollbar hiding for mobile-feel inner scrolls */
+.cf-mobile .no-scrollbar { scrollbar-width: none; }
+.cf-mobile .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Press states (mobile feels) */
+.cf-mobile .press {
+  transition: transform 120ms ease, background 120ms ease;
+}
+.cf-mobile .press:active { transform: scale(0.98); }
+
+/* Glow / focus rings */
+.cf-mobile .ring-primary { box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring); }

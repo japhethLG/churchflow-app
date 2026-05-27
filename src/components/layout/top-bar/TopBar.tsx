@@ -3,9 +3,14 @@ import { cn } from "@/lib/utils";
 
 import { DynamicBreadcrumbs } from "./DynamicBreadcrumbs";
 
-export const TopBar = () => {
+export const TopBar = ({ className }: { className?: string }) => {
 	return (
-		<div className="flex h-[72px] items-center gap-4 bg-transparent px-8">
+		<div
+			className={cn(
+				"flex h-[72px] items-center gap-4 bg-transparent px-8",
+				className,
+			)}
+		>
 			<div className="flex items-center">
 				<DynamicBreadcrumbs />
 			</div>
