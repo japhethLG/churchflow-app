@@ -495,17 +495,29 @@
 	}
 }
 
-/* Scrollbar styles */
-*::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+/* Opt-in: fully hide a scrollbar (e.g. horizontal carousels) on all sizes. */
+.no-scrollbar {
+	scrollbar-width: none;
 }
-*::-webkit-scrollbar-thumb {
-	background: rgba(0, 0, 0, 0.15);
-	border-radius: 4px;
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
 }
-.dark *::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.15);
+
+/* Scrollbar styles — desktop only. Below md we leave scrollbars unstyled so
+   touch devices get the browser's native thin, auto-hiding overlay scrollbar
+   instead of a persistent classic 8px bar. */
+@media (min-width: 768px) {
+	*::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+	*::-webkit-scrollbar-thumb {
+		background: rgba(0, 0, 0, 0.15);
+		border-radius: 4px;
+	}
+	.dark *::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.15);
+	}
 }
 
 /* Native-app feel when launched as an installed PWA / TWA. Scoped to

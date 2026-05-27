@@ -2,7 +2,7 @@
 
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Avatar } from "@/components/primitives/Avatar";
 import { Badge } from "@/components/primitives/Badge";
 import { BottomSheet } from "@/components/primitives/BottomSheet";
@@ -159,13 +159,14 @@ export const AccountSheet = ({
 		setView("main");
 	};
 
-	// Reset the drill-down whenever the sheet is dismissed.
-	useEffect(() => {
-		if (!open) {
+	// Reset the drill-down only AFTER the close animation settles — resetting
+	// mid-exit would swap the drilled-in content back to "main" and flash.
+	const handleOpenChangeComplete = (isOpen: boolean) => {
+		if (!isOpen) {
 			setView("main");
 			setDir(null);
 		}
-	}, [open]);
+	};
 
 	const adminTenants = memberships.filter((m) => m.role === "ADMIN");
 	const memberTenants = memberships;
@@ -212,6 +213,7 @@ export const AccountSheet = ({
 		<BottomSheet
 			open={open}
 			onOpenChange={onOpenChange}
+			onOpenChangeComplete={handleOpenChangeComplete}
 			title={isPicker ? "Select church" : "Account"}
 			description={
 				isPicker

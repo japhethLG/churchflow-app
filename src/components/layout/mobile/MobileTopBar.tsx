@@ -37,7 +37,10 @@ export const MobileTopBar = ({
 	return (
 		<header
 			className={cn(
-				"flex items-center gap-2 border-b border-border/60 bg-card/85 px-4 py-2.5 backdrop-blur-md",
+				"flex items-center gap-2 border-b border-border/60 bg-card/85 px-4 pb-2.5 backdrop-blur-md",
+				// Clear the status bar / notch in standalone PWA; comfortable top
+				// spacing in the browser where the inset is 0.
+				"pt-[max(0.875rem,env(safe-area-inset-top))]",
 				className,
 			)}
 		>

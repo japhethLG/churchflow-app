@@ -8,6 +8,8 @@ import { Icon } from "./Icon";
 export type BottomSheetProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	/** Fired after the open/close animation settles — safe place to reset state. */
+	onOpenChangeComplete?: (open: boolean) => void;
 	title?: ReactNode;
 	description?: ReactNode;
 	/** When set, a back chevron renders left of the title (in-sheet drill-down). */
@@ -29,6 +31,7 @@ export type BottomSheetProps = {
 export const BottomSheet = ({
 	open,
 	onOpenChange,
+	onOpenChangeComplete,
 	title,
 	description,
 	onBack,
@@ -38,11 +41,18 @@ export const BottomSheet = ({
 	className,
 }: BottomSheetProps) => {
 	return (
-		<DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+		<DialogPrimitive.Root
+			open={open}
+			onOpenChange={onOpenChange}
+			onOpenChangeComplete={onOpenChangeComplete}
+		>
 			<DialogPrimitive.Portal>
 				<DialogPrimitive.Backdrop
 					className={cn(
-						"fixed inset-0 z-50 bg-black/50 duration-200 supports-backdrop-filter:backdrop-blur-xs",
+						// No backdrop-filter blur: toggling a viewport-wide filter off
+						// forces a full-screen repaint that flickers on close. Match the
+						// popup's duration so the dim and the sheet leave together.
+						"fixed inset-0 z-50 bg-black/50 duration-300",
 						"data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
 					)}
 				/>
@@ -50,7 +60,10 @@ export const BottomSheet = ({
 					className={cn(
 						"fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[60vh] w-full max-w-[480px] flex-col",
 						"rounded-t-3xl bg-card text-foreground shadow-2xl outline-none",
-						"duration-300 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
+						// transform-gpu + an iOS-style decelerating curve for a smooth,
+						// non-janky slide. The default `ease` curve feels rough here.
+						"transform-gpu duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+						"data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
 						className,
 					)}
 				>

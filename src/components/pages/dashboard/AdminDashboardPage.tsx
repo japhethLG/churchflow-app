@@ -151,7 +151,7 @@ export const AdminDashboardPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-4 md:px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline={`Act · ${dayjs().format("dddd, MMMM D")}`}
 				title={`${getGreeting()}, ${firstName}`}
 				subtitle="What needs your attention this week."
