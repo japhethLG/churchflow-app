@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
 import { Pressable } from "@/components/primitives/Pressable";
 import { cn } from "@/lib/utils";
@@ -61,7 +62,7 @@ export const MobileBottomNav = ({
 		<nav
 			className={cn(
 				"pointer-events-none fixed inset-x-0 bottom-0 z-40 pt-8 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
-				"bg-gradient-to-t from-background via-background/85 to-transparent",
+				"bg-linear-to-t from-background via-background/85 to-transparent",
 				className,
 			)}
 		>
@@ -82,12 +83,14 @@ export const MobileBottomNav = ({
 
 					{/* Raised record-gift action, centered above the bar. */}
 					<div className="pointer-events-auto absolute inset-x-0 bottom-[38px] z-10 flex justify-center">
-						<Pressable
+						<Button
+							role="primary"
+							recipe="gradient"
+							icon="plus"
+							aria-label="Record a gift"
 							onClick={onRecordGift}
-							className="grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_24px_rgba(91,84,240,0.45),0_2px_6px_rgba(0,0,0,0.4)] ring-4 ring-background transition-transform active:scale-95"
-						>
-							<Icon name="plus" size={26} strokeWidth={2.5} />
-						</Pressable>
+							className="size-14 rounded-full px-0 shadow-[0_8px_24px_rgba(91,84,240,0.45),0_2px_6px_rgba(0,0,0,0.4)] ring-4 ring-background transition-transform active:scale-95"
+						/>
 					</div>
 
 					{onMore && (

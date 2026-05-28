@@ -1,6 +1,5 @@
 "use client";
 
-import { openModal } from "@/lib/modals/store";
 import { openSheet } from "@/lib/sheets/store";
 import { buildNav } from "../sidebar/buildNav";
 import type { Perspective, TenantSummary } from "../sidebar/types";
@@ -59,7 +58,7 @@ export const MobileChrome = ({
 				items={primary}
 				onRecordGift={
 					isAdmin && tenantSlug
-						? () => openModal("record-gift", { tenantSlug })
+						? () => openSheet("record-gift", { tenantSlug })
 						: undefined
 				}
 				onMore={

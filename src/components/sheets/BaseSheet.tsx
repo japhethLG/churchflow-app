@@ -30,10 +30,19 @@ export type BaseSheetProps = {
 	className?: string;
 	/**
 	 * Snap heights as viewport fractions, ordered smallest → largest. The
-	 * sheet opens at the first entry and the drag handle resizes between
-	 * them. Default `[0.5, 0.78, 0.94]`.
+	 * drag handle resizes between them. Default `[0.5, 0.78, 0.94]`.
 	 */
 	snapPoints?: number[];
+	/** Index into snapPoints to open at. Defaults to `0` (smallest). */
+	initialSnap?: number;
+	/**
+	 * Sticky footer rendered below the scrollable body, with safe-area
+	 * inset padding. When provided, the body's own bottom inset is dropped
+	 * so the footer owns it.
+	 */
+	footer?: ReactNode;
+	/** Extra classes for the footer wrapper. */
+	footerClassName?: string;
 };
 
 const DEFAULT_SNAPS = [0.5, 0.78, 0.94];
@@ -80,16 +89,23 @@ export const BaseSheet = ({
 	contentClassName,
 	className,
 	snapPoints = DEFAULT_SNAPS,
+	initialSnap = 0,
+	footer,
+	footerClassName,
 }: BaseSheetProps) => {
 	const popupRef = useRef<HTMLDivElement | null>(null);
-	const [snap, setSnap] = useState(0);
+	const clampedInitial = Math.min(
+		Math.max(0, initialSnap),
+		snapPoints.length - 1,
+	);
+	const [snap, setSnap] = useState(clampedInitial);
 	const dragRef = useRef<DragState | null>(null);
 
 	useEffect(() => {
 		if (open) {
-			setSnap(0);
+			setSnap(clampedInitial);
 		}
-	}, [open]);
+	}, [open, clampedInitial]);
 
 	const heightForSnap = useCallback(
 		(s: number): string => `${snapPoints[s] * 100}vh`,
@@ -301,12 +317,25 @@ export const BaseSheet = ({
 
 					<div
 						className={cn(
-							"min-h-0 flex-1 overflow-auto px-4 pt-1 pb-[max(1rem,env(safe-area-inset-bottom))]",
+							"min-h-0 flex-1 overflow-auto px-4 pt-1",
+							// Footer owns the safe-area inset when present.
+							footer ? "pb-3" : "pb-[max(1rem,env(safe-area-inset-bottom))]",
 							contentClassName,
 						)}
 					>
 						{children}
 					</div>
+
+					{footer && (
+						<div
+							className={cn(
+								"shrink-0 border-t border-border bg-card px-4 pt-3 pb-[max(0.875rem,env(safe-area-inset-bottom))]",
+								footerClassName,
+							)}
+						>
+							{footer}
+						</div>
+					)}
 				</DialogPrimitive.Popup>
 			</DialogPrimitive.Portal>
 		</DialogPrimitive.Root>

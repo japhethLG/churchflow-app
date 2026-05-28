@@ -100,6 +100,42 @@ function RecordGiftPhone({ navVariant, density, primary }) {
   );
 }
 
+// ─── Record gift bulk-entry phones ────────────────────────────────────
+// Each renders the dashboard dimmed underneath + a specific record-gift
+// sheet state on top. Used in the dedicated drill-down design section.
+function RGPhone({ density, primary, sheet, behindSheet, dimDashboard = true }) {
+  return (
+    <Phone density={density} primary={primary}>
+      {dimDashboard && (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} className="no-scrollbar">
+          <DashboardScreen />
+        </div>
+      )}
+      {/* Optional "behind" sheet for drill-down stacks: scaled + dimmed to
+          communicate the new sheet is pushed on top of it. */}
+      {behindSheet && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'rgba(0,0,0,0.55)',
+        }}>
+          <div style={{
+            position: 'absolute', inset: 0,
+            transform: 'scale(0.94) translateY(-12px)',
+            transformOrigin: 'top center',
+            opacity: 0.55,
+            filter: 'blur(0.5px)',
+          }}>
+            {behindSheet}
+          </div>
+        </div>
+      )}
+      <Scrim opacity={behindSheet ? 0.35 : 0.65}>
+        {sheet}
+      </Scrim>
+    </Phone>
+  );
+}
+
 function NotificationsPhone({ navVariant, density, primary }) {
   return (
     <Phone density={density} primary={primary}>
@@ -281,6 +317,41 @@ function App() {
           </DCArtboard>
           <DCArtboard id="dash-scrolled" label="Pledges · Campaigns · Gifts" width={FRAME_W} height={FRAME_H + 60}>
             <DashboardScrolledPhone navVariant={nav} density={density} primary={primary} />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="record-gift-bulk"
+          title="Record a gift · bulk-entry flow"
+          subtitle={
+            "Desktop lets admins set Member + Date once and stage multiple " +
+            "gifts before recording. Mobile drills down: a single staging " +
+            "Hub + focused sub-sheets for member search, date picking, and " +
+            "the new-gift form."
+          }
+        >
+          <DCArtboard id="rg-hub-empty" label="Hub · empty state (start)" width={FRAME_W} height={FRAME_H + 60}>
+            <RGPhone density={density} primary={primary}
+              sheet={<RGHubSheet gifts={[]} member="Lyre Espinosa" />} />
+          </DCArtboard>
+          <DCArtboard id="rg-hub-staged" label="Hub · 2 gifts staged" width={FRAME_W} height={FRAME_H + 60}>
+            <RGPhone density={density} primary={primary}
+              sheet={<RGHubSheet gifts={RG_STAGED_TWO} member="Lyre Espinosa" />} />
+          </DCArtboard>
+          <DCArtboard id="rg-hub-drill" label="Hub · drilled into add-gift form" width={FRAME_W} height={FRAME_H + 60}>
+            <RGPhone density={density} primary={primary}
+              behindSheet={<RGHubSheet gifts={RG_STAGED_TWO} member="Lyre Espinosa" />}
+              sheet={<RGAddGiftDrillSheet member="Lyre Espinosa" anonymous={false} />} />
+          </DCArtboard>
+          <DCArtboard id="rg-member-picker" label="Drill · member picker (searching)" width={FRAME_W} height={FRAME_H + 60}>
+            <RGPhone density={density} primary={primary}
+              behindSheet={<RGHubSheet gifts={[]} member={null} />}
+              sheet={<RGMemberPickerSheet highlight="Lyre" />} />
+          </DCArtboard>
+          <DCArtboard id="rg-date-picker" label="Drill · date picker (calendar)" width={FRAME_W} height={FRAME_H + 60}>
+            <RGPhone density={density} primary={primary}
+              behindSheet={<RGHubSheet gifts={[]} member="Lyre Espinosa" />}
+              sheet={<RGDatePickerSheet selectedDay={28} />} />
           </DCArtboard>
         </DCSection>
 
