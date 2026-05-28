@@ -10,7 +10,6 @@ export {
 	type TransactionType,
 	TypeBadge,
 } from "./Badge";
-export { BottomSheet, type BottomSheetProps } from "./BottomSheet";
 export { Button } from "./Button";
 export {
 	Calendar,

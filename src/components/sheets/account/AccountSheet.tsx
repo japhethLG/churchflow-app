@@ -2,19 +2,39 @@
 
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { profileHrefFor } from "@/components/layout/sidebar/account-menu/routes";
+import type {
+	Perspective,
+	TenantSummary,
+} from "@/components/layout/sidebar/types";
 import { Avatar } from "@/components/primitives/Avatar";
 import { Badge } from "@/components/primitives/Badge";
-import { BottomSheet } from "@/components/primitives/BottomSheet";
 import { Card } from "@/components/primitives/Card";
 import { Icon, type IconName } from "@/components/primitives/Icon";
 import { Pressable } from "@/components/primitives/Pressable";
+import { BaseSheet } from "@/components/sheets/BaseSheet";
 import { type Theme, useTheme } from "@/components/theme-provider";
 import { signOut, signOutEverywhere } from "@/lib/auth/actions";
 import { openModal } from "@/lib/modals/store";
+import type { SheetBaseProps } from "@/lib/sheets/registry";
+import { useSheetDrill } from "@/lib/sheets/useSheetDrill";
 import { cn } from "@/lib/utils";
-import { profileHrefFor } from "../sidebar/account-menu/routes";
-import type { Perspective, TenantSummary } from "../sidebar/types";
+
+export type AccountSheetProps = {
+	perspective: Perspective;
+	tenantSlug?: string;
+	userName: string;
+	userEmail?: string;
+	memberships: TenantSummary[];
+	isSuperAdmin: boolean;
+};
+
+declare module "@/lib/sheets/registry" {
+	interface SheetPropsMap {
+		account: AccountSheetProps;
+	}
+}
 
 const SectionLabel = ({ children }: { children: string }) => (
 	<div className="mb-1.5 mt-3.5 px-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground first:mt-1">
@@ -36,7 +56,7 @@ const Row = ({
 	iconClass?: string;
 	title: string;
 	subtitle?: string;
-	trailing?: React.ReactNode;
+	trailing?: ReactNode;
 	danger?: boolean;
 	active?: boolean;
 	onClick: () => void;
@@ -123,50 +143,22 @@ type View = "main" | "admin" | "member";
  * Mobile account sheet — the bottom-sheet analogue of the desktop
  * `AccountMenu`. Same sections in the same order (Identity → Profile →
  * Switch context → Appearance → Sign out); the per-role tenant lists that
- * are submenus on desktop become an in-sheet drill-down here.
+ * are submenus on desktop become an in-sheet drill-down here via
+ * `useSheetDrill`.
  */
 export const AccountSheet = ({
 	open,
 	onOpenChange,
+	onOpenChangeComplete,
 	perspective,
 	tenantSlug,
 	userName,
 	userEmail,
 	memberships,
 	isSuperAdmin,
-}: {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	perspective: Perspective;
-	tenantSlug?: string;
-	userName: string;
-	userEmail?: string;
-	memberships: TenantSummary[];
-	isSuperAdmin: boolean;
-}) => {
+}: SheetBaseProps & AccountSheetProps) => {
 	const router = useRouter();
-	const [view, setView] = useState<View>("main");
-	// Drives the push/pop slide direction; null on first paint so the sheet's
-	// own open animation isn't doubled by a content transition.
-	const [dir, setDir] = useState<"forward" | "back" | null>(null);
-
-	const drillTo = (next: Exclude<View, "main">) => {
-		setDir("forward");
-		setView(next);
-	};
-	const drillBack = () => {
-		setDir("back");
-		setView("main");
-	};
-
-	// Reset the drill-down only AFTER the close animation settles — resetting
-	// mid-exit would swap the drilled-in content back to "main" and flash.
-	const handleOpenChangeComplete = (isOpen: boolean) => {
-		if (!isOpen) {
-			setView("main");
-			setDir(null);
-		}
-	};
+	const drill = useSheetDrill<View>("main", open);
 
 	const adminTenants = memberships.filter((m) => m.role === "ADMIN");
 	const memberTenants = memberships;
@@ -197,44 +189,36 @@ export const AccountSheet = ({
 		});
 	};
 
-	const isPicker = view !== "main";
-	const pickerTenants = view === "admin" ? adminTenants : memberTenants;
-	const pickerDash = view === "admin" ? "admin" : "member";
-	const pickerActive = perspective === view;
-
-	const transitionClass =
-		dir === "forward"
-			? "animate-in fade-in-0 slide-in-from-right-8 duration-300 ease-out"
-			: dir === "back"
-				? "animate-in fade-in-0 slide-in-from-left-8 duration-300 ease-out"
-				: "";
+	const pickerTenants = drill.view === "admin" ? adminTenants : memberTenants;
+	const pickerDash = drill.view === "admin" ? "admin" : "member";
+	const pickerActive = perspective === drill.view;
 
 	return (
-		<BottomSheet
+		<BaseSheet
 			open={open}
 			onOpenChange={onOpenChange}
-			onOpenChangeComplete={handleOpenChangeComplete}
-			title={isPicker ? "Select church" : "Account"}
+			onOpenChangeComplete={onOpenChangeComplete}
+			title={drill.isDrilled ? "Select church" : "Account"}
 			description={
-				isPicker
-					? `Switch to a church you ${view === "admin" ? "administer" : "belong to"}.`
+				drill.isDrilled
+					? `Switch to a church you ${drill.view === "admin" ? "administer" : "belong to"}.`
 					: undefined
 			}
-			onBack={isPicker ? drillBack : undefined}
+			onBack={drill.isDrilled ? () => drill.drillBack() : undefined}
 			contentClassName="overflow-x-hidden"
 		>
-			<div key={view} className={transitionClass}>
-				{isPicker ? (
+			<div key={drill.view} className={drill.transitionClass}>
+				{drill.isDrilled ? (
 					<Card padding={8} className="mt-2">
 						{pickerTenants.map((m, i) => {
 							const current = pickerActive && tenantSlug === m.slug;
 							return (
 								<div key={m.slug}>
 									<Row
-										icon={view === "admin" ? "shield" : "user"}
+										icon={drill.view === "admin" ? "shield" : "user"}
 										iconClass="bg-primary/10 text-primary"
 										title={m.name}
-										subtitle={view === "admin" ? "Admin" : "Member"}
+										subtitle={drill.view === "admin" ? "Admin" : "Member"}
 										active={current}
 										trailing={current ? <span /> : undefined}
 										onClick={() => go(`/${m.slug}/${pickerDash}/dashboard`)}
@@ -301,7 +285,7 @@ export const AccountSheet = ({
 									title="Admin"
 									subtitle={`${adminTenants.length} ${adminTenants.length === 1 ? "church" : "churches"}`}
 									active={perspective === "admin"}
-									onClick={() => drillTo("admin")}
+									onClick={() => drill.drillTo("admin")}
 								/>
 							)}
 							{adminTenants.length > 0 && memberTenants.length > 0 && (
@@ -313,7 +297,7 @@ export const AccountSheet = ({
 									title="Member"
 									subtitle={`${memberTenants.length} ${memberTenants.length === 1 ? "church" : "churches"}`}
 									active={perspective === "member"}
-									onClick={() => drillTo("member")}
+									onClick={() => drill.drillTo("member")}
 								/>
 							)}
 						</Card>
@@ -342,6 +326,6 @@ export const AccountSheet = ({
 					</>
 				)}
 			</div>
-		</BottomSheet>
+		</BaseSheet>
 	);
 };

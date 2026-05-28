@@ -2,10 +2,21 @@
 
 import Link from "next/link";
 import { Fragment } from "react";
-import { BottomSheet } from "@/components/primitives/BottomSheet";
+import type { NavItem } from "@/components/layout/sidebar/types";
 import { Card } from "@/components/primitives/Card";
 import { Icon } from "@/components/primitives/Icon";
-import type { NavItem } from "../sidebar/types";
+import { BaseSheet } from "@/components/sheets/BaseSheet";
+import type { SheetBaseProps } from "@/lib/sheets/registry";
+
+export type MoreSheetProps = {
+	items: NavItem[];
+};
+
+declare module "@/lib/sheets/registry" {
+	interface SheetPropsMap {
+		more: MoreSheetProps;
+	}
+}
 
 /**
  * Mobile nav-overflow sheet. Holds the destinations that don't fit in the
@@ -15,16 +26,15 @@ import type { NavItem } from "../sidebar/types";
 export const MoreSheet = ({
 	open,
 	onOpenChange,
+	onOpenChangeComplete,
 	items,
-}: {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	items: NavItem[];
-}) => {
+}: SheetBaseProps & MoreSheetProps) => {
+	const close = () => onOpenChange(false);
 	return (
-		<BottomSheet
+		<BaseSheet
 			open={open}
 			onOpenChange={onOpenChange}
+			onOpenChangeComplete={onOpenChangeComplete}
 			title="More"
 			description="Other places to go in this church."
 		>
@@ -33,7 +43,7 @@ export const MoreSheet = ({
 					<Fragment key={item.href}>
 						<Link
 							href={item.href}
-							onClick={() => onOpenChange(false)}
+							onClick={close}
 							className="flex items-center gap-3 rounded-xl p-2.5 no-underline transition-colors hover:bg-muted"
 						>
 							<span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-primary/10 text-primary">
@@ -57,6 +67,6 @@ export const MoreSheet = ({
 				<Icon name="user" size={14} className="shrink-0" />
 				<span>Switch church or sign out — tap your church up top.</span>
 			</div>
-		</BottomSheet>
+		</BaseSheet>
 	);
 };

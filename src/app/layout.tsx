@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryProvider } from "@/lib/api/providers";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { ModalHost } from "@/lib/modals/host";
+import { SheetHost } from "@/lib/sheets/host";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -98,6 +99,7 @@ export default async ({ children }: { children: React.ReactNode }) => {
 									{children}
 								</SerwistProvider>
 								<ModalHost />
+								<SheetHost />
 								<Toaster />
 							</QueryProvider>
 						</AuthProvider>
