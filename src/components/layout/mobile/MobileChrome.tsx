@@ -31,8 +31,12 @@ export const MobileChrome = ({
 	isSuperAdmin?: boolean;
 }) => {
 	const navItems = buildNav(perspective, tenantSlug);
-	const primary = navItems.slice(0, 5);
-	const overflow = navItems.slice(5);
+	// Bar = first 5 destinations, minus any flagged for overflow (those don't
+	// backfill — they drop straight into "More"). Everything not on the bar,
+	// in nav order, goes to the More sheet.
+	const primary = navItems.slice(0, 5).filter((i) => !i.mobileOverflow);
+	const primaryHrefs = new Set(primary.map((i) => i.href));
+	const overflow = navItems.filter((i) => !primaryHrefs.has(i.href));
 
 	return (
 		<>

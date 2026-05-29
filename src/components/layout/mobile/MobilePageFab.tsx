@@ -16,10 +16,10 @@ const FAB_SHADOW =
 
 /**
  * Mobile-only floating action button for the current page's primary action(s),
- * driven by `useMobileActions`. One action renders as a single tap target; two
- * or more fan out as a speed dial — a modern, labelled radial menu — with the
- * trigger's plus rotating into a close affordance. Renders nothing when the
- * page registers no actions.
+ * driven by `useMobileActions`. The trigger always opens a speed dial — a
+ * modern, labelled radial menu — even for a single action, so the affordance
+ * stays consistent; the trigger's plus rotates into a close glyph. Renders
+ * nothing when the page registers no actions.
  */
 export const MobilePageFab = () => {
 	const actions = useMobileActionsStore((s) => s.actions);
@@ -36,27 +36,10 @@ export const MobilePageFab = () => {
 		return null;
 	}
 
-	// ── Single action — a compact round FAB that fires directly ──────────────
-	if (actions.length === 1) {
-		const a = actions[0];
-		return (
-			<div className={ANCHOR}>
-				<Pressable
-					onClick={a.onClick}
-					aria-label={a.label}
-					className={cn(
-						"grid size-14 place-items-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-90",
-						FAB_SHADOW,
-					)}
-				>
-					<Icon name={a.icon} size={24} />
-				</Pressable>
-			</div>
-		);
-	}
-
-	// ── Multiple actions — speed dial ────────────────────────────────────────
-	// Rendered top-to-bottom; the action nearest the trigger animates in first.
+	// ── Speed dial ───────────────────────────────────────────────────────────
+	// The trigger always opens the fan rather than firing — even for a single
+	// action — so the affordance is consistent. Rendered top-to-bottom; the
+	// action nearest the trigger animates in first.
 	const fanned = [...actions].reverse();
 	return (
 		<>
@@ -96,9 +79,9 @@ export const MobilePageFab = () => {
 									a.onClick();
 								}}
 								aria-label={a.label}
-								className="grid size-12 place-items-center rounded-full bg-card text-foreground shadow-lg ring-1 ring-border/60 transition-transform active:scale-90"
+								className="grid size-11 place-items-center rounded-full bg-card text-foreground shadow-lg ring-1 ring-border/60 transition-transform active:scale-90"
 							>
-								<Icon name={a.icon} size={20} />
+								<Icon name={a.icon} size={18} />
 							</Pressable>
 						</div>
 					);
@@ -110,13 +93,13 @@ export const MobilePageFab = () => {
 					aria-label={open ? "Close actions" : "Page actions"}
 					aria-expanded={open}
 					className={cn(
-						"grid size-14 place-items-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95",
+						"grid size-12 place-items-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95",
 						FAB_SHADOW,
 					)}
 				>
 					<Icon
 						name="plus"
-						size={26}
+						size={22}
 						className={cn(
 							"transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
 							open && "rotate-135",

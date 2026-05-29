@@ -18,7 +18,12 @@ export const buildNav = (
 	if (perspective === "admin") {
 		return [
 			{ icon: "home", label: "Dashboard", href: `${prefix}/admin/dashboard` },
-			{ icon: "users", label: "Members", href: `${prefix}/admin/members` },
+			{
+				icon: "users",
+				label: "Members",
+				href: `${prefix}/admin/members`,
+				mobileOverflow: true,
+			},
 			{
 				icon: "calendar",
 				label: "Campaigns",
