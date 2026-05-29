@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
 	Badge,
 	type DataTableColumn,
@@ -10,6 +10,7 @@ import {
 	StackedProgressBar,
 	type Status,
 	StatusBadge,
+	useTableFilters,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useMyCampaigns } from "@/lib/api/campaigns";
@@ -43,10 +44,9 @@ export const MemberCampaignsPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const [search, setSearch] = useState("");
-	const [status, setStatus] = useState<StatusFilter>("all");
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(20);
+	const t = useTableFilters({ search: "", status: "all" });
+	const status = t.values.status as StatusFilter;
+	const search = t.values.search;
 
 	const campaignsQ = useMyCampaigns(tenantSlug);
 	const campaigns = campaignsQ.data?.items ?? [];
@@ -81,7 +81,7 @@ export const MemberCampaignsPage = () => {
 		return out;
 	}, [campaigns, status, search]);
 
-	const visible = filtered.slice(offset, offset + limit);
+	const visible = filtered.slice(t.offset, t.offset + t.limit);
 
 	// Batch progress for the campaigns visible on the current page.
 	const visibleIds = visible.map((c) => c.id);
@@ -233,30 +233,9 @@ export const MemberCampaignsPage = () => {
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
 				<DataTableShell<Campaign>
-					search={{
-						value: search,
-						onChange: (v) => {
-							setSearch(v);
-							setOffset(0);
-						},
-						placeholder: "Search by title…",
-					}}
-					filters={[
-						{
-							key: "status",
-							label: "Status",
-							value: status,
-							onChange: (v) => {
-								setStatus(v as StatusFilter);
-								setOffset(0);
-							},
-							options: STATUS_OPTIONS,
-						},
-					]}
-					onClearFilters={() => {
-						setStatus("all");
-						setOffset(0);
-					}}
+					search={t.search("Search by title…")}
+					filters={[t.select("status", "Status", STATUS_OPTIONS)]}
+					onClearFilters={t.clear}
 					stats={[
 						{ label: "active", value: activeCount, tone: "success" },
 						{ label: "upcoming", value: upcomingCount },
@@ -277,13 +256,7 @@ export const MemberCampaignsPage = () => {
 					}
 					emptyTitle="No campaigns yet"
 					emptySubtitle="Your church hasn't started any campaigns. Check back later!"
-					pagination={{
-						total: filtered.length,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-					}}
+					pagination={t.pagination(filtered.length)}
 				/>
 			</div>
 		</div>

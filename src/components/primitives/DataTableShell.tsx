@@ -10,11 +10,20 @@ import {
 	type DataTableColumn,
 	type DataTablePagination,
 } from "./DataTable";
-import { FilterMenu, type FilterMenuFilter } from "./FilterMenu";
+import { DataTableShellMobile } from "./DataTableShellMobile";
+import { DateRangePicker } from "./DateRangePicker";
+import { FilterMenu } from "./FilterMenu";
 import { Icon } from "./Icon";
 import { Pressable } from "./Pressable";
 import { Select, type SelectOption } from "./Select";
-import { StateFilter, type StateFilterValue } from "./StateFilter";
+import { StateFilter } from "./StateFilter";
+import {
+	dateFilters,
+	STAT_TONE_CLASS,
+	selectFilters,
+	stateFilterOf,
+	type TableFilter,
+} from "./tableFilters";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DataTableShell — the unified list-page surface.
@@ -59,15 +68,22 @@ export type DataTableShellProps<Row> = {
 		/** Override the 250ms debounce window. */
 		debounceMs?: number;
 	};
-	/** Filters rendered inside the "Filters" popover. */
-	filters?: FilterMenuFilter[];
-	/** Extra content inside the filters popover (above the select list). */
-	filtersExtra?: ReactNode;
-	/** Called when the popover's "Clear all" is pressed. */
+	/**
+	 * Unified, declarative filter set. Each entry's `kind` decides where it
+	 * renders — `select` → Filters popover, `date` → toolbar date picker,
+	 * `state` → the Active/Deleted/All segmented control. Both the desktop and
+	 * mobile layouts consume this one list. Build them by hand or via the
+	 * `useTableFilters` hook.
+	 */
+	filters?: TableFilter[];
+	/** Called when "Clear all" is pressed; should reset every filter. */
 	onClearFilters?: () => void;
-	/** State (active / deleted / all) filter on the right. */
-	state?: { value: StateFilterValue; onChange: (v: StateFilterValue) => void };
-	/** Page-specific trailing toolbar slot (Reset chip, secondary action…). */
+	/**
+	 * Page-specific trailing toolbar slot for NON-filter widgets only (a Reset
+	 * chip, a secondary action). Never put filters here — they'd be invisible
+	 * to the mobile filter sheet and the active-filter chips. Use a `date`
+	 * filter for date ranges.
+	 */
 	toolbar?: ReactNode;
 
 	/** Text-strip stats between toolbar and table. */
@@ -85,23 +101,21 @@ export type DataTableShellProps<Row> = {
 	onRowClick?: (row: Row) => void;
 	rowClassName?: (row: Row) => string | undefined;
 
+	/**
+	 * Per-row card renderer for the sub-`md` layout. When provided, the desktop
+	 * table is hidden below `md` and rows render as expandable cards instead.
+	 * Omit to keep the desktop table at all widths.
+	 */
+	mobileCard?: (row: Row) => ReactNode;
+
 	pagination?: DataTableShellPagination;
 	className?: string;
-};
-
-const TONE_CLASS: Record<NonNullable<DataTableShellStat["tone"]>, string> = {
-	neutral: "text-foreground",
-	success: "text-emerald-600",
-	warning: "text-amber-600",
-	danger: "text-destructive",
 };
 
 export const DataTableShell = <Row,>({
 	search,
 	filters,
-	filtersExtra,
 	onClearFilters,
-	state,
 	toolbar,
 	stats,
 	columns,
@@ -114,10 +128,11 @@ export const DataTableShell = <Row,>({
 	emptyAction,
 	onRowClick,
 	rowClassName,
+	mobileCard,
 	pagination,
 	className,
 }: DataTableShellProps<Row>) => {
-	const hasToolbar = Boolean(search || filters?.length || state || toolbar);
+	const hasToolbar = Boolean(search || filters?.length || toolbar);
 
 	// Adapter: shell exposes `onOffsetChange` for symmetry with `onLimitChange`,
 	// but DataTable's `DataTablePagination` uses the legacy `onChange` name.
@@ -131,68 +146,98 @@ export const DataTableShell = <Row,>({
 		: undefined;
 
 	return (
-		<div
-			className={cn(
-				"flex flex-col rounded-2xl bg-card shadow-[inset_0_0_0_1px_var(--color-border)]",
-				className,
-			)}
-		>
-			{hasToolbar && (
-				<Toolbar
-					search={search}
-					filters={filters}
-					filtersExtra={filtersExtra}
-					onClearFilters={onClearFilters}
-					state={state}
-					toolbar={toolbar}
-				/>
-			)}
-
-			{stats && stats.length > 0 && (
-				<div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-border/40 px-5 py-2.5 text-sm text-muted-foreground">
-					{stats.map((s) => (
-						<span key={s.label} className="inline-flex items-baseline gap-1">
-							<strong
-								className={cn(
-									"font-semibold tabular-nums",
-									TONE_CLASS[s.tone ?? "neutral"],
-								)}
-							>
-								{s.value}
-							</strong>
-							<span>{s.label}</span>
-						</span>
-					))}
-				</div>
-			)}
-
+		<>
 			<div
 				className={cn(
-					"overflow-visible",
-					(hasToolbar || (stats && stats.length > 0)) &&
-						"border-t border-border/40",
+					"flex-col rounded-2xl bg-card shadow-[inset_0_0_0_1px_var(--color-border)]",
+					// When a mobile card renderer is supplied, the desktop table is
+					// hidden below `md` and the card layout takes over.
+					mobileCard ? "hidden md:flex" : "flex",
+					className,
 				)}
 			>
-				<DataTable
-					surface="embedded"
-					columns={columns}
+				{hasToolbar && (
+					<Toolbar
+						search={search}
+						filters={filters}
+						onClearFilters={onClearFilters}
+						toolbar={toolbar}
+					/>
+				)}
+
+				{stats && stats.length > 0 && (
+					<div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-border/40 px-5 py-2.5 text-sm text-muted-foreground">
+						{stats.map((s) => (
+							<span key={s.label} className="inline-flex items-baseline gap-1">
+								<strong
+									className={cn(
+										"font-semibold tabular-nums",
+										STAT_TONE_CLASS[s.tone ?? "neutral"],
+									)}
+								>
+									{s.value}
+								</strong>
+								<span>{s.label}</span>
+							</span>
+						))}
+					</div>
+				)}
+
+				<div
+					className={cn(
+						"overflow-visible",
+						(hasToolbar || (stats && stats.length > 0)) &&
+							"border-t border-border/40",
+					)}
+				>
+					<DataTable
+						surface="embedded"
+						columns={columns}
+						rows={rows}
+						rowKey={rowKey}
+						loading={loading}
+						loadingRows={loadingRows}
+						emptyTitle={emptyTitle}
+						emptySubtitle={emptySubtitle}
+						emptyAction={emptyAction}
+						onRowClick={onRowClick}
+						rowClassName={rowClassName}
+						pagination={dataTablePagination}
+					/>
+				</div>
+
+				{pagination && (
+					<PaginationFooter pagination={pagination} loading={loading} />
+				)}
+			</div>
+
+			{mobileCard && (
+				<DataTableShellMobile<Row>
+					className="md:hidden"
+					search={search}
+					filters={filters}
+					onClearFilters={onClearFilters}
+					stats={stats}
 					rows={rows}
 					rowKey={rowKey}
+					mobileCard={mobileCard}
 					loading={loading}
-					loadingRows={loadingRows}
 					emptyTitle={emptyTitle}
 					emptySubtitle={emptySubtitle}
 					emptyAction={emptyAction}
-					onRowClick={onRowClick}
-					rowClassName={rowClassName}
-					pagination={dataTablePagination}
+					pagination={
+						pagination
+							? {
+									total: pagination.total,
+									offset: pagination.offset,
+									limit: pagination.limit,
+									onOffsetChange: pagination.onOffsetChange,
+								}
+							: undefined
+					}
 				/>
-			</div>
-
-			{pagination && (
-				<PaginationFooter pagination={pagination} loading={loading} />
 			)}
-		</div>
+		</>
 	);
 };
 
@@ -203,25 +248,37 @@ export const DataTableShell = <Row,>({
 const Toolbar = <Row,>({
 	search,
 	filters,
-	filtersExtra,
 	onClearFilters,
-	state,
 	toolbar,
 }: Pick<
 	DataTableShellProps<Row>,
-	"search" | "filters" | "filtersExtra" | "onClearFilters" | "state" | "toolbar"
+	"search" | "filters" | "onClearFilters" | "toolbar"
 >) => {
+	const all = filters ?? [];
+	// Partition by kind — each renders in its established desktop position.
+	const selects = selectFilters(all);
+	const dates = dateFilters(all);
+	const state = stateFilterOf(all);
+
 	return (
 		<div className="flex flex-wrap items-center gap-2.5 p-3">
 			{search && <SearchInput {...search} />}
 
-			<FilterMenu
-				filters={filters ?? []}
-				extraContent={filtersExtra}
-				onClearAll={onClearFilters}
-			/>
+			<FilterMenu filters={selects} onClearAll={onClearFilters} />
 
 			{toolbar}
+
+			{dates.map((d) => (
+				<DateRangePicker
+					key={d.key}
+					value={d.value}
+					onChange={d.onChange}
+					placeholder={d.label}
+					size="sm"
+					autoWidth
+					clearable
+				/>
+			))}
 
 			{state && (
 				<div className="ml-auto">

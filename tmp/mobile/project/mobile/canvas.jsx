@@ -87,6 +87,19 @@ function AccountSheetPhone({ navVariant, density, primary }) {
   );
 }
 
+// ─── List-page phones ──────────────────────────────────────────────────
+// Full list screens (Members / Campaigns / Pledges) + the consolidated
+// filter sheet. `screen` is the page composite; `nav` keys the bottom bar.
+function ListPhone({ density, primary, navVariant, screen, navActive, filterSheet }) {
+  return (
+    <Phone density={density} primary={primary}>
+      {screen}
+      {filterSheet && <Scrim opacity={0.6}>{filterSheet}</Scrim>}
+      <MobileNav variant={navVariant} active={navActive} />
+    </Phone>
+  );
+}
+
 function RecordGiftPhone({ navVariant, density, primary }) {
   return (
     <Phone density={density} primary={primary}>
@@ -343,15 +356,84 @@ function App() {
               behindSheet={<RGHubSheet gifts={RG_STAGED_TWO} member="Lyre Espinosa" />}
               sheet={<RGAddGiftDrillSheet member="Lyre Espinosa" anonymous={false} />} />
           </DCArtboard>
-          <DCArtboard id="rg-member-picker" label="Drill · member picker (searching)" width={FRAME_W} height={FRAME_H + 60}>
+          <DCArtboard id="rg-member-picker" label="Hub · member picker open (inline)" width={FRAME_W} height={FRAME_H + 60}>
             <RGPhone density={density} primary={primary}
-              behindSheet={<RGHubSheet gifts={[]} member={null} />}
-              sheet={<RGMemberPickerSheet highlight="Lyre" />} />
+              sheet={<RGHubSheet gifts={[]} member={null} picker="member" query="Lyre" />} />
           </DCArtboard>
-          <DCArtboard id="rg-date-picker" label="Drill · date picker (calendar)" width={FRAME_W} height={FRAME_H + 60}>
+          <DCArtboard id="rg-date-picker" label="Hub · date picker open (inline)" width={FRAME_W} height={FRAME_H + 60}>
             <RGPhone density={density} primary={primary}
-              behindSheet={<RGHubSheet gifts={[]} member="Lyre Espinosa" />}
-              sheet={<RGDatePickerSheet selectedDay={28} />} />
+              sheet={<RGHubSheet gifts={[]} member="Lyre Espinosa" picker="date" />} />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="list-pages"
+          title="List pages · mobile table equivalent"
+          subtitle={
+            "Desktop DataTableShell → mobile. Every outside filter (the " +
+            "Filters popover, the Created date-range, AND the Active/" +
+            "Deleted/All control) folds into one Filters sheet. Rows become " +
+            "cards; rows with more columns than fit are expandable."
+          }
+        >
+          <DCArtboard id="members-list" label="Members · cards (collapsed)" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="members" screen={<MembersListScreen />} />
+          </DCArtboard>
+          <DCArtboard id="members-expanded" label="Members · one card expanded" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="members" screen={<MembersListScreen expandIndex={1} />} />
+          </DCArtboard>
+          <DCArtboard id="campaigns-list" label="Campaigns · cards + progress" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="campaigns" screen={<CampaignsListScreen expandIndex={1} />} />
+          </DCArtboard>
+          <DCArtboard id="pledges-list" label="Pledges · cards (collapsed)" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="pledges" screen={<PledgesListScreen />} />
+          </DCArtboard>
+          <DCArtboard id="pledges-expanded" label="Pledges · card expanded (all 6 columns)" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="pledges" screen={<PledgesListScreen expandIndex={0} />} />
+          </DCArtboard>
+          <DCArtboard id="pledges-filtered" label="Pledges · filters applied" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="pledges"
+              screen={
+                <PledgesListScreen
+                  filterCount={2}
+                  activeChips={[{ label: 'Past due' }, { label: 'Deleted' }]}
+                  pledges={[LIST_PLEDGES[0]]}
+                  stats={[
+                    { label: 'in view', value: 1 },
+                    { label: 'pledged', value: '₱100' },
+                    { label: 'paid', value: '₱10', tone: 'success' },
+                    { label: 'remaining', value: '₱90', tone: 'warning' },
+                    { label: 'past due', value: 1, tone: 'danger' },
+                  ]}
+                  shown={1} total={1}
+                />
+              } />
+          </DCArtboard>
+          <DCArtboard id="filter-sheet" label="Filter sheet · all filters in one menu" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="pledges"
+              screen={<PledgesListScreen />}
+              filterSheet={<ListFilterSheet page="pledges" active={{ state: 'all', lifecycle: 'past-due' }} resultCount={1} />} />
+          </DCArtboard>
+          <DCArtboard id="transactions-list" label="Transactions · summary + cards" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="transactions" screen={<TransactionsListScreen />} />
+          </DCArtboard>
+          <DCArtboard id="transactions-expanded" label="Transactions · card expanded (campaign · ref #)" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="transactions" screen={<TransactionsListScreen expandIndex={3} />} />
+          </DCArtboard>
+          <DCArtboard id="transactions-filter" label="Transactions · filter sheet (Type · Campaign · Period)" width={FRAME_W} height={FRAME_H + 60}>
+            <ListPhone density={density} primary={primary} navVariant={nav}
+              navActive="transactions"
+              screen={<TransactionsListScreen />}
+              filterSheet={<ListFilterSheet page="transactions" active={{ status: 'FIRST_FRUIT', dateFrom: 'May 1', dateTo: 'May 31' }} resultCount={9} />} />
           </DCArtboard>
         </DCSection>
 

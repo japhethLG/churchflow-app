@@ -2,26 +2,27 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
 	Avatar,
 	Badge,
 	Button,
 	type DataTableColumn,
 	DataTableShell,
+	DateRangePicker,
 	type DateRangeValue,
-	ExpandableCard,
 	PageHeader,
 	StackedProgressBar,
-	useTableFilters,
+	type StateFilterValue,
+	toStateFilterFlags,
 } from "@/components/primitives";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
-import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
+import { useUrlFilters } from "@/lib/url-filters";
 import {
 	daysUntil,
 	LIFECYCLE_LABEL,
@@ -71,33 +72,34 @@ export const PledgesListPage = () => {
 
 	// URL-driven filters — sets the contract that other surfaces deep-link
 	// into ("View past-due pledges" cards on Reports Pledge Dynamics).
-	const t = useTableFilters(
-		{
-			status: "all",
-			lifecycle: "all",
-			state: "active",
-			search: "",
-			dateFrom: "",
-			dateTo: "",
-		},
-		{ url: true },
-	);
-	const status = t.values.status as StatusFilter;
-	const lifecycle = t.values.lifecycle as LifecycleFilter;
-	const search = t.values.search;
+	const [filters, setFilters] = useUrlFilters({
+		status: "all",
+		lifecycle: "all",
+		state: "active",
+		search: "",
+		dateFrom: "",
+		dateTo: "",
+	});
+	const status = filters.status as StatusFilter;
+	const lifecycle = filters.lifecycle as LifecycleFilter;
+	const state = filters.state as StateFilterValue;
+	const search = filters.search;
 	const range: DateRangeValue = {
-		from: t.values.dateFrom || undefined,
-		to: t.values.dateTo || undefined,
+		from: filters.dateFrom || undefined,
+		to: filters.dateTo || undefined,
 	};
+
+	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
 	// The backend filters pledges by status / soft-delete only. Date-range
 	// is applied client-side against `createdAt` because the API doesn't
 	// take a pledge-level dateFrom/dateTo today.
 	const { data, isLoading } = usePledges(tenantSlug, {
 		status: status === "all" ? undefined : status,
-		offset: t.offset,
-		limit: t.limit,
-		...t.stateFlags(),
+		offset,
+		limit,
+		...toStateFilterFlags(state),
 	});
 
 	// Joins — needed for lifecycle (campaign deadline) and member names.
@@ -334,145 +336,10 @@ export const PledgesListPage = () => {
 		},
 	];
 
-	// Sub-`md` row → expandable card. Collapsed: member/campaign + pledged +
-	// lifecycle + paid bar. Expanded: paid (₱+%), remaining, deadline (+days).
-	const renderPledgeCard = (r: (typeof enriched)[number]) => {
-		const paidPct = pct(r.p.paidAmount, r.p.pledgedAmount);
-		return (
-			<ExpandableCard
-				deleted={Boolean(r.p.deletedAt)}
-				details={[
-					{
-						label: "Paid",
-						value: (
-							<span className="text-sm font-medium text-foreground">
-								{formatCurrency(r.p.paidAmount, { decimals: 0 })} · {paidPct}%
-							</span>
-						),
-					},
-					{
-						label: "Remaining",
-						value: (
-							<span
-								className={`text-sm font-medium ${
-									r.p.remainingAmount > 0
-										? "text-foreground"
-										: "text-muted-foreground"
-								}`}
-							>
-								{formatCurrency(r.p.remainingAmount, { decimals: 0 })}
-							</span>
-						),
-					},
-					{
-						label: "Deadline",
-						value: (
-							<div className="flex items-center justify-end gap-2">
-								{r.deadline ? (
-									<span className="text-sm font-medium text-foreground">
-										{dayjs(r.deadline).format("MMM D, YYYY")}
-									</span>
-								) : (
-									<span className="text-sm text-muted-foreground">—</span>
-								)}
-								{r.days !== null && r.p.status === "ACTIVE" && (
-									<span
-										className={`text-xs font-semibold tabular-nums ${
-											r.days < 0
-												? "text-(--chart-negative)"
-												: r.days <= 14
-													? "text-(--chart-goal)"
-													: "text-muted-foreground"
-										}`}
-									>
-										{r.days < 0
-											? `${Math.abs(r.days)}d past`
-											: `${r.days}d left`}
-									</span>
-								)}
-							</div>
-						),
-					},
-				]}
-			>
-				<div className="mb-3 flex items-center gap-3">
-					<Avatar name={r.memberName} size={36} />
-					<div className="min-w-0 flex-1">
-						<div className="truncate text-sm font-semibold tracking-tight">
-							{r.memberName}
-						</div>
-						<div className="truncate text-xs text-muted-foreground">
-							{r.campaignTitle}
-						</div>
-					</div>
-					<div className="flex shrink-0 flex-col items-end gap-1">
-						<span className="text-[15px] font-bold tabular-nums tracking-tight">
-							{formatCurrency(r.p.pledgedAmount, { decimals: 0 })}
-						</span>
-						<Badge color={lifecycleBadgeColor(r.lifecycle)}>
-							{LIFECYCLE_LABEL[r.lifecycle]}
-						</Badge>
-					</div>
-				</div>
-				<StackedProgressBar
-					size="sm"
-					total={r.p.pledgedAmount}
-					segments={[
-						{
-							value: r.p.paidAmount,
-							color: "var(--chart-current)",
-							label: "Paid",
-						},
-					]}
-				/>
-				<div className="mt-1.5 flex items-baseline justify-between text-xs">
-					<span className="tabular-nums text-muted-foreground">
-						{formatCompact(r.p.paidAmount)} paid
-					</span>
-					<span className="font-semibold tabular-nums">{paidPct}%</span>
-				</div>
-			</ExpandableCard>
-		);
-	};
-
-	const hasCampaigns = (campaignsQ.data?.items.length ?? 0) > 0;
-	const openCreatePledge = () => {
-		const list = campaignsQ.data?.items ?? [];
-		const c = list.find((x) => x.status === "ACTIVE") ?? list[0];
-		if (!c) {
-			return;
-		}
-		openModal("create-pledge", {
-			tenantSlug,
-			campaignId: c.id,
-			campaignTitle: c.title,
-			items: [],
-		});
-	};
-
-	useMobileActions(
-		// Hidden until there's a campaign to pledge against (mirrors the
-		// disabled state of the desktop button).
-		useMemo(
-			() =>
-				hasCampaigns
-					? [
-							{
-								label: "Record pledge",
-								icon: "plus" as const,
-								onClick: openCreatePledge,
-							},
-						]
-					: [],
-			// biome-ignore lint/correctness/useExhaustiveDependencies: openCreatePledge reads campaignsQ fresh; gate on availability
-			[hasCampaigns, openCreatePledge],
-		),
-	);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-4 pt-5 md:px-8 md:pt-0"
+				className="px-8"
 				overline="Commitments"
 				title="Pledges"
 				subtitle="Pledged · paid · remaining · lifecycle. The AR view for incoming giving."
@@ -480,7 +347,6 @@ export const PledgesListPage = () => {
 					<Button
 						role="primary"
 						icon="plus"
-						className="hidden md:inline-flex"
 						disabled={(campaignsQ.data?.items.length ?? 0) === 0}
 						onClick={() => {
 							const list = campaignsQ.data?.items ?? [];
@@ -501,16 +367,69 @@ export const PledgesListPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-8 pb-8">
 				<DataTableShell
-					search={t.search("Search by member or campaign…")}
+					search={{
+						value: search,
+						onChange: (v) => {
+							setFilters({ search: v });
+							setOffset(0);
+						},
+						placeholder: "Search by member or campaign…",
+					}}
 					filters={[
-						t.select("status", "Status", STATUS_OPTIONS),
-						t.select("lifecycle", "Lifecycle", LIFECYCLE_OPTIONS),
-						t.state(),
-						t.date("Created"),
+						{
+							key: "status",
+							label: "Status",
+							value: status,
+							onChange: (v) => {
+								setFilters({ status: v });
+								setOffset(0);
+							},
+							options: STATUS_OPTIONS,
+						},
+						{
+							key: "lifecycle",
+							label: "Lifecycle",
+							value: lifecycle,
+							onChange: (v) => {
+								setFilters({ lifecycle: v });
+								setOffset(0);
+							},
+							options: LIFECYCLE_OPTIONS,
+						},
 					]}
-					onClearFilters={t.clear}
+					onClearFilters={() =>
+						setFilters({
+							status: "all",
+							lifecycle: "all",
+							dateFrom: "",
+							dateTo: "",
+						})
+					}
+					state={{
+						value: state,
+						onChange: (v) => {
+							setFilters({ state: v });
+							setOffset(0);
+						},
+					}}
+					toolbar={
+						<DateRangePicker
+							value={range}
+							onChange={(v) => {
+								setFilters({
+									dateFrom: v.from ?? "",
+									dateTo: v.to ?? "",
+								});
+								setOffset(0);
+							}}
+							placeholder="Created"
+							size="sm"
+							autoWidth
+							clearable
+						/>
+					}
 					stats={[
 						{ label: "in view", value: filtered.length },
 						{ label: "pledged", value: formatCompact(agg.pledged) },
@@ -535,7 +454,6 @@ export const PledgesListPage = () => {
 						},
 					]}
 					columns={columns}
-					mobileCard={renderPledgeCard}
 					rows={filtered}
 					rowKey={(r) => r.p.id}
 					loading={isLoading || campaignsQ.isLoading || membersQ.isLoading}
@@ -545,7 +463,13 @@ export const PledgesListPage = () => {
 					rowClassName={(r) => (r.p.deletedAt ? "bg-muted/30" : undefined)}
 					emptyTitle="No pledges yet"
 					emptySubtitle="Record a pledge to start tracking commitments."
-					pagination={t.pagination(total)}
+					pagination={{
+						total,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
+					}}
 				/>
 			</div>
 		</div>

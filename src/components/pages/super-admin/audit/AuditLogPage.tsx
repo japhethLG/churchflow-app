@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
 	Badge,
 	type BadgeColor,
 	type DataTableColumn,
 	DataTableShell,
-	DateRangePicker,
 	type DateRangeValue,
 	PageHeader,
+	useTableFilters,
 } from "@/components/primitives";
 import {
 	Tooltip,
@@ -67,34 +67,42 @@ const ENTITY_OPTIONS = [
 ];
 
 export const AuditLogPage = () => {
-	const [search, setSearch] = useState("");
-	const [actionFilter, setActionFilter] = useState<Action | "all">("all");
-	const [entity, setEntity] = useState<string>("all");
-	const [tenantId, setTenantId] = useState<string>("all");
-	const [range, setRange] = useState<DateRangeValue>({});
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(50);
+	const t = useTableFilters(
+		{
+			action: "all",
+			entity: "all",
+			tenant: "all",
+			search: "",
+			dateFrom: "",
+			dateTo: "",
+		},
+		{ limit: 50 },
+	);
+	const range: DateRangeValue = {
+		from: t.values.dateFrom || undefined,
+		to: t.values.dateTo || undefined,
+	};
 
 	// Audit rows can reference deleted tenants — include tombstones so the
 	// tenant column resolves uniformly across active and archived tenants.
 	const tenantsQ = useTenants({ includeDeleted: true });
 	const tenants = tenantsQ.data?.items ?? [];
 	const tenantNameById = useMemo(() => {
-		return new Map(tenants.map((t) => [t.id, t]));
+		return new Map(tenants.map((tenant) => [tenant.id, tenant]));
 	}, [tenants]);
 
 	const auditQ = useAuditEvents({
-		action: actionFilter === "all" ? undefined : actionFilter,
-		entity: entity === "all" ? undefined : entity,
-		tenantId: tenantId === "all" ? undefined : tenantId,
+		action: t.values.action === "all" ? undefined : (t.values.action as Action),
+		entity: t.values.entity === "all" ? undefined : t.values.entity,
+		tenantId: t.values.tenant === "all" ? undefined : t.values.tenant,
 		dateFrom: range.from
 			? dayjs.utc(range.from).startOf("day").toISOString()
 			: undefined,
 		dateTo: range.to
 			? dayjs.utc(range.to).endOf("day").toISOString()
 			: undefined,
-		offset,
-		limit,
+		offset: t.offset,
+		limit: t.limit,
 	});
 	const events: AuditEvent[] = auditQ.data?.items ?? [];
 	const total = auditQ.data?.meta.total ?? 0;
@@ -103,7 +111,7 @@ export const AuditLogPage = () => {
 	// backend keys on exact UID match, and an email-prefix LIKE would need
 	// extra work to stay tenant-isolation safe.
 	const visible = useMemo<AuditEvent[]>(() => {
-		const needle = search.trim().toLowerCase();
+		const needle = t.values.search.trim().toLowerCase();
 		if (!needle) {
 			return events;
 		}
@@ -112,7 +120,7 @@ export const AuditLogPage = () => {
 				(nstr(e.actorEmail) ?? "").toLowerCase().includes(needle) ||
 				e.actorUid.toLowerCase().includes(needle),
 		);
-	}, [events, search]);
+	}, [events, t.values.search]);
 
 	const columns: DataTableColumn<AuditEvent>[] = [
 		{
@@ -216,8 +224,6 @@ export const AuditLogPage = () => {
 		},
 	];
 
-	const resetOffset = () => setOffset(0);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
@@ -229,66 +235,20 @@ export const AuditLogPage = () => {
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
 				<DataTableShell<AuditEvent>
-					search={{
-						value: search,
-						onChange: setSearch,
-						placeholder: "Filter by actor email or UID…",
-					}}
+					search={t.search("Filter by actor email or UID…")}
 					filters={[
-						{
-							key: "action",
-							label: "Action",
-							value: actionFilter,
-							onChange: (v) => {
-								setActionFilter(v as Action | "all");
-								resetOffset();
-							},
-							options: ACTION_OPTIONS,
-						},
-						{
-							key: "entity",
-							label: "Entity",
-							value: entity,
-							onChange: (v) => {
-								setEntity(v);
-								resetOffset();
-							},
-							options: ENTITY_OPTIONS,
-						},
-						{
-							key: "tenant",
-							label: "Tenant",
-							value: tenantId,
-							onChange: (v) => {
-								setTenantId(v);
-								resetOffset();
-							},
-							options: [
-								{ value: "all", label: "All tenants" },
-								...tenants.map((t) => ({ value: t.id, label: t.name })),
-							],
-						},
+						t.select("action", "Action", ACTION_OPTIONS),
+						t.select("entity", "Entity", ENTITY_OPTIONS),
+						t.select("tenant", "Tenant", [
+							{ value: "all", label: "All tenants" },
+							...tenants.map((tenant) => ({
+								value: tenant.id,
+								label: tenant.name,
+							})),
+						]),
+						t.date("Date range"),
 					]}
-					toolbar={
-						<DateRangePicker
-							value={range}
-							onChange={(v) => {
-								setRange(v);
-								resetOffset();
-							}}
-							placeholder="Date range"
-							size="sm"
-							autoWidth
-							clearable
-						/>
-					}
-					onClearFilters={() => {
-						setActionFilter("all");
-						setEntity("all");
-						setTenantId("all");
-						setRange({});
-						resetOffset();
-					}}
+					onClearFilters={t.clear}
 					stats={[{ label: "events", value: total.toLocaleString() }]}
 					columns={columns}
 					rows={visible}
@@ -296,14 +256,7 @@ export const AuditLogPage = () => {
 					loading={auditQ.isLoading}
 					emptyTitle="No audit events"
 					emptySubtitle="Adjust the filters above — or perform an action that writes to the log."
-					pagination={{
-						total,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-						pageSizes: [25, 50, 100, 200],
-					}}
+					pagination={t.pagination(total, { pageSizes: [25, 50, 100, 200] })}
 				/>
 			</div>
 		</div>

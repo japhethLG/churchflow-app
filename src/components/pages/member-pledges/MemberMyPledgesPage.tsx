@@ -1,13 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
 	DataTableShell,
-	DateRangePicker,
 	type DateRangeValue,
 	PageHeader,
 	SegmentedControl,
+	useTableFilters,
 } from "@/components/primitives";
 import { useMyCampaigns } from "@/lib/api/campaigns";
 import { useMyPledges } from "@/lib/api/pledges";
@@ -32,12 +32,20 @@ export const MemberMyPledgesPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const [search, setSearch] = useState("");
-	const [tab, setTab] = useState<LifecycleTab>("active");
-	const [campaignId, setCampaignId] = useState<string>("all");
-	const [range, setRange] = useState<DateRangeValue>({});
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(20);
+	const t = useTableFilters({
+		search: "",
+		tab: "active",
+		campaign: "all",
+		dateFrom: "",
+		dateTo: "",
+	});
+	const tab = t.values.tab as LifecycleTab;
+	const campaignId = t.values.campaign;
+	const search = t.values.search;
+	const range: DateRangeValue = {
+		from: t.values.dateFrom || undefined,
+		to: t.values.dateTo || undefined,
+	};
 
 	// Self-scoped automatically by URL prefix.
 	const pledgesQ = useMyPledges(tenantSlug, {
@@ -97,7 +105,7 @@ export const MemberMyPledgesPage = () => {
 		return out;
 	}, [pledges, tab, campaignId, search, campaignMap]);
 
-	const visible = filtered.slice(offset, offset + limit);
+	const visible = filtered.slice(t.offset, t.offset + t.limit);
 
 	// Header stats scope to the *current view*, so the numbers always
 	// describe what the member is looking at.
@@ -123,8 +131,6 @@ export const MemberMyPledgesPage = () => {
 
 	const columns = memberPledgeColumns({ campaignMap, itemDeadlinesById });
 
-	const resetOffset = () => setOffset(0);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
@@ -139,55 +145,20 @@ export const MemberMyPledgesPage = () => {
 					<SegmentedControl
 						options={TAB_OPTIONS}
 						value={tab}
-						onChange={(v) => {
-							setTab(v as LifecycleTab);
-							resetOffset();
-						}}
+						onChange={(v) => t.set({ tab: v })}
 					/>
 				</div>
 
 				<DataTableShell<MemberPledgeRow>
-					search={{
-						value: search,
-						onChange: (v) => {
-							setSearch(v);
-							resetOffset();
-						},
-						placeholder: "Search by campaign…",
-					}}
+					search={t.search("Search by campaign…")}
 					filters={[
-						{
-							key: "campaign",
-							label: "Campaign",
-							value: campaignId,
-							onChange: (v) => {
-								setCampaignId(v);
-								resetOffset();
-							},
-							options: [
-								{ value: "all", label: "All campaigns" },
-								...campaigns.map((c) => ({ value: c.id, label: c.title })),
-							],
-						},
+						t.select("campaign", "Campaign", [
+							{ value: "all", label: "All campaigns" },
+							...campaigns.map((c) => ({ value: c.id, label: c.title })),
+						]),
+						t.date("Date range"),
 					]}
-					toolbar={
-						<DateRangePicker
-							value={range}
-							onChange={(v) => {
-								setRange(v);
-								resetOffset();
-							}}
-							placeholder="Date range"
-							size="sm"
-							autoWidth
-							clearable
-						/>
-					}
-					onClearFilters={() => {
-						setCampaignId("all");
-						setRange({});
-						resetOffset();
-					}}
+					onClearFilters={t.clear}
 					stats={[
 						{ label: "pledges", value: stats.count },
 						{ label: "pledged", value: formatCurrency(stats.pledged) },
@@ -212,13 +183,7 @@ export const MemberMyPledgesPage = () => {
 							? "Fulfilled and cancelled pledges will appear here."
 							: "When you pledge to a campaign, it'll appear here."
 					}
-					pagination={{
-						total: filtered.length,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-					}}
+					pagination={t.pagination(filtered.length)}
 				/>
 			</div>
 		</div>

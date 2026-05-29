@@ -1,15 +1,23 @@
 "use client";
 
 import { Button as BaseButton } from "@base-ui/react/button";
-import type { MouseEvent, ReactNode } from "react";
+import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export type PressableProps = {
-	children: ReactNode;
+	children?: ReactNode;
 	onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 	disabled?: boolean;
 	className?: string;
-};
+} & Pick<
+	ButtonHTMLAttributes<HTMLButtonElement>,
+	| "aria-label"
+	| "aria-expanded"
+	| "aria-haspopup"
+	| "tabIndex"
+	| "type"
+	| "style"
+>;
 
 // Bare interactive button — wraps `@base-ui/react`'s Button so primitives can
 // apply their own appearance without reaching for the raw `<button>` element.
@@ -19,6 +27,7 @@ export const Pressable = ({
 	onClick,
 	disabled,
 	className,
+	...rest
 }: PressableProps) => (
 	<BaseButton
 		onClick={onClick}
@@ -28,6 +37,7 @@ export const Pressable = ({
 			disabled && "cursor-not-allowed opacity-60",
 			className,
 		)}
+		{...rest}
 	>
 		{children}
 	</BaseButton>

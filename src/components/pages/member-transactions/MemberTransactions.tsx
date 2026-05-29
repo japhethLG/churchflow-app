@@ -1,15 +1,15 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
 	Amount,
 	type DataTableColumn,
 	DataTableShell,
-	DateRangePicker,
 	type DateRangeValue,
 	DeletedLabel,
 	PageHeader,
+	useTableFilters,
 } from "@/components/primitives";
 import { type TransactionType, TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
@@ -60,11 +60,18 @@ export const MemberTransactions = ({
 }) => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const [type, setType] = useState<TypeFilter>("all");
-	const [campaignId, setCampaignId] = useState<string>("all");
-	const [range, setRange] = useState<DateRangeValue>(DEFAULT_RANGE);
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(20);
+	const t = useTableFilters({
+		type: "all",
+		campaign: "all",
+		dateFrom: DEFAULT_RANGE.from ?? "",
+		dateTo: DEFAULT_RANGE.to ?? "",
+	});
+	const type = t.values.type as TypeFilter;
+	const campaignId = t.values.campaign;
+	const range: DateRangeValue = {
+		from: t.values.dateFrom || undefined,
+		to: t.values.dateTo || undefined,
+	};
 
 	// Campaigns to resolve titles + drive the filter dropdown. Include
 	// archived so deleted references can render Mode-B (DeletedLabel).
@@ -128,7 +135,7 @@ export const MemberTransactions = ({
 			}));
 	}, [transactions]);
 
-	const visible = transactions.slice(offset, offset + limit);
+	const visible = transactions.slice(t.offset, t.offset + t.limit);
 
 	const columns: DataTableColumn<Transaction>[] = [
 		{
@@ -197,8 +204,6 @@ export const MemberTransactions = ({
 		},
 	];
 
-	const resetOffset = () => setOffset(0);
-
 	const hasMix = mixSegments.length > 0;
 
 	return (
@@ -224,49 +229,14 @@ export const MemberTransactions = ({
 
 				<DataTableShell<Transaction>
 					filters={[
-						{
-							key: "type",
-							label: "Type",
-							value: type,
-							onChange: (v) => {
-								setType(v as TypeFilter);
-								resetOffset();
-							},
-							options: TYPE_OPTIONS,
-						},
-						{
-							key: "campaign",
-							label: "Campaign",
-							value: campaignId,
-							onChange: (v) => {
-								setCampaignId(v);
-								resetOffset();
-							},
-							options: [
-								{ value: "all", label: "All campaigns" },
-								...campaigns.map((c) => ({ value: c.id, label: c.title })),
-							],
-						},
+						t.select("type", "Type", TYPE_OPTIONS),
+						t.select("campaign", "Campaign", [
+							{ value: "all", label: "All campaigns" },
+							...campaigns.map((c) => ({ value: c.id, label: c.title })),
+						]),
+						t.date("Date range"),
 					]}
-					toolbar={
-						<DateRangePicker
-							value={range}
-							onChange={(v) => {
-								setRange(v);
-								resetOffset();
-							}}
-							placeholder="Date range"
-							size="sm"
-							autoWidth
-							clearable
-						/>
-					}
-					onClearFilters={() => {
-						setRange({});
-						setType("all");
-						setCampaignId("all");
-						resetOffset();
-					}}
+					onClearFilters={t.clear}
 					stats={[
 						{ label: "gifts", value: stats.count },
 						{
@@ -278,17 +248,11 @@ export const MemberTransactions = ({
 					]}
 					columns={columns}
 					rows={visible}
-					rowKey={(t) => t.id}
+					rowKey={(tx) => tx.id}
 					loading={txQ.isLoading}
 					emptyTitle="No transactions found"
 					emptySubtitle="Try adjusting your filters or date range."
-					pagination={{
-						total: transactions.length,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-					}}
+					pagination={t.pagination(transactions.length)}
 				/>
 			</div>
 		</div>

@@ -9,23 +9,14 @@ import {
 import { cn } from "@/lib/utils";
 import { Icon } from "./Icon";
 import { Pressable } from "./Pressable";
-import { Select, type SelectOption } from "./Select";
+import { Select } from "./Select";
+import { isSelectActive, type TableSelectFilter } from "./tableFilters";
 
-// One filter row inside the popover. The caller controls value/onChange;
-// the popover just renders the labeled control and counts non-default
-// filters toward the trigger's badge.
-export type FilterMenuFilter = {
-	key: string;
-	label: string;
-	value: string;
-	onChange: (value: string) => void;
-	options: SelectOption[];
-	/**
-	 * Value treated as "no filter" — when `value === defaultValue` this
-	 * filter is not counted toward the active badge. Defaults to `"all"`.
-	 */
-	defaultValue?: string;
-};
+// A select filter row inside the popover. Aliased to the unified
+// `TableSelectFilter` so the model lives in one place; the popover just
+// renders each labeled control and counts non-default filters toward the
+// trigger's badge.
+export type FilterMenuFilter = TableSelectFilter;
 
 export type FilterMenuProps = {
 	filters: FilterMenuFilter[];
@@ -38,9 +29,6 @@ export type FilterMenuProps = {
 	className?: string;
 };
 
-const isActive = (f: FilterMenuFilter): boolean =>
-	f.value !== (f.defaultValue ?? "all");
-
 export const FilterMenu = ({
 	filters,
 	extraContent,
@@ -49,7 +37,7 @@ export const FilterMenu = ({
 	className,
 }: FilterMenuProps) => {
 	const [open, setOpen] = useState(false);
-	const activeCount = filters.filter(isActive).length;
+	const activeCount = filters.filter(isSelectActive).length;
 	const hasActive = activeCount > 0;
 
 	if (filters.length === 0 && !extraContent) {

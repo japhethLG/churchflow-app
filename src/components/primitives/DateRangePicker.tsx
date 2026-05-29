@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import {
@@ -46,6 +46,11 @@ export type DateRangePickerProps = {
 	// `"default"` shows the built-in preset list. Pass an explicit array
 	// for a custom set, or `false` to hide the sidebar entirely.
 	presets?: DateRangePresetsOption;
+	// How presets are presented inside the popover. `"sidebar"` (default) is
+	// the desktop left-rail. `"drilldown"` stacks a "Presets" button on top of
+	// the calendar that drills into the preset list — better for narrow
+	// surfaces like the mobile filter sheet.
+	presetsLayout?: "sidebar" | "drilldown";
 	// `"md"` (default) — form-row height. `"sm"` — compact, used in list-
 	// page toolbars where it sits alongside an h-9 search input.
 	size?: "sm" | "md";
@@ -137,11 +142,31 @@ export const DateRangePicker = ({
 	maxDate,
 	className,
 	presets = "default",
+	presetsLayout = "sidebar",
 	size = "md",
 	autoWidth = false,
 	clearable = false,
 }: DateRangePickerProps) => {
 	const [open, setOpen] = useState(false);
+	// Drilldown layout only: whether the preset list is currently showing, plus
+	// the last transition direction so the swap animates (forward = into
+	// presets, back = to the calendar).
+	const [showPresets, setShowPresets] = useState(false);
+	const [presetDir, setPresetDir] = useState<"forward" | "back" | null>(null);
+	const openPresets = () => {
+		setPresetDir("forward");
+		setShowPresets(true);
+	};
+	const closePresets = () => {
+		setPresetDir("back");
+		setShowPresets(false);
+	};
+	const presetTransition =
+		presetDir === "forward"
+			? "animate-in fade-in-0 slide-in-from-right-6 duration-200 ease-out"
+			: presetDir === "back"
+				? "animate-in fade-in-0 slide-in-from-left-6 duration-200 ease-out"
+				: "";
 	const resolvedPresets = resolvePresets(presets);
 
 	const selectedRange: CalendarRange = useMemo(() => {
@@ -214,7 +239,17 @@ export const DateRangePicker = ({
 				</Label>
 			)}
 
-			<Popover open={open} onOpenChange={setOpen}>
+			<Popover
+				open={open}
+				onOpenChange={(next) => {
+					setOpen(next);
+					// Always reopen on the calendar view, never the preset drilldown.
+					if (!next) {
+						setShowPresets(false);
+						setPresetDir(null);
+					}
+				}}
+			>
 				<div className={cn("relative", autoWidth ? "inline-block" : "w-full")}>
 					<PopoverTrigger
 						disabled={disabled}
@@ -273,36 +308,112 @@ export const DateRangePicker = ({
 					sideOffset={6}
 					className="w-auto p-0"
 				>
-					<div className="flex">
-						{resolvedPresets && (
-							<div className="flex flex-col gap-0.5 border-r border-border/60 p-2">
-								{resolvedPresets.map((preset) => (
+					{presetsLayout === "drilldown" ? (
+						// Drilldown: a "Presets" row sits on top of the calendar; tapping
+						// it swaps the calendar for the preset list (with a back row).
+						// The two views slide in directionally on swap.
+						<div className="w-[300px] overflow-hidden p-3">
+							{showPresets && resolvedPresets ? (
+								<div
+									key="presets"
+									className={cn("flex flex-col", presetTransition)}
+								>
 									<Pressable
-										key={preset.label}
-										onClick={() => applyPreset(preset)}
-										className={cn(
-											"rounded-md px-3 py-1.5 text-sm transition-colors",
-											isPresetActive(preset)
-												? "bg-primary/10 font-medium text-foreground"
-												: "text-muted-foreground hover:bg-muted hover:text-foreground",
-										)}
+										onClick={closePresets}
+										className="-mx-1 mb-1 flex items-center gap-1.5 rounded-md px-1 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
 									>
-										{preset.label}
+										<ChevronLeft size={16} className="text-muted-foreground" />
+										Presets
 									</Pressable>
-								))}
-							</div>
-						)}
-						<div className="p-3">
-							<Calendar
-								mode="range"
-								value={selectedRange}
-								onChange={handleChange}
-								defaultMonth={selectedRange.from}
-								minDate={minDate}
-								maxDate={maxDate}
-							/>
+									<div className="flex flex-col gap-0.5">
+										{resolvedPresets.map((preset) => (
+											<Pressable
+												key={preset.label}
+												onClick={() => {
+													applyPreset(preset);
+													closePresets();
+												}}
+												className={cn(
+													"flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors",
+													isPresetActive(preset)
+														? "bg-primary/10 font-medium text-foreground"
+														: "text-muted-foreground hover:bg-muted hover:text-foreground",
+												)}
+											>
+												{preset.label}
+												{isPresetActive(preset) && (
+													<span className="size-1.5 rounded-full bg-primary" />
+												)}
+											</Pressable>
+										))}
+									</div>
+								</div>
+							) : (
+								<div
+									key="calendar"
+									className={cn("flex flex-col gap-2", presetTransition)}
+								>
+									{resolvedPresets && (
+										<Pressable
+											onClick={openPresets}
+											className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-foreground shadow-[inset_0_0_0_1px_var(--color-input)] hover:bg-muted"
+										>
+											<span className="flex items-center gap-2">
+												<CalendarIcon
+													size={14}
+													className="text-muted-foreground"
+												/>
+												Presets
+											</span>
+											<ChevronRight
+												size={16}
+												className="text-muted-foreground"
+											/>
+										</Pressable>
+									)}
+									<Calendar
+										mode="range"
+										value={selectedRange}
+										onChange={handleChange}
+										defaultMonth={selectedRange.from}
+										minDate={minDate}
+										maxDate={maxDate}
+									/>
+								</div>
+							)}
 						</div>
-					</div>
+					) : (
+						<div className="flex">
+							{resolvedPresets && (
+								<div className="flex flex-col gap-0.5 border-r border-border/60 p-2">
+									{resolvedPresets.map((preset) => (
+										<Pressable
+											key={preset.label}
+											onClick={() => applyPreset(preset)}
+											className={cn(
+												"rounded-md px-3 py-1.5 text-sm transition-colors",
+												isPresetActive(preset)
+													? "bg-primary/10 font-medium text-foreground"
+													: "text-muted-foreground hover:bg-muted hover:text-foreground",
+											)}
+										>
+											{preset.label}
+										</Pressable>
+									))}
+								</div>
+							)}
+							<div className="p-3">
+								<Calendar
+									mode="range"
+									value={selectedRange}
+									onChange={handleChange}
+									defaultMonth={selectedRange.from}
+									minDate={minDate}
+									maxDate={maxDate}
+								/>
+							</div>
+						</div>
+					)}
 				</PopoverContent>
 			</Popover>
 

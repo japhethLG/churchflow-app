@@ -50,6 +50,11 @@ export {
 	type EntityRestoreBannerProps,
 } from "./EntityRestoreBanner";
 export {
+	ExpandableCard,
+	type ExpandableCardDetail,
+	type ExpandableCardProps,
+} from "./ExpandableCard";
+export {
 	FilterMenu,
 	type FilterMenuFilter,
 	type FilterMenuProps,
@@ -104,4 +109,17 @@ export {
 export { StatPill } from "./StatPill";
 export { Table, type TableColumn, type TableDataRow } from "./Table";
 export { Textarea } from "./Textarea";
+export {
+	activeFilterCount,
+	isFilterActive,
+	type TableDateFilter,
+	type TableFilter,
+	type TableSelectFilter,
+	type TableStateFilter,
+	type TableStatTone,
+} from "./tableFilters";
+export {
+	type UseTableFiltersOptions,
+	useTableFilters,
+} from "./useTableFilters";
 export { Wordmark } from "./Wordmark";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
 	AvatarStack,
 	Badge,
@@ -12,8 +12,7 @@ import {
 	PageHeader,
 	RowActionsMenu,
 	StatCard,
-	type StateFilterValue,
-	toStateFilterFlags,
+	useTableFilters,
 } from "@/components/primitives";
 import { useAdminStats } from "@/lib/api/admin";
 import type { components } from "@/lib/api/schema";
@@ -46,30 +45,26 @@ const TenantLogoTile = ({ name, slug }: { name: string; slug: string }) => {
 export const TenantsPage = () => {
 	const router = useRouter();
 
-	const [search, setSearch] = useState("");
-	const [state, setState] = useState<StateFilterValue>("active");
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(20);
+	const t = useTableFilters({ search: "", state: "active" });
 
-	const { data: tenantsData, isLoading } = useTenants(
-		toStateFilterFlags(state),
-	);
+	const { data: tenantsData, isLoading } = useTenants(t.stateFlags());
 	const { data: stats } = useAdminStats();
 
 	const tenants = (tenantsData?.items ?? []) as Tenant[];
 
 	const filtered = useMemo<Tenant[]>(() => {
-		const q = search.trim().toLowerCase();
+		const q = t.values.search.trim().toLowerCase();
 		if (!q) {
 			return tenants;
 		}
 		return tenants.filter(
-			(t) =>
-				t.name.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q),
+			(row) =>
+				row.name.toLowerCase().includes(q) ||
+				row.slug.toLowerCase().includes(q),
 		);
-	}, [tenants, search]);
+	}, [tenants, t.values.search]);
 
-	const visible = filtered.slice(offset, offset + limit);
+	const visible = filtered.slice(t.offset, t.offset + t.limit);
 
 	const columns: DataTableColumn<Tenant>[] = [
 		{
@@ -201,8 +196,6 @@ export const TenantsPage = () => {
 		},
 	];
 
-	const resetOffset = () => setOffset(0);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
@@ -263,37 +256,18 @@ export const TenantsPage = () => {
 				</div>
 
 				<DataTableShell<Tenant>
-					search={{
-						value: search,
-						onChange: (v) => {
-							setSearch(v);
-							resetOffset();
-						},
-						placeholder: "Search by name or slug…",
-					}}
-					state={{
-						value: state,
-						onChange: (v) => {
-							setState(v);
-							resetOffset();
-						},
-					}}
+					search={t.search("Search by name or slug…")}
+					filters={[t.state()]}
 					stats={[{ label: "churches", value: filtered.length }]}
 					columns={columns}
 					rows={visible}
-					rowKey={(t) => t.id}
+					rowKey={(row) => row.id}
 					loading={isLoading}
-					onRowClick={(t) => router.push(`/super-admin/tenants/${t.slug}`)}
-					rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
+					onRowClick={(row) => router.push(`/super-admin/tenants/${row.slug}`)}
+					rowClassName={(row) => (row.deletedAt ? "bg-muted/30" : undefined)}
 					emptyTitle="No churches yet"
 					emptySubtitle="Create your first church to get started."
-					pagination={{
-						total: filtered.length,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-					}}
+					pagination={t.pagination(filtered.length)}
 				/>
 			</div>
 		</div>

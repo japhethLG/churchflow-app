@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
 	Avatar,
 	Badge,
@@ -10,8 +9,7 @@ import {
 	DeletedLabel,
 	PageHeader,
 	RowActionsMenu,
-	type StateFilterValue,
-	toStateFilterFlags,
+	useTableFilters,
 } from "@/components/primitives";
 import { useAdminStats, useAdminUsers } from "@/lib/api/admin";
 import type { components } from "@/lib/api/schema";
@@ -21,32 +19,30 @@ import { openModal } from "@/lib/modals/store";
 
 type AdminUser = components["schemas"]["AdminUserDto"];
 
-type RoleScope = "all" | "super-admin";
-
 const ROLE_OPTIONS = [
 	{ value: "all", label: "All admins" },
 	{ value: "super-admin", label: "Super admins only" },
 ];
 
 export const AdminsPage = () => {
-	const [search, setSearch] = useState("");
-	const [tenantFilter, setTenantFilter] = useState<string>("all");
-	const [roleScope, setRoleScope] = useState<RoleScope>("all");
-	const [state, setState] = useState<StateFilterValue>("active");
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(20);
+	const t = useTableFilters({
+		search: "",
+		tenant: "all",
+		role: "all",
+		state: "active",
+	});
 
 	const { data: stats } = useAdminStats();
 	const { data: tenantsData } = useTenants();
 	const tenants = tenantsData?.items ?? [];
 
 	const { data: usersData, isLoading } = useAdminUsers({
-		search: search || undefined,
-		tenantId: tenantFilter === "all" ? undefined : tenantFilter,
-		superAdminOnly: roleScope === "super-admin" ? true : undefined,
-		skip: offset,
-		take: limit,
-		...toStateFilterFlags(state),
+		search: t.values.search || undefined,
+		tenantId: t.values.tenant === "all" ? undefined : t.values.tenant,
+		superAdminOnly: t.values.role === "super-admin" ? true : undefined,
+		skip: t.offset,
+		take: t.limit,
+		...t.stateFlags(),
 	});
 
 	const users: AdminUser[] = usersData?.items ?? [];
@@ -155,8 +151,6 @@ export const AdminsPage = () => {
 		},
 	];
 
-	const resetOffset = () => setOffset(0);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
@@ -181,68 +175,32 @@ export const AdminsPage = () => {
 						{ label: "Super admins", value: stats?.superAdmins ?? "—" },
 						{ label: "Tenant admins", value: stats?.totalAdmins ?? "—" },
 					]}
-					search={{
-						value: search,
-						onChange: (v) => {
-							setSearch(v);
-							resetOffset();
-						},
-						placeholder: "Search by name or email…",
-					}}
+					search={t.search("Search by name or email…")}
 					filters={[
-						{
-							key: "tenant",
-							label: "Church",
-							value: tenantFilter,
-							onChange: (v) => {
-								setTenantFilter(v);
-								resetOffset();
-							},
-							options: [
-								{ value: "all", label: "All churches" },
-								...tenants.map((t) => ({ value: t.id, label: t.name })),
-							],
-						},
-						{
-							key: "role",
-							label: "Role scope",
-							value: roleScope,
-							onChange: (v) => {
-								setRoleScope(v as RoleScope);
-								resetOffset();
-							},
-							options: ROLE_OPTIONS,
-						},
+						t.select("tenant", "Church", [
+							{ value: "all", label: "All churches" },
+							...tenants.map((tenant) => ({
+								value: tenant.id,
+								label: tenant.name,
+							})),
+						]),
+						t.select("role", "Role scope", ROLE_OPTIONS),
+						t.state(),
 					]}
-					onClearFilters={() => {
-						setTenantFilter("all");
-						setRoleScope("all");
-						resetOffset();
-					}}
-					state={{
-						value: state,
-						onChange: (v) => {
-							setState(v);
-							resetOffset();
-						},
-					}}
+					onClearFilters={t.clear}
 					columns={columns}
 					rows={users}
 					rowKey={(u) => u.id}
 					loading={isLoading}
 					emptyTitle="No admin users yet"
 					emptySubtitle={
-						search || tenantFilter !== "all" || roleScope !== "all"
+						t.values.search ||
+						t.values.tenant !== "all" ||
+						t.values.role !== "all"
 							? "No users match the current filters."
 							: "Invite your first admin to get started."
 					}
-					pagination={{
-						total,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-					}}
+					pagination={t.pagination(total)}
 				/>
 			</div>
 		</div>

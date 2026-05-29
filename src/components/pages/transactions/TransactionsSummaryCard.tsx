@@ -1,7 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { Card, SectionTitle } from "@/components/primitives";
+import { Card } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { num, pct, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
@@ -100,48 +100,49 @@ export const TransactionsSummaryCard = ({
 		);
 	}
 
+	const donutData = segments.length > 0 ? segments : placeholder;
+
 	return (
-		<Card>
-			<SectionTitle title="Period totals (matches current filters)" />
+		<Card padding={0}>
+			<div className="p-4 md:p-6">
+				{/* Header */}
+				<h3 className="mb-4 text-sm font-bold tracking-tight md:mb-5 md:text-base">
+					Period totals{" "}
+					<span className="font-normal text-muted-foreground">
+						· matches filters
+					</span>
+				</h3>
 
-			{/* Summary row — terse, scannable, no nested cards */}
-			<div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-				<div>
-					<div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-						Total
-					</div>
-					<div className="mt-1 text-3xl font-bold tabular-nums text-foreground">
-						{formatCurrency(total, { decimals: 0 })}
-					</div>
+				{/* KPIs — 3-up at every width */}
+				<div className="mb-4 grid grid-cols-3 gap-3 md:mb-6 md:gap-4">
+					{[
+						{ label: "Total", value: formatCurrency(total, { decimals: 0 }) },
+						{ label: "Gifts", value: count.toLocaleString() },
+						{
+							label: "Avg gift",
+							value: count > 0 ? formatCurrency(avg, { decimals: 0 }) : "—",
+						},
+					].map((kpi) => (
+						<div key={kpi.label}>
+							<div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground sm:text-xs">
+								{kpi.label}
+							</div>
+							<div className="mt-1 text-xl font-bold tabular-nums text-foreground sm:text-3xl">
+								{kpi.value}
+							</div>
+						</div>
+					))}
 				</div>
-				<div>
-					<div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-						Gifts
-					</div>
-					<div className="mt-1 text-3xl font-bold tabular-nums text-foreground">
-						{count.toLocaleString()}
-					</div>
-				</div>
-				<div>
-					<div className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-						Average gift
-					</div>
-					<div className="mt-1 text-3xl font-bold tabular-nums text-foreground">
-						{count > 0 ? formatCurrency(avg, { decimals: 0 }) : "—"}
-					</div>
-				</div>
-			</div>
 
-			{/* Donut + per-type breakdown table */}
-			<div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-				<div className="grid place-items-center">
-					<div className="relative size-[220px]">
+				{/* Donut + per-type breakdown — side-by-side, compact on mobile */}
+				<div className="flex items-center md:items-start md:gap-6">
+					<div className="relative size-[124px] shrink-0 md:size-[220px]">
 						<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 							<div>
-								<div className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
+								<div className="text-[7px] font-bold uppercase tracking-[0.08em] text-muted-foreground md:text-xs">
 									Mix by type
 								</div>
-								<div className="mt-1 text-xl font-bold tabular-nums text-foreground">
+								<div className="mt-0.5 text-sm font-bold tabular-nums text-foreground md:mt-1 md:text-xl">
 									{formatCompact(total)}
 								</div>
 							</div>
@@ -149,16 +150,16 @@ export const TransactionsSummaryCard = ({
 						<ResponsiveContainer width="100%" height="100%">
 							<PieChart>
 								<Pie
-									data={segments.length > 0 ? segments : placeholder}
+									data={donutData}
 									dataKey="amount"
 									cx="50%"
 									cy="50%"
-									innerRadius={64}
-									outerRadius={94}
+									innerRadius="60%"
+									outerRadius="90%"
 									paddingAngle={1.5}
 									stroke="none"
 								>
-									{(segments.length > 0 ? segments : placeholder).map((s) => (
+									{donutData.map((s) => (
 										<Cell key={s.key} fill={s.color} />
 									))}
 								</Pie>
@@ -166,53 +167,59 @@ export const TransactionsSummaryCard = ({
 							</PieChart>
 						</ResponsiveContainer>
 					</div>
-				</div>
 
-				{segments.length > 0 ? (
-					<div className="flex flex-col">
-						<div className="mb-2 grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-							<span>Type</span>
-							<span className="text-right">Total</span>
-							<span className="text-right">Gifts</span>
-							<span className="text-right">Avg</span>
-							<span className="text-right">Share</span>
-						</div>
-						<ul className="divide-y divide-border">
-							{segments.map((s) => (
-								<li
-									key={s.key}
-									className="grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] items-center gap-3 py-2.5 text-sm"
-								>
-									<div className="flex items-center gap-2">
-										<span
-											className="size-2.5 shrink-0 rounded-sm"
-											style={{ background: s.color }}
-										/>
-										<span className="font-medium text-foreground">
-											{s.label}
+					{segments.length > 0 ? (
+						<div className="min-w-0 flex-1">
+							{/* Desktop column header */}
+							<div className="mb-2 hidden grid-cols-[1.4fr_1fr_1fr_1fr_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground md:grid">
+								<span>Type</span>
+								<span className="text-right">Total</span>
+								<span className="text-right">Gifts</span>
+								<span className="text-right">Avg</span>
+								<span className="text-right">Share</span>
+							</div>
+							<ul className="divide-y divide-border">
+								{segments.map((s) => (
+									<li
+										key={s.key}
+										className="flex items-center gap-2.5 py-1.5 text-[13px] md:grid md:grid-cols-[1.4fr_1fr_1fr_1fr_60px] md:gap-3 md:py-2.5 md:text-sm"
+									>
+										<div className="flex min-w-0 flex-1 items-center gap-2">
+											<span
+												className="size-2.5 shrink-0 rounded-sm"
+												style={{ background: s.color }}
+											/>
+											<span className="truncate font-medium text-foreground">
+												{s.label}
+											</span>
+										</div>
+										{/* Mobile: compact amount */}
+										<span className="tabular-nums text-muted-foreground md:hidden">
+											{formatCompact(s.amount)}
 										</span>
-									</div>
-									<span className="text-right tabular-nums font-medium text-foreground">
-										{formatCurrency(s.amount, { decimals: 0 })}
-									</span>
-									<span className="text-right tabular-nums text-muted-foreground">
-										{s.count}
-									</span>
-									<span className="text-right tabular-nums text-muted-foreground">
-										{formatCurrency(s.avg, { decimals: 0 })}
-									</span>
-									<span className="text-right tabular-nums font-semibold text-foreground">
-										{s.share}%
-									</span>
-								</li>
-							))}
-						</ul>
-					</div>
-				) : (
-					<div className="grid place-items-center text-sm text-muted-foreground">
-						No transactions in this range.
-					</div>
-				)}
+										{/* Desktop: full amount + gifts + avg */}
+										<span className="hidden text-right tabular-nums font-medium text-foreground md:block">
+											{formatCurrency(s.amount, { decimals: 0 })}
+										</span>
+										<span className="hidden text-right tabular-nums text-muted-foreground md:block">
+											{s.count}
+										</span>
+										<span className="hidden text-right tabular-nums text-muted-foreground md:block">
+											{formatCurrency(s.avg, { decimals: 0 })}
+										</span>
+										<span className="w-9 shrink-0 text-right tabular-nums font-semibold text-foreground md:w-auto">
+											{s.share}%
+										</span>
+									</li>
+								))}
+							</ul>
+						</div>
+					) : (
+						<div className="grid flex-1 place-items-center text-sm text-muted-foreground">
+							No transactions in this range.
+						</div>
+					)}
+				</div>
 			</div>
 		</Card>
 	);

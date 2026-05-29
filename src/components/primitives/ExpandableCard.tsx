@@ -1,0 +1,105 @@
+"use client";
+
+import { type ReactNode, useState } from "react";
+import { cn } from "@/lib/utils";
+import { Card } from "./Card";
+import { Icon } from "./Icon";
+import { Pressable } from "./Pressable";
+
+export type ExpandableCardDetail = {
+	label: ReactNode;
+	value: ReactNode;
+};
+
+export type ExpandableCardProps = {
+	/** Always-visible collapsed headline (identity + primary metric). */
+	children: ReactNode;
+	/** Rows revealed on expand — the columns that don't fit the headline. */
+	details?: ExpandableCardDetail[];
+	defaultExpanded?: boolean;
+	/** Tombstone styling — muted when the row's own entity is soft-deleted. */
+	deleted?: boolean;
+	className?: string;
+};
+
+// Mobile counterpart to a desktop table row. Primary identity + the single
+// most important metric stay collapsed; the remaining columns reveal on tap
+// into a tinted drawer. The chevron rotates to signal expandability. With no
+// `details`, the card is a plain, non-interactive surface.
+export const ExpandableCard = ({
+	children,
+	details = [],
+	defaultExpanded = false,
+	deleted = false,
+	className,
+}: ExpandableCardProps) => {
+	const [open, setOpen] = useState(defaultExpanded);
+	const hasDetails = details.length > 0;
+
+	return (
+		<Card
+			padding={0}
+			className={cn(
+				"overflow-hidden gap-0",
+				deleted && "opacity-60",
+				className,
+			)}
+		>
+			<Pressable
+				onClick={hasDetails ? () => setOpen((v) => !v) : undefined}
+				className={cn(
+					"flex w-full items-stretch gap-3 p-3.5",
+					!hasDetails && "cursor-default",
+				)}
+			>
+				<div className="min-w-0 flex-1">{children}</div>
+				{hasDetails && (
+					<div
+						className={cn(
+							"grid size-6 shrink-0 self-center place-items-center rounded-lg bg-muted text-muted-foreground transition-transform duration-200",
+							open && "rotate-180",
+						)}
+					>
+						<Icon name="chevronDown" size={14} />
+					</div>
+				)}
+			</Pressable>
+
+			{hasDetails && (
+				// Animate height open/close via the grid 0fr→1fr trick (no JS height
+				// measuring); the inner wrapper clips the rows while collapsed.
+				<div
+					className={cn(
+						"grid transition-[grid-template-rows] duration-200 ease-out",
+						open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+					)}
+				>
+					<div className="overflow-hidden">
+						<div
+							className={cn(
+								"border-t border-border bg-muted/40 px-3.5 transition-opacity duration-200",
+								open ? "opacity-100" : "opacity-0",
+							)}
+						>
+							{details.map((d, i) => (
+								<div
+									// biome-ignore lint/suspicious/noArrayIndexKey: detail rows are a fixed, ordered list per card
+									key={i}
+									className={cn(
+										"flex items-center justify-between gap-3 py-2.5",
+										i < details.length - 1 && "border-b border-border/60",
+									)}
+								>
+									<span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+										{d.label}
+									</span>
+									<div className="min-w-0 text-right">{d.value}</div>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			)}
+		</Card>
+	);
+};

@@ -4,6 +4,7 @@ import { openSheet } from "@/lib/sheets/store";
 import { buildNav } from "../sidebar/buildNav";
 import type { Perspective, TenantSummary } from "../sidebar/types";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { MobilePageFab } from "./MobilePageFab";
 import { MobileTopBar } from "./MobileTopBar";
 
 /**
@@ -30,10 +31,8 @@ export const MobileChrome = ({
 	isSuperAdmin?: boolean;
 }) => {
 	const navItems = buildNav(perspective, tenantSlug);
-	const primary = navItems.slice(0, 4);
-	const overflow = navItems.slice(4);
-
-	const isAdmin = perspective === "admin";
+	const primary = navItems.slice(0, 5);
+	const overflow = navItems.slice(5);
 
 	return (
 		<>
@@ -53,14 +52,12 @@ export const MobileChrome = ({
 				}
 			/>
 
+			{/* Page-specific primary action(s), published via useMobileActions. */}
+			<MobilePageFab />
+
 			<MobileBottomNav
 				className="md:hidden"
 				items={primary}
-				onRecordGift={
-					isAdmin && tenantSlug
-						? () => openSheet("record-gift", { tenantSlug })
-						: undefined
-				}
 				onMore={
 					overflow.length > 0
 						? () => openSheet("more", { items: overflow })

@@ -297,15 +297,16 @@ export const CampaignPledgesTab = ({
 			<DataTableShell<Row>
 				filters={[
 					{
+						kind: "select",
 						key: "status",
 						label: "Status",
 						value: status,
 						onChange: (v) => setStatus(v as StatusFilter),
 						options: STATUS_OPTIONS,
 					},
+					{ kind: "state", value: state, onChange: setState },
 				]}
 				onClearFilters={() => setStatus("all")}
-				state={{ value: state, onChange: setState }}
 				stats={[
 					{ label: "in view", value: rows.length },
 					{ label: "pledged", value: formatCompact(agg.pledged) },

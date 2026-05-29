@@ -1,16 +1,17 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
 	Button,
 	DataTableShell,
-	DateRangePicker,
 	type DateRangeValue,
 	PageHeader,
+	useTableFilters,
 } from "@/components/primitives";
 import { useInvitations } from "@/lib/api/invitations";
 import dayjs from "@/lib/dayjs";
+import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 import { type Invitation, invitationColumns } from "./InvitationsTable";
 
@@ -33,12 +34,20 @@ const ROLE_OPTIONS = [
 
 export const InvitationsPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
-	const [search, setSearch] = useState("");
-	const [status, setStatus] = useState<StatusFilter>("all");
-	const [role, setRole] = useState<RoleFilter>("all");
-	const [range, setRange] = useState<DateRangeValue>({});
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(20);
+	const t = useTableFilters({
+		search: "",
+		status: "all",
+		role: "all",
+		dateFrom: "",
+		dateTo: "",
+	});
+	const status = t.values.status as StatusFilter;
+	const role = t.values.role as RoleFilter;
+	const search = t.values.search;
+	const range: DateRangeValue = {
+		from: t.values.dateFrom || undefined,
+		to: t.values.dateTo || undefined,
+	};
 
 	const invitationsQ = useInvitations(tenantSlug, {
 		dateFrom: range.from
@@ -65,7 +74,7 @@ export const InvitationsPage = () => {
 		return out;
 	}, [invitations, status, role, search]);
 
-	const visible = filtered.slice(offset, offset + limit);
+	const visible = filtered.slice(t.offset, t.offset + t.limit);
 
 	const pendingCount = invitations.filter((i) => i.status === "PENDING").length;
 	const acceptedCount = invitations.filter(
@@ -78,6 +87,19 @@ export const InvitationsPage = () => {
 	const handleInvite = () =>
 		openModal("invite-member", { tenantId: tenantSlug });
 
+	useMobileActions(
+		useMemo(
+			() => [
+				{
+					label: "Invite member",
+					icon: "plus" as const,
+					onClick: () => openModal("invite-member", { tenantId: tenantSlug }),
+				},
+			],
+			[tenantSlug],
+		),
+	);
+
 	const handleCancel = (inv: Invitation) =>
 		openModal("cancel-invitation", {
 			tenantId: tenantSlug,
@@ -87,8 +109,6 @@ export const InvitationsPage = () => {
 
 	const columns = invitationColumns({ onCancel: handleCancel });
 
-	const resetOffset = () => setOffset(0);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
@@ -97,7 +117,12 @@ export const InvitationsPage = () => {
 				title="Invitations"
 				subtitle="Manage member and admin access to your church account."
 				action={
-					<Button role="primary" icon="plus" onClick={handleInvite}>
+					<Button
+						role="primary"
+						icon="plus"
+						className="hidden md:inline-flex"
+						onClick={handleInvite}
+					>
 						Invite member
 					</Button>
 				}
@@ -105,55 +130,13 @@ export const InvitationsPage = () => {
 
 			<div className="overflow-auto flex-1 px-8 pb-8">
 				<DataTableShell<Invitation>
-					search={{
-						value: search,
-						onChange: (v) => {
-							setSearch(v);
-							resetOffset();
-						},
-						placeholder: "Search by email…",
-					}}
+					search={t.search("Search by email…")}
 					filters={[
-						{
-							key: "status",
-							label: "Status",
-							value: status,
-							onChange: (v) => {
-								setStatus(v as StatusFilter);
-								resetOffset();
-							},
-							options: STATUS_OPTIONS,
-						},
-						{
-							key: "role",
-							label: "Role",
-							value: role,
-							onChange: (v) => {
-								setRole(v as RoleFilter);
-								resetOffset();
-							},
-							options: ROLE_OPTIONS,
-						},
+						t.select("status", "Status", STATUS_OPTIONS),
+						t.select("role", "Role", ROLE_OPTIONS),
+						t.date("Date range"),
 					]}
-					toolbar={
-						<DateRangePicker
-							value={range}
-							onChange={(v) => {
-								setRange(v);
-								resetOffset();
-							}}
-							placeholder="Date range"
-							size="sm"
-							autoWidth
-							clearable
-						/>
-					}
-					onClearFilters={() => {
-						setStatus("all");
-						setRole("all");
-						setRange({});
-						resetOffset();
-					}}
+					onClearFilters={t.clear}
 					stats={[
 						{ label: "total", value: invitations.length },
 						{ label: "pending", value: pendingCount, tone: "warning" },
@@ -166,13 +149,7 @@ export const InvitationsPage = () => {
 					loading={invitationsQ.isLoading}
 					emptyTitle="No invitations"
 					emptySubtitle="Invite members or admins to join your church."
-					pagination={{
-						total: filtered.length,
-						offset,
-						limit,
-						onOffsetChange: setOffset,
-						onLimitChange: setLimit,
-					}}
+					pagination={t.pagination(filtered.length)}
 				/>
 			</div>
 		</div>

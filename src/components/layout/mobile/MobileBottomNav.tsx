@@ -2,51 +2,83 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
 import { Pressable } from "@/components/primitives/Pressable";
 import { cn } from "@/lib/utils";
 import type { NavItem } from "../sidebar/types";
 
-const Tab = ({ item, active }: { item: NavItem; active: boolean }) => (
-	<Link
-		href={item.href}
-		className={cn(
-			"flex flex-col items-center gap-0.5 py-1.5 no-underline transition-colors",
-			active ? "text-primary" : "text-muted-foreground",
-		)}
-	>
+// Springy easing for the active-pill grow + icon lift.
+const SPRING = "ease-[cubic-bezier(0.34,1.56,0.64,1)]";
+
+// Shared icon + label column for a tab. `active` drives the grow-in pill,
+// icon lift and label weight.
+const TabInner = ({
+	icon,
+	label,
+	active,
+}: {
+	icon: NavItem["icon"];
+	label: string;
+	active: boolean;
+}) => (
+	<>
+		<span className="relative grid h-7 w-12 place-items-center">
+			{/* Pill grows in behind the icon when the tab activates. */}
+			<span
+				className={cn(
+					"absolute inset-0 rounded-full bg-primary/12 transition-all duration-300",
+					SPRING,
+					active ? "scale-100 opacity-100" : "scale-50 opacity-0",
+				)}
+			/>
+			<Icon
+				name={icon}
+				size={20}
+				strokeWidth={active ? 2.4 : 2}
+				className={cn(
+					"relative transition-transform duration-300",
+					SPRING,
+					active ? "-translate-y-px scale-110" : "scale-100",
+				)}
+			/>
+		</span>
 		<span
 			className={cn(
-				"grid h-7 w-9 place-items-center rounded-[10px]",
-				active && "bg-primary/12",
+				"max-w-full truncate text-[10px] tracking-tight transition-all duration-200",
+				active ? "font-bold" : "font-semibold",
 			)}
 		>
-			<Icon name={item.icon} size={20} strokeWidth={active ? 2.4 : 2} />
+			{label}
 		</span>
-		<span className="text-[10px] font-semibold tracking-tight">
-			{item.label}
-		</span>
+	</>
+);
+
+const tabClass = (active: boolean) =>
+	cn(
+		// The whole cell is the tap target (not just the icon/label content).
+		"flex h-full w-full min-w-0 flex-col items-center justify-center gap-0.5 py-1.5 no-underline transition-colors duration-200",
+		active ? "text-primary" : "text-muted-foreground active:text-foreground",
+	);
+
+const Tab = ({ item, active }: { item: NavItem; active: boolean }) => (
+	<Link href={item.href} className={tabClass(active)}>
+		<TabInner icon={item.icon} label={item.label} active={active} />
 	</Link>
 );
 
 /**
- * Mobile-only bottom navigation. When `onRecordGift` is provided (admin
- * perspective) it renders the FAB-centered variant — two tabs, a raised
- * primary action, two tabs — with a floating "More" affordance for nav
- * overflow. Otherwise it falls back to a conventional even tab bar.
+ * Mobile-only bottom navigation — a conventional even tab bar. Shows the
+ * primary destinations and, when there are more, a trailing "More" tab that
+ * opens the nav-overflow sheet.
  */
 export const MobileBottomNav = ({
 	items,
-	onRecordGift,
 	onMore,
 	className,
 }: {
 	/** Primary destinations (already sliced to fit the bar). */
 	items: NavItem[];
-	/** Provided for admins → renders the centered record-gift FAB. */
-	onRecordGift?: () => void;
-	/** Provided when there are overflow destinations → renders "More". */
+	/** Provided when there are overflow destinations → renders the "More" tab. */
 	onMore?: () => void;
 	className?: string;
 }) => {
@@ -54,9 +86,7 @@ export const MobileBottomNav = ({
 	const isActive = (href: string) => pathname.startsWith(href);
 
 	const barClass =
-		"pointer-events-auto mx-3 flex items-center rounded-[22px] border border-border/60 bg-card/85 px-1.5 py-1.5 shadow-lg backdrop-blur-xl backdrop-saturate-150";
-
-	const fabMode = Boolean(onRecordGift);
+		"pointer-events-auto mx-3 flex items-center justify-around rounded-[22px] border border-border/60 bg-card/85 px-1.5 py-1.5 shadow-lg backdrop-blur-xl backdrop-saturate-150";
 
 	return (
 		<nav
@@ -66,64 +96,25 @@ export const MobileBottomNav = ({
 				className,
 			)}
 		>
-			{fabMode ? (
-				<>
-					{/* Bar first so the raised FAB + More paint above it. */}
-					<div
-						className={cn(barClass, "grid grid-cols-[1fr_1fr_64px_1fr_1fr]")}
-					>
-						{items.slice(0, 2).map((item) => (
-							<Tab key={item.href} item={item} active={isActive(item.href)} />
-						))}
-						<span aria-hidden />
-						{items.slice(2, 4).map((item) => (
-							<Tab key={item.href} item={item} active={isActive(item.href)} />
-						))}
+			<div className={barClass}>
+				{items.map((item) => (
+					<div key={item.href} className="min-w-0 flex-1">
+						<Tab item={item} active={isActive(item.href)} />
 					</div>
-
-					{/* Raised record-gift action, centered above the bar. */}
-					<div className="pointer-events-auto absolute inset-x-0 bottom-[38px] z-10 flex justify-center">
-						<Button
-							role="primary"
-							recipe="gradient"
-							icon="plus"
-							aria-label="Record a gift"
-							onClick={onRecordGift}
-							className="size-14 rounded-full px-0 shadow-[0_8px_24px_rgba(91,84,240,0.45),0_2px_6px_rgba(0,0,0,0.4)] ring-4 ring-background transition-transform active:scale-95"
-						/>
-					</div>
-
-					{onMore && (
+				))}
+				{onMore && (
+					<div className="min-w-0 flex-1">
 						<Pressable
 							onClick={onMore}
-							className="pointer-events-auto absolute right-4 bottom-[88px] z-10 grid size-11 place-items-center rounded-full border border-border/60 bg-card/95 text-muted-foreground shadow-lg backdrop-blur-xl"
+							aria-label="More"
+							aria-haspopup="dialog"
+							className={tabClass(false)}
 						>
-							<Icon name="menu" size={20} />
+							<TabInner icon="menu" label="More" active={false} />
 						</Pressable>
-					)}
-				</>
-			) : (
-				<div className={cn(barClass, "justify-around")}>
-					{items.map((item) => (
-						<div key={item.href} className="flex-1">
-							<Tab item={item} active={isActive(item.href)} />
-						</div>
-					))}
-					{onMore && (
-						<Pressable
-							onClick={onMore}
-							className="flex flex-1 flex-col items-center gap-0.5 py-1.5 text-muted-foreground"
-						>
-							<span className="grid h-7 w-9 place-items-center rounded-[10px]">
-								<Icon name="menu" size={20} />
-							</span>
-							<span className="text-[10px] font-semibold tracking-tight">
-								More
-							</span>
-						</Pressable>
-					)}
-				</div>
-			)}
+					</div>
+				)}
+			</div>
 		</nav>
 	);
 };

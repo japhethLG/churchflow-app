@@ -285,7 +285,7 @@ export const CampaignItemsTab = ({
 				</Button>
 			</div>
 			<DataTableShell<Row>
-				state={{ value: state, onChange: setState }}
+				filters={[{ kind: "state", value: state, onChange: setState }]}
 				columns={columns}
 				rows={rows}
 				rowKey={(r) => r.item.id}

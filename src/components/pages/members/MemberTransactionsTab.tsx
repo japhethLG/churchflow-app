@@ -1,13 +1,11 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
 	DataTableShell,
-	DateRangePicker,
 	type DateRangeValue,
-	type StateFilterValue,
-	toStateFilterFlags,
+	useTableFilters,
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
@@ -49,13 +47,20 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const [search, setSearch] = useState("");
-	const [type, setType] = useState<TypeFilter>("all");
-	const [range, setRange] = useState<DateRangeValue>({});
-	const [campaignId, setCampaignId] = useState<string>("all");
-	const [state, setState] = useState<StateFilterValue>("active");
-	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(20);
+	const t = useTableFilters({
+		type: "all",
+		campaignId: "all",
+		state: "active",
+		search: "",
+		dateFrom: "",
+		dateTo: "",
+	});
+	const type = t.values.type as TypeFilter;
+	const campaignId = t.values.campaignId;
+	const range: DateRangeValue = {
+		from: t.values.dateFrom || undefined,
+		to: t.values.dateTo || undefined,
+	};
 
 	// Campaigns drive the filter dropdown only; row labels come from the
 	// embedded `campaign` on each TransactionResponseDto.
@@ -75,7 +80,7 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 		memberId: member.id,
 		dateFrom: wireRange.dateFrom,
 		dateTo: wireRange.dateTo,
-		...toStateFilterFlags(state),
+		...t.stateFlags(),
 	});
 	const summaryData = summary.data;
 	const mixTotal = num(summaryData?.total);
@@ -104,9 +109,9 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 		campaignId: campaignId === "all" ? undefined : campaignId,
 		dateFrom: wireRange.dateFrom,
 		dateTo: wireRange.dateTo,
-		offset,
-		limit,
-		...toStateFilterFlags(state),
+		offset: t.offset,
+		limit: t.limit,
+		...t.stateFlags(),
 	});
 
 	const allItems: TransactionRow[] = list.data?.items ?? [];
@@ -114,16 +119,16 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 	const pageSum = list.data?.meta.sum ?? 0;
 
 	const visible = useMemo<TransactionRow[]>(() => {
-		const q = search.trim().toLowerCase();
+		const q = t.values.search.trim().toLowerCase();
 		if (!q) {
 			return allItems;
 		}
-		return allItems.filter((t) =>
-			`${nstr(t.note) ?? ""} ${nstr(t.referenceNumber) ?? ""}`
+		return allItems.filter((tx) =>
+			`${nstr(tx.note) ?? ""} ${nstr(tx.referenceNumber) ?? ""}`
 				.toLowerCase()
 				.includes(q),
 		);
-	}, [allItems, search]);
+	}, [allItems, t.values.search]);
 
 	const openView = (t: TransactionRow) =>
 		router.push(`/${tenantSlug}/admin/transactions/${t.id}`);
@@ -172,61 +177,14 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 				}
 			/>
 			<DataTableShell<TransactionRow>
-				search={{
-					value: search,
-					onChange: (v) => {
-						setSearch(v);
-						setOffset(0);
-					},
-					placeholder: "Search note or reference…",
-				}}
+				search={t.search("Search note or reference…")}
 				filters={[
-					{
-						key: "type",
-						label: "Type",
-						value: type,
-						onChange: (v) => {
-							setType(v as TypeFilter);
-							setOffset(0);
-						},
-						options: TYPE_OPTIONS,
-					},
-					{
-						key: "campaignId",
-						label: "Campaign",
-						value: campaignId,
-						onChange: (v) => {
-							setCampaignId(v);
-							setOffset(0);
-						},
-						options: campaignFilterOptions,
-					},
+					t.select("type", "Type", TYPE_OPTIONS),
+					t.select("campaignId", "Campaign", campaignFilterOptions),
+					t.state(),
+					t.date("Date range"),
 				]}
-				onClearFilters={() => {
-					setType("all");
-					setCampaignId("all");
-					setRange({});
-				}}
-				state={{
-					value: state,
-					onChange: (v) => {
-						setState(v);
-						setOffset(0);
-					},
-				}}
-				toolbar={
-					<DateRangePicker
-						value={range}
-						onChange={(v) => {
-							setRange(v);
-							setOffset(0);
-						}}
-						placeholder="Date range"
-						size="sm"
-						autoWidth
-						clearable
-					/>
-				}
+				onClearFilters={t.clear}
 				stats={[
 					{ label: "in view", value: total },
 					{
@@ -236,19 +194,13 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 				]}
 				columns={columns}
 				rows={visible}
-				rowKey={(t) => t.id}
+				rowKey={(tx) => tx.id}
 				loading={list.isLoading}
 				onRowClick={openView}
-				rowClassName={(t) => (t.deletedAt ? "bg-muted/30" : undefined)}
+				rowClassName={(tx) => (tx.deletedAt ? "bg-muted/30" : undefined)}
 				emptyTitle="No transactions"
 				emptySubtitle="No giving recorded by this member in this range."
-				pagination={{
-					total,
-					offset,
-					limit,
-					onOffsetChange: setOffset,
-					onLimitChange: setLimit,
-				}}
+				pagination={t.pagination(total)}
 			/>
 		</div>
 	);

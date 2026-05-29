@@ -1,22 +1,21 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
 	Badge,
 	Button,
 	type DataTableColumn,
 	DataTableShell,
-	ExpandableCard,
 	PageHeader,
 	StackedProgressBar,
-	useTableFilters,
+	type StateFilterValue,
+	toStateFilterFlags,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import dayjs from "@/lib/dayjs";
-import { formatCompact, formatCurrency } from "@/lib/format-currency";
-import { useMobileActions } from "@/lib/mobile-actions/store";
+import { formatCompact } from "@/lib/format-currency";
 import { daysUntil, num, pct } from "../admin-shared";
 import { useCampaignProgressMany } from "../dashboard/useCampaignProgressMany";
 
@@ -36,14 +35,16 @@ export const CampaignsListPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const t = useTableFilters({ status: "all", state: "active", search: "" });
-	const status = t.values.status as StatusFilter;
-	const search = t.values.search;
+	const [search, setSearch] = useState("");
+	const [status, setStatus] = useState<StatusFilter>("all");
+	const [state, setState] = useState<StateFilterValue>("active");
+	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
 	const { data, isLoading } = useCampaigns(tenantSlug, {
-		offset: t.offset,
-		limit: t.limit,
-		...t.stateFlags(),
+		offset,
+		limit,
+		...toStateFilterFlags(state),
 	});
 
 	const all: Campaign[] = data?.items ?? [];
@@ -205,150 +206,10 @@ export const CampaignsListPage = () => {
 		},
 	];
 
-	// Sub-`md` row → expandable card. Collapsed: title/description/status +
-	// progress bar. Expanded: deadline (+urgency), goal, raised, pledged.
-	const renderCampaignCard = (c: Campaign) => {
-		const p = progressById[c.id];
-		const goal = num(p?.goalAmount);
-		const raised = num(p?.raisedAmount);
-		const pledged = num(p?.pledgedAmount);
-		const raisedPct = pct(raised, goal);
-		const pledgedPct = pct(pledged, goal);
-		const days = typeof c.deadline === "string" ? daysUntil(c.deadline) : null;
-		const deadlineTone =
-			days !== null && days < 0
-				? "red"
-				: days !== null && days <= 14
-					? "amber"
-					: "neutral";
-		const statusColor =
-			c.status === "ACTIVE"
-				? "green"
-				: c.status === "COMPLETED"
-					? "blue"
-					: c.status === "DRAFT"
-						? "neutral"
-						: "red";
-		return (
-			<ExpandableCard
-				deleted={Boolean(c.deletedAt)}
-				details={[
-					{
-						label: "Deadline",
-						value:
-							typeof c.deadline === "string" ? (
-								<div className="flex items-center justify-end gap-2">
-									<span className="text-sm font-medium text-foreground">
-										{dayjs(c.deadline).format("MMM D, YYYY")}
-									</span>
-									{days !== null && c.status !== "COMPLETED" && (
-										<Badge color={deadlineTone}>
-											{days < 0 ? `${Math.abs(days)}d past` : `${days}d left`}
-										</Badge>
-									)}
-								</div>
-							) : (
-								<span className="text-sm text-muted-foreground">
-									Open · no deadline
-								</span>
-							),
-					},
-					{
-						label: "Goal",
-						value: (
-							<span className="text-sm font-medium text-foreground">
-								{goal > 0 ? formatCurrency(goal, { decimals: 0 }) : "—"}
-							</span>
-						),
-					},
-					{
-						label: "Raised",
-						value: (
-							<span className="text-sm font-medium text-foreground">
-								{formatCurrency(raised, { decimals: 0 })} · {raisedPct}%
-							</span>
-						),
-					},
-					{
-						label: "Pledged",
-						value: (
-							<span className="text-sm font-medium text-foreground">
-								{formatCurrency(pledged, { decimals: 0 })} · {pledgedPct}%
-							</span>
-						),
-					},
-				]}
-			>
-				<div className="mb-3 flex items-start justify-between gap-2.5">
-					<div className="min-w-0">
-						<div className="text-sm font-semibold tracking-tight">
-							{c.title}
-						</div>
-						{typeof c.description === "string" && (
-							<div className="mt-0.5 truncate text-xs text-muted-foreground">
-								{c.description}
-							</div>
-						)}
-					</div>
-					<Badge color={statusColor} dot>
-						{c.status}
-					</Badge>
-				</div>
-				{goal > 0 ? (
-					<>
-						<StackedProgressBar
-							size="sm"
-							total={goal}
-							segments={[
-								{
-									value: pledged,
-									color:
-										"color-mix(in srgb, var(--chart-current) 28%, transparent)",
-									label: "Pledged",
-								},
-								{
-									value: raised,
-									color: "var(--chart-current)",
-									label: "Raised",
-								},
-							]}
-						/>
-						<div className="mt-1.5 flex items-baseline justify-between text-xs">
-							<span className="tabular-nums text-muted-foreground">
-								{formatCompact(raised)} / {formatCompact(goal)}
-							</span>
-							<span className="font-semibold tabular-nums">
-								{raisedPct}%
-								<span className="ml-1 font-normal text-muted-foreground">
-									· {pledgedPct}% pledged
-								</span>
-							</span>
-						</div>
-					</>
-				) : (
-					<span className="text-xs text-muted-foreground">no goal set</span>
-				)}
-			</ExpandableCard>
-		);
-	};
-
-	useMobileActions(
-		useMemo(
-			() => [
-				{
-					label: "New campaign",
-					icon: "plus" as const,
-					onClick: () => router.push(`/${tenantSlug}/admin/campaigns/new`),
-				},
-			],
-			[router, tenantSlug],
-		),
-	);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-4 pt-5 md:px-8 md:pt-0"
+				className="px-8"
 				overline="Drives"
 				title="Campaigns"
 				subtitle="Goal-driven drives with pledge tracking. Click a row to drill into items."
@@ -356,7 +217,6 @@ export const CampaignsListPage = () => {
 					<Button
 						role="primary"
 						icon="plus"
-						className="hidden md:inline-flex"
 						onClick={() => router.push(`/${tenantSlug}/admin/campaigns/new`)}
 					>
 						New campaign
@@ -364,11 +224,39 @@ export const CampaignsListPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-8 pb-8">
 				<DataTableShell<Campaign>
-					search={t.search("Search by title…")}
-					filters={[t.select("status", "Status", STATUS_OPTIONS), t.state()]}
-					onClearFilters={t.clear}
+					search={{
+						value: search,
+						onChange: (v) => {
+							setSearch(v);
+							setOffset(0);
+						},
+						placeholder: "Search by title…",
+					}}
+					filters={[
+						{
+							key: "status",
+							label: "Status",
+							value: status,
+							onChange: (v) => {
+								setStatus(v as StatusFilter);
+								setOffset(0);
+							},
+							options: STATUS_OPTIONS,
+						},
+					]}
+					onClearFilters={() => {
+						setStatus("all");
+						setOffset(0);
+					}}
+					state={{
+						value: state,
+						onChange: (v) => {
+							setState(v);
+							setOffset(0);
+						},
+					}}
 					stats={[
 						{ label: "total", value: filtered.length },
 						{ label: "active", value: activeCount, tone: "success" },
@@ -382,7 +270,6 @@ export const CampaignsListPage = () => {
 						},
 					]}
 					columns={columns}
-					mobileCard={renderCampaignCard}
 					rows={filtered}
 					rowKey={(c) => c.id}
 					loading={isLoading}
@@ -401,7 +288,13 @@ export const CampaignsListPage = () => {
 							New campaign
 						</Button>
 					}
-					pagination={t.pagination(total)}
+					pagination={{
+						total,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
+					}}
 				/>
 			</div>
 		</div>

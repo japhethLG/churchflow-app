@@ -609,9 +609,7 @@ function RGAddGiftDrillSheet({ member = 'Anonymous', anonymous = true, onBack })
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// PICKERS — drill-down sheets for Member and Date
-// ═══════════════════════════════════════════════════════════════════════
+// ─── Picker data + helpers (used by inline member/date pickers) ───────
 
 const RG_RECENT_MEMBERS = [
   { name: 'Lyre Espinosa',     sub: '12 gifts · 1 open pledge' },
@@ -620,12 +618,6 @@ const RG_RECENT_MEMBERS = [
   { name: 'Jeremiah Espinosa', sub: '14 gifts · last 2w ago' },
   { name: 'John Parker',       sub: '3 gifts · last 1mo ago' },
 ];
-const RG_ALL_MEMBERS = [
-  { name: 'Andres Reyes',     sub: 'Member · Building Fund pledge' },
-  { name: 'Maria Santos',     sub: 'Member · Youth Camp pledge' },
-  { name: 'Pastor David Tan', sub: 'Staff · 9 gifts' },
-  { name: 'Rebecca Lim',      sub: 'Member · 4 gifts' },
-];
 
 function RGHighlightedName({ name, q }) {
   if (!q) return name;
@@ -643,161 +635,7 @@ function RGHighlightedName({ name, q }) {
   );
 }
 
-function RGHighlightedName({ name, q }) {
-  if (!q) return name;
-  const lower = name.toLowerCase();
-  const ix = lower.indexOf(q.toLowerCase());
-  if (ix < 0) return name;
-  return (
-    <span>
-      {name.slice(0, ix)}
-      <span style={{ background: 'rgba(91,84,240,0.25)', borderRadius: 3, padding: '0 2px' }}>
-        {name.slice(ix, ix + q.length)}
-      </span>
-      {name.slice(ix + q.length)}
-    </span>
-  );
-}
-
-function RGMemberPickerSheet({ onBack, highlight = '' }) {
-  const matches = highlight
-    ? RG_RECENT_MEMBERS.filter((m) => m.name.toLowerCase().includes(highlight.toLowerCase()))
-    : RG_RECENT_MEMBERS;
-  const remaining = highlight ? [] : RG_ALL_MEMBERS;
-
-  return (
-    <Sheet fullHeight padding={0}>
-      <RGHeader
-        overline="ENTRY · MEMBER"
-        title="Who is this for?"
-        onBack={onBack}
-      />
-
-      {/* Search input (focused) */}
-      <div style={{ padding: '0 16px 14px' }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          padding: '12px 14px',
-          background: 'var(--card-2)',
-          border: '1px solid var(--primary)',
-          boxShadow: '0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent)',
-          borderRadius: 14,
-        }}>
-          <Icon name="search" size={16} style={{ color: 'var(--muted-foreground)' }} />
-          <div style={{ flex: 1, fontSize: 14, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: 1 }}>
-            {highlight
-              ? <span>{highlight}</span>
-              : <span style={{ color: 'var(--muted-foreground)' }}>Search members</span>}
-            <span style={{
-              display: 'inline-block', width: 1, height: 16, background: 'var(--primary)',
-              animation: 'caret 1s steps(2) infinite', marginLeft: 1,
-            }} />
-          </div>
-          {highlight && (
-            <button className="press" aria-label="Clear" style={{
-              width: 22, height: 22, borderRadius: '50%',
-              background: 'var(--muted)', color: 'var(--muted-foreground)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Icon name="x" size={11} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 16px 12px' }} className="no-scrollbar">
-        {/* Anonymous option — always on top */}
-        <button className="press" style={{
-          display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-          padding: '12px 14px', textAlign: 'left',
-          background: 'var(--card)',
-          border: '1px dashed var(--border-strong)',
-          borderRadius: 14,
-          marginBottom: 16,
-        }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.04)', color: 'var(--muted-foreground)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Icon name="user" size={18} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700 }}>Record as anonymous</div>
-            <div style={{ fontSize: 11.5, color: 'var(--muted-foreground)', marginTop: 1 }}>
-              No member attached — you can attribute it later
-            </div>
-          </div>
-          <Icon name="chevronRight" size={16} style={{ color: 'var(--muted-foreground)' }} />
-        </button>
-
-        <div className="overline" style={{ marginBottom: 8, paddingLeft: 4 }}>
-          {highlight ? `Matches · ${matches.length}` : 'Recent'}
-        </div>
-        <Card padding={4} style={{ marginBottom: remaining.length ? 16 : 0 }}>
-          {matches.map((m, i) => (
-            <React.Fragment key={m.name}>
-              <ListRow
-                leading={<Avatar name={m.name} size={36} />}
-                title={highlight ? <RGHighlightedName name={m.name} q={highlight} /> : m.name}
-                subtitle={m.sub}
-                trailing={<Icon name="chevronRight" size={16} style={{ color: 'var(--muted-foreground)' }} />}
-              />
-              {i < matches.length - 1 && (
-                <div style={{ height: 1, background: 'var(--border)', margin: '0 12px' }} />
-              )}
-            </React.Fragment>
-          ))}
-          {matches.length === 0 && (
-            <div style={{ padding: 18, textAlign: 'center', fontSize: 12, color: 'var(--muted-foreground)' }}>
-              No members match "{highlight}".
-            </div>
-          )}
-        </Card>
-
-        {remaining.length > 0 && (
-          <React.Fragment>
-            <div className="overline" style={{ marginBottom: 8, paddingLeft: 4 }}>All members</div>
-            <Card padding={4}>
-              {remaining.map((m, i) => (
-                <React.Fragment key={m.name}>
-                  <ListRow
-                    leading={<Avatar name={m.name} size={36} />}
-                    title={m.name}
-                    subtitle={m.sub}
-                    trailing={<Icon name="chevronRight" size={16} style={{ color: 'var(--muted-foreground)' }} />}
-                  />
-                  {i < remaining.length - 1 && (
-                    <div style={{ height: 1, background: 'var(--border)', margin: '0 12px' }} />
-                  )}
-                </React.Fragment>
-              ))}
-            </Card>
-          </React.Fragment>
-        )}
-      </div>
-
-      <RGFooter>
-        <button className="press" onClick={onBack} style={{
-          flex: 1, height: 44, borderRadius: 12,
-          background: 'var(--muted)', color: 'var(--foreground)',
-          fontSize: 13.5, fontWeight: 600,
-        }}>Cancel</button>
-        <button className="press" style={{
-          flex: 1, height: 44, borderRadius: 12,
-          background: 'var(--primary)', color: 'var(--primary-foreground)',
-          fontSize: 13.5, fontWeight: 700,
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        }}>
-          <Icon name="plus" size={14} />
-          Add new member
-        </button>
-      </RGFooter>
-    </Sheet>
-  );
-}
-
-// ─── Date picker ──────────────────────────────────────────────────────
+// ─── Calendar grid (used by inline date picker) ──────────────────────
 
 function RGCalendar({ selectedDay = 28, month = 'May', year = 2026 }) {
   // Hand-laid May 2026 grid (Sun-start). Mirrors the desktop screenshot.

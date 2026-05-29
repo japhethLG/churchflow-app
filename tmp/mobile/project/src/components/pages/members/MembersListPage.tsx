@@ -1,24 +1,23 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
 	Avatar,
 	Badge,
 	Button,
 	type DataTableColumn,
 	DataTableShell,
-	ExpandableCard,
 	PageHeader,
 	Sparkline,
-	useTableFilters,
+	type StateFilterValue,
+	toStateFilterFlags,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useMembers } from "@/lib/api/members";
 import { useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
-import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 import { num } from "../admin-shared";
 
@@ -59,8 +58,11 @@ export const MembersListPage = () => {
 	const router = useRouter();
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-	const t = useTableFilters({ status: "all", state: "active", search: "" });
-	const status = t.values.status as StatusFilter;
+	const [search, setSearch] = useState("");
+	const [status, setStatus] = useState<StatusFilter>("all");
+	const [state, setState] = useState<StateFilterValue>("active");
+	const [offset, setOffset] = useState(0);
+	const [limit, setLimit] = useState(20);
 
 	const { data, isLoading } = useMembers(tenantSlug, {
 		status:
@@ -69,10 +71,10 @@ export const MembersListPage = () => {
 				: status === "active"
 					? "ACTIVE"
 					: "INACTIVE",
-		search: t.values.search.trim() || undefined,
-		offset: t.offset,
-		limit: t.limit,
-		...t.stateFlags(),
+		search: search.trim() || undefined,
+		offset,
+		limit,
+		...toStateFilterFlags(state),
 	});
 
 	// Last 12 months of transactions, used to build per-member sparkline.
@@ -185,100 +187,10 @@ export const MembersListPage = () => {
 		},
 	];
 
-	// Sub-`md` row → expandable card. Collapsed: identity + 12-mo sparkline +
-	// total. Expanded: joined (+new), role, account-registration.
-	const renderMemberCard = (m: Member) => {
-		const name = `${m.firstName} ${m.lastName}`.trim() || "Unnamed";
-		const series = sparkBuckets[m.id];
-		const hasGiving = Boolean(series?.some((v) => v > 0));
-		const isNew = dayjs(m.createdAt).isAfter(dayjs().subtract(30, "day"));
-		return (
-			<ExpandableCard
-				deleted={Boolean(m.deletedAt)}
-				details={[
-					{
-						label: "Joined",
-						value: (
-							<div className="flex items-center justify-end gap-2">
-								<span className="text-sm font-medium text-foreground">
-									{dayjs(m.createdAt).format("MMM D, YYYY")}
-								</span>
-								{isNew && <Badge color="green">new</Badge>}
-							</div>
-						),
-					},
-					{
-						label: "Role",
-						value: (
-							<Badge color={m.role === "ADMIN" ? "indigo" : "neutral"}>
-								{m.role}
-							</Badge>
-						),
-					},
-					{
-						label: "Account",
-						value: (
-							<span className="text-sm font-medium text-foreground">
-								{m.userId ? "Registered" : "Not registered"}
-							</span>
-						),
-					},
-				]}
-			>
-				<div className="flex items-center gap-3">
-					<Avatar name={name} size={40} />
-					<div className="min-w-0 flex-1">
-						<div className="truncate text-sm font-semibold tracking-tight">
-							{name}
-						</div>
-						<div className="truncate text-xs text-muted-foreground">
-							{typeof m.email === "string" ? m.email : "—"}
-						</div>
-					</div>
-					<div className="flex shrink-0 flex-col items-end gap-0.5">
-						{hasGiving && series ? (
-							<>
-								<Sparkline
-									data={series}
-									width={58}
-									height={20}
-									tone="current"
-								/>
-								<span className="text-xs font-semibold tabular-nums">
-									{formatCompact(series.reduce((s, v) => s + v, 0))}
-								</span>
-							</>
-						) : (
-							<span className="text-xs text-muted-foreground">no giving</span>
-						)}
-					</div>
-				</div>
-			</ExpandableCard>
-		);
-	};
-
-	useMobileActions(
-		useMemo(
-			() => [
-				{
-					label: "Add member",
-					icon: "plus" as const,
-					onClick: () => openModal("add-member", { tenantSlug }),
-				},
-				{
-					label: "Invite",
-					icon: "mail" as const,
-					onClick: () => openModal("invite-member", { tenantId: tenantSlug }),
-				},
-			],
-			[tenantSlug],
-		),
-	);
-
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-4 pt-5 md:px-8 md:pt-0"
+				className="px-8"
 				overline="Directory"
 				title="Members"
 				subtitle="Everyone giving at this church — find them, see who's active."
@@ -288,7 +200,6 @@ export const MembersListPage = () => {
 							role="secondary"
 							recipe="outline"
 							icon="mail"
-							className="hidden md:inline-flex"
 							onClick={() =>
 								openModal("invite-member", { tenantId: tenantSlug })
 							}
@@ -298,7 +209,6 @@ export const MembersListPage = () => {
 						<Button
 							role="primary"
 							icon="plus"
-							className="hidden md:inline-flex"
 							onClick={() => openModal("add-member", { tenantSlug })}
 						>
 							Add member
@@ -307,11 +217,36 @@ export const MembersListPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-8 pb-8">
 				<DataTableShell<Member>
-					search={t.search("Search by name or email…")}
-					filters={[t.select("status", "Status", STATUS_OPTIONS), t.state()]}
-					onClearFilters={t.clear}
+					search={{
+						value: search,
+						onChange: (v) => {
+							setSearch(v);
+							setOffset(0);
+						},
+						placeholder: "Search by name or email…",
+					}}
+					filters={[
+						{
+							key: "status",
+							label: "Status",
+							value: status,
+							onChange: (v) => {
+								setStatus(v as StatusFilter);
+								setOffset(0);
+							},
+							options: STATUS_OPTIONS,
+						},
+					]}
+					onClearFilters={() => setStatus("all")}
+					state={{
+						value: state,
+						onChange: (v) => {
+							setState(v);
+							setOffset(0);
+						},
+					}}
 					stats={[
 						{ label: "total", value: total },
 						{ label: "active", value: activeCount, tone: "success" },
@@ -319,7 +254,6 @@ export const MembersListPage = () => {
 						{ label: "new in 30d", value: newIn30d },
 					]}
 					columns={columns}
-					mobileCard={renderMemberCard}
 					rows={members}
 					rowKey={(m) => m.id}
 					loading={isLoading}
@@ -329,7 +263,13 @@ export const MembersListPage = () => {
 					rowClassName={(m) => (m.deletedAt ? "bg-muted/30" : undefined)}
 					emptyTitle="No members yet"
 					emptySubtitle="Add or invite your first member to get started."
-					pagination={t.pagination(total)}
+					pagination={{
+						total,
+						offset,
+						limit,
+						onOffsetChange: setOffset,
+						onLimitChange: setLimit,
+					}}
 				/>
 			</div>
 		</div>
