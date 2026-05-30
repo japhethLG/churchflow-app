@@ -294,7 +294,7 @@ export const TenantsPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 space-y-4 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 space-y-4 md:px-8 md:pb-8">
 				<div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
 					<StatCard
 						label="Churches"

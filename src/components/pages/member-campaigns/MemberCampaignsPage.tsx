@@ -300,7 +300,7 @@ export const MemberCampaignsPage = () => {
 				subtitle="Browse fundraising campaigns at your church and track progress."
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<DataTableShell<Campaign>
 					search={t.search("Search by title…")}
 					filters={[t.select("status", "Status", STATUS_OPTIONS)]}

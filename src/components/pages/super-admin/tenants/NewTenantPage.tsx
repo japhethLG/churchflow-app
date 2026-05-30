@@ -369,7 +369,7 @@ export const NewTenantPage = () => {
 	};
 
 	return (
-		<div className="mx-auto max-w-[560px] px-4 pt-10 pb-28 md:px-6 md:py-10">
+		<div className="mx-auto max-w-[560px] px-4 pt-10 pb-36 md:px-6 md:py-10">
 			<Stepper step={step} />
 
 			{step === 1 && (

@@ -8,8 +8,11 @@ import { cn } from "@/lib/utils";
 
 // Shared anchor: bottom-right, clear of the bottom nav bar. Matches the slot
 // the old floating "More" button used to occupy.
+// `pointer-events-none` on the container so its empty bounding box (the column
+// where the speed-dial labels fan out) never intercepts taps meant for content
+// behind it. The trigger and the open action rows opt back in individually.
 const ANCHOR =
-	"pointer-events-auto fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-50 md:hidden";
+	"pointer-events-none fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-50 md:hidden";
 
 const FAB_SHADOW =
 	"shadow-[0_8px_24px_rgba(91,84,240,0.4),0_2px_6px_rgba(0,0,0,0.25)]";
@@ -66,7 +69,7 @@ export const MobilePageFab = () => {
 							className={cn(
 								"flex items-center gap-3 transition-all duration-200 ease-out",
 								open
-									? "translate-y-0 scale-100 opacity-100"
+									? "pointer-events-auto translate-y-0 scale-100 opacity-100"
 									: "pointer-events-none translate-y-3 scale-90 opacity-0",
 							)}
 						>
@@ -93,7 +96,7 @@ export const MobilePageFab = () => {
 					aria-label={open ? "Close actions" : "Page actions"}
 					aria-expanded={open}
 					className={cn(
-						"grid size-12 place-items-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95",
+						"pointer-events-auto grid size-12 place-items-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95",
 						FAB_SHADOW,
 					)}
 				>

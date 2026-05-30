@@ -140,7 +140,7 @@ export const MemberMyPledgesPage = () => {
 				subtitle="Track your commitments to church campaigns."
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<DataTableShell<MemberPledgeRow>
 					search={t.search("Search by campaign…")}
 					filters={[

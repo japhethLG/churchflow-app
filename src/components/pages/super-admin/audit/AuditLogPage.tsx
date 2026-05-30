@@ -299,7 +299,7 @@ export const AuditLogPage = () => {
 				subtitle="Every mutating action across the platform — append-only, never edited."
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<DataTableShell<AuditEvent>
 					search={t.search("Filter by actor email or UID…")}
 					filters={[

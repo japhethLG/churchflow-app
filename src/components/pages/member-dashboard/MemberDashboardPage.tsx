@@ -103,7 +103,7 @@ export const MemberDashboardPage = () => {
 				subtitle={`Here's how things are at ${tenantQ.data?.name ?? "your church"} and where you stand.`}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<MemberChurchPulseStrip
 					summary={summaryQ.data}
 					myYearTotal={myYearTotal}

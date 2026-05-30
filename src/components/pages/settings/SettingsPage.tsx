@@ -81,7 +81,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 					title="Settings."
 					subtitle="Loading..."
 				/>
-				<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8 flex flex-col gap-4">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 flex flex-col gap-4">
 					{[0, 1, 2].map((i) => (
 						<Card key={i}>
 							<div className="mb-5 h-4 w-40 animate-pulse rounded bg-secondary" />
@@ -117,7 +117,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				{error && (
 					<div className="mb-4 rounded-[10px] bg-destructive/10 px-4 py-3 text-sm text-destructive">
 						{error}

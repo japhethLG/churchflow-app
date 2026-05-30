@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useUrlFilters } from "@/lib/url-filters";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import type { SelectOption } from "./Select";
 import {
 	type StateFilterFlags,
@@ -41,7 +42,11 @@ import type {
 export type UseTableFiltersOptions = {
 	/** Back values with URL search params so filters are deep-linkable. */
 	url?: boolean;
-	/** Initial page size. Default 20. */
+	/**
+	 * Initial page size. When omitted, defaults to 20 on desktop and 10 on
+	 * mobile (sub-`md`). Pass an explicit value to pin the size on every
+	 * viewport.
+	 */
 	limit?: number;
 };
 
@@ -49,7 +54,7 @@ export const useTableFilters = <T extends Record<string, string>>(
 	defaults: T,
 	options: UseTableFiltersOptions = {},
 ) => {
-	const { url = false, limit: initialLimit = 20 } = options;
+	const { url = false, limit: explicitLimit } = options;
 
 	// Both stores are instantiated unconditionally (rules-of-hooks); `url` is a
 	// constant per call site so the hook order is stable. The unused store is
@@ -60,7 +65,22 @@ export const useTableFilters = <T extends Record<string, string>>(
 	const values = url ? urlValues : local;
 
 	const [offset, setOffset] = useState(0);
-	const [limit, setLimit] = useState(initialLimit);
+	const [limit, setLimit] = useState(explicitLimit ?? 20);
+
+	// Default the page size to 10 on mobile (sub-`md`) so card lists stay short,
+	// while desktop keeps 20. Skipped when the caller pinned an explicit limit,
+	// and applied at most once so it never clobbers a user-chosen page size.
+	const isMobile = useIsMobile();
+	const appliedMobileDefault = useRef(false);
+	useEffect(() => {
+		if (explicitLimit != null || appliedMobileDefault.current) {
+			return;
+		}
+		if (isMobile) {
+			appliedMobileDefault.current = true;
+			setLimit(10);
+		}
+	}, [isMobile, explicitLimit]);
 
 	// Any filter change re-anchors pagination to the first page.
 	const set = useCallback(

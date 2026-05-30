@@ -351,7 +351,7 @@ export const MemberPledgeDetailPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 space-y-6 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 space-y-6 md:px-8 md:pb-8">
 				{pledge && (pledgeArchived || campaignArchived) && (
 					<EntityRestoreBanner
 						entityLabel={pledgeArchived ? "Pledge" : "Campaign"}

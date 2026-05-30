@@ -152,7 +152,7 @@ export const AdminReportsPage = () => {
 				subtitle="Trends, giver behavior, and pledge dynamics — across the selected period."
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<div className="mb-5 flex flex-wrap items-center gap-3">
 					<SegmentedControl
 						options={TABS.map((t) => ({ value: t.value, label: t.label }))}

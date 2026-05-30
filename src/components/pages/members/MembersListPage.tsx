@@ -308,7 +308,7 @@ export const MembersListPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<DataTableShell<Member>
 					search={t.search("Search by name or email…")}
 					filters={[t.select("status", "Status", STATUS_OPTIONS), t.state()]}

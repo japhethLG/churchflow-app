@@ -509,7 +509,7 @@ export const PledgesListPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<DataTableShell
 					search={t.search("Search by member or campaign…")}
 					filters={[

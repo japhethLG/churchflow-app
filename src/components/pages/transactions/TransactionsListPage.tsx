@@ -292,7 +292,7 @@ export const TransactionsListPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 space-y-4 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 space-y-4 md:px-8 md:pb-8">
 				<TransactionsSummaryCard
 					summary={summary.data}
 					loading={summary.isLoading}

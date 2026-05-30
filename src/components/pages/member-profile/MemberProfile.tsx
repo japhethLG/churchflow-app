@@ -66,7 +66,7 @@ export const MemberProfile = ({
 				subtitle="Manage your contact information and how the church office reaches you."
 			/>
 
-			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<div className="max-w-2xl">
 					<Card className="mt-6">
 						<div className="grid grid-cols-2 gap-4">
