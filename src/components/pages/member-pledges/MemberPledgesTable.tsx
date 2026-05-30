@@ -3,6 +3,7 @@
 import { Badge } from "@/components/primitives/Badge";
 import type { DataTableColumn } from "@/components/primitives/DataTable";
 import { DeletedLabel } from "@/components/primitives/DeletedLabel";
+import { ExpandableCard } from "@/components/primitives/ExpandableCard";
 import { StackedProgressBar } from "@/components/primitives/StackedProgressBar";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
@@ -187,4 +188,119 @@ export const memberPledgeColumns = ({
 			},
 		},
 	];
+};
+
+// Sub-`md` counterpart to a pledge row. Collapsed: campaign (or date) +
+// pledged amount + lifecycle. Expanded: paid (%), remaining, deadline.
+// Shared by the My-pledges list and the campaign-detail "Your pledges" table.
+export const MemberPledgeCard = ({
+	row,
+	campaignMap,
+	itemDeadlinesById,
+	href,
+	showCampaign = true,
+}: {
+	row: MemberPledgeRow;
+	campaignMap: Record<string, Campaign>;
+	itemDeadlinesById: Record<string, string | null>;
+	href?: string;
+	showCampaign?: boolean;
+}) => {
+	const campaign = campaignMap[row.campaignId];
+	const campaignTitle = campaign?.title ?? "Campaign";
+	const campaignDeletedAt = campaign?.deletedAt ?? null;
+	const deadline = resolvePledgeDeadline(row, campaign, itemDeadlinesById);
+	const lifecycle = pledgeLifecycle(
+		row.pledgedAmount,
+		row.paidAmount,
+		row.status,
+		deadline,
+	);
+	const days = daysUntil(deadline);
+	const paid = num(row.paidAmount);
+	const pledged = num(row.pledgedAmount);
+	const fulfillment = pct(paid, pledged);
+	return (
+		<ExpandableCard
+			href={href}
+			details={[
+				{
+					label: "Paid",
+					value: (
+						<div className="w-32">
+							<StackedProgressBar
+								size="xs"
+								total={pledged > 0 ? pledged : 1}
+								segments={[
+									{ value: paid, color: "var(--chart-current)", label: "Paid" },
+								]}
+							/>
+							<div className="mt-1 flex items-baseline justify-between text-xs tabular-nums">
+								<span className="text-muted-foreground">
+									{formatCurrency(paid, { decimals: 0 })}
+								</span>
+								<span className="font-semibold text-foreground">
+									{fulfillment}%
+								</span>
+							</div>
+						</div>
+					),
+				},
+				{
+					label: "Remaining",
+					value: (
+						<span className="text-sm font-medium text-foreground tabular-nums">
+							{formatCurrency(num(row.remainingAmount))}
+						</span>
+					),
+				},
+				{
+					label: "Deadline",
+					value:
+						days === null ? (
+							<span className="text-sm text-muted-foreground">open</span>
+						) : (
+							<span className="text-sm font-medium text-foreground">
+								{days < 0
+									? `${Math.abs(days)}d past`
+									: days === 0
+										? "Due today"
+										: `${days}d left`}
+							</span>
+						),
+				},
+			]}
+		>
+			<div className="flex items-start gap-3">
+				<div className="min-w-0 flex-1">
+					<div className="truncate text-sm font-semibold tracking-tight">
+						{showCampaign ? (
+							campaignDeletedAt ? (
+								<DeletedLabel deletedAt={campaignDeletedAt}>
+									{campaignTitle}
+								</DeletedLabel>
+							) : (
+								campaignTitle
+							)
+						) : (
+							`Pledged ${dayjs(row.createdAt).format("MMM D, YYYY")}`
+						)}
+					</div>
+					{showCampaign && (
+						<div className="truncate text-xs text-muted-foreground">
+							Pledged {dayjs(row.createdAt).format("ll")}
+						</div>
+					)}
+				</div>
+				<div className="flex shrink-0 flex-col items-end gap-1">
+					<span className="text-sm font-bold tabular-nums tracking-tight">
+						{formatCurrency(row.pledgedAmount, { decimals: 0 })}
+					</span>
+					<Badge color={lifecycleBadgeColor(lifecycle)}>
+						{LIFECYCLE_LABEL[lifecycle]}
+					</Badge>
+				</div>
+			</div>
+		</ExpandableCard>
+	);
 };

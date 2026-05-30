@@ -202,6 +202,7 @@ export const TenantsPage = () => {
 	// Expanded: admins, gifts MTD, created.
 	const renderTenantCard = (row: Tenant) => (
 		<ExpandableCard
+			href={`/super-admin/tenants/${row.slug}`}
 			deleted={Boolean(row.deletedAt)}
 			details={[
 				{

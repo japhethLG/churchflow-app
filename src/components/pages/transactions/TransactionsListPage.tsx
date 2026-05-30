@@ -185,6 +185,7 @@ export const TransactionsListPage = () => {
 		const note = nstr(t.note);
 		return (
 			<ExpandableCard
+				href={`/${tenantSlug}/admin/transactions/${t.id}`}
 				deleted={Boolean(t.deletedAt)}
 				details={[
 					{

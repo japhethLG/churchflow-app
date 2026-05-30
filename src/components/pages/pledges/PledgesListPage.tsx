@@ -22,6 +22,7 @@ import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
+import { openSheet } from "@/lib/sheets/store";
 import {
 	daysUntil,
 	LIFECYCLE_LABEL,
@@ -340,6 +341,7 @@ export const PledgesListPage = () => {
 		const paidPct = pct(r.p.paidAmount, r.p.pledgedAmount);
 		return (
 			<ExpandableCard
+				href={`/${tenantSlug}/admin/pledges/${r.p.id}`}
 				deleted={Boolean(r.p.deletedAt)}
 				details={[
 					{
@@ -436,13 +438,31 @@ export const PledgesListPage = () => {
 	};
 
 	const hasCampaigns = (campaignsQ.data?.items.length ?? 0) > 0;
-	const openCreatePledge = () => {
+	const defaultPledgeCampaign = () => {
 		const list = campaignsQ.data?.items ?? [];
-		const c = list.find((x) => x.status === "ACTIVE") ?? list[0];
+		return list.find((x) => x.status === "ACTIVE") ?? list[0];
+	};
+	// Desktop → modal.
+	const openCreatePledge = () => {
+		const c = defaultPledgeCampaign();
 		if (!c) {
 			return;
 		}
 		openModal("create-pledge", {
+			tenantSlug,
+			campaignId: c.id,
+			campaignTitle: c.title,
+			items: [],
+		});
+	};
+	// Mobile → bottom sheet (same admin/tenant intent).
+	const openCreatePledgeSheet = () => {
+		const c = defaultPledgeCampaign();
+		if (!c) {
+			return;
+		}
+		openSheet("pledge", {
+			intent: "tenant",
 			tenantSlug,
 			campaignId: c.id,
 			campaignTitle: c.title,
@@ -460,12 +480,12 @@ export const PledgesListPage = () => {
 							{
 								label: "Record pledge",
 								icon: "plus" as const,
-								onClick: openCreatePledge,
+								onClick: openCreatePledgeSheet,
 							},
 						]
 					: [],
-			// biome-ignore lint/correctness/useExhaustiveDependencies: openCreatePledge reads campaignsQ fresh; gate on availability
-			[hasCampaigns, openCreatePledge],
+			// biome-ignore lint/correctness/useExhaustiveDependencies: openCreatePledgeSheet reads campaignsQ fresh; gate on availability
+			[hasCampaigns, openCreatePledgeSheet],
 		),
 	);
 
@@ -481,20 +501,8 @@ export const PledgesListPage = () => {
 						role="primary"
 						icon="plus"
 						className="hidden md:inline-flex"
-						disabled={(campaignsQ.data?.items.length ?? 0) === 0}
-						onClick={() => {
-							const list = campaignsQ.data?.items ?? [];
-							const c = list.find((x) => x.status === "ACTIVE") ?? list[0];
-							if (!c) {
-								return;
-							}
-							openModal("create-pledge", {
-								tenantSlug,
-								campaignId: c.id,
-								campaignTitle: c.title,
-								items: [],
-							});
-						}}
+						disabled={!hasCampaigns}
+						onClick={openCreatePledge}
 					>
 						Record pledge
 					</Button>

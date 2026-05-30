@@ -6,7 +6,7 @@ import {
 	Badge,
 	Button,
 	Card,
-	DataTable,
+	DataTableShell,
 	DeletedLabel,
 	EntityRestoreBanner,
 	PageHeader,
@@ -25,9 +25,12 @@ import { useMyPledges } from "@/lib/api/pledges";
 import { useMyTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
+import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
+import { openSheet } from "@/lib/sheets/store";
 import { daysUntil, num, pct } from "../admin-shared";
 import {
+	MemberPledgeCard,
 	type MemberPledgeRow,
 	memberPledgeColumns,
 } from "../member-pledges/MemberPledgesTable";
@@ -105,16 +108,49 @@ export const MemberCampaignDetailPage = () => {
 		return map;
 	}, [campaign]);
 
+	// Mobile FAB mirrors the header's pledge CTA. Hoisted above the early
+	// returns so the hook order stays stable; empty (no FAB) until the campaign
+	// loads and pledging is allowed.
+	useMobileActions(
+		useMemo(() => {
+			if (!campaign || isDeleted || !memberId) {
+				return [];
+			}
+			const past =
+				campaign.status === "COMPLETED" || campaign.status === "CANCELLED";
+			if (past) {
+				return [];
+			}
+			return [
+				{
+					label:
+						myActivePledges.length > 0 ? "Add another pledge" : "Make a pledge",
+					icon: "plus" as const,
+					onClick: () =>
+						openSheet("pledge", {
+							intent: "self",
+							tenantSlug,
+							campaignId: campaign.id,
+							campaignTitle: campaign.title,
+							items: campaign.items
+								.filter((it) => !it.deletedAt)
+								.map((it) => ({ ...it, deletedBy: null })),
+						}),
+				},
+			];
+		}, [campaign, isDeleted, memberId, myActivePledges, tenantSlug]),
+	);
+
 	if (campaignQ.isLoading) {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					overline="Campaigns"
 					title="Loading…"
 					subtitle="Fetching campaign details…"
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
 				</div>
 			</div>
@@ -125,7 +161,7 @@ export const MemberCampaignDetailPage = () => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					back={{
 						href: `/${tenantSlug}/member/campaigns`,
 						label: "Campaigns",
@@ -217,7 +253,7 @@ export const MemberCampaignDetailPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				back={{ href: `/${tenantSlug}/member/campaigns`, label: "Campaigns" }}
 				title={
 					isDeleted ? (
@@ -231,7 +267,11 @@ export const MemberCampaignDetailPage = () => {
 				subtitle={subtitle}
 				action={
 					canPledge ? (
-						<Button role="primary" onClick={openPledgeModal}>
+						<Button
+							role="primary"
+							onClick={openPledgeModal}
+							className="hidden md:inline-flex"
+						>
 							{myActivePledges.length > 0
 								? "Add another pledge"
 								: "Make a pledge"}
@@ -240,7 +280,7 @@ export const MemberCampaignDetailPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
+			<div className="overflow-auto flex-1 px-4 pb-28 space-y-4 md:px-8 md:pb-8">
 				{isDeleted && (
 					<EntityRestoreBanner
 						entityLabel="Campaign"
@@ -256,6 +296,7 @@ export const MemberCampaignDetailPage = () => {
 						</p>
 					)}
 					<StatBand
+						mobileColumns={2}
 						items={[
 							{ label: "Goal", value: formatCompact(goal) },
 							{
@@ -379,7 +420,7 @@ export const MemberCampaignDetailPage = () => {
 					</Card>
 				)}
 
-				<Card padding={24}>
+				<div>
 					<SectionTitle
 						title="Your pledges"
 						action={
@@ -398,8 +439,17 @@ export const MemberCampaignDetailPage = () => {
 							) : undefined
 						}
 					/>
-					<DataTable<MemberPledgeRow>
+					<DataTableShell<MemberPledgeRow>
 						columns={pledgeColumns}
+						mobileCard={(p) => (
+							<MemberPledgeCard
+								row={p}
+								campaignMap={tenantCampaignMap}
+								itemDeadlinesById={itemDeadlinesById}
+								href={`/${tenantSlug}/member/my-pledges/${p.id}`}
+								showCampaign={false}
+							/>
+						)}
 						rows={myPledges as unknown as MemberPledgeRow[]}
 						rowKey={(p) => p.id}
 						loading={pledgesQ.isLoading}
@@ -409,7 +459,7 @@ export const MemberCampaignDetailPage = () => {
 						emptyTitle="No pledges yet"
 						emptySubtitle="When you pledge to this campaign, your commitments will appear here."
 					/>
-				</Card>
+				</div>
 			</div>
 		</div>
 	);

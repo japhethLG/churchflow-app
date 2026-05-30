@@ -4,4 +4,5 @@
 
 export * from "./account";
 export * from "./more";
+export * from "./pledge";
 export * from "./record-gift";

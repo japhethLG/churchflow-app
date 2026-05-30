@@ -231,6 +231,7 @@ export const CampaignsListPage = () => {
 						: "red";
 		return (
 			<ExpandableCard
+				href={`/${tenantSlug}/admin/campaigns/${c.id}`}
 				deleted={Boolean(c.deletedAt)}
 				details={[
 					{

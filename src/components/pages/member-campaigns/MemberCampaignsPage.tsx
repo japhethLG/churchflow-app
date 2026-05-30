@@ -235,6 +235,7 @@ export const MemberCampaignsPage = () => {
 		const isClosed = c.status === "COMPLETED" || c.status === "CANCELLED";
 		return (
 			<ExpandableCard
+				href={`/${tenantSlug}/member/campaigns/${c.id}`}
 				details={[
 					{
 						label: "Progress",

@@ -8,6 +8,7 @@ import { useSheetStore } from "./store";
 import "@/components/sheets";
 import { AccountSheet } from "@/components/sheets/account";
 import { MoreSheet } from "@/components/sheets/more";
+import { PledgeSheet } from "@/components/sheets/pledge";
 import { RecordGiftSheet } from "@/components/sheets/record-gift";
 
 type AnySheet = ComponentType<SheetBaseProps & Record<string, unknown>>;
@@ -15,6 +16,7 @@ type AnySheet = ComponentType<SheetBaseProps & Record<string, unknown>>;
 const registry: Partial<Record<SheetName, AnySheet>> = {
 	account: AccountSheet as AnySheet,
 	more: MoreSheet as AnySheet,
+	pledge: PledgeSheet as AnySheet,
 	"record-gift": RecordGiftSheet as AnySheet,
 };
 

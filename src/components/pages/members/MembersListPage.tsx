@@ -194,6 +194,7 @@ export const MembersListPage = () => {
 		const isNew = dayjs(m.createdAt).isAfter(dayjs().subtract(30, "day"));
 		return (
 			<ExpandableCard
+				href={`/${tenantSlug}/admin/members/${m.id}`}
 				deleted={Boolean(m.deletedAt)}
 				details={[
 					{

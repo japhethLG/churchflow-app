@@ -10,6 +10,7 @@ import {
 } from "@/components/layout/sidebar";
 import { Button } from "@/components/primitives/Button";
 import { Wordmark } from "@/components/primitives/Wordmark";
+import { openSheet } from "@/lib/sheets/store";
 import { cn } from "@/lib/utils";
 import { NavbarAccountTrigger } from "./NavbarAccountTrigger";
 
@@ -197,19 +198,43 @@ export const LandingNavbar = ({
 
 				<div className="flex flex-1 items-center justify-end gap-2">
 					{user ? (
-						<AccountMenu
-							perspective={user.perspective}
-							tenantSlug={user.tenantSlug}
-							userName={user.userName}
-							userEmail={user.userEmail}
-							memberships={user.memberships}
-							isSuperAdmin={user.isSuperAdmin}
-							side="bottom"
-							align="end"
-							renderTrigger={({ menuOpen, userName }) => (
-								<NavbarAccountTrigger menuOpen={menuOpen} userName={userName} />
-							)}
-						/>
+						<>
+							{/* Desktop → AccountMenu dropdown. */}
+							<div className="hidden md:block">
+								<AccountMenu
+									perspective={user.perspective}
+									tenantSlug={user.tenantSlug}
+									userName={user.userName}
+									userEmail={user.userEmail}
+									memberships={user.memberships}
+									isSuperAdmin={user.isSuperAdmin}
+									side="bottom"
+									align="end"
+									renderTrigger={({ menuOpen, userName }) => (
+										<NavbarAccountTrigger
+											menuOpen={menuOpen}
+											userName={userName}
+										/>
+									)}
+								/>
+							</div>
+							{/* Mobile → AccountSheet bottom sheet. */}
+							<NavbarAccountTrigger
+								className="md:hidden"
+								menuOpen={false}
+								userName={user.userName}
+								onClick={() =>
+									openSheet("account", {
+										perspective: user.perspective,
+										tenantSlug: user.tenantSlug,
+										userName: user.userName,
+										userEmail: user.userEmail,
+										memberships: user.memberships,
+										isSuperAdmin: user.isSuperAdmin,
+									})
+								}
+							/>
+						</>
 					) : (
 						<>
 							<Button

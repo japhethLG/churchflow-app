@@ -6,10 +6,11 @@ import {
 	Amount,
 	Badge,
 	Card,
-	DataTable,
 	type DataTableColumn,
+	DataTableShell,
 	DeletedLabel,
 	EntityRestoreBanner,
+	ExpandableCard,
 	PageHeader,
 	SectionTitle,
 	StackedProgressBar,
@@ -234,10 +235,84 @@ export const MemberPledgeDetailPage = () => {
 		[pledgedAmount, chronologicalTx],
 	);
 
+	// Running balance after each payment — mirrors the desktop "Remaining after"
+	// column so the mobile card can surface the same number.
+	const remainingByTxId = useMemo(() => {
+		const map = new Map<string, number>();
+		let running = pledgedAmount;
+		for (const tx of chronologicalTx) {
+			running = Math.max(0, running - num(tx.amount));
+			map.set(tx.id, running);
+		}
+		return map;
+	}, [pledgedAmount, chronologicalTx]);
+
+	// Sub-`md` payment row → expandable card. Collapsed: type + date + amount.
+	// Expanded: reference, remaining-after, note.
+	const renderPaymentCard = (tx: Transaction) => {
+		const typeLabel =
+			tx.type === "OTHER" && typeof tx.customType === "string"
+				? tx.customType
+				: TX_TYPE_LABEL[tx.type];
+		const ref = nstr(tx.referenceNumber);
+		const note = nstr(tx.note);
+		const remaining = remainingByTxId.get(tx.id) ?? 0;
+		return (
+			<ExpandableCard
+				details={[
+					{
+						label: "Reference",
+						value: ref ? (
+							<span className="font-mono text-xs font-medium text-foreground">
+								{ref}
+							</span>
+						) : (
+							<span className="text-sm text-muted-foreground">—</span>
+						),
+					},
+					{
+						label: "Remaining after",
+						value: (
+							<span className="text-sm font-medium text-foreground tabular-nums">
+								{formatCurrency(remaining, { decimals: 0 })}
+							</span>
+						),
+					},
+					...(note
+						? [
+								{
+									label: "Note",
+									value: (
+										<span className="text-sm font-medium text-foreground">
+											{note}
+										</span>
+									),
+								},
+							]
+						: []),
+				]}
+			>
+				<div className="flex items-center gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold tracking-tight">
+							{typeLabel}
+						</div>
+						<div className="text-xs text-muted-foreground">
+							{dayjs(tx.date).format("MMM D, YYYY")}
+						</div>
+					</div>
+					<span className="shrink-0 text-sm font-bold tabular-nums">
+						<Amount value={tx.amount.toString()} />
+					</span>
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				back={{
 					href: `/${tenantSlug}/member/my-pledges`,
 					label: "My pledges",
@@ -276,7 +351,7 @@ export const MemberPledgeDetailPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-6">
+			<div className="overflow-auto flex-1 px-4 pb-28 space-y-6 md:px-8 md:pb-8">
 				{pledge && (pledgeArchived || campaignArchived) && (
 					<EntityRestoreBanner
 						entityLabel={pledgeArchived ? "Pledge" : "Campaign"}
@@ -317,6 +392,7 @@ export const MemberPledgeDetailPage = () => {
 				{pledge && (
 					<Card padding={24}>
 						<StatBand
+							mobileColumns={2}
 							items={[
 								{ label: "Pledged", value: formatCompact(pledgedAmount) },
 								{
@@ -371,7 +447,7 @@ export const MemberPledgeDetailPage = () => {
 					</Card>
 				)}
 
-				<Card padding={24}>
+				<div>
 					<SectionTitle
 						title="Payments"
 						action={
@@ -387,15 +463,16 @@ export const MemberPledgeDetailPage = () => {
 							) : undefined
 						}
 					/>
-					<DataTable<Transaction>
+					<DataTableShell<Transaction>
 						columns={txColumns}
+						mobileCard={renderPaymentCard}
 						rows={transactions}
 						rowKey={(tx) => tx.id}
 						loading={txQ.isLoading}
 						emptyTitle="No payments yet"
 						emptySubtitle="Payments recorded against this pledge will appear here."
 					/>
-				</Card>
+				</div>
 			</div>
 		</div>
 	);
