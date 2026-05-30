@@ -25,7 +25,7 @@
 | Client state | **Zustand 5** | UI-only stores: modals (§8), sheets (§9), mobile-actions FAB (§10.2) |
 | Forms | **react-hook-form 7** + **zod 4** | via `components/formElements/*` |
 | Auth | `firebase` (client) + `firebase-admin` (server) | |
-| Charts | `recharts` | consumed only via [Charts.tsx](src/components/primitives/Charts.tsx) |
+| Charts | `recharts` | never imported synchronously — only behind a `next/dynamic` boundary (`primitives/charts/DonutChart`, `Sparkline`, or a colocated `*Chart.tsx`). See §7.3 |
 | Date pickers | **custom** [Calendar.tsx](src/components/primitives/Calendar.tsx) (dayjs) | DatePicker/DateRangePicker wrap it. `react-day-picker` is dormant. |
 | Date math | **dayjs** | sole date library — no `Date.parse`, no `date-fns`, no `Intl.DateTimeFormat` ad-hoc. Import only from [lib/dayjs.ts](src/lib/dayjs.ts). |
 | Icons | `lucide-react` | consumed only via [Icon.tsx](src/components/primitives/Icon.tsx) |
@@ -36,6 +36,16 @@
 
 Backend dev server: **`:8000`** (set via `NEXT_PUBLIC_API_BASE_URL`).
 OpenAPI doc URL for type generation: `http://localhost:8000/api-docs-json`. `npm run dev` blocks on `scripts/wait-for-api.sh`.
+
+[next.config.ts](next.config.ts) enables `reactCompiler: true`
+(`babel-plugin-react-compiler` auto-memoizes — don't hand-add
+`useMemo`/`useCallback` for perf), `experimental.staleTimes`
+(`dynamic: 30`, `static: 180` — re-navigating a just-visited segment
+reuses its RSC payload), and `images.remotePatterns` for
+`*.googleusercontent.com` (Google avatars via `next/image` — the `Avatar`
+primitive renders remote photos through it; hosts mirror `img-src` in
+[proxy.ts](src/proxy.ts)). `/icons` + `/logo.png` get immutable
+`Cache-Control`.
 
 ## 2. Commands
 
@@ -89,12 +99,14 @@ src/
     │   ├── server.ts        # RSC openapi-fetch + SessionCookie middleware
     │   ├── hooks.ts         # useApiQuery / useApiMutation / invalidate helpers
     │   ├── coerce.ts        # nnum / nstr — nullable→undefined helpers
+    │   ├── query-client.server.ts  # getServerQueryClient — cache()'d per-request RSC client (§4.5)
+    │   ├── prefetch.tsx     # prefetchApiQuery + <HydrateClient> for RSC prefetch (§4.5)
     │   ├── schema.d.ts      # GENERATED
     │   └── <entity>/        # one folder per entity, split by intent (§6)
     ├── modals/{registry,store,host}.tsx
     ├── sheets/{registry,store,host,useSheetDrill}.tsx   # bottom-sheet system (§9)
     ├── mobile-actions/store.ts                          # page-action FAB bridge (§10.2)
-    ├── auth/{AuthProvider,actions,server,rate-limit}.ts
+    ├── auth/{AuthProvider,AuthNavigationBridge,actions,server,rate-limit}.ts
     ├── firebase/{client,admin}.ts
     └── dayjs.ts             # sole dayjs entrypoint with plugins
 ```
@@ -115,7 +127,9 @@ Stale docs/comments referencing those are wrong.
   client file becomes client-side.
 - Providers (`QueryProvider`, `ModalHost`, `AuthProvider`,
   `TooltipProvider`) are client components rendered directly from the RSC
-  root layout.
+  root layout. `AuthProvider` is a **pure auth-state provider** — it does
+  NOT redirect on a null user; the 401 handler + invite "switch account"
+  do a soft `router.replace`/`refresh` via `AuthNavigationBridge` (§5.2).
 - Never import Firebase **client** SDK from an RSC. Never import Firebase
   **Admin** SDK from a Client Component (build fails — [admin.ts](src/lib/firebase/admin.ts) is `import "server-only"`).
 
@@ -151,22 +165,38 @@ Three layout layers gate access (outermost first):
 `(super-admin)/super-admin/*` is gated at the top level (not under
 `[tenantSlug]`) because those routes manage **all** tenants.
 
-### 4.3 `page.tsx` is a thin wrapper
+### 4.3 `page.tsx` is a thin wrapper (or a thin RSC prefetcher)
 
-Every `app/**/page.tsx` is a one-liner that imports a Page composite from
-`components/pages/<feature>/` and renders it. **No data fetching, no
-`useParams`, no business logic in `page.tsx`** — that's the composite's
-job.
+Every `app/**/page.tsx` imports a Page composite from
+`components/pages/<feature>/` and renders it. **No business logic, no
+JSX, no `useParams` in `page.tsx`** — that's the composite's job. The
+composite stays `"use client"` and reads route params with `useParams()`
+itself; **don't pass params from `page.tsx` to the composite as props**
+(keeps it usable from any matching route shape).
+
+```tsx
+// the simple case — most pages
+import { MembersPage } from "@/components/pages/members";
+export default () => <MembersPage />;
+```
+
+A `page.tsx` **may** instead be an **async RSC** that pre-fetches the
+composite's deterministic-key queries and wraps it in `<HydrateClient>`
+(§4.5) so they hydrate from cache instead of waterfalling on mount — this
+is the one sanctioned exception to "no data fetching in `page.tsx`":
 
 ```tsx
 // app/[tenantSlug]/(admin)/admin/dashboard/page.tsx
 import { AdminDashboardPage } from "@/components/pages/dashboard";
-export default () => <AdminDashboardPage />;
+import { HydrateClient, prefetchApiQuery } from "@/lib/api/prefetch";
+export default async ({ params }: { params: Promise<{ tenantSlug: string }> }) => {
+  const { tenantSlug } = await params;
+  await prefetchApiQuery("/api/v1/tenants/{tenantId}/campaigns", {
+    params: { path: { tenantId: tenantSlug }, query: {} },
+  });
+  return <HydrateClient><AdminDashboardPage /></HydrateClient>;
+};
 ```
-
-The composite reads route params with `useParams()` itself. **Don't pass
-params from `page.tsx` to the composite as props** — that keeps the
-composite usable from any matching route shape.
 
 ### 4.4 CSP carve-outs (set in [proxy.ts](src/proxy.ts))
 
@@ -180,6 +210,41 @@ composite usable from any matching route shape.
 - `frame-src`: `accounts.google.com` + `*.firebaseapp.com` for SSO popup.
 
 Static headers (HSTS, X-Frame-Options, …) live in [next.config.ts](next.config.ts).
+
+(PPR / static rendering is **not** enabled — pages still render
+dynamically via `await connection()` + the nonce CSP.)
+
+### 4.5 RSC prefetch + hydration, streaming
+
+[`getServerQueryClient`](src/lib/api/query-client.server.ts) is a React
+`cache()`'d `QueryClient`, one per request — a layout and the page
+beneath it accumulate prefetches into the **same** client.
+[`prefetchApiQuery(path, init)`](src/lib/api/prefetch.tsx) fetches via
+`serverApi` (session-cookie auth) and seeds the cache under the **exact
+`[path, init]` key** the browser `useApiQuery(path, init)` builds;
+`<HydrateClient>` dehydrates everything seeded so far into a
+`HydrationBoundary`. The client composite then resolves from cache on
+first render instead of blank → spinner → data.
+
+Rules:
+
+- **Only prefetch deterministic-key queries** — the `init` must be
+  byte-for-byte what the client hook builds (TanStack hashes the key).
+  Queries keyed on a client-computed dayjs window or a viewport-dependent
+  page size are intentionally **left client-fetched** (the key wouldn't
+  match); they're smoothed by `loading.tsx` + `keepPreviousData` (§6.6).
+- The `[tenantSlug]` layout **seeds** the tenant it already fetched for
+  super-admin slug-validation under the `useTenant(slug)` key (rather
+  than discarding it), then wraps `children` in `<HydrateClient>`.
+- `prefetchApiQuery` never throws — a failed prefetch just leaves the
+  cache cold and the client refetches.
+
+**Streaming/skeletons.** Each route group has a `loading.tsx` +
+`error.tsx`: `(admin)/loading.tsx` + `(member)/loading.tsx` render
+[`PageContentSkeleton`](src/components/layout/PageContentSkeleton.tsx)
+inside the already-rendered `AppShell`; `error.tsx` renders
+[`RouteError`](src/components/layout/RouteError.tsx). These also make
+`<Link>` prefetch worthwhile and feed `experimental.staleTimes`.
 
 ---
 
@@ -210,7 +275,11 @@ type Claims = {
 
 [`getSessionUser()`](src/lib/auth/server.ts) normalises this into
 `SessionUser` and distinguishes "no cookie" (visitor — expected) from
-"verification failed" (logged with reason).
+"verification failed" (logged with reason). It is wrapped in React
+`cache()` (one verify per request, shared by layout + page) and verifies
+the cookie **locally** — `verifySessionCookie(cookie, false)` (signature
+only, no network round-trip to check revocation; the backend guard still
+enforces revocation on the API call).
 
 ### 5.2 Rules
 
@@ -234,8 +303,14 @@ type Claims = {
 6. **RSCs read auth via `getSessionUser()`**, check for `null`,
    `redirect("/login")`. Never trust query params or cookies directly.
 7. **401 → global sign-out.** The response middleware signs out, deletes
-   the cookie, redirects to `/login?next=…` — except for
-   `UNAUTHENTICATED_PATHS` (`/login`, `/invite`, `/logout`).
+   the cookie, and ejects to `/login?next=…` — except for
+   `UNAUTHENTICATED_PATHS` (`/login`, `/invite`, `/logout`). The eject is
+   a **soft** `router.replace` + `queryClient.clear()` via
+   `AuthNavigationBridge` (registered through `setLoginRedirector`), not a
+   `window.location` reload — only the early-boot path (no bridge yet)
+   falls back to a hard redirect. The claims-refresh (rule 3) has an
+   in-flight guard so a burst of `X-Claims-Refreshed` responses re-mints
+   the cookie once, not N times.
 
 ### 5.3 Sign-out
 
@@ -347,6 +422,24 @@ exposed as `useAuthMe()`.
 [`coerce.ts`](src/lib/api/coerce.ts) exports `nnum` / `nstr` for the
 "backend returns `null` but UI wants `string | undefined`" pattern.
 
+### 6.6 Consume embedded + batch data — don't fan out
+
+List/dashboard responses now embed what surfaces used to fetch per-row:
+the campaign/member rows carry `member` / `campaign` /
+`resolvedDeadline` / `daysUntil` / `lifecycle`. **Read those off the list
+row instead of issuing a per-row request.** Two batch endpoints cover the
+aggregate cases: `useMyCampaignsProgressBatch` (campaigns/self) and
+`useMembersGivingTrend` (members/tenant).
+
+The per-campaign fan-out hooks (`useCampaignProgressMany`,
+`useMyCampaignProgressMany`, `useCampaignsManyWithItems`,
+`useMyCampaignsManyWithItems`) and the `limit: 500` member prefetch they
+relied on **have been deleted** — don't reintroduce that pattern (§12).
+
+The browser `QueryClient` ([providers.tsx](src/lib/api/providers.tsx))
+sets `placeholderData: keepPreviousData`, so paginating/filtering a list
+keeps the prior rows on screen instead of flashing a skeleton.
+
 ---
 
 ## 7. UI primitives — strict enforcement
@@ -428,6 +521,25 @@ next to the search input, use `size="sm" autoWidth clearable`:
 Forward `dateFrom`/`dateTo` to the list hook (every list hook accepts
 the pair). `size="md"` (default) is for forms.
 
+### 7.3 Charts — always behind a `next/dynamic` boundary
+
+There is no `Charts.tsx` barrel anymore. recharts (~168 KB gzip) must
+**never** be imported synchronously into a page composite — it goes
+behind a lazy boundary so it stays off the route's first-load JS:
+
+- [`primitives/charts/DonutChart`](src/components/primitives/charts/DonutChart.tsx)
+  and [`Sparkline`](src/components/primitives/Sparkline.tsx) are
+  `next/dynamic` wrappers; the recharts-backed body lives in their
+  sibling `*Impl.tsx`.
+- A bespoke chart lives in a **colocated `*Chart.tsx` / `*Charts.tsx`**
+  next to its composite (the only files allowed to `import "recharts"`),
+  and the composite pulls it in via `next/dynamic` (e.g.
+  [`CampaignTimelineChart`](src/components/pages/campaigns/CampaignTimelineChart.tsx),
+  [`MonthTrendChart`](src/components/pages/reports/MonthTrendChart.tsx)).
+
+Reserve the container's height so the lazy load shows empty space rather
+than shifting layout.
+
 ---
 
 ## 8. Modal system
@@ -467,6 +579,13 @@ type-checked against this declaration.
    [src/components/modals/index.ts](src/components/modals/index.ts) AND
    add a line to the `registry` object in
    [src/lib/modals/host.tsx](src/lib/modals/host.tsx).
+
+The host **lazy-loads** each modal via `next/dynamic` (registry maps name
+→ `lazyModal(() => import(…), "Name")`), so a navigation that opens no
+modal pulls none of their zod/RHF deps. The `declare module`
+augmentations are picked up by the compiler from tsconfig `include`, so
+the registry line is `ssr: false` `next/dynamic` — match the existing
+entries.
 
 ### 8.3 Opening / in-flight
 
@@ -534,7 +653,9 @@ overlay/portal — go through `BaseSheet`.
 3. Add `export * from "./<name>";` to
    [components/sheets/index.ts](src/components/sheets/index.ts) AND add the
    component to the `registry` object in
-   [lib/sheets/host.tsx](src/lib/sheets/host.tsx).
+   [lib/sheets/host.tsx](src/lib/sheets/host.tsx) — as a `lazySheet`
+   `next/dynamic` entry (the host lazy-loads sheets just like `ModalHost`,
+   §8.2).
 
 ### 9.3 Opening / props
 
@@ -642,6 +763,18 @@ first-party (required for redirect login inside the APK). When touching
 the SW: don't add `/api/` to runtime caching and keep the auth hosts in
 the passthrough.
 
+### 11.1 Telemetry
+
+[`src/instrumentation-client.ts`](src/instrumentation-client.ts) exports
+`onRouterTransitionStart` (Next picks it up automatically) to timestamp
+every client route transition.
+[`WebVitalsReporter`](src/components/telemetry/WebVitalsReporter.tsx),
+mounted in the root [app/layout.tsx](src/app/layout.tsx), reports Core
+Web Vitals (LCP / INP / CLS / TTFB / FCP) + route-transition latency.
+Sink: `console.debug` in dev, or a beacon to `NEXT_PUBLIC_VITALS_URL`
+when set. Keep it side-effect-only — instrumentation must never break
+navigation.
+
 ---
 
 ## 12. Anti-patterns — non-obvious traps
@@ -661,12 +794,15 @@ just §7.)
 | Raw `useMutation("/api/v1/auth/session")` | Use `signInWithGoogle` / `refreshSession` / `signOutEverywhere` |
 | Calling `refreshSession()` after every claim change | Response middleware auto-refreshes on `X-Claims-Refreshed: 1` |
 | Editing `src/lib/api/schema.d.ts` by hand | Regenerated; your edits vanish |
-| Importing recharts/lucide-react/react-day-picker/@base-ui/react directly from a page | Vendor through `Charts.tsx`, `Icon.tsx`, `DatePicker.tsx`, etc. |
+| Importing lucide-react/react-day-picker/@base-ui/react directly from a page | Vendor through `Icon.tsx`, `DatePicker.tsx`, etc. |
+| Importing recharts **synchronously** in a page composite (or reviving `Charts.tsx`) | Go behind a `next/dynamic` boundary — `charts/DonutChart`, `Sparkline`, or a colocated `*Chart.tsx` (§7.3) |
+| Fanning out per-campaign progress/deadline/with-items requests (or a `limit: 500` member prefetch) | Read embedded `member`/`campaign`/`resolvedDeadline`/`daysUntil` off the list row; use `useMyCampaignsProgressBatch` / `useMembersGivingTrend` (§6.6). The old fan-out hooks were deleted |
 | `new Date(...)` / `Date.parse(...)` / `Intl.DateTimeFormat` ad-hoc | Use dayjs from [lib/dayjs.ts](src/lib/dayjs.ts) |
 | Sending `dateFrom`/`dateTo` as raw `YYYY-MM-DD` to the backend | Wire format is ISO UTC instants; widen with `dayjs.utc(v).startOf/endOf("day").toISOString()` |
 | Hand-rolling a date-range chip filter on a list page | Use `<DateRangePicker size="sm" autoWidth clearable />` in `DataTableShell` `toolbar` (§7.2) |
 | Importing from `components/ui/` in page code | `ui/` is for primitives only |
-| Inlining JSX, data fetching, or `useParams()` in `page.tsx` | Build the UI as a Page composite under `components/pages/<feature>/` (§4.3) |
+| Inlining JSX, business logic, or `useParams()` in `page.tsx` | Build the UI as a Page composite under `components/pages/<feature>/` (§4.3). The only data `page.tsx` may touch is an async-RSC `prefetchApiQuery` + `<HydrateClient>` for deterministic-key queries (§4.5) |
+| `prefetchApiQuery` for a query keyed on a client-computed dayjs window or viewport page size | The dehydrated key won't match the client hook's key — leave it client-fetched (§4.5) |
 | Importing `firebase-admin` from a client file | Server-only; build will fail |
 | Rendering a modal overlay inline instead of through `BaseModal` + registry | Breaks ESC/backdrop handling |
 | Rendering a bottom sheet inline, or registering the list-filter sheet in the global store | Use `BaseSheet` + the sheet registry (§9); keep the live-state filter sheet **local** — the global store snapshots props and goes stale |

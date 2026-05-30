@@ -23,8 +23,12 @@ Backend lives in [../church-app-backend](../church-app-backend).
   ID tokens for REST, session cookies for SSR
 - **Tailwind 4** + CSS variables — tokens in `globals.css`
 - **dayjs** — sole date library
-- **recharts**, **lucide-react**, **react-day-picker**, **@base-ui/react**
-  — vendored through primitives, never imported directly from a page
+- **lucide-react**, **react-day-picker**, **@base-ui/react** — vendored
+  through primitives, never imported directly from a page
+- **recharts** — never imported synchronously in a page composite; loaded
+  only behind a `next/dynamic` boundary (`primitives/charts/DonutChart`,
+  `primitives/Sparkline`, or a colocated `*Chart.tsx`)
+- **React Compiler** (`reactCompiler: true`) — auto-memoization at build time
 - **Biome 2** — lint + format
 - **husky** — git hooks
 - **Serwist** (`@serwist/turbopack`) — installable PWA / offline shell;
@@ -73,12 +77,13 @@ outside `components/primitives/` and `components/ui/`.
 ```
 src/
 ├── app/                                # Next App Router (RSC by default)
-│   ├── layout.tsx                      # AuthProvider → QueryProvider → ModalHost
+│   ├── layout.tsx                      # AuthProvider → QueryProvider → ModalHost/SheetHost/WebVitalsReporter
 │   ├── page.tsx                        # landing redirect
 │   ├── (auth)/                         # /login, /select-church, /invite/[token]
 │   ├── (super-admin)/super-admin/      # platform-ops; not tenant-scoped
 │   │   └── { tenants, admins, audit, profile }
 │   ├── [tenantSlug]/                   # ALL tenant-scoped pages
+│   │   ├── (admin)/  (member)/         # each has loading.tsx + error.tsx streaming boundaries
 │   │   ├── (admin)/admin/{ dashboard, members, campaigns, pledges, transactions, … }
 │   │   ├── (member)/member/{ dashboard, campaigns, my-pledges, my-transactions, … }
 │   │   └── welcome/
@@ -103,6 +108,8 @@ src/
     ├── api/                            # one folder per backend entity, intent-split
     │   ├── client.ts                   # browser openapi-fetch + Bearer ID token + 401/claims-refresh middleware
     │   ├── server.ts                   # RSC openapi-fetch + "SessionCookie" scheme middleware
+    │   ├── query-client.server.ts      # cache()'d per-request QueryClient (RSC prefetch)
+    │   ├── prefetch.tsx                 # prefetchApiQuery + <HydrateClient> (RSC → client hydration)
     │   ├── hooks.ts                    # useApiQuery, useApiMutation, invalidateByPaths, invalidateAllApiQueries
     │   ├── errors.ts / coerce.ts       # typed errors + nullable-field helpers
     │   ├── schema.d.ts                 # GENERATED — never edit
@@ -173,7 +180,24 @@ List hooks share a common query shape: `offset` / `limit`, the
 the backend supports it — an inclusive `dateFrom` / `dateTo` pair as
 ISO 8601 UTC instants. The same trio is enforced on the backend via
 shared `StateFilterRequestDto` / `DateRangeRequestDto` /
-`PaginationRequestDto` base classes.
+`PaginationRequestDto` base classes. List/dashboard surfaces read
+`member` / `campaign` / `resolvedDeadline` / `daysUntil` / `lifecycle`
+**embedded** in list responses and use batch endpoints
+(`useMyCampaignsProgressBatch`, `useMembersGivingTrend`) instead of
+per-row fan-out queries.
+
+**RSC prefetch + hydration.** Dashboard `page.tsx` files are async RSCs
+that `prefetchApiQuery(...)` their deterministic-key queries (e.g.
+`useCampaigns` / `useMyChurchSummary` / `useMyCampaigns`) into a
+`cache()`'d per-request `QueryClient` and wrap the `"use client"`
+composite in `<HydrateClient>`, so it hydrates from cache instead of
+waterfalling. The `[tenantSlug]` layout seeds the tenant it already
+fetched for super-admin slug validation. Queries keyed on a
+client-computed dayjs window or a viewport-dependent page size are
+intentionally **not** prefetched (the key wouldn't match) — they stay
+client-fetched, smoothed by `loading.tsx` + `placeholderData:
+keepPreviousData` (the QueryClient default, so paginating/filtering keeps
+prior rows instead of flashing a skeleton).
 
 ### Auth (dual-path)
 
@@ -199,6 +223,15 @@ accepted, super-admin toggle, sign-out-everywhere) the response carries
 force-refreshes the ID token, and re-mints the session cookie. You
 don't have to call `refreshSession()` manually unless your flow bypasses
 the typed API client.
+
+RSCs read auth via `getSessionUser()`, wrapped in React `cache()`
+(per-request memo) and verifying the session cookie's signature locally
+(`verifySessionCookie(cookie, false)` — no network; the backend guard
+still enforces revocation). `AuthProvider` is a pure state provider — it
+does **not** redirect on a null user; the 401 handler and invite
+"switch account" eject via a **soft** `router.replace`/`refresh`
+(`setLoginRedirector` in `client.ts` + `AuthNavigationBridge` mounted in
+`QueryProvider`), not a full-page `window.location` reload.
 
 ### UI primitive enforcement
 
@@ -247,7 +280,9 @@ openModal("confirm-delete", { title, message, onConfirm });
 ```
 
 Modal prop shapes are typed via `declare module` augmentation — there's
-no string-typed `props: any` payload. See
+no string-typed `props: any` payload. The host registry maps each name to
+a `next/dynamic` import, so every modal is lazy-loaded and kept off the
+initial bundle. See
 [CLAUDE.md §8](CLAUDE.md#8-modal-system--one-folder-per-modal) for how
 to register one.
 
@@ -255,9 +290,10 @@ to register one.
 
 Modals are the desktop overlay; **sheets** are the mobile bottom-sheet
 counterpart (drag handle, snap points), under `src/components/sheets/`
-with their own registry / store / host that mirror the modal system.
-Open one with `openSheet("pledge", { … })`. Some flows ship both — the
-desktop surface opens the modal, the mobile FAB opens the sheet.
+with their own registry / store / host that mirror the modal system —
+including the same `next/dynamic` lazy-loading of each sheet. Open one
+with `openSheet("pledge", { … })`. Some flows ship both — the desktop
+surface opens the modal, the mobile FAB opens the sheet.
 
 Below `md` (768px) the Sidebar/TopBar give way to `MobileChrome`
 (`components/layout/mobile/`): a bottom nav, a top bar, and a
@@ -277,6 +313,13 @@ and passes Firebase/Google auth requests straight through, and
 `next.config.ts` rewrites `/__/auth/*` to the project's `firebaseapp.com`
 so redirect-based login is first-party. See
 [CLAUDE.md §11](CLAUDE.md#11-pwa--service-worker).
+
+### Telemetry
+
+`WebVitalsReporter` (mounted in the root layout) reports LCP / INP / CLS /
+TTFB plus router-transition timing (`onRouterTransitionStart` in
+`src/instrumentation-client.ts`). The sink is `console.debug` in dev, or a
+`navigator.sendBeacon` to `NEXT_PUBLIC_VITALS_URL` when that env var is set.
 
 ## For agents
 
