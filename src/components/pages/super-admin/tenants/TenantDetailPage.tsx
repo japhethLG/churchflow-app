@@ -6,6 +6,7 @@ import {
 	Button,
 	Card,
 	EntityRestoreBanner,
+	PageActionsMenu,
 	PageHeader,
 } from "@/components/primitives";
 import { useTenant } from "@/lib/api/tenants";
@@ -46,13 +47,13 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					overline="Platform / Churches"
 					title="Loading..."
 					subtitle="Fetching church details..."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
-					<div className="grid grid-cols-4 gap-4">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 flex flex-col gap-4">
+					<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 						{[1, 2, 3, 4].map((id) => (
 							<div
 								key={id}
@@ -69,12 +70,12 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					overline="Platform / Churches"
 					title="Not Found"
 					subtitle="Church not found."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-destructive">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 text-center text-destructive">
 					Church not found.
 				</div>
 			</div>
@@ -86,7 +87,6 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
 				overline="Platform / Churches"
 				title={
 					<span className="inline-flex items-center gap-3">
@@ -96,59 +96,108 @@ export const TenantDetailPage = ({ id }: { id: string }) => {
 					</span>
 				}
 				subtitle={`/${tenant.slug}`}
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				action={
-					<div className="flex gap-2">
-						<Button
-							role="secondary"
-							onClick={() => router.push(`/super-admin/tenants/${id}/admins`)}
-						>
-							Manage admins
-						</Button>
-						{!isDeleted && (
+					<>
+						{/* Desktop → full button row. */}
+						<div className="hidden gap-2 md:flex">
 							<Button
 								role="secondary"
-								onClick={() =>
-									openModal("edit-tenant", {
-										tenantId: tenant.id,
-										currentName: tenant.name,
-									})
-								}
+								onClick={() => router.push(`/super-admin/tenants/${id}/admins`)}
 							>
-								Edit
+								Manage admins
 							</Button>
-						)}
-						{!isDeleted ? (
-							<Button
-								role="danger"
-								recipe="outline"
-								onClick={() =>
-									openModal("confirm-delete-tenant", {
-										tenantId: tenant.id,
-										tenantName: tenant.name,
-										onDeleted: () => router.push("/super-admin/tenants"),
-									})
-								}
-							>
-								Delete
-							</Button>
-						) : (
-							<Button
-								role="secondary"
-								onClick={() =>
-									openModal("confirm-restore-tenant", {
-										tenantId: tenant.id,
-										tenantName: tenant.name,
-									})
-								}
-							>
-								Restore
-							</Button>
-						)}
-					</div>
+							{!isDeleted && (
+								<Button
+									role="secondary"
+									onClick={() =>
+										openModal("edit-tenant", {
+											tenantId: tenant.id,
+											currentName: tenant.name,
+										})
+									}
+								>
+									Edit
+								</Button>
+							)}
+							{!isDeleted ? (
+								<Button
+									role="danger"
+									recipe="outline"
+									onClick={() =>
+										openModal("confirm-delete-tenant", {
+											tenantId: tenant.id,
+											tenantName: tenant.name,
+											onDeleted: () => router.push("/super-admin/tenants"),
+										})
+									}
+								>
+									Delete
+								</Button>
+							) : (
+								<Button
+									role="secondary"
+									onClick={() =>
+										openModal("confirm-restore-tenant", {
+											tenantId: tenant.id,
+											tenantName: tenant.name,
+										})
+									}
+								>
+									Restore
+								</Button>
+							)}
+						</div>
+						{/* Mobile → kebab with the same actions. */}
+						<div className="md:hidden">
+							<PageActionsMenu
+								actions={[
+									{
+										label: "Manage admins",
+										onClick: () =>
+											router.push(`/super-admin/tenants/${id}/admins`),
+									},
+									...(!isDeleted
+										? [
+												{
+													label: "Edit church",
+													onClick: () =>
+														openModal("edit-tenant", {
+															tenantId: tenant.id,
+															currentName: tenant.name,
+														}),
+												},
+												{
+													label: "Delete church",
+													onClick: () =>
+														openModal("confirm-delete-tenant", {
+															tenantId: tenant.id,
+															tenantName: tenant.name,
+															onDeleted: () =>
+																router.push("/super-admin/tenants"),
+														}),
+													destructive: true,
+													separatorBefore: true,
+												},
+											]
+										: [
+												{
+													label: "Restore church",
+													onClick: () =>
+														openModal("confirm-restore-tenant", {
+															tenantId: tenant.id,
+															tenantName: tenant.name,
+														}),
+												},
+											]),
+								]}
+							/>
+						</div>
+					</>
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				{isDeleted && (
 					<EntityRestoreBanner
 						className="mb-4"

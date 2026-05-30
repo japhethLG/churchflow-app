@@ -7,11 +7,14 @@ import {
 	type TransactionType as BadgeType,
 	type DataTableColumn,
 	DeletedLabel,
+	ExpandableCard,
+	Icon,
 	RowActionsMenu,
 	TypeBadge,
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
+import { formatCurrency } from "@/lib/format-currency";
 
 export type TransactionRow = components["schemas"]["TransactionResponseDto"];
 type EmbeddedMember = NonNullable<TransactionRow["member"]>;
@@ -197,3 +200,94 @@ export const transactionColumns = ({
 		},
 	},
 ];
+
+// Sub-`md` row → expandable card, shared by the transactions list and the
+// member-detail transactions tab. Collapsed: member/anonymous + date·campaign
+// + type + amount; expanded: campaign, reference #, full date, note. Links to
+// the transaction detail page (matching the desktop row click).
+export const transactionMobileCard =
+	(tenantSlug: string) => (t: TransactionRow) => {
+		const m = t.member;
+		const name = m ? fullName(m) : "";
+		const campaignTitle = t.campaign?.title ?? null;
+		const ref = nstr(t.referenceNumber);
+		const note = nstr(t.note);
+		return (
+			<ExpandableCard
+				href={`/${tenantSlug}/admin/transactions/${t.id}`}
+				deleted={Boolean(t.deletedAt)}
+				details={[
+					{
+						label: "Campaign",
+						value: campaignTitle ? (
+							<span className="text-sm font-medium text-primary">
+								{campaignTitle}
+							</span>
+						) : (
+							<span className="text-sm text-muted-foreground">—</span>
+						),
+					},
+					{
+						label: "Reference #",
+						value: ref ? (
+							<span className="font-mono text-xs font-medium text-foreground">
+								{ref}
+							</span>
+						) : (
+							<span className="text-sm text-muted-foreground">—</span>
+						),
+					},
+					{
+						label: "Date",
+						value: (
+							<span className="text-sm font-medium text-foreground">
+								{dayjs(t.date).format("MMM D, YYYY")}
+							</span>
+						),
+					},
+					...(note
+						? [
+								{
+									label: "Note",
+									value: (
+										<span className="text-sm font-medium text-foreground">
+											{note}
+										</span>
+									),
+								},
+							]
+						: []),
+				]}
+			>
+				<div className="flex items-center gap-3">
+					{m ? (
+						<Avatar name={name} size={36} />
+					) : (
+						<div className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
+							<Icon name="user" size={17} />
+						</div>
+					)}
+					<div className="min-w-0 flex-1">
+						<div
+							className={`truncate text-sm font-semibold tracking-tight ${
+								m ? "" : "italic text-muted-foreground"
+							}`}
+						>
+							{m ? name : "Anonymous"}
+						</div>
+						<div className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+							<span>{dayjs(t.date).format("MMM D")}</span>
+							<span className="size-0.5 rounded-full bg-muted-foreground" />
+							<span className="truncate">{campaignTitle ?? "No campaign"}</span>
+						</div>
+					</div>
+					<div className="flex shrink-0 flex-col items-end gap-1">
+						<span className="text-[15px] font-bold tabular-nums tracking-tight">
+							{formatCurrency(t.amount, { decimals: 0 })}
+						</span>
+						<TypeBadge type={TYPE_BADGE_LABEL[t.type]} />
+					</div>
+				</div>
+			</ExpandableCard>
+		);
+	};

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Card } from "./Card";
 import { Icon } from "./Icon";
 import { Pressable } from "./Pressable";
+import { type RowAction, RowActionsMenu } from "./RowActionsMenu";
 
 export type ExpandableCardDetail = {
 	label: ReactNode;
@@ -26,6 +27,14 @@ export type ExpandableCardProps = {
 	defaultExpanded?: boolean;
 	/** Tombstone styling — muted when the row's own entity is soft-deleted. */
 	deleted?: boolean;
+	/**
+	 * Row-level actions (edit/delete/restore). Surfaced as a kebab menu in the
+	 * headline — the mobile equivalent of a desktop row's `RowActionsMenu`
+	 * column. Use for entities with no detail page to manage from; entities that
+	 * link to a detail page should prefer `href` and manage there. Empty array →
+	 * no menu.
+	 */
+	actions?: RowAction[];
 	className?: string;
 };
 
@@ -42,10 +51,17 @@ export const ExpandableCard = ({
 	href,
 	defaultExpanded = false,
 	deleted = false,
+	actions = [],
 	className,
 }: ExpandableCardProps) => {
 	const [open, setOpen] = useState(defaultExpanded);
 	const hasDetails = details.length > 0;
+	const actionsMenu =
+		actions.length > 0 ? (
+			<div className="flex shrink-0 items-center self-center">
+				<RowActionsMenu actions={actions} />
+			</div>
+		) : null;
 
 	const drawer = hasDetails ? (
 		// Animate height open/close via the grid 0fr→1fr trick (no JS height
@@ -113,6 +129,7 @@ export const ExpandableCard = ({
 					<Link href={href} className="min-w-0 flex-1 no-underline">
 						{children}
 					</Link>
+					{actionsMenu}
 					{chevronToggle}
 				</div>
 				{drawer}
@@ -130,25 +147,28 @@ export const ExpandableCard = ({
 				className,
 			)}
 		>
-			<Pressable
-				onClick={hasDetails ? () => setOpen((v) => !v) : undefined}
-				className={cn(
-					"flex w-full items-stretch gap-3 p-3.5",
-					!hasDetails && "cursor-default",
-				)}
-			>
-				<div className="min-w-0 flex-1">{children}</div>
-				{hasDetails && (
-					<div
-						className={cn(
-							"grid size-6 shrink-0 self-center place-items-center rounded-lg bg-muted text-muted-foreground transition-transform duration-200",
-							open && "rotate-180",
-						)}
-					>
-						<Icon name="chevronDown" size={14} />
-					</div>
-				)}
-			</Pressable>
+			<div className="flex items-stretch gap-3 p-3.5">
+				<Pressable
+					onClick={hasDetails ? () => setOpen((v) => !v) : undefined}
+					className={cn(
+						"flex min-w-0 flex-1 items-stretch gap-3",
+						!hasDetails && "cursor-default",
+					)}
+				>
+					<div className="min-w-0 flex-1">{children}</div>
+					{hasDetails && (
+						<div
+							className={cn(
+								"grid size-6 shrink-0 self-center place-items-center rounded-lg bg-muted text-muted-foreground transition-transform duration-200",
+								open && "rotate-180",
+							)}
+						>
+							<Icon name="chevronDown" size={14} />
+						</div>
+					)}
+				</Pressable>
+				{actionsMenu}
+			</div>
 			{drawer}
 		</Card>
 	);

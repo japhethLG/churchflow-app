@@ -44,6 +44,7 @@ import {
 	TYPE_COLOR,
 	TYPE_LABEL,
 } from "../admin-shared";
+import { transactionMobileCard } from "../transactions/TransactionsTable";
 
 type Member = components["schemas"]["MemberResponseDto"];
 type Transaction = components["schemas"]["TransactionResponseDto"];
@@ -307,6 +308,7 @@ export const MemberOverviewTab = ({
 			<Card padding={24}>
 				<SectionTitle title="Giving relationship" />
 				<StatBand
+					mobileColumns={2}
 					items={[
 						{
 							label: "Lifetime",
@@ -434,18 +436,23 @@ export const MemberOverviewTab = ({
 				</Card>
 
 				<Card padding={24}>
-					<SectionTitle
-						title="Breakdown (last 12 months)"
-						action={
-							<div className="w-[200px]">
-								<SegmentedControl
-									options={MIX_OPTIONS}
-									value={mixMode}
-									onChange={(v) => setMixMode(v as MixMode)}
-								/>
-							</div>
-						}
-					/>
+					{/* Header stacks on mobile so the long title and the mix toggle
+					    don't fight for width on a phone. */}
+					<div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<h3 className="m-0 text-lg font-bold tracking-tight text-foreground">
+							Breakdown{" "}
+							<span className="text-sm font-medium text-muted-foreground">
+								(last 12 months)
+							</span>
+						</h3>
+						<div className="sm:w-[200px]">
+							<SegmentedControl
+								options={MIX_OPTIONS}
+								value={mixMode}
+								onChange={(v) => setMixMode(v as MixMode)}
+							/>
+						</div>
+					</div>
 					{mixSegments.length === 0 ? (
 						<div className="grid h-[220px] place-items-center text-sm text-muted-foreground">
 							No gifts to break down yet.
@@ -569,6 +576,7 @@ export const MemberOverviewTab = ({
 				</div>
 				<DataTableShell<Transaction>
 					columns={recentGiftColumns}
+					mobileCard={transactionMobileCard(tenantSlug)}
 					rows={recent}
 					rowKey={(t) => t.id}
 					loading={txListQ.isLoading}

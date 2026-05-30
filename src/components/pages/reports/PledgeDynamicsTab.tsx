@@ -135,6 +135,7 @@ export const PledgeDynamicsTab = ({
 				</p>
 				<StatBand
 					size="md"
+					mobileColumns={3}
 					items={[
 						{
 							label: "Pledged",
@@ -257,6 +258,7 @@ export const PledgeDynamicsTab = ({
 				<SectionTitle title="Status breakdown" />
 				<StatBand
 					size="md"
+					mobileColumns={3}
 					items={[
 						{
 							label: "Active",

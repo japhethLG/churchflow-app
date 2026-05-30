@@ -62,7 +62,7 @@ export const TransactionMixCard = ({
 			) : (
 				<div className="grid items-center gap-8 lg:grid-cols-[300px_1fr]">
 					<div className="grid place-items-center">
-						<div className="relative size-[260px]">
+						<div className="relative size-[240px] sm:size-[260px]">
 							<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 								<div>
 									<div className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
@@ -129,7 +129,9 @@ export const TransactionMixCard = ({
 					</div>
 
 					<div className="flex flex-col">
-						<div className="mb-2 grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+						{/* Desktop column header — hidden on mobile, which uses a
+						    two-line-per-row layout instead of a 5-wide grid. */}
+						<div className="mb-2 hidden grid-cols-[1.4fr_1fr_1fr_1fr_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground sm:grid">
 							<span>Type</span>
 							<span className="text-right">Total</span>
 							<span className="text-right">Gifts</span>
@@ -138,31 +140,57 @@ export const TransactionMixCard = ({
 						</div>
 						<ul className="divide-y divide-border">
 							{segments.map((s) => (
-								<li
-									key={s.key}
-									className="grid grid-cols-[1.4fr_1fr_1fr_1fr_60px] items-center gap-3 py-3 text-sm"
-								>
-									<div className="flex items-center gap-2">
-										<span
-											className="size-3 shrink-0 rounded-sm"
-											style={{ background: s.color }}
-										/>
-										<span className="font-medium text-foreground">
-											{s.label}
+								<li key={s.key} className="py-3 text-sm">
+									{/* Mobile → label + total on top, gifts·avg + share below. */}
+									<div className="sm:hidden">
+										<div className="flex items-center justify-between gap-3">
+											<div className="flex min-w-0 items-center gap-2">
+												<span
+													className="size-3 shrink-0 rounded-sm"
+													style={{ background: s.color }}
+												/>
+												<span className="truncate font-medium text-foreground">
+													{s.label}
+												</span>
+											</div>
+											<span className="shrink-0 tabular-nums font-semibold text-foreground">
+												{formatCurrency(s.amount, { decimals: 0 })}
+											</span>
+										</div>
+										<div className="mt-1 flex items-center justify-between pl-5 text-xs tabular-nums text-muted-foreground">
+											<span>
+												{s.count} {s.count === 1 ? "gift" : "gifts"} · avg{" "}
+												{formatCurrency(s.avg, { decimals: 0 })}
+											</span>
+											<span className="font-semibold text-foreground">
+												{s.share}%
+											</span>
+										</div>
+									</div>
+									{/* Desktop → 5-column grid row. */}
+									<div className="hidden grid-cols-[1.4fr_1fr_1fr_1fr_60px] items-center gap-3 sm:grid">
+										<div className="flex items-center gap-2">
+											<span
+												className="size-3 shrink-0 rounded-sm"
+												style={{ background: s.color }}
+											/>
+											<span className="font-medium text-foreground">
+												{s.label}
+											</span>
+										</div>
+										<span className="text-right tabular-nums font-medium text-foreground">
+											{formatCurrency(s.amount, { decimals: 0 })}
+										</span>
+										<span className="text-right tabular-nums text-muted-foreground">
+											{s.count}
+										</span>
+										<span className="text-right tabular-nums text-muted-foreground">
+											{formatCurrency(s.avg, { decimals: 0 })}
+										</span>
+										<span className="text-right tabular-nums font-semibold text-foreground">
+											{s.share}%
 										</span>
 									</div>
-									<span className="text-right tabular-nums font-medium text-foreground">
-										{formatCurrency(s.amount, { decimals: 0 })}
-									</span>
-									<span className="text-right tabular-nums text-muted-foreground">
-										{s.count}
-									</span>
-									<span className="text-right tabular-nums text-muted-foreground">
-										{formatCurrency(s.avg, { decimals: 0 })}
-									</span>
-									<span className="text-right tabular-nums font-semibold text-foreground">
-										{s.share}%
-									</span>
 								</li>
 							))}
 						</ul>

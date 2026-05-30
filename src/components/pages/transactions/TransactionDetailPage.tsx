@@ -80,12 +80,12 @@ export const TransactionDetailPage = () => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					overline="Ledger / Transactions"
 					title="Loading..."
 					subtitle="Fetching transaction details..."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 flex flex-col gap-4">
 					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
 				</div>
 			</div>
@@ -96,12 +96,12 @@ export const TransactionDetailPage = () => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					overline="Ledger / Transactions"
 					title="Not Found"
 					subtitle="This transaction may have been deleted."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
 					<p className="mb-4 text-base font-medium text-foreground">
 						Transaction not found
 					</p>
@@ -140,7 +140,7 @@ export const TransactionDetailPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				back={{
 					href: `/${tenantSlug}/admin/transactions`,
 					label: "Transactions",
@@ -169,7 +169,7 @@ export const TransactionDetailPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				{isDeleted && (
 					<EntityRestoreBanner
 						className="mb-4"

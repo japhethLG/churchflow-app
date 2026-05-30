@@ -8,6 +8,7 @@ import {
 	type DataTableColumn,
 	DataTableShell,
 	DeletedLabel,
+	ExpandableCard,
 	StackedProgressBar,
 	type StateFilterValue,
 	toStateFilterFlags,
@@ -87,6 +88,90 @@ export const MemberPledgesTab = ({
 		}
 		return { pledged, paid, remaining };
 	}, [rows]);
+
+	// Sub-`md` row → card linking to the pledge detail page. Campaign title +
+	// pledged amount + lifecycle up top; paid bar / remaining / deadline reveal
+	// on expand.
+	const renderPledgeCard = (p: Pledge) => {
+		const c = p.campaign;
+		const fPct = pct(p.paidAmount, p.pledgedAmount);
+		const l = p.lifecycle as PledgeLifecycle;
+		const deadline = p.resolvedDeadline;
+		return (
+			<ExpandableCard
+				href={`/${tenantSlug}/admin/pledges/${p.id}`}
+				deleted={Boolean(p.deletedAt)}
+				details={[
+					{
+						label: "Paid",
+						value: (
+							<div className="w-36">
+								<StackedProgressBar
+									size="xs"
+									total={p.pledgedAmount}
+									segments={[
+										{
+											value: p.paidAmount,
+											color: "var(--chart-current)",
+											label: "Paid",
+										},
+									]}
+								/>
+								<div className="mt-1 flex items-baseline justify-between text-xs tabular-nums">
+									<span className="text-muted-foreground">
+										{formatCompact(p.paidAmount)}
+									</span>
+									<span className="font-semibold text-foreground">{fPct}%</span>
+								</div>
+							</div>
+						),
+					},
+					{
+						label: "Remaining",
+						value: (
+							<span className="text-sm font-medium tabular-nums text-foreground">
+								{formatCurrency(p.remainingAmount, { decimals: 0 })}
+							</span>
+						),
+					},
+					{
+						label: "Deadline",
+						value: deadline ? (
+							<span className="text-sm font-medium text-foreground">
+								{dayjs(deadline).format("MMM D, YYYY")}
+							</span>
+						) : (
+							<span className="text-sm text-muted-foreground">None</span>
+						),
+					},
+				]}
+			>
+				<div className="flex items-start justify-between gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold text-foreground">
+							{c.deletedAt ? (
+								<DeletedLabel deletedAt={c.deletedAt} hidePill>
+									{c.title}
+								</DeletedLabel>
+							) : (
+								c.title
+							)}
+						</div>
+						<div className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+							{formatCompact(p.paidAmount)} of {formatCompact(p.pledgedAmount)}{" "}
+							paid
+						</div>
+					</div>
+					<div className="flex shrink-0 flex-col items-end gap-1">
+						<span className="text-[15px] font-bold tabular-nums tracking-tight">
+							{formatCurrency(p.pledgedAmount, { decimals: 0 })}
+						</span>
+						<Badge color={lifecycleBadgeColor(l)}>{LIFECYCLE_LABEL[l]}</Badge>
+					</div>
+				</div>
+			</ExpandableCard>
+		);
+	};
 
 	const columns: DataTableColumn<Pledge>[] = [
 		{
@@ -244,6 +329,7 @@ export const MemberPledgesTab = ({
 				},
 			]}
 			columns={columns}
+			mobileCard={renderPledgeCard}
 			rows={rows}
 			rowKey={(p) => p.id}
 			loading={isLoading}

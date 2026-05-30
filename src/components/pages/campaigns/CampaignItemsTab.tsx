@@ -7,6 +7,8 @@ import {
 	type DataTableColumn,
 	DataTableShell,
 	DeletedLabel,
+	ExpandableCard,
+	type RowAction,
 	RowActionsMenu,
 	StackedProgressBar,
 	type StateFilterValue,
@@ -151,6 +153,109 @@ export const CampaignItemsTab = ({
 			itemTitle: item.title,
 		});
 
+	// Shared by the desktop row menu and the mobile card so both stay in sync.
+	const itemActions = (r: Row): RowAction[] =>
+		r.item.deletedAt
+			? [{ label: "Restore", onClick: () => openRestore(r.item) }]
+			: parentDeleted
+				? []
+				: [
+						{ label: "Edit", onClick: () => openEdit(r.item) },
+						{
+							label: "Delete",
+							onClick: () => openDelete(r.item),
+							destructive: true,
+							separatorBefore: true,
+						},
+					];
+
+	// Sub-`md` row → card. Lifecycle badge + title up top, the fulfilment bar
+	// (the column that matters most) prominent beneath, deadline tucked into the
+	// expand drawer. Row actions ride in the card's kebab.
+	const renderItemCard = (r: Row) => {
+		const desc = nstr(r.item.description);
+		return (
+			<ExpandableCard
+				deleted={Boolean(r.item.deletedAt)}
+				actions={itemActions(r)}
+				details={[
+					{
+						label: "Deadline",
+						value: r.deadline ? (
+							<span className="text-sm font-medium text-foreground">
+								{dayjs(r.deadline).format("MMM D, YYYY")}
+							</span>
+						) : (
+							<span className="text-sm text-muted-foreground">Open-ended</span>
+						),
+					},
+					...(desc
+						? [
+								{
+									label: "Description",
+									value: (
+										<span className="text-sm font-medium text-foreground">
+											{desc}
+										</span>
+									),
+								},
+							]
+						: []),
+				]}
+			>
+				<div>
+					<div className="flex items-start justify-between gap-3">
+						<div className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+							{r.item.deletedAt ? (
+								<DeletedLabel deletedAt={r.item.deletedAt} hidePill>
+									{r.item.title}
+								</DeletedLabel>
+							) : (
+								r.item.title
+							)}
+						</div>
+						<Badge color={LIFECYCLE_COLOR[r.lifecycle]} className="shrink-0">
+							{LIFECYCLE_LABEL[r.lifecycle]}
+							{r.days !== null && r.lifecycle !== "funded" && (
+								<>
+									{" · "}
+									{r.days < 0 ? `${Math.abs(r.days)}d past` : `${r.days}d left`}
+								</>
+							)}
+						</Badge>
+					</div>
+					<div className="mt-2.5">
+						<StackedProgressBar
+							size="sm"
+							total={r.target}
+							segments={[
+								{
+									value: r.pledged,
+									color:
+										"color-mix(in srgb, var(--chart-current) 28%, transparent)",
+									label: "Pledged",
+								},
+								{
+									value: r.raised,
+									color: "var(--chart-current)",
+									label: "Raised",
+								},
+							]}
+						/>
+						<div className="mt-1 flex items-baseline justify-between text-xs tabular-nums">
+							<span className="text-muted-foreground">
+								{formatCompact(r.raised)} / {formatCompact(r.target)}
+							</span>
+							<span className="font-semibold text-foreground">
+								{r.raisedPct}%
+							</span>
+						</div>
+					</div>
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	const columns: DataTableColumn<Row>[] = [
 		{
 			key: "item",
@@ -250,31 +355,13 @@ export const CampaignItemsTab = ({
 			width: "48px",
 			align: "right",
 			overflow: "visible",
-			render: (r) => (
-				<RowActionsMenu
-					actions={
-						r.item.deletedAt
-							? [{ label: "Restore", onClick: () => openRestore(r.item) }]
-							: parentDeleted
-								? []
-								: [
-										{ label: "Edit", onClick: () => openEdit(r.item) },
-										{
-											label: "Delete",
-											onClick: () => openDelete(r.item),
-											destructive: true,
-											separatorBefore: true,
-										},
-									]
-					}
-				/>
-			),
+			render: (r) => <RowActionsMenu actions={itemActions(r)} />,
 		},
 	];
 
 	return (
 		<div className="space-y-4">
-			<div className="flex justify-end">
+			<div className="hidden justify-end md:flex">
 				<Button
 					role="primary"
 					icon="plus"
@@ -287,6 +374,7 @@ export const CampaignItemsTab = ({
 			<DataTableShell<Row>
 				filters={[{ kind: "state", value: state, onChange: setState }]}
 				columns={columns}
+				mobileCard={renderItemCard}
 				rows={rows}
 				rowKey={(r) => r.item.id}
 				loading={isLoading}

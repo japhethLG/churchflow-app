@@ -181,6 +181,7 @@ export const CampaignOverviewTab = ({
 			{/* Progress band */}
 			<Card padding={24}>
 				<StatBand
+					mobileColumns={2}
 					items={[
 						{ label: "Goal", value: formatCompact(goal) },
 						{
@@ -359,44 +360,49 @@ export const CampaignOverviewTab = ({
 								: "Unknown member";
 							const fulfillPct = pct(c.paid, c.pledged);
 							return (
-								<li
-									key={c.memberId}
-									className="grid grid-cols-[28px_36px_minmax(0,1fr)_180px_100px] items-center gap-3 py-2.5"
-								>
-									<span className="text-xs font-semibold tabular-nums text-muted-foreground">
+								// Fluid list row that reads well at any width: rank + avatar
+								// pinned left, then a flexible column holding the name + total
+								// on top and the fulfilment bar beneath. No fixed pixel
+								// columns, so it never cramps on a phone.
+								<li key={c.memberId} className="flex items-center gap-3 py-3">
+									<span className="w-5 shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
 										#{idx + 1}
 									</span>
 									<Avatar name={name} size={32} />
-									<Link
-										href={`/${tenantSlug}/admin/members/${c.memberId}`}
-										className="truncate text-sm font-medium text-foreground hover:underline"
-									>
-										{name}
-									</Link>
-									<div>
-										<StackedProgressBar
-											size="xs"
-											total={c.pledged}
-											segments={[
-												{
-													value: c.paid,
-													color: "var(--chart-current)",
-													label: "Paid",
-												},
-											]}
-										/>
-										<div className="mt-1 flex items-baseline justify-between text-xs tabular-nums">
-											<span className="text-muted-foreground">
-												{formatCompact(c.paid)} / {formatCompact(c.pledged)}
-											</span>
-											<span className="font-semibold text-foreground">
-												{fulfillPct}%
+									<div className="min-w-0 flex-1">
+										<div className="flex items-baseline justify-between gap-3">
+											<Link
+												href={`/${tenantSlug}/admin/members/${c.memberId}`}
+												className="truncate text-sm font-medium text-foreground hover:underline"
+											>
+												{name}
+											</Link>
+											<span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+												{formatCompact(c.paid)}
 											</span>
 										</div>
+										<div className="mt-1.5">
+											<StackedProgressBar
+												size="xs"
+												total={c.pledged}
+												segments={[
+													{
+														value: c.paid,
+														color: "var(--chart-current)",
+														label: "Paid",
+													},
+												]}
+											/>
+											<div className="mt-1 flex items-baseline justify-between text-xs tabular-nums">
+												<span className="text-muted-foreground">
+													{formatCompact(c.paid)} / {formatCompact(c.pledged)}
+												</span>
+												<span className="font-semibold text-foreground">
+													{fulfillPct}%
+												</span>
+											</div>
+										</div>
 									</div>
-									<span className="text-right text-sm font-semibold tabular-nums text-foreground">
-										{formatCompact(c.paid)}
-									</span>
 								</li>
 							);
 						})}

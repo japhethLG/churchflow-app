@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	Button,
 	EntityRestoreBanner,
@@ -11,7 +11,12 @@ import {
 } from "@/components/primitives";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useMember } from "@/lib/api/members";
+import {
+	type MobileAction,
+	useMobileActions,
+} from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
+import { openSheet } from "@/lib/sheets/store";
 import { MemberOverviewTab } from "./MemberOverviewTab";
 import { MemberPledgesTab } from "./MemberPledgesTab";
 import { MemberTransactionsTab } from "./MemberTransactionsTab";
@@ -44,16 +49,54 @@ export const MemberDetailPage = () => {
 		(c) => c.status === "ACTIVE",
 	);
 
+	// Mobile FAB — the page-level create actions. The desktop header keeps the
+	// two buttons + kebab; on mobile the buttons move here and the kebab stays
+	// in the header for the management actions (edit / invite / merge / remove).
+	useMobileActions(
+		useMemo(() => {
+			if (!member || member.deletedAt) {
+				return [];
+			}
+			const acts: MobileAction[] = [
+				{
+					label: "Record gift",
+					icon: "plus",
+					onClick: () =>
+						openSheet("record-gift", {
+							tenantSlug,
+							defaultMemberId: member.id,
+						}),
+				},
+			];
+			if (activeCampaign) {
+				acts.push({
+					label: "Record pledge",
+					icon: "book",
+					onClick: () =>
+						openSheet("pledge", {
+							intent: "tenant",
+							tenantSlug,
+							campaignId: activeCampaign.id,
+							campaignTitle: activeCampaign.title,
+							items: [],
+							defaultMemberId: member.id,
+						}),
+				});
+			}
+			return acts;
+		}, [member, activeCampaign, tenantSlug]),
+	);
+
 	if (isLoading) {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					back={{ href: `/${tenantSlug}/admin/members`, label: "Members" }}
 					title="Loading…"
 					subtitle="Fetching member details…"
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 flex flex-col gap-4">
 					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
 				</div>
 			</div>
@@ -64,12 +107,12 @@ export const MemberDetailPage = () => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					back={{ href: `/${tenantSlug}/admin/members`, label: "Members" }}
 					title="Not found"
 					subtitle="This member may have been removed."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
 					<p className="mb-4 text-base font-medium text-foreground">
 						Member not found
 					</p>
@@ -104,7 +147,12 @@ export const MemberDetailPage = () => {
 
 	const action = !isDeleted ? (
 		<>
-			<Button role="primary" icon="plus" onClick={openRecordGift}>
+			<Button
+				role="primary"
+				icon="plus"
+				onClick={openRecordGift}
+				className="hidden md:inline-flex"
+			>
 				Record gift
 			</Button>
 			<Button
@@ -112,6 +160,7 @@ export const MemberDetailPage = () => {
 				icon="book"
 				onClick={openRecordPledge}
 				disabled={!activeCampaign}
+				className="hidden md:inline-flex"
 			>
 				Record pledge
 			</Button>
@@ -163,14 +212,14 @@ export const MemberDetailPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				back={{ href: `/${tenantSlug}/admin/members`, label: "Members" }}
 				title={fullName}
 				subtitle="Giving relationship, pledges, and transactions."
 				action={action}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				{isDeleted && (
 					<EntityRestoreBanner
 						className="mb-4"
@@ -186,7 +235,7 @@ export const MemberDetailPage = () => {
 					/>
 				)}
 
-				<div className="mb-6">
+				<div className="mb-6 -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
 					<SegmentedControl
 						options={TABS}
 						value={tab}

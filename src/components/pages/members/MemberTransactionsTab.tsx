@@ -18,6 +18,7 @@ import { TransactionMixCard } from "../TransactionMixCard";
 import {
 	type TransactionRow,
 	transactionColumns,
+	transactionMobileCard,
 } from "../transactions/TransactionsTable";
 
 type Member = components["schemas"]["MemberResponseDto"];
@@ -193,6 +194,7 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 					},
 				]}
 				columns={columns}
+				mobileCard={transactionMobileCard(tenantSlug)}
 				rows={visible}
 				rowKey={(tx) => tx.id}
 				loading={list.isLoading}

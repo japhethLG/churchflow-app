@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	Badge,
 	Button,
@@ -13,7 +13,9 @@ import {
 import type { components } from "@/lib/api";
 import { useCampaign, useCampaignProgress } from "@/lib/api/campaigns";
 import dayjs from "@/lib/dayjs";
+import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
+import { openSheet } from "@/lib/sheets/store";
 import { daysUntil } from "../admin-shared";
 import { CampaignItemsTab } from "./CampaignItemsTab";
 import { CampaignOverviewTab } from "./CampaignOverviewTab";
@@ -55,16 +57,61 @@ export const CampaignDetailPage = () => {
 		Boolean(campaign),
 	);
 
+	// Mobile FAB — contextual to the active tab. The desktop header keeps the
+	// Edit button + kebab; on mobile the bulky Edit button is hidden and its
+	// action moves here, joined by the tab's own create action (Add item /
+	// Add pledge) so the primary action always matches what's on screen.
+	useMobileActions(
+		useMemo(() => {
+			if (!campaign || campaign.deletedAt) {
+				return [];
+			}
+			const liveItems = campaign.items.filter((it) => !it.deletedAt);
+			const acts = [];
+			if (tab === "items") {
+				acts.push({
+					label: "Add line item",
+					icon: "plus" as const,
+					onClick: () =>
+						openModal("add-campaign-item", {
+							tenantSlug,
+							campaignId: campaign.id,
+							defaultSortOrder: liveItems.length,
+						}),
+				});
+			} else if (tab === "pledges") {
+				acts.push({
+					label: "Add pledge",
+					icon: "plus" as const,
+					onClick: () =>
+						openSheet("pledge", {
+							intent: "tenant",
+							tenantSlug,
+							campaignId: campaign.id,
+							campaignTitle: campaign.title,
+							items: liveItems,
+						}),
+				});
+			}
+			acts.push({
+				label: "Edit campaign",
+				icon: "edit" as const,
+				onClick: () => router.push(`/${tenantSlug}/admin/campaigns/${id}/edit`),
+			});
+			return acts;
+		}, [campaign, tab, tenantSlug, id, router]),
+	);
+
 	if (isLoading) {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					back={{ href: `/${tenantSlug}/admin/campaigns`, label: "Campaigns" }}
 					title="Loading…"
 					subtitle="Fetching campaign details…"
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
 				</div>
 			</div>
@@ -75,12 +122,12 @@ export const CampaignDetailPage = () => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					back={{ href: `/${tenantSlug}/admin/campaigns`, label: "Campaigns" }}
 					title="Not found"
 					subtitle="This campaign may have been deleted."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+				<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8 text-center text-muted-foreground flex flex-col items-center justify-center">
 					<p className="mb-4 text-base font-medium text-foreground">
 						Campaign not found
 					</p>
@@ -146,6 +193,7 @@ export const CampaignDetailPage = () => {
 				role="primary"
 				icon="edit"
 				onClick={() => router.push(`/${tenantSlug}/admin/campaigns/${id}/edit`)}
+				className="hidden md:inline-flex"
 			>
 				Edit
 			</Button>
@@ -184,14 +232,14 @@ export const CampaignDetailPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				back={{ href: `/${tenantSlug}/admin/campaigns`, label: "Campaigns" }}
 				title={campaign.title}
 				subtitle={subtitle}
 				action={action}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				{isDeleted && (
 					<EntityRestoreBanner
 						className="mb-4"
@@ -207,7 +255,7 @@ export const CampaignDetailPage = () => {
 					/>
 				)}
 
-				<div className="mb-6">
+				<div className="mb-6 -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
 					<SegmentedControl
 						options={TABS}
 						value={tab}

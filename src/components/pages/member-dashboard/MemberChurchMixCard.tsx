@@ -149,7 +149,8 @@ export const MemberChurchMixCard = ({
 
 				{segments.length > 0 ? (
 					<div className="flex flex-col">
-						<div className="mb-2 grid grid-cols-[1.4fr_1fr_70px_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+						{/* Desktop column header — mobile uses a two-line row instead. */}
+						<div className="mb-2 hidden grid-cols-[1.4fr_1fr_70px_60px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground sm:grid">
 							<span>Type</span>
 							<span className="text-right">Total</span>
 							<span className="text-right">Gifts</span>
@@ -157,28 +158,53 @@ export const MemberChurchMixCard = ({
 						</div>
 						<ul className="divide-y divide-border">
 							{segments.map((s) => (
-								<li
-									key={s.key}
-									className="grid grid-cols-[1.4fr_1fr_70px_60px] items-center gap-3 py-2 text-sm"
-								>
-									<div className="flex items-center gap-2">
-										<span
-											className="size-2.5 shrink-0 rounded-sm"
-											style={{ background: s.color }}
-										/>
-										<span className="font-medium text-foreground">
-											{s.label}
+								<li key={s.key} className="py-2 text-sm">
+									{/* Mobile → label + total on top, gifts + share below. */}
+									<div className="sm:hidden">
+										<div className="flex items-center justify-between gap-3">
+											<div className="flex min-w-0 items-center gap-2">
+												<span
+													className="size-2.5 shrink-0 rounded-sm"
+													style={{ background: s.color }}
+												/>
+												<span className="truncate font-medium text-foreground">
+													{s.label}
+												</span>
+											</div>
+											<span className="shrink-0 tabular-nums font-semibold text-foreground">
+												{formatCurrency(s.amount, { decimals: 0 })}
+											</span>
+										</div>
+										<div className="mt-1 flex items-center justify-between pl-[1.125rem] text-xs tabular-nums text-muted-foreground">
+											<span>
+												{s.count} {s.count === 1 ? "gift" : "gifts"}
+											</span>
+											<span className="font-semibold text-foreground">
+												{s.share}%
+											</span>
+										</div>
+									</div>
+									{/* Desktop → 4-column grid row. */}
+									<div className="hidden grid-cols-[1.4fr_1fr_70px_60px] items-center gap-3 sm:grid">
+										<div className="flex items-center gap-2">
+											<span
+												className="size-2.5 shrink-0 rounded-sm"
+												style={{ background: s.color }}
+											/>
+											<span className="font-medium text-foreground">
+												{s.label}
+											</span>
+										</div>
+										<span className="text-right tabular-nums font-medium text-foreground">
+											{formatCurrency(s.amount, { decimals: 0 })}
+										</span>
+										<span className="text-right tabular-nums text-muted-foreground">
+											{s.count}
+										</span>
+										<span className="text-right tabular-nums font-semibold text-foreground">
+											{s.share}%
 										</span>
 									</div>
-									<span className="text-right tabular-nums font-medium text-foreground">
-										{formatCurrency(s.amount, { decimals: 0 })}
-									</span>
-									<span className="text-right tabular-nums text-muted-foreground">
-										{s.count}
-									</span>
-									<span className="text-right tabular-nums font-semibold text-foreground">
-										{s.share}%
-									</span>
 								</li>
 							))}
 						</ul>

@@ -12,6 +12,7 @@ import {
 	DataTableShell,
 	DeletedLabel,
 	EntityRestoreBanner,
+	ExpandableCard,
 	PageActionsMenu,
 	PageHeader,
 	StackedProgressBar,
@@ -24,6 +25,7 @@ import { usePledge } from "@/lib/api/pledges";
 import { useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
+import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 import {
 	daysUntil,
@@ -262,10 +264,88 @@ export const PledgeDetailPage = () => {
 
 	const txColumns = buildTxColumns({ tenantSlug, campaign });
 
+	// Mobile FAB — the page's primary action. Only when a payment can actually
+	// be recorded; edit/delete stay in the header kebab on every viewport.
+	useMobileActions(
+		useMemo(
+			() =>
+				canRecordPayment && pledge
+					? [
+							{
+								label: "Record payment",
+								icon: "plus" as const,
+								onClick: () =>
+									openModal("record-gift", {
+										tenantSlug,
+										defaultMemberId: pledge.memberId,
+										defaultCampaignId: pledge.campaignId,
+										defaultPledgeId: pledge.id,
+									}),
+							},
+						]
+					: [],
+			[canRecordPayment, pledge, tenantSlug],
+		),
+	);
+
+	// Sub-`md` payment row → card linking to the transaction detail page.
+	const renderPaymentCard = (tx: Transaction) => {
+		const itemId = nstr(tx.campaignItemId);
+		const item = itemId
+			? campaign?.items?.find((it) => it.id === itemId)
+			: undefined;
+		const typeLabel =
+			tx.type === "OTHER" && typeof tx.customType === "string"
+				? tx.customType
+				: TX_TYPE_LABEL[tx.type];
+		return (
+			<ExpandableCard
+				href={`/${tenantSlug}/admin/transactions/${tx.id}`}
+				deleted={Boolean(tx.deletedAt)}
+				details={[
+					{
+						label: "Reference",
+						value: (
+							<span className="font-mono text-xs font-medium text-foreground">
+								{nstr(tx.referenceNumber) ?? "—"}
+							</span>
+						),
+					},
+					...(item
+						? [
+								{
+									label: "Earmarked to",
+									value: (
+										<span className="text-sm font-medium text-foreground">
+											{item.title}
+										</span>
+									),
+								},
+							]
+						: []),
+				]}
+			>
+				<div className="flex items-center justify-between gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold text-foreground">
+							{typeLabel}
+						</div>
+						<div className="text-xs text-muted-foreground">
+							{dayjs(tx.date).format("MMM D, YYYY")}
+						</div>
+					</div>
+					<span className="shrink-0 text-[15px] font-bold tabular-nums tracking-tight">
+						{formatCurrency(tx.amount, { decimals: 0 })}
+					</span>
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				back={{ href: `/${tenantSlug}/admin/pledges`, label: "Pledges" }}
 				title={
 					pledgeQ.isLoading ? (
@@ -310,6 +390,7 @@ export const PledgeDetailPage = () => {
 								icon="plus"
 								onClick={openRecordPayment}
 								disabled={!canRecordPayment}
+								className="hidden md:inline-flex"
 								title={
 									campaignDeleted
 										? "Campaign is archived — payments can't be recorded against it."
@@ -338,7 +419,7 @@ export const PledgeDetailPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-6">
+			<div className="overflow-auto flex-1 px-4 pb-36 space-y-6 md:px-8 md:pb-8">
 				{pledgeDeleted && pledge && (
 					<EntityRestoreBanner
 						entityLabel="Pledge"
@@ -356,6 +437,7 @@ export const PledgeDetailPage = () => {
 				{pledge && (
 					<Card padding={24}>
 						<StatBand
+							mobileColumns={2}
 							items={[
 								{
 									label: "Pledged",
@@ -433,6 +515,7 @@ export const PledgeDetailPage = () => {
 					</div>
 					<DataTableShell<Transaction>
 						columns={txColumns}
+						mobileCard={renderPaymentCard}
 						rows={transactions}
 						rowKey={(tx) => tx.id}
 						loading={txQ.isLoading}

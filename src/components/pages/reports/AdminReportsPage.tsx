@@ -153,13 +153,15 @@ export const AdminReportsPage = () => {
 			/>
 
 			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
-				<div className="mb-5 flex flex-wrap items-center gap-3">
-					<SegmentedControl
-						options={TABS.map((t) => ({ value: t.value, label: t.label }))}
-						value={tab}
-						onChange={(v) => setTab(v as Tab)}
-					/>
-					<div className="ml-auto flex items-center gap-2">
+				<div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center">
+					<div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+						<SegmentedControl
+							options={TABS.map((t) => ({ value: t.value, label: t.label }))}
+							value={tab}
+							onChange={(v) => setTab(v as Tab)}
+						/>
+					</div>
+					<div className="flex items-center gap-2 md:ml-auto">
 						<DateRangePicker
 							value={range}
 							onChange={setRange}

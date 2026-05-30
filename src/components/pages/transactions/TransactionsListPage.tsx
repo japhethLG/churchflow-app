@@ -3,15 +3,10 @@
 import { useParams, useRouter } from "next/navigation";
 import { useMemo } from "react";
 import {
-	Avatar,
-	type TransactionType as BadgeTypeLabel,
 	Button,
 	DataTableShell,
 	type DateRangeValue,
-	ExpandableCard,
-	Icon,
 	PageHeader,
-	TypeBadge,
 	useTableFilters,
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
@@ -23,7 +18,11 @@ import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 import { openSheet } from "@/lib/sheets/store";
 import { TransactionsSummaryCard } from "./TransactionsSummaryCard";
-import { type TransactionRow, transactionColumns } from "./TransactionsTable";
+import {
+	type TransactionRow,
+	transactionColumns,
+	transactionMobileCard,
+} from "./TransactionsTable";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
@@ -40,17 +39,6 @@ const TYPE_OPTIONS = [
 	{ value: "DONATION", label: "Donation" },
 	{ value: "OTHER", label: "Other" },
 ];
-
-// DTO type → TypeBadge display label (mirrors TransactionsTable).
-const TYPE_BADGE_LABEL: Record<TransactionType, BadgeTypeLabel> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
 
 const DEFAULT_RANGE: DateRangeValue = {
 	from: dayjs().utc().startOf("month").format("YYYY-MM-DD"),
@@ -175,93 +163,7 @@ export const TransactionsListPage = () => {
 			.map((c) => ({ value: c.id, label: c.title })),
 	];
 
-	// Sub-`md` row → expandable card. Collapsed: member/anonymous + date·campaign
-	// + type + amount. Expanded: campaign, reference #, full date, note.
-	const renderTransactionCard = (t: TransactionRow) => {
-		const m = t.member;
-		const name = m ? `${m.firstName} ${m.lastName}`.trim() : "";
-		const campaignTitle = t.campaign?.title ?? null;
-		const ref = nstr(t.referenceNumber);
-		const note = nstr(t.note);
-		return (
-			<ExpandableCard
-				href={`/${tenantSlug}/admin/transactions/${t.id}`}
-				deleted={Boolean(t.deletedAt)}
-				details={[
-					{
-						label: "Campaign",
-						value: campaignTitle ? (
-							<span className="text-sm font-medium text-primary">
-								{campaignTitle}
-							</span>
-						) : (
-							<span className="text-sm text-muted-foreground">—</span>
-						),
-					},
-					{
-						label: "Reference #",
-						value: ref ? (
-							<span className="font-mono text-xs font-medium text-foreground">
-								{ref}
-							</span>
-						) : (
-							<span className="text-sm text-muted-foreground">—</span>
-						),
-					},
-					{
-						label: "Date",
-						value: (
-							<span className="text-sm font-medium text-foreground">
-								{dayjs(t.date).format("MMM D, YYYY")}
-							</span>
-						),
-					},
-					...(note
-						? [
-								{
-									label: "Note",
-									value: (
-										<span className="text-sm font-medium text-foreground">
-											{note}
-										</span>
-									),
-								},
-							]
-						: []),
-				]}
-			>
-				<div className="flex items-center gap-3">
-					{m ? (
-						<Avatar name={name} size={36} />
-					) : (
-						<div className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
-							<Icon name="user" size={17} />
-						</div>
-					)}
-					<div className="min-w-0 flex-1">
-						<div
-							className={`truncate text-sm font-semibold tracking-tight ${
-								m ? "" : "italic text-muted-foreground"
-							}`}
-						>
-							{m ? name : "Anonymous"}
-						</div>
-						<div className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-							<span>{dayjs(t.date).format("MMM D")}</span>
-							<span className="size-0.5 rounded-full bg-muted-foreground" />
-							<span className="truncate">{campaignTitle ?? "No campaign"}</span>
-						</div>
-					</div>
-					<div className="flex shrink-0 flex-col items-end gap-1">
-						<span className="text-[15px] font-bold tabular-nums tracking-tight">
-							{formatCurrency(t.amount, { decimals: 0 })}
-						</span>
-						<TypeBadge type={TYPE_BADGE_LABEL[t.type]} />
-					</div>
-				</div>
-			</ExpandableCard>
-		);
-	};
+	const renderTransactionCard = transactionMobileCard(tenantSlug);
 
 	return (
 		<div className="h-full flex flex-col">
