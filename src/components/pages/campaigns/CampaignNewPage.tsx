@@ -51,7 +51,7 @@ export const CampaignNewPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Fundraising / Campaigns"
 				title="New campaign"
 				subtitle="Set the goal in line items so members can pledge to specific needs."
@@ -60,7 +60,7 @@ export const CampaignNewPage = () => {
 					label: "Back to campaigns",
 				}}
 			/>
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				<CampaignForm
 					onSubmit={onSubmit}
 					onCancel={() => router.push(`/${tenantSlug}/admin/campaigns`)}

@@ -6,6 +6,7 @@ import {
 	Badge,
 	type DataTableColumn,
 	DataTableShell,
+	ExpandableCard,
 	PageHeader,
 	StackedProgressBar,
 	type Status,
@@ -222,20 +223,88 @@ export const MemberCampaignsPage = () => {
 		},
 	];
 
+	// Sub-`md` row → expandable card. Collapsed: title + your-pledge + status.
+	// Expanded: progress (raised/goal + %), deadline.
+	const renderCampaignCard = (c: Campaign) => {
+		const description = nstr(c.description);
+		const mine = myPledgeByCampaign[c.id];
+		const p = progressById[c.id];
+		const hasGoal = p && p.goalAmount > 0;
+		const deadline = nstr(c.deadline);
+		const days = deadline ? daysUntil(deadline) : null;
+		const isClosed = c.status === "COMPLETED" || c.status === "CANCELLED";
+		return (
+			<ExpandableCard
+				details={[
+					{
+						label: "Progress",
+						value: hasGoal ? (
+							<span className="text-sm font-medium text-foreground tabular-nums">
+								{formatCompact(p.raisedAmount)} / {formatCompact(p.goalAmount)}{" "}
+								· {pct(p.raisedAmount, p.goalAmount)}%
+							</span>
+						) : (
+							<span className="text-sm text-muted-foreground">no goal set</span>
+						),
+					},
+					{
+						label: "Deadline",
+						value: !deadline ? (
+							<span className="text-sm text-muted-foreground">open</span>
+						) : (
+							<span className="flex items-center justify-end gap-2">
+								<span className="text-sm font-medium text-foreground">
+									{dayjs(deadline).format("MMM D, YYYY")}
+								</span>
+								{!isClosed && days !== null && (
+									<Badge
+										color={days < 0 ? "red" : days <= 14 ? "amber" : "neutral"}
+									>
+										{days < 0 ? `${Math.abs(days)}d past` : `${days}d left`}
+									</Badge>
+								)}
+							</span>
+						),
+					},
+				]}
+			>
+				<div className="flex items-start gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold tracking-tight">
+							{c.title}
+						</div>
+						{description && (
+							<div className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+								{description}
+							</div>
+						)}
+						{mine && mine.active > 0 && (
+							<Badge color="indigo" className="mt-1.5">
+								Your pledge · {formatCurrency(mine.active, { decimals: 0 })}
+							</Badge>
+						)}
+					</div>
+					<StatusBadge status={STATUS_MAP[c.status]} />
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Campaigns"
 				title="Church campaigns"
 				subtitle="Browse fundraising campaigns at your church and track progress."
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				<DataTableShell<Campaign>
 					search={t.search("Search by title…")}
 					filters={[t.select("status", "Status", STATUS_OPTIONS)]}
 					onClearFilters={t.clear}
+					mobileCard={renderCampaignCard}
 					stats={[
 						{ label: "active", value: activeCount, tone: "success" },
 						{ label: "upcoming", value: upcomingCount },

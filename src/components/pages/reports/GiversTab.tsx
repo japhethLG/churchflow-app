@@ -138,121 +138,129 @@ export const GiversTab = ({
 					No identified givers in this window.
 				</div>
 			) : (
-				<>
-					<div className="mb-2 grid grid-cols-[28px_40px_minmax(0,1fr)_110px_120px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-						<span>#</span>
-						<span />
-						<span>Giver · mix</span>
-						<span className="text-right">Total</span>
-						<span className="text-right">Monthly</span>
+				// Dense table-like layout — too wide for a phone, so let it scroll
+				// horizontally below `sm` rather than squishing the fixed columns.
+				<div className="-mx-1 overflow-x-auto px-1">
+					<div className="min-w-[600px]">
+						<div className="mb-2 grid grid-cols-[28px_40px_minmax(0,1fr)_110px_120px] gap-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+							<span>#</span>
+							<span />
+							<span>Giver · mix</span>
+							<span className="text-right">Total</span>
+							<span className="text-right">Monthly</span>
+						</div>
+						<ul className="divide-y divide-border">
+							{items.map((g, idx) => {
+								const name =
+									`${g.memberFirstName} ${g.memberLastName}`.trim() ||
+									"Unnamed";
+								const isDeleted = Boolean(g.memberDeletedAt);
+								const segments: ProgressSegment[] =
+									mode === "type"
+										? g.byType
+												.map((b) => ({
+													value: b.amount,
+													color: TYPE_COLOR[b.type],
+													label: TYPE_LABEL[b.type],
+													displayValue: formatCurrency(b.amount, {
+														decimals: 0,
+													}),
+												}))
+												.sort((a, b) => num(b.value) - num(a.value))
+										: g.byCampaign.map((c, i) => ({
+												value: c.amount,
+												color: pickCategorical(i),
+												label: c.campaignTitle,
+												displayValue: formatCurrency(c.amount, { decimals: 0 }),
+											}));
+
+								const TOP_CHIPS = 4;
+								const visibleChips = segments.slice(0, TOP_CHIPS);
+								const restChips = segments.slice(TOP_CHIPS);
+								const restTitle = restChips
+									.map((r) => `${r.label}: ${r.displayValue ?? ""}`)
+									.join(" · ");
+								const monthlyValues = g.monthlyTotals.map((m) => m.amount);
+
+								return (
+									<li
+										key={g.memberId}
+										className="grid grid-cols-[28px_40px_minmax(0,1fr)_110px_140px] items-start gap-3 py-3.5"
+									>
+										<span className="pt-1 text-xs font-semibold tabular-nums text-muted-foreground">
+											#{idx + 1}
+										</span>
+										<div className="pt-0.5">
+											<Avatar name={name} size={32} />
+										</div>
+										<div className="min-w-0">
+											<div className="flex items-baseline justify-between gap-3">
+												{isDeleted ? (
+													<DeletedLabel
+														deletedAt={g.memberDeletedAt}
+														className="truncate text-sm font-medium"
+													>
+														{name}
+													</DeletedLabel>
+												) : (
+													<Link
+														href={`/${tenantSlug}/admin/members/${g.memberId}`}
+														className="truncate text-sm font-medium text-foreground hover:underline"
+													>
+														{name}
+													</Link>
+												)}
+												<span className="text-xs text-muted-foreground">
+													{g.count} {g.count === 1 ? "gift" : "gifts"} · avg{" "}
+													{formatCompact(g.avg)}
+												</span>
+											</div>
+											<div className="mt-1.5">
+												<MixBar segments={segments} size="lg" />
+											</div>
+											<ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+												{visibleChips.map((s) => (
+													<li
+														key={s.label}
+														className="flex items-center gap-1.5"
+													>
+														<span
+															className="size-2 shrink-0 rounded-sm"
+															style={{ background: s.color }}
+														/>
+														<span className="text-foreground">{s.label}</span>
+														<span className="tabular-nums text-muted-foreground">
+															{s.displayValue ??
+																formatCurrency(s.value, { decimals: 0 })}
+														</span>
+													</li>
+												))}
+												{restChips.length > 0 && (
+													<li
+														className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground"
+														title={restTitle}
+													>
+														+{restChips.length} more
+													</li>
+												)}
+											</ul>
+										</div>
+										<span className="pt-1 text-right text-sm font-semibold tabular-nums text-foreground">
+											{formatCompact(g.total)}
+										</span>
+										<div className="flex justify-end pt-1">
+											<MonthlyBars
+												values={monthlyValues}
+												periodLabels={periodLabels}
+												highlight="var(--chart-current)"
+											/>
+										</div>
+									</li>
+								);
+							})}
+						</ul>
 					</div>
-					<ul className="divide-y divide-border">
-						{items.map((g, idx) => {
-							const name =
-								`${g.memberFirstName} ${g.memberLastName}`.trim() || "Unnamed";
-							const isDeleted = Boolean(g.memberDeletedAt);
-							const segments: ProgressSegment[] =
-								mode === "type"
-									? g.byType
-											.map((b) => ({
-												value: b.amount,
-												color: TYPE_COLOR[b.type],
-												label: TYPE_LABEL[b.type],
-												displayValue: formatCurrency(b.amount, {
-													decimals: 0,
-												}),
-											}))
-											.sort((a, b) => num(b.value) - num(a.value))
-									: g.byCampaign.map((c, i) => ({
-											value: c.amount,
-											color: pickCategorical(i),
-											label: c.campaignTitle,
-											displayValue: formatCurrency(c.amount, { decimals: 0 }),
-										}));
-
-							const TOP_CHIPS = 4;
-							const visibleChips = segments.slice(0, TOP_CHIPS);
-							const restChips = segments.slice(TOP_CHIPS);
-							const restTitle = restChips
-								.map((r) => `${r.label}: ${r.displayValue ?? ""}`)
-								.join(" · ");
-							const monthlyValues = g.monthlyTotals.map((m) => m.amount);
-
-							return (
-								<li
-									key={g.memberId}
-									className="grid grid-cols-[28px_40px_minmax(0,1fr)_110px_140px] items-start gap-3 py-3.5"
-								>
-									<span className="pt-1 text-xs font-semibold tabular-nums text-muted-foreground">
-										#{idx + 1}
-									</span>
-									<div className="pt-0.5">
-										<Avatar name={name} size={32} />
-									</div>
-									<div className="min-w-0">
-										<div className="flex items-baseline justify-between gap-3">
-											{isDeleted ? (
-												<DeletedLabel
-													deletedAt={g.memberDeletedAt}
-													className="truncate text-sm font-medium"
-												>
-													{name}
-												</DeletedLabel>
-											) : (
-												<Link
-													href={`/${tenantSlug}/admin/members/${g.memberId}`}
-													className="truncate text-sm font-medium text-foreground hover:underline"
-												>
-													{name}
-												</Link>
-											)}
-											<span className="text-xs text-muted-foreground">
-												{g.count} {g.count === 1 ? "gift" : "gifts"} · avg{" "}
-												{formatCompact(g.avg)}
-											</span>
-										</div>
-										<div className="mt-1.5">
-											<MixBar segments={segments} size="lg" />
-										</div>
-										<ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-											{visibleChips.map((s) => (
-												<li key={s.label} className="flex items-center gap-1.5">
-													<span
-														className="size-2 shrink-0 rounded-sm"
-														style={{ background: s.color }}
-													/>
-													<span className="text-foreground">{s.label}</span>
-													<span className="tabular-nums text-muted-foreground">
-														{s.displayValue ??
-															formatCurrency(s.value, { decimals: 0 })}
-													</span>
-												</li>
-											))}
-											{restChips.length > 0 && (
-												<li
-													className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground"
-													title={restTitle}
-												>
-													+{restChips.length} more
-												</li>
-											)}
-										</ul>
-									</div>
-									<span className="pt-1 text-right text-sm font-semibold tabular-nums text-foreground">
-										{formatCompact(g.total)}
-									</span>
-									<div className="flex justify-end pt-1">
-										<MonthlyBars
-											values={monthlyValues}
-											periodLabels={periodLabels}
-											highlight="var(--chart-current)"
-										/>
-									</div>
-								</li>
-							);
-						})}
-					</ul>
-				</>
+				</div>
 			)}
 		</Card>
 	);

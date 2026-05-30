@@ -9,14 +9,14 @@ export const SuperAdminProfile = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Platform"
 				title="Super Admin Profile"
 				subtitle="Manage your platform-wide account details."
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
-				<div className="w-xl">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
+				<div className="w-full max-w-xl">
 					<Card>
 						<div className="mb-4">
 							<Input

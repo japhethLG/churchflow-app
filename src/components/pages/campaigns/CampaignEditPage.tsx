@@ -62,12 +62,12 @@ export const CampaignEditPage = () => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					overline="Fundraising / Campaigns"
 					title="Loading..."
 					subtitle="Fetching campaign details..."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+				<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8 flex flex-col gap-4">
 					<div className="h-60 rounded-2xl bg-secondary animate-pulse" />
 				</div>
 			</div>
@@ -77,7 +77,7 @@ export const CampaignEditPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Fundraising / Campaigns"
 				title="Edit campaign"
 				subtitle="Items are managed from the campaign detail page after saving."
@@ -86,7 +86,7 @@ export const CampaignEditPage = () => {
 					label: "Back to campaign",
 				}}
 			/>
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				<CampaignForm
 					onSubmit={onSubmit}
 					onCancel={() => router.push(`/${tenantSlug}/admin/campaigns/${id}`)}

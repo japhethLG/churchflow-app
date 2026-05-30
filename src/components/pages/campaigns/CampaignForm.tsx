@@ -89,7 +89,11 @@ export const CampaignForm = ({
 	};
 
 	return (
-		<Form methods={methods} onSubmit={handleFormSubmit} className="w-2xl">
+		<Form
+			methods={methods}
+			onSubmit={handleFormSubmit}
+			className="w-full max-w-2xl"
+		>
 			<Card padding={24}>
 				<SectionTitle title="Campaign details" />
 				<div className="flex flex-col gap-4">

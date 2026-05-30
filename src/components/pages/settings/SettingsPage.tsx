@@ -76,12 +76,12 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 		return (
 			<div className="h-full flex flex-col">
 				<PageHeader
-					className="px-8"
+					className="px-4 pt-5 md:px-8 md:pt-0"
 					overline="Configuration"
 					title="Settings."
 					subtitle="Loading..."
 				/>
-				<div className="overflow-auto flex-1 px-8 pb-8 flex flex-col gap-4">
+				<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8 flex flex-col gap-4">
 					{[0, 1, 2].map((i) => (
 						<Card key={i}>
 							<div className="mb-5 h-4 w-40 animate-pulse rounded bg-secondary" />
@@ -97,7 +97,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Configuration"
 				title="Settings"
 				subtitle="Manage your church profile."
@@ -117,7 +117,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				{error && (
 					<div className="mb-4 rounded-[10px] bg-destructive/10 px-4 py-3 text-sm text-destructive">
 						{error}
@@ -127,7 +127,7 @@ export const SettingsPage = ({ tenantSlug }: { tenantSlug: string }) => {
 				<Form<SettingsFormValues>
 					methods={methods}
 					onSubmit={onSubmit}
-					className="w-2xl gap-5"
+					className="w-full max-w-2xl gap-5"
 				>
 					<Card>
 						<SectionTitle title="Church profile" />

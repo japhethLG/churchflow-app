@@ -52,6 +52,7 @@ export const buildNav = (
 			icon: "calendar",
 			label: "Campaigns",
 			href: `${prefix}/member/campaigns`,
+			mobileOverflow: true,
 		},
 		{ icon: "book", label: "My pledges", href: `${prefix}/member/my-pledges` },
 		{

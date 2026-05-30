@@ -3,17 +3,24 @@
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import {
+	Badge,
 	Button,
 	DataTableShell,
 	type DateRangeValue,
+	ExpandableCard,
 	PageHeader,
+	StatusBadge,
 	useTableFilters,
 } from "@/components/primitives";
 import { useInvitations } from "@/lib/api/invitations";
 import dayjs from "@/lib/dayjs";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
-import { type Invitation, invitationColumns } from "./InvitationsTable";
+import {
+	INVITATION_STATUS_MAP,
+	type Invitation,
+	invitationColumns,
+} from "./InvitationsTable";
 
 type StatusFilter = "all" | "PENDING" | "ACCEPTED" | "CANCELLED" | "EXPIRED";
 type RoleFilter = "all" | "ADMIN" | "USER";
@@ -109,10 +116,60 @@ export const InvitationsPage = () => {
 
 	const columns = invitationColumns({ onCancel: handleCancel });
 
+	// Sub-`md` row → expandable card. Collapsed: email + status. Expanded:
+	// role, sent date, expiry.
+	const renderInvitationCard = (inv: Invitation) => {
+		const isPending = inv.status === "PENDING";
+		const diff = dayjs(inv.expiresAt).diff(dayjs());
+		const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+		return (
+			<ExpandableCard
+				details={[
+					{
+						label: "Role",
+						value: (
+							<Badge color={inv.role === "ADMIN" ? "indigo" : "neutral"}>
+								{inv.role === "ADMIN" ? "Admin" : "Member"}
+							</Badge>
+						),
+					},
+					{
+						label: "Sent",
+						value: (
+							<span className="text-sm font-medium text-foreground">
+								{dayjs(inv.createdAt).format("MMM D, YYYY")}
+							</span>
+						),
+					},
+					{
+						label: "Expires",
+						value: (
+							<span className="text-sm font-medium text-foreground">
+								{isPending ? (days <= 0 ? "Expired" : `${days}d left`) : "—"}
+							</span>
+						),
+					},
+				]}
+			>
+				<div className="flex items-center gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold tracking-tight">
+							{inv.email}
+						</div>
+						<div className="truncate text-xs text-muted-foreground">
+							Sent {dayjs(inv.createdAt).format("ll")}
+						</div>
+					</div>
+					<StatusBadge status={INVITATION_STATUS_MAP[inv.status]} />
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Directory"
 				title="Invitations"
 				subtitle="Manage member and admin access to your church account."
@@ -128,7 +185,7 @@ export const InvitationsPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				<DataTableShell<Invitation>
 					search={t.search("Search by email…")}
 					filters={[
@@ -137,6 +194,7 @@ export const InvitationsPage = () => {
 						t.date("Date range"),
 					]}
 					onClearFilters={t.clear}
+					mobileCard={renderInvitationCard}
 					stats={[
 						{ label: "total", value: invitations.length },
 						{ label: "pending", value: pendingCount, tone: "warning" },

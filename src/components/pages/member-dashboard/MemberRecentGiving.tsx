@@ -7,6 +7,7 @@ import {
 	type DataTableColumn,
 	DataTableShell,
 	DeletedLabel,
+	ExpandableCard,
 	TypeBadge,
 } from "@/components/primitives";
 import type { TransactionType } from "@/components/primitives/Badge";
@@ -121,6 +122,39 @@ export const MemberRecentGiving = ({
 		},
 	];
 
+	// Sub-`md` row → compact info card (no drill-down — the whole list links
+	// out to the member's transactions page via "View all").
+	const renderGiftCard = (t: Transaction) => {
+		const cid = nstr(t.campaignId);
+		const c = cid ? campaignsById[cid] : null;
+		return (
+			<ExpandableCard deleted={Boolean(t.deletedAt)}>
+				<div className="flex items-center gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-2">
+							<TypeBadge type={TYPE_BADGE[t.type]} />
+							<span className="truncate text-xs text-muted-foreground">
+								{c?.deletedAt ? (
+									<DeletedLabel deletedAt={c.deletedAt}>{c.title}</DeletedLabel>
+								) : c ? (
+									c.title
+								) : (
+									<span className="italic">Unscoped</span>
+								)}
+							</span>
+						</div>
+						<div className="mt-0.5 text-xs text-muted-foreground">
+							{relativeDate(t.date)}
+						</div>
+					</div>
+					<span className="shrink-0 text-sm font-bold tabular-nums">
+						<Amount value={t.amount} />
+					</span>
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	return (
 		<div>
 			<div className="mb-3 flex items-baseline justify-between px-1">
@@ -134,6 +168,7 @@ export const MemberRecentGiving = ({
 			</div>
 			<DataTableShell<Transaction>
 				columns={columns}
+				mobileCard={renderGiftCard}
 				rows={recent}
 				rowKey={(t) => t.id}
 				loading={loading}

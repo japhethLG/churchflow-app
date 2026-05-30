@@ -9,6 +9,7 @@ import {
 	type DataTableColumn,
 	DataTableShell,
 	DeletedLabel,
+	ExpandableCard,
 	PageHeader,
 	RowActionsMenu,
 	StatCard,
@@ -20,6 +21,7 @@ import { useTenants } from "@/lib/api/tenants";
 import dayjs from "@/lib/dayjs";
 import { tenantInitials, tenantLogoGradient } from "@/lib/design/logo-gradient";
 import { formatCompact } from "@/lib/format-currency";
+import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 
 type Tenant = components["schemas"]["TenantListItemDto"];
@@ -196,10 +198,86 @@ export const TenantsPage = () => {
 		},
 	];
 
+	// Sub-`md` row → expandable card. Collapsed: logo + identity + members.
+	// Expanded: admins, gifts MTD, created.
+	const renderTenantCard = (row: Tenant) => (
+		<ExpandableCard
+			deleted={Boolean(row.deletedAt)}
+			details={[
+				{
+					label: "Admins",
+					value: (
+						<AvatarStack
+							members={
+								row.adminsPreview?.map((a) => ({
+									...a,
+									photoUrl: (a.photoUrl as unknown as string) ?? null,
+								})) ?? []
+							}
+							count={row.adminCount ?? 0}
+						/>
+					),
+				},
+				{
+					label: "Gifts (MTD)",
+					value: row.giftsMtdCount ? (
+						<span className="text-sm font-medium text-foreground">
+							{row.giftsMtdCount} · {formatCompact(row.giftsMtdTotal ?? 0)}
+						</span>
+					) : (
+						<span className="text-sm text-muted-foreground">—</span>
+					),
+				},
+				{
+					label: "Created",
+					value: (
+						<span className="text-sm font-medium text-foreground">
+							{formatMonthYear(row.createdAt)}
+						</span>
+					),
+				},
+			]}
+		>
+			<div className="flex items-center gap-3">
+				<TenantLogoTile name={row.name} slug={row.slug} />
+				<div className="min-w-0 flex-1">
+					<div className="flex items-center gap-2">
+						<span className="truncate text-sm font-semibold tracking-tight">
+							{row.name}
+						</span>
+						{row.deletedAt && <Badge color="clay">Archived</Badge>}
+					</div>
+					<div className="truncate text-xs text-muted-foreground">
+						{row.slug}
+					</div>
+				</div>
+				<div className="flex shrink-0 flex-col items-end">
+					<span className="text-sm font-bold tabular-nums">
+						{row.memberCount ?? 0}
+					</span>
+					<span className="text-[11px] text-muted-foreground">members</span>
+				</div>
+			</div>
+		</ExpandableCard>
+	);
+
+	useMobileActions(
+		useMemo(
+			() => [
+				{
+					label: "Create church",
+					icon: "plus" as const,
+					onClick: () => router.push("/super-admin/tenants/new"),
+				},
+			],
+			[router],
+		),
+	);
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Platform"
 				title="Churches"
 				subtitle="All churches on ChurchFlow. Create new ones and manage their admins."
@@ -207,6 +285,7 @@ export const TenantsPage = () => {
 					<Button
 						icon="plus"
 						role="primary"
+						className="hidden md:inline-flex"
 						onClick={() => router.push("/super-admin/tenants/new")}
 					>
 						Create church
@@ -214,8 +293,8 @@ export const TenantsPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
-				<div className="grid grid-cols-4 gap-4">
+			<div className="overflow-auto flex-1 px-4 pb-28 space-y-4 md:px-8 md:pb-8">
+				<div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
 					<StatCard
 						label="Churches"
 						value={stats?.totalTenants ?? "—"}
@@ -260,6 +339,7 @@ export const TenantsPage = () => {
 					filters={[t.state()]}
 					stats={[{ label: "churches", value: filtered.length }]}
 					columns={columns}
+					mobileCard={renderTenantCard}
 					rows={visible}
 					rowKey={(row) => row.id}
 					loading={isLoading}

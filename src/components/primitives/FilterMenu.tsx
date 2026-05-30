@@ -24,6 +24,13 @@ export type FilterMenuProps = {
 	extraContent?: ReactNode;
 	/** Called when "Clear all" is pressed; should reset every filter to its `defaultValue`. */
 	onClearAll?: () => void;
+	/**
+	 * Whether "Clear all" should be enabled. Defaults to "any select filter in
+	 * this menu is active", but the shell passes the result of considering ALL
+	 * filters (date + state too) so clearing works even when only a date range
+	 * — which renders outside this menu — is set.
+	 */
+	canClear?: boolean;
 	/** Override the trigger label. Default: "Filters". */
 	triggerLabel?: string;
 	className?: string;
@@ -33,12 +40,17 @@ export const FilterMenu = ({
 	filters,
 	extraContent,
 	onClearAll,
+	canClear,
 	triggerLabel = "Filters",
 	className,
 }: FilterMenuProps) => {
 	const [open, setOpen] = useState(false);
 	const activeCount = filters.filter(isSelectActive).length;
 	const hasActive = activeCount > 0;
+	// The trigger badge counts active selects in THIS menu; the clear button is
+	// enabled whenever anything is clearable (selects here, or a date/state the
+	// shell knows about).
+	const clearEnabled = canClear ?? hasActive;
 
 	if (filters.length === 0 && !extraContent) {
 		return null;
@@ -101,10 +113,10 @@ export const FilterMenu = ({
 							onClick={() => {
 								onClearAll();
 							}}
-							disabled={!hasActive}
+							disabled={!clearEnabled}
 							className={cn(
 								"text-xs font-medium",
-								hasActive
+								clearEnabled
 									? "text-foreground hover:text-primary"
 									: "text-muted-foreground cursor-not-allowed",
 							)}

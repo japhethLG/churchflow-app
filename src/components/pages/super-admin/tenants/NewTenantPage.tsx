@@ -19,7 +19,7 @@ type Draft = {
 const Stepper = ({ step }: { step: Step }) => {
 	const steps = ["Details", "Invite admins", "Done"];
 	return (
-		<div className="mb-8 flex items-center gap-1">
+		<div className="mb-8 flex items-center justify-center gap-1">
 			{steps.map((label, i) => {
 				const idx = (i + 1) as Step;
 				const isActive = idx === step;
@@ -369,7 +369,7 @@ export const NewTenantPage = () => {
 	};
 
 	return (
-		<div className="mx-auto max-w-[560px] px-6 py-10">
+		<div className="mx-auto max-w-[560px] px-4 pt-10 pb-28 md:px-6 md:py-10">
 			<Stepper step={step} />
 
 			{step === 1 && (

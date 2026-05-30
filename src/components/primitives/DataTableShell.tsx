@@ -19,6 +19,7 @@ import { Select, type SelectOption } from "./Select";
 import { StateFilter } from "./StateFilter";
 import {
 	dateFilters,
+	isFilterActive,
 	STAT_TONE_CLASS,
 	selectFilters,
 	stateFilterOf,
@@ -259,12 +260,19 @@ const Toolbar = <Row,>({
 	const selects = selectFilters(all);
 	const dates = dateFilters(all);
 	const state = stateFilterOf(all);
+	// "Clear all" considers every filter, not just the selects in the menu, so
+	// it stays enabled when only a date range or state filter is active.
+	const canClear = all.some(isFilterActive);
 
 	return (
 		<div className="flex flex-wrap items-center gap-2.5 p-3">
 			{search && <SearchInput {...search} />}
 
-			<FilterMenu filters={selects} onClearAll={onClearFilters} />
+			<FilterMenu
+				filters={selects}
+				onClearAll={onClearFilters}
+				canClear={canClear}
+			/>
 
 			{toolbar}
 

@@ -7,6 +7,7 @@ import {
 	type DataTableColumn,
 	DataTableShell,
 	type DateRangeValue,
+	ExpandableCard,
 	PageHeader,
 	useTableFilters,
 } from "@/components/primitives";
@@ -224,16 +225,81 @@ export const AuditLogPage = () => {
 		},
 	];
 
+	// Sub-`md` row → expandable card. Collapsed: action + entity + relative
+	// time. Expanded: summary, tenant, actor.
+	const renderAuditCard = (e: AuditEvent) => {
+		const summary = nstr(e.summary);
+		const tid = nstr(e.tenantId);
+		const tenant = tid ? tenantNameById.get(tid) : null;
+		return (
+			<ExpandableCard
+				details={[
+					{
+						label: "Summary",
+						value: summary ? (
+							<span className="text-sm font-medium text-foreground">
+								{summary}
+							</span>
+						) : (
+							<span className="text-sm italic text-muted-foreground">
+								No summary
+							</span>
+						),
+					},
+					{
+						label: "Tenant",
+						value: !tid ? (
+							<span className="text-sm italic text-muted-foreground">
+								Platform
+							</span>
+						) : (
+							<span className="text-sm font-medium text-foreground">
+								{tenant ? tenant.name : `${tid.slice(0, 8)}…`}
+							</span>
+						),
+					},
+					{
+						label: "Actor",
+						value: (
+							<span className="text-sm font-medium text-foreground">
+								{nstr(e.actorEmail) ?? `${e.actorUid.slice(0, 12)}…`}
+							</span>
+						),
+					},
+				]}
+			>
+				<div className="flex items-center gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-2">
+							<Badge color={ACTION_COLOR[e.action]}>
+								{ACTION_LABEL[e.action]}
+							</Badge>
+							<span className="truncate text-sm font-semibold tracking-tight">
+								{e.entity}
+							</span>
+						</div>
+						<div className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">
+							{e.entityId.slice(0, 8)}…
+						</div>
+					</div>
+					<span className="shrink-0 text-xs text-muted-foreground">
+						{dayjs(e.createdAt).fromNow()}
+					</span>
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Platform"
 				title="Audit log"
 				subtitle="Every mutating action across the platform — append-only, never edited."
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				<DataTableShell<AuditEvent>
 					search={t.search("Filter by actor email or UID…")}
 					filters={[
@@ -251,6 +317,7 @@ export const AuditLogPage = () => {
 					onClearFilters={t.clear}
 					stats={[{ label: "events", value: total.toLocaleString() }]}
 					columns={columns}
+					mobileCard={renderAuditCard}
 					rows={visible}
 					rowKey={(e) => e.id}
 					loading={auditQ.isLoading}

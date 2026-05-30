@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 export type Invitation = components["schemas"]["InvitationResponseDto"];
 
-const STATUS_MAP: Record<Invitation["status"], Status> = {
+export const INVITATION_STATUS_MAP: Record<Invitation["status"], Status> = {
 	PENDING: "Pending",
 	ACCEPTED: "Completed",
 	EXPIRED: "Cancelled",
@@ -47,7 +47,7 @@ export const invitationColumns = ({
 		key: "status",
 		label: "Status",
 		width: "140px",
-		render: (row) => <StatusBadge status={STATUS_MAP[row.status]} />,
+		render: (row) => <StatusBadge status={INVITATION_STATUS_MAP[row.status]} />,
 	},
 	{
 		key: "expires",

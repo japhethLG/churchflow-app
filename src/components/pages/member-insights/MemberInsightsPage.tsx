@@ -251,13 +251,13 @@ export const MemberInsightsPage = () => {
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Insights"
 				title={`Your giving, ${firstName}`}
 				subtitle="A long view of your generosity — by year, by month, by type, and by campaign."
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
+			<div className="overflow-auto flex-1 px-4 pb-28 space-y-4 md:px-8 md:pb-8">
 				{profileMissing && (
 					<div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
 						<div className="font-medium">
@@ -278,6 +278,7 @@ export const MemberInsightsPage = () => {
 
 				<Card padding={24}>
 					<StatBand
+						mobileColumns={2}
 						items={[
 							{ label: "Lifetime", value: formatCompact(lifetimeTotal) },
 							{ label: "Gifts", value: lifetimeCount.toLocaleString() },
@@ -510,7 +511,7 @@ export const MemberInsightsPage = () => {
 									<li key={c.campaignId}>
 										<Link
 											href={`/${tenantSlug}/member/campaigns/${c.campaignId}`}
-											className="-mx-2 grid grid-cols-[minmax(0,1fr)_200px_100px] items-center gap-4 rounded-md px-2 py-3 transition-colors hover:bg-muted/60"
+											className="-mx-2 flex flex-col gap-2 rounded-md px-2 py-3 transition-colors hover:bg-muted/60 sm:grid sm:grid-cols-[minmax(0,1fr)_200px_100px] sm:items-center sm:gap-4"
 										>
 											<span className="truncate text-sm font-medium text-foreground">
 												{c.title}

@@ -8,6 +8,7 @@ import {
 	DataTableShell,
 	type DateRangeValue,
 	DeletedLabel,
+	ExpandableCard,
 	PageHeader,
 	useTableFilters,
 } from "@/components/primitives";
@@ -206,16 +207,87 @@ export const MemberTransactions = ({
 
 	const hasMix = mixSegments.length > 0;
 
+	// Sub-`md` row → expandable card. Collapsed: campaign + date + type +
+	// amount. Expanded: reference #, full date, item.
+	const renderTransactionCard = (tx: Transaction) => {
+		const cid = nstr(tx.campaignId);
+		const campaign = cid ? campaignMap[cid] : null;
+		const title = campaign?.title ?? null;
+		const deletedAt = campaign?.deletedAt ?? null;
+		const itemId = nstr(tx.campaignItemId);
+		const itemTitle = itemId ? campaignItemMap[itemId] : null;
+		const ref = nstr(tx.referenceNumber);
+		return (
+			<ExpandableCard
+				details={[
+					{
+						label: "Reference #",
+						value: ref ? (
+							<span className="font-mono text-xs font-medium text-foreground">
+								{ref}
+							</span>
+						) : (
+							<span className="text-sm text-muted-foreground">—</span>
+						),
+					},
+					{
+						label: "Date",
+						value: (
+							<span className="text-sm font-medium text-foreground">
+								{dayjs(tx.date).format("MMM D, YYYY")}
+							</span>
+						),
+					},
+					...(itemTitle
+						? [
+								{
+									label: "Item",
+									value: (
+										<span className="text-sm font-medium text-foreground">
+											{itemTitle}
+										</span>
+									),
+								},
+							]
+						: []),
+				]}
+			>
+				<div className="flex items-center gap-3">
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold tracking-tight">
+							{title ? (
+								deletedAt ? (
+									<DeletedLabel deletedAt={deletedAt}>{title}</DeletedLabel>
+								) : (
+									title
+								)
+							) : (
+								<span className="text-muted-foreground">No campaign</span>
+							)}
+						</div>
+						<div className="truncate text-xs text-muted-foreground">
+							{dayjs(tx.date).format("MMM D, YYYY")}
+						</div>
+					</div>
+					<div className="flex shrink-0 flex-col items-end gap-1">
+						<Amount value={tx.amount} />
+						<TypeBadge type={TYPE_BADGE[tx.type] || "Other"} />
+					</div>
+				</div>
+			</ExpandableCard>
+		);
+	};
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="My Giving"
 				title="Your giving history"
 				subtitle={`Everything your church has recorded for you — private, and always yours.`}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8 space-y-4">
+			<div className="overflow-auto flex-1 px-4 pb-28 space-y-4 md:px-8 md:pb-8">
 				{hasMix && (
 					<TransactionMixCard
 						segments={mixSegments}
@@ -237,6 +309,7 @@ export const MemberTransactions = ({
 						t.date("Date range"),
 					]}
 					onClearFilters={t.clear}
+					mobileCard={renderTransactionCard}
 					stats={[
 						{ label: "gifts", value: stats.count },
 						{

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
 	Avatar,
 	Badge,
@@ -7,6 +8,7 @@ import {
 	type DataTableColumn,
 	DataTableShell,
 	DeletedLabel,
+	ExpandableCard,
 	PageHeader,
 	RowActionsMenu,
 	useTableFilters,
@@ -15,6 +17,7 @@ import { useAdminStats, useAdminUsers } from "@/lib/api/admin";
 import type { components } from "@/lib/api/schema";
 import { useTenants } from "@/lib/api/tenants";
 import dayjs from "@/lib/dayjs";
+import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 
 type AdminUser = components["schemas"]["AdminUserDto"];
@@ -151,10 +154,98 @@ export const AdminsPage = () => {
 		},
 	];
 
+	// Sub-`md` row → expandable card. Collapsed: avatar + identity + super-admin
+	// pill. Expanded: churches, super-admin, joined.
+	const renderAdminCard = (u: AdminUser) => {
+		const archived = Boolean((u as { deletedAt?: string | null }).deletedAt);
+		const archivedAt = (u as { deletedAt?: string | null }).deletedAt;
+		const adminMemberships = u.memberships.filter((m) => m.role === "ADMIN");
+		return (
+			<ExpandableCard
+				deleted={archived}
+				details={[
+					{
+						label: "Churches",
+						value:
+							adminMemberships.length === 0 ? (
+								<span className="text-sm text-muted-foreground">
+									No churches
+								</span>
+							) : (
+								<span className="flex flex-wrap justify-end gap-1">
+									{adminMemberships.map((m) => (
+										<Badge key={m.tenantId} color="indigo">
+											{m.tenantName}
+										</Badge>
+									))}
+								</span>
+							),
+					},
+					{
+						label: "Super admin",
+						value: u.isSuperAdmin ? (
+							<Badge color="indigo">Yes</Badge>
+						) : (
+							<span className="text-sm text-muted-foreground">No</span>
+						),
+					},
+					{
+						label: "Joined",
+						value: (
+							<span className="text-sm font-medium text-foreground">
+								{dayjs(u.createdAt).format("MMM D, YYYY")}
+							</span>
+						),
+					},
+				]}
+			>
+				<div className="flex items-center gap-3">
+					<Avatar
+						name={u.displayName}
+						src={(u.photoUrl as string | undefined) ?? undefined}
+						size={40}
+					/>
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold tracking-tight">
+							{archived ? (
+								<DeletedLabel deletedAt={archivedAt}>
+									{u.displayName}
+								</DeletedLabel>
+							) : (
+								u.displayName
+							)}
+						</div>
+						<div className="truncate text-xs text-muted-foreground">
+							{u.email}
+						</div>
+					</div>
+					{u.isSuperAdmin && (
+						<Badge color="indigo" className="shrink-0">
+							Super
+						</Badge>
+					)}
+				</div>
+			</ExpandableCard>
+		);
+	};
+
+	useMobileActions(
+		useMemo(
+			() => [
+				{
+					label: "Invite admin",
+					icon: "plus" as const,
+					onClick: () => openModal("invite-admin-global", {}),
+				},
+			],
+			[],
+		),
+	);
+
 	return (
 		<div className="h-full flex flex-col">
 			<PageHeader
-				className="px-8"
+				className="px-4 pt-5 md:px-8 md:pt-0"
 				overline="Platform"
 				title="Admins"
 				subtitle="Everyone with admin access across all churches."
@@ -162,6 +253,7 @@ export const AdminsPage = () => {
 					<Button
 						icon="plus"
 						role="primary"
+						className="hidden md:inline-flex"
 						onClick={() => openModal("invite-admin-global", {})}
 					>
 						Invite admin
@@ -169,7 +261,7 @@ export const AdminsPage = () => {
 				}
 			/>
 
-			<div className="overflow-auto flex-1 px-8 pb-8">
+			<div className="overflow-auto flex-1 px-4 pb-28 md:px-8 md:pb-8">
 				<DataTableShell<AdminUser>
 					stats={[
 						{ label: "Super admins", value: stats?.superAdmins ?? "—" },
@@ -189,6 +281,7 @@ export const AdminsPage = () => {
 					]}
 					onClearFilters={t.clear}
 					columns={columns}
+					mobileCard={renderAdminCard}
 					rows={users}
 					rowKey={(u) => u.id}
 					loading={isLoading}
