@@ -22,7 +22,7 @@
 | Server state | **TanStack Query v5** | |
 | HTTP client | **openapi-fetch 0.17** | one browser ([client.ts](src/lib/api/client.ts)), one RSC ([server.ts](src/lib/api/server.ts)) |
 | Type generation | **openapi-typescript 7** | against backend's `/api-docs-json` |
-| Client state | **Zustand 5** | modals only |
+| Client state | **Zustand 5** | UI-only stores: modals (§8), sheets (§9), mobile-actions FAB (§10.2) |
 | Forms | **react-hook-form 7** + **zod 4** | via `components/formElements/*` |
 | Auth | `firebase` (client) + `firebase-admin` (server) | |
 | Charts | `recharts` | consumed only via [Charts.tsx](src/components/primitives/Charts.tsx) |
@@ -32,6 +32,7 @@
 | Styling | Tailwind 4 + CSS variables | tokens in `globals.css`; `cn()` in [utils.ts](src/lib/utils.ts) |
 | Linting | **Biome 2** | |
 | Headless UI | `@base-ui/react` + `components/ui/` shadcn-style set | base for our primitives only |
+| PWA | **Serwist** (`@serwist/turbopack`) | installable PWA / TWA; service worker `app/sw.ts`, manifest `app/manifest.ts` (§11) |
 
 Backend dev server: **`:8000`** (set via `NEXT_PUBLIC_API_BASE_URL`).
 OpenAPI doc URL for type generation: `http://localhost:8000/api-docs-json`. `npm run dev` blocks on `scripts/wait-for-api.sh`.
@@ -72,11 +73,16 @@ src/
 │   ├── ui/                  # raw shadcn-style wrappers — consumed BY primitives only
 │   ├── formElements/        # RHF-bound primitive wrappers
 │   ├── layout/              # AppShell, Sidebar, TopBar
+│   │   └── mobile/          # MobileChrome, MobileBottomNav, MobileTopBar, MobilePageFab (§10.1)
 │   ├── pages/               # page-level composites (the real page UI)
-│   └── modals/
-│       ├── BaseModal.tsx    # shared shell — every modal renders inside this
-│       ├── index.ts         # barrel — loads every modal's `declare module`
-│       └── <name>/<Name>Modal.tsx
+│   ├── modals/
+│   │   ├── BaseModal.tsx    # shared shell — every modal renders inside this
+│   │   ├── index.ts         # barrel — loads every modal's `declare module`
+│   │   └── <name>/<Name>Modal.tsx
+│   └── sheets/              # mobile bottom sheets (§9), mirrors modals/
+│       ├── BaseSheet.tsx    # shared shell — every sheet renders inside this
+│       ├── index.ts         # barrel — loads every sheet's `declare module`
+│       └── <name>/<Name>Sheet.tsx
 └── lib/
     ├── api/
     │   ├── client.ts        # browser openapi-fetch + Bearer middleware
@@ -86,10 +92,15 @@ src/
     │   ├── schema.d.ts      # GENERATED
     │   └── <entity>/        # one folder per entity, split by intent (§6)
     ├── modals/{registry,store,host}.tsx
+    ├── sheets/{registry,store,host,useSheetDrill}.tsx   # bottom-sheet system (§9)
+    ├── mobile-actions/store.ts                          # page-action FAB bridge (§10.2)
     ├── auth/{AuthProvider,actions,server,rate-limit}.ts
     ├── firebase/{client,admin}.ts
     └── dayjs.ts             # sole dayjs entrypoint with plugins
 ```
+
+The PWA entrypoints (`app/manifest.ts`, `app/sw.ts`,
+`app/serwist/[path]/route.ts`) are covered in §11.
 
 There is **no** `app/(dashboard)/`, **no** `app/admin/`, and **no**
 generic `lib/api/<entity>/hooks.ts` — every entity is split by intent.
@@ -478,7 +489,79 @@ While a modal's mutation is pending, pass `dismissible={false}` to
 
 ---
 
-## 9. Layout / chrome
+## 9. Sheets — mobile bottom sheets
+
+Modals (§8) are the desktop-centred overlay; **sheets** are the mobile
+bottom-sheet counterpart, with a drag handle, snap points, and a sticky
+safe-area footer. They live in `src/components/sheets/` and are driven by
+a **separate registry / host / store that mirrors the modal system
+one-for-one** — don't conflate the two.
+
+```
+src/components/sheets/
+├── BaseSheet.tsx            # shared shell (drag, snapPoints, footer, onBack)
+├── index.ts                 # barrel — loads every sheet's `declare module`
+└── <name>/
+    ├── <Name>Sheet.tsx      # component + `declare module` augmentation
+    └── index.ts
+src/lib/sheets/
+├── registry.ts              # SheetPropsMap (augmented per sheet) + SheetBaseProps
+├── store.ts                 # openSheet / closeSheet (work outside React)
+├── host.tsx                 # SheetHost — registry object + exit-animation mount
+└── useSheetDrill.ts         # in-sheet drill-down (directional slide)
+```
+
+`SheetHost` is mounted in the **root** [app/layout.tsx](src/app/layout.tsx)
+beside `ModalHost`, so sheets work on public pages too (e.g. the landing
+navbar's account sheet).
+
+### 9.1 Modal vs sheet
+
+Use a **sheet** for a mobile-first flow (record gift, make a pledge,
+account menu, nav overflow); use a **modal** for confirmations and
+desktop-centred forms. Several flows ship both — the desktop surface
+opens the modal, the mobile FAB opens the sheet (e.g. the `create-pledge`
+modal + the `pledge` sheet). Either way, never render a standalone
+overlay/portal — go through `BaseSheet`.
+
+### 9.2 Registering a sheet — three edits (mirrors §8.2)
+
+1. Create `src/components/sheets/<name>/<Name>Sheet.tsx`: a component
+   taking `SheetBaseProps & <YourProps>`, wrapping its body in
+   `<BaseSheet>`, with a `declare module "@/lib/sheets/registry"`
+   augmentation of `SheetPropsMap`.
+2. Create `<name>/index.ts` re-exporting it.
+3. Add `export * from "./<name>";` to
+   [components/sheets/index.ts](src/components/sheets/index.ts) AND add the
+   component to the `registry` object in
+   [lib/sheets/host.tsx](src/lib/sheets/host.tsx).
+
+### 9.3 Opening / props
+
+```ts
+import { openSheet } from "@/lib/sheets/store";
+openSheet("pledge", { intent: "tenant", tenantSlug, campaignId, … });
+```
+
+Type-checked against `SheetPropsMap`; works outside React. The host
+injects `open` / `onOpenChange` / `onOpenChangeComplete` — sheet authors
+thread those into `<BaseSheet>`; callers never pass them. While a mutation
+is pending, keep the footer button in its `loading` state rather than
+letting the sheet close mid-flight.
+
+### 9.4 In-sheet drill-down & local filter sheets
+
+- Multi-step sheets (account → switch context → tenant picker) use
+  [`useSheetDrill(initial, open)`](src/lib/sheets/useSheetDrill.ts) for
+  the directional slide + auto-reset on close, plus `BaseSheet`'s `onBack`.
+- A sheet whose controls must read **live page state** (the list-filter
+  sheet) is built **locally with `BaseSheet`, NOT registered globally** —
+  the global store snapshots props at `openSheet` time and would go
+  stale. See `DataTableShellMobile`.
+
+---
+
+## 10. Layout, chrome & mobile
 
 [`AppShell`](src/components/layout/app-shell/AppShell.tsx) is the
 top-level chrome for every authenticated surface. It takes a
@@ -490,9 +573,78 @@ Layouts instantiate `AppShell` — **pages don't import it themselves**.
 To add a navigation item, edit
 [`components/layout/sidebar/buildNav.ts`](src/components/layout/sidebar/buildNav.ts).
 
+### 10.1 Mobile chrome
+
+Below `md` (768px) the desktop Sidebar/TopBar are `hidden md:flex` and
+[`MobileChrome`](src/components/layout/mobile/) swaps in:
+
+- `MobileTopBar` — church identity (tap → account sheet) + cosmetic
+  search/bell.
+- `MobileBottomNav` — up to 5 primary nav tabs + a trailing **"More"**
+  tab (opens `MoreSheet`) when there's overflow. A `NavItem` flagged
+  `mobileOverflow: true` in `buildNav.ts` drops to More on mobile only
+  (desktop sidebar ignores the flag).
+- `MobilePageFab` — bottom-right FAB for the page's primary action(s).
+
+### 10.2 Page-action FAB
+
+A page publishes its primary action(s) with the mobile-actions store:
+
+```ts
+useMobileActions(useMemo(() => [{ label, icon, onClick }], deps));
+```
+
+One action → a one-tap FAB; 2+ → a speed dial. Keep the desktop
+`PageHeader` button(s) as `className="hidden md:inline-flex"` so the
+action exists on both. Call the hook **before any early return**
+(rules-of-hooks) and return `[]` while data is loading. On tabbed detail
+pages, compute the FAB set from the active tab **in the parent** — don't
+call `useMobileActions` from each tab, sibling calls clobber each other.
+
+### 10.3 The mobile page recipe
+
+Every full-page composite follows the same responsive shape:
+
+- Scroll container: `px-4 pb-36 md:px-8 md:pb-8` — `pb-36` clears the
+  bottom nav **and** the FAB (never `pb-28`; the FAB overlaps it).
+- `PageHeader className="px-4 pt-5 md:px-8 md:pt-0"`.
+- Tables → `DataTableShell` with `mobileCard={(row) => <ExpandableCard …>}`
+  (collapsed headline + tap-reveal detail rows). Pass `href` for rows that
+  navigate to a detail page; pass `actions` for rows managed in place (no
+  detail route). The desktop table is hidden below `md` automatically.
+- Multi-KPI `StatBand` → `mobileColumns={2 | 3}` so it grids instead of
+  squishing into an overflowing divided row.
+- Tab strips (`SegmentedControl`) → wrap in
+  `-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0` so long label sets scroll.
+- `useTableFilters` already drops the default page size to 10 on mobile.
+
 ---
 
-## 10. Anti-patterns — non-obvious traps
+## 11. PWA / service worker
+
+The app is an installable PWA (also packaged as a TWA/APK). Three pieces,
+all under `src/app/`:
+
+- [`manifest.ts`](src/app/manifest.ts) — Next metadata-route manifest
+  (name, icons, `display: standalone`).
+- [`sw.ts`](src/app/sw.ts) — Serwist service worker. **Never caches
+  `/api/`** (Bearer/cookie-gated; a stale response would trip the
+  401 → global sign-out in [client.ts](src/lib/api/client.ts)), and passes
+  Firebase/Google auth hosts + `/__/auth`,`/__/firebase` straight through
+  (`NetworkOnly`) — caching them breaks `signInWithRedirect`.
+- [`serwist/[path]/route.ts`](src/app/serwist/[path]/route.ts) — serves
+  the compiled SW at `/serwist/sw.js` (precache revisioned by git SHA).
+
+[`next.config.ts`](next.config.ts) wraps the config in `withSerwist`, sets
+the SW's own CSP + no-store headers, and rewrites `/__/auth/*` &
+`/__/firebase/*` to the project's `firebaseapp.com` so Firebase Auth is
+first-party (required for redirect login inside the APK). When touching
+the SW: don't add `/api/` to runtime caching and keep the auth hosts in
+the passthrough.
+
+---
+
+## 12. Anti-patterns — non-obvious traps
 
 These are the traps the positive sections above don't already make
 load-bearing. (Don't `<button>`/`<input>` outside primitives — that's
@@ -517,17 +669,21 @@ just §7.)
 | Inlining JSX, data fetching, or `useParams()` in `page.tsx` | Build the UI as a Page composite under `components/pages/<feature>/` (§4.3) |
 | Importing `firebase-admin` from a client file | Server-only; build will fail |
 | Rendering a modal overlay inline instead of through `BaseModal` + registry | Breaks ESC/backdrop handling |
+| Rendering a bottom sheet inline, or registering the list-filter sheet in the global store | Use `BaseSheet` + the sheet registry (§9); keep the live-state filter sheet **local** — the global store snapshots props and goes stale |
+| `pb-28` (or no bottom padding) on a mobile scroll container | Use `pb-36` — the page FAB is taller than the bottom-nav clearance and will cover the last row (§10.3) |
+| Calling `useMobileActions` from each tab of a tabbed detail page | Compute the FAB set from the active tab in the **parent** — sibling calls clobber each other (§10.2) |
+| Squishing a wide table on mobile with `overflow-x-auto`/`min-w-[…]` | Give `DataTableShell` a `mobileCard` (`ExpandableCard`) — scroll hacks are a last resort (§10.3) |
 
 ---
 
-## 11. Soft delete — frontend UX patterns
+## 13. Soft delete — frontend UX patterns
 
 The backend stamps `deletedAt` / `deletedBy` / `deletedByCascade` and a
 Prisma extension keeps tombstones out of normal reads (see
 [backend CLAUDE.md §8.3](../church-app-backend/CLAUDE.md#83-soft-delete--managed-by-the-prisma-extension-at-srcinfrastructureprisma-clientsoft-delete)).
 The frontend's job is to make that lifecycle legible.
 
-### 11.1 The 3-state archive filter (admin lists)
+### 13.1 The 3-state archive filter (admin lists)
 
 Every admin list page has an "Active / Deleted / All" switcher in
 [`DataTableShell`](src/components/primitives/DataTableShell.tsx) via the
@@ -552,7 +708,7 @@ filter DTOs all extend `StateFilterRequestDto`. **Member surfaces do
 NOT expose this switcher** — they only opt into tombstones to resolve
 Mode-B labels (below).
 
-### 11.2 Tombstone rendering — three modes
+### 13.2 Tombstone rendering — three modes
 
 | Mode | When | Primitive | Visual |
 |---|---|---|---|
@@ -563,7 +719,7 @@ Mode-B labels (below).
 `DeletedLabel` has a `hidePill` prop for Mode-A rows that also reference
 another tombstone — avoids double-pill noise.
 
-### 11.3 Lookup-table opt-in
+### 13.3 Lookup-table opt-in
 
 A list page rendering Mode-B labels must fetch its lookup tables with
 `includeDeleted: true`. Otherwise the map omits the tombstone and the
@@ -577,7 +733,7 @@ const { data: membersData } = useMembers(tenantSlug, { limit: 200, includeDelete
 This is **only** for lookup-style fetches building a name/id map. The
 page's main list query is still driven by `StateFilter`.
 
-### 11.4 Restore flow
+### 13.4 Restore flow
 
 Restoring is destructive of current state (the row reappears, indexes
 rebuild, partial-unique slots get reclaimed) — every restore goes
@@ -590,7 +746,7 @@ from the row-action menu or `EntityRestoreBanner`. See
 [`components/modals/confirm-restore-campaign/`](src/components/modals/confirm-restore-campaign/)
 for the canonical shape.
 
-### 11.5 Row actions on tombstones
+### 13.5 Row actions on tombstones
 
 [`RowActionsMenu`](src/components/primitives/RowActionsMenu.tsx)
 returns `null` when `actions` is empty. Pages compose conditionally:
@@ -600,17 +756,23 @@ short-circuit.
 
 ---
 
-## 12. Pre-commit checklist
+## 14. Pre-commit checklist
 
 1. Ran `npm run api:types` after the backend changed?
 2. Every new mutation hook calls `invalidate<Entity>` in `onSuccess`?
 3. Every new modal: uses `BaseModal`, `declare module` augmentation, and
    appears in both `components/modals/index.ts` and
    `lib/modals/host.tsx`'s registry?
-4. Identity-changing actions call `invalidateAllApiQueries` and the
+4. Every new sheet: uses `BaseSheet`, `declare module` augmentation, and
+   appears in both `components/sheets/index.ts` and
+   `lib/sheets/host.tsx`'s registry? (§9)
+5. New full-page composite follows the mobile recipe — `pb-36` scroll
+   container, `mobileCard` on tables, primary action in a
+   `useMobileActions` FAB? (§10.3)
+6. Identity-changing actions call `invalidateAllApiQueries` and the
    backend handler is marked `@RefreshesClaims()`?
-5. No Firebase Admin import in client bundle? No Firebase client import
+7. No Firebase Admin import in client bundle? No Firebase client import
    in RSC?
-6. `npm run check` green? (UI-primitive enforcement + Biome)
-7. `npm run typecheck` green?
-8. `npm run build` green?
+8. `npm run check` green? (UI-primitive enforcement + Biome)
+9. `npm run typecheck` green?
+10. `npm run build` green?

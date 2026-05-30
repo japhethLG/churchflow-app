@@ -4,8 +4,8 @@
 	"description": "ChurchFlow - Multi-tenant church management system",
 	"private": true,
 	"scripts": {
-		"dev": "bash scripts/wait-for-api.sh && next dev",
-		"dev:test": "dotenv -e .env.development.local -- next dev",
+		"dev": "bash scripts/wait-for-api.sh && NODE_OPTIONS='--max-old-space-size=4096' next dev",
+		"dev:test": "NODE_OPTIONS='--max-old-space-size=4096' dotenv -e .env.development.local -- next dev",
 		"build": "dotenv -e .env.production -- next build",
 		"build:test": "dotenv -e .env.development.local -- next build",
 		"start": "dotenv -e .env.production -- next start -p 3002",

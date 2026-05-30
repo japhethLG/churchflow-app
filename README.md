@@ -15,7 +15,8 @@ Backend lives in [../church-app-backend](../church-app-backend).
   generated from the backend's OpenAPI spec. Two clients: one in the
   browser (Bearer ID token), one for RSCs (forwards the session cookie
   under a custom `SessionCookie` auth scheme)
-- **Zustand 5** — minimal client state (modals only)
+- **Zustand 5** — minimal UI-only client state (modals, mobile bottom
+  sheets, the mobile page-action FAB)
 - **react-hook-form 7** + **zod 4** — forms, wrapped in
   `components/formElements/*`
 - **Firebase** (client SDK) + **firebase-admin** (server) — Google SSO;
@@ -26,6 +27,8 @@ Backend lives in [../church-app-backend](../church-app-backend).
   — vendored through primitives, never imported directly from a page
 - **Biome 2** — lint + format
 - **husky** — git hooks
+- **Serwist** (`@serwist/turbopack`) — installable PWA / offline shell;
+  also packaged as a TWA/APK
 
 ## Setup
 
@@ -80,7 +83,8 @@ src/
 │   │   ├── (member)/member/{ dashboard, campaigns, my-pledges, my-transactions, … }
 │   │   └── welcome/
 │   ├── api/auth/session/               # POST mints / DELETE clears the session cookie
-│   └── logout/
+│   ├── logout/
+│   └── manifest.ts  sw.ts  serwist/    # PWA: web manifest + Serwist service worker
 │
 ├── proxy.ts                            # middleware: cookie gate + per-request CSP nonce
 │
@@ -88,9 +92,10 @@ src/
 │   ├── primitives/                     # OUR design system (Button, Input, Card, DataTable, …)
 │   ├── ui/                             # raw shadcn-style wrappers — used BY primitives only
 │   ├── formElements/                   # react-hook-form bindings (FormInput, FormSelect, FormSubmit, …)
-│   ├── layout/                         # AppShell + Sidebar + TopBar
+│   ├── layout/                         # AppShell + Sidebar + TopBar; layout/mobile/ = sub-md chrome
 │   ├── pages/                          # page-level composites (DashboardKpiStrip, CampaignForm, …)
 │   ├── modals/                         # BaseModal + 25+ registered modals
+│   ├── sheets/                         # BaseSheet + mobile bottom sheets (mirrors modals/)
 │   ├── illustrations/                  # SVG components
 │   └── auth/                           # client pieces of the auth flow
 │
@@ -107,6 +112,8 @@ src/
     │       ├── tenant/   self/         # /tenants/:tenantId/<entity>     /tenants/:tenantId/me/<entity>
     │       └── platform/   public/     # /platform/<entity>              /<token-route>
     ├── modals/                         # registry, Zustand store, ModalHost
+    ├── sheets/                         # registry, store, SheetHost, useSheetDrill (mobile sheets)
+    ├── mobile-actions/                 # Zustand bridge for the mobile page-action FAB
     ├── auth/                           # AuthProvider, server.getSessionUser, actions, rate-limit
     ├── firebase/                       # client + admin SDK factories
     ├── design/   utils.ts   dayjs.ts   format-currency.ts
@@ -243,6 +250,33 @@ Modal prop shapes are typed via `declare module` augmentation — there's
 no string-typed `props: any` payload. See
 [CLAUDE.md §8](CLAUDE.md#8-modal-system--one-folder-per-modal) for how
 to register one.
+
+### Sheets & mobile chrome
+
+Modals are the desktop overlay; **sheets** are the mobile bottom-sheet
+counterpart (drag handle, snap points), under `src/components/sheets/`
+with their own registry / store / host that mirror the modal system.
+Open one with `openSheet("pledge", { … })`. Some flows ship both — the
+desktop surface opens the modal, the mobile FAB opens the sheet.
+
+Below `md` (768px) the Sidebar/TopBar give way to `MobileChrome`
+(`components/layout/mobile/`): a bottom nav, a top bar, and a
+page-action FAB driven by `useMobileActions`. Page composites follow a
+single responsive recipe — `px-4 pb-36 md:px-8 md:pb-8` scroll
+container, `DataTableShell` `mobileCard` for tables, `StatBand
+mobileColumns` for KPI bands. See
+[CLAUDE.md §9–§10](CLAUDE.md#9-sheets--mobile-bottom-sheets).
+
+### PWA
+
+The app is an installable PWA (and packaged as a TWA/APK) via **Serwist**.
+The web manifest is [`app/manifest.ts`](src/app/manifest.ts) and the
+service worker is [`app/sw.ts`](src/app/sw.ts), served at `/serwist/sw.js`
+by a Route Handler. The SW deliberately **never caches `/api/`** (auth-gated)
+and passes Firebase/Google auth requests straight through, and
+`next.config.ts` rewrites `/__/auth/*` to the project's `firebaseapp.com`
+so redirect-based login is first-party. See
+[CLAUDE.md §11](CLAUDE.md#11-pwa--service-worker).
 
 ## For agents
 
