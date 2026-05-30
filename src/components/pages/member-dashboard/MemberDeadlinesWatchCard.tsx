@@ -10,9 +10,15 @@ import {
 import type { components } from "@/lib/api";
 import { formatCompact } from "@/lib/format-currency";
 import { daysUntil, pct } from "../admin-shared";
-import type { MyCampaignProgressLite } from "./useMyCampaignProgressMany";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
+
+// Compact progress shape consumed by this card (goal / pledged / raised).
+export type MyCampaignProgressLite = {
+	goalAmount: number;
+	pledgedAmount: number;
+	raisedAmount: number;
+};
 
 // Member-side mirror of the admin DeadlineWatchCard. Surfaces active
 // campaigns approaching deadline so the member can see "where can I

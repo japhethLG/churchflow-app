@@ -7,6 +7,7 @@ export const MEMBER_PATHS = [
 	"/api/v1/tenants/{tenantId}/members/{id}/summary",
 	"/api/v1/tenants/{tenantId}/members/{id}/merge",
 	"/api/v1/tenants/{tenantId}/members/{id}/merge-preview",
+	"/api/v1/tenants/{tenantId}/members/giving-trend",
 	"/api/v1/tenants/{tenantId}/me/profile",
 ] as const;
 

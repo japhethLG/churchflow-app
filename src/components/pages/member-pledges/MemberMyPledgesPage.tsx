@@ -13,7 +13,6 @@ import { useMyPledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { num, pct } from "../admin-shared";
-import { useMyCampaignsManyWithItems } from "../member-dashboard/useMyCampaignsManyWithItems";
 import {
 	MemberPledgeCard,
 	type MemberPledgeRow,
@@ -67,22 +66,6 @@ export const MemberMyPledgesPage = () => {
 		[campaigns],
 	);
 
-	// Item deadlines for the campaigns referenced by these pledges — item
-	// deadline wins over campaign deadline when set.
-	const pledgeCampaignIds = useMemo(() => {
-		const set = new Set<string>();
-		for (const p of pledges) {
-			if (p.campaignId) {
-				set.add(p.campaignId);
-			}
-		}
-		return Array.from(set);
-	}, [pledges]);
-	const { itemDeadlinesById } = useMyCampaignsManyWithItems(
-		tenantSlug,
-		pledgeCampaignIds,
-	);
-
 	const filtered = useMemo<MemberPledgeRow[]>(() => {
 		let out = pledges;
 		if (tab === "active") {
@@ -129,7 +112,7 @@ export const MemberMyPledgesPage = () => {
 
 	const loading = pledgesQ.isLoading || campaignsQ.isLoading;
 
-	const columns = memberPledgeColumns({ campaignMap, itemDeadlinesById });
+	const columns = memberPledgeColumns({ campaignMap });
 
 	return (
 		<div className="h-full flex flex-col">
@@ -156,7 +139,6 @@ export const MemberMyPledgesPage = () => {
 						<MemberPledgeCard
 							row={row}
 							campaignMap={campaignMap}
-							itemDeadlinesById={itemDeadlinesById}
 							href={`/${tenantSlug}/member/my-pledges/${row.id}`}
 						/>
 					)}

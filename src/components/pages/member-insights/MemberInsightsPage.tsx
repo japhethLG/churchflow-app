@@ -1,18 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import {
-	Bar,
-	CartesianGrid,
-	Cell,
-	BarChart as RechartsBarChart,
-	ResponsiveContainer,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
 import {
 	Card,
 	ConsistencyDots,
@@ -30,9 +21,20 @@ import {
 	useMyTransactions,
 } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
-import { formatCompact, formatCurrency } from "@/lib/format-currency";
+import { formatCompact } from "@/lib/format-currency";
 import { num, pct, type TxType, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
 import { TransactionMixCard } from "../TransactionMixCard";
+
+// recharts charts loaded lazily so the chart library stays off this route's
+// first-load JS (both resolve the same chunk).
+const YearlyGivingChart = dynamic(
+	() => import("./MemberInsightsCharts").then((m) => m.YearlyGivingChart),
+	{ ssr: false, loading: () => null },
+);
+const Last12MonthsChart = dynamic(
+	() => import("./MemberInsightsCharts").then((m) => m.Last12MonthsChart),
+	{ ssr: false, loading: () => null },
+);
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
@@ -307,73 +309,7 @@ export const MemberInsightsPage = () => {
 							</div>
 						) : (
 							<div className="min-h-[220px] flex-1 w-full">
-								<ResponsiveContainer width="100%" height="100%">
-									<RechartsBarChart
-										data={yearlyTotals}
-										margin={{ top: 4, right: 8, bottom: 0, left: -8 }}
-									>
-										<CartesianGrid
-											vertical={false}
-											strokeDasharray="3 3"
-											stroke="var(--input)"
-										/>
-										<XAxis
-											dataKey="year"
-											tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-											axisLine={false}
-											tickLine={false}
-											padding={{ left: 12, right: 12 }}
-										/>
-										<YAxis
-											tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-											axisLine={false}
-											tickLine={false}
-											width={48}
-											tickFormatter={(v) => formatCompact(Number(v))}
-										/>
-										<Tooltip
-											cursor={{
-												fill: "color-mix(in srgb, var(--accent) 18%, transparent)",
-											}}
-											content={({ active, payload }) => {
-												if (!active || !payload?.length) {
-													return null;
-												}
-												const d = payload[0]?.payload as
-													| { year: number; total: number }
-													| undefined;
-												if (!d) {
-													return null;
-												}
-												return (
-													<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
-														<div className="font-medium">{d.year}</div>
-														<div className="mt-0.5 tabular-nums">
-															{formatCurrency(d.total, { decimals: 0 })}
-														</div>
-													</div>
-												);
-											}}
-										/>
-										<Bar
-											dataKey="total"
-											radius={[4, 4, 0, 0]}
-											maxBarSize={48}
-											minPointSize={2}
-										>
-											{yearlyTotals.map((b) => (
-												<Cell
-													key={b.year}
-													fill={
-														b.total > 0
-															? "var(--chart-current)"
-															: "var(--chart-track)"
-													}
-												/>
-											))}
-										</Bar>
-									</RechartsBarChart>
-								</ResponsiveContainer>
+								<YearlyGivingChart data={yearlyTotals} />
 							</div>
 						)}
 					</Card>
@@ -394,72 +330,7 @@ export const MemberInsightsPage = () => {
 							</div>
 						) : (
 							<div className="h-[180px] w-full">
-								<ResponsiveContainer width="100%" height="100%">
-									<RechartsBarChart
-										data={last12}
-										barCategoryGap="18%"
-										margin={{ top: 4, right: 4, bottom: 0, left: -8 }}
-									>
-										<CartesianGrid
-											vertical={false}
-											strokeDasharray="3 3"
-											stroke="var(--input)"
-										/>
-										<XAxis
-											dataKey="month"
-											tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-											axisLine={false}
-											tickLine={false}
-											tickFormatter={(v) => dayjs(`${v}-01`).format("MMM")}
-											interval={0}
-										/>
-										<YAxis
-											tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-											axisLine={false}
-											tickLine={false}
-											width={48}
-											tickFormatter={(v) => formatCompact(Number(v))}
-										/>
-										<Tooltip
-											cursor={{
-												fill: "color-mix(in srgb, var(--accent) 18%, transparent)",
-											}}
-											content={({ active, payload }) => {
-												if (!active || !payload?.length) {
-													return null;
-												}
-												const d = payload[0]?.payload as
-													| { month: string; total: number }
-													| undefined;
-												if (!d) {
-													return null;
-												}
-												return (
-													<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
-														<div className="font-medium">
-															{dayjs(`${d.month}-01`).format("MMM YYYY")}
-														</div>
-														<div className="mt-0.5 tabular-nums">
-															{formatCurrency(d.total, { decimals: 0 })}
-														</div>
-													</div>
-												);
-											}}
-										/>
-										<Bar dataKey="total" radius={[3, 3, 0, 0]}>
-											{last12.map((b) => (
-												<Cell
-													key={b.month}
-													fill={
-														b.total > 0
-															? "var(--chart-current)"
-															: "var(--chart-track)"
-													}
-												/>
-											))}
-										</Bar>
-									</RechartsBarChart>
-								</ResponsiveContainer>
+								<Last12MonthsChart data={last12} />
 							</div>
 						)}
 						<div className="mt-3">

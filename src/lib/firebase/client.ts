@@ -1,10 +1,12 @@
 import { type FirebaseApp, getApps, initializeApp } from "firebase/app";
 import { type Auth, GoogleAuthProvider, getAuth } from "firebase/auth";
-import { type Firestore, getFirestore } from "firebase/firestore";
+
+// NOTE: We use Firebase Auth ONLY. Do not import firebase/firestore here —
+// pulling in getFirestore dragged the full Firestore SDK (~90 KB gzip) into
+// the auth-critical client chunk for zero benefit (there were no callers).
 
 let _app: FirebaseApp | null = null;
 let _auth: Auth | null = null;
-let _db: Firestore | null = null;
 
 const firebaseApp = (): FirebaseApp => {
 	if (_app) {
@@ -40,14 +42,6 @@ export const getClientAuth = (): Auth => {
 	}
 	_auth = getAuth(firebaseApp());
 	return _auth;
-};
-
-export const getClientDb = (): Firestore => {
-	if (_db) {
-		return _db;
-	}
-	_db = getFirestore(firebaseApp());
-	return _db;
 };
 
 export const getGoogleProvider = (): GoogleAuthProvider => {

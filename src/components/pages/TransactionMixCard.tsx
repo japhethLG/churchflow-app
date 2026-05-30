@@ -1,7 +1,7 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, SectionTitle } from "@/components/primitives";
+import { DonutChart } from "@/components/primitives/charts/DonutChart";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 
 // Per-type slice of the donut + table. Callers derive these from whichever
@@ -76,55 +76,40 @@ export const TransactionMixCard = ({
 									</div>
 								</div>
 							</div>
-							<ResponsiveContainer width="100%" height="100%">
-								<PieChart>
-									<Pie
-										data={chartData}
-										dataKey="amount"
-										cx="50%"
-										cy="50%"
-										innerRadius={78}
-										outerRadius={112}
-										paddingAngle={1.5}
-										stroke="none"
-									>
-										{chartData.map((s) => (
-											<Cell key={s.key} fill={s.color} />
-										))}
-									</Pie>
-									<Tooltip
-										content={({ active, payload }) => {
-											if (!active || !payload?.length) {
-												return null;
-											}
-											const d = payload[0]?.payload as
-												| TransactionMixSegment
-												| undefined;
-											if (!d) {
-												return null;
-											}
-											return (
-												<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
-													<div className="flex items-center gap-1.5 font-medium">
-														<span
-															className="inline-block size-2 rounded-sm"
-															style={{ background: d.color }}
-														/>
-														{d.label}
-													</div>
-													<div className="mt-0.5 tabular-nums">
-														{formatCurrency(d.amount, { decimals: 0 })}
-														<span className="ml-2 opacity-70">{d.share}%</span>
-													</div>
-													<div className="mt-0.5 opacity-70">
-														{d.count} gifts · avg {formatCompact(d.avg)}
-													</div>
-												</div>
-											);
-										}}
-									/>
-								</PieChart>
-							</ResponsiveContainer>
+							<DonutChart
+								data={chartData}
+								innerRadius={78}
+								outerRadius={112}
+								tooltip={({ active, payload }) => {
+									if (!active || !payload?.length) {
+										return null;
+									}
+									const d = payload[0]?.payload as
+										| TransactionMixSegment
+										| undefined;
+									if (!d) {
+										return null;
+									}
+									return (
+										<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
+											<div className="flex items-center gap-1.5 font-medium">
+												<span
+													className="inline-block size-2 rounded-sm"
+													style={{ background: d.color }}
+												/>
+												{d.label}
+											</div>
+											<div className="mt-0.5 tabular-nums">
+												{formatCurrency(d.amount, { decimals: 0 })}
+												<span className="ml-2 opacity-70">{d.share}%</span>
+											</div>
+											<div className="mt-0.5 opacity-70">
+												{d.count} gifts · avg {formatCompact(d.avg)}
+											</div>
+										</div>
+									);
+								}}
+							/>
 						</div>
 					</div>
 

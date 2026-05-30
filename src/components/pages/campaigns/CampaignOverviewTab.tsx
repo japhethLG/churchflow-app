@@ -1,17 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo } from "react";
-import {
-	Bar,
-	CartesianGrid,
-	Cell,
-	BarChart as RechartsBarChart,
-	ResponsiveContainer,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
 import {
 	Avatar,
 	Card,
@@ -24,8 +15,21 @@ import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
 import { useTransactions } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
-import { formatCompact, formatCurrency } from "@/lib/format-currency";
+import { formatCompact } from "@/lib/format-currency";
 import { daysUntil, num, pct } from "../admin-shared";
+
+// recharts loaded only when the timeline chart renders.
+const CampaignTimelineChart = dynamic(
+	() => import("./CampaignTimelineChart").then((m) => m.CampaignTimelineChart),
+	{
+		ssr: false,
+		loading: () => (
+			<div className="grid h-full place-items-center text-sm text-muted-foreground">
+				Loading…
+			</div>
+		),
+	},
+);
 
 type Campaign = components["schemas"]["CampaignWithItemsResponseDto"];
 type Progress = components["schemas"]["CampaignProgressResponseDto"];
@@ -270,72 +274,7 @@ export const CampaignOverviewTab = ({
 					</div>
 				) : (
 					<div className="h-[220px] w-full">
-						<ResponsiveContainer width="100%" height="100%">
-							<RechartsBarChart
-								data={timeline.buckets}
-								barCategoryGap="18%"
-								margin={{ top: 4, right: 8, bottom: 0, left: -12 }}
-							>
-								<CartesianGrid
-									vertical={false}
-									strokeDasharray="3 3"
-									stroke="var(--input)"
-								/>
-								<XAxis
-									dataKey="label"
-									tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-									axisLine={false}
-									tickLine={false}
-									interval="preserveStartEnd"
-									minTickGap={24}
-								/>
-								<YAxis
-									tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-									axisLine={false}
-									tickLine={false}
-									width={48}
-									tickFormatter={(v) => formatCompact(Number(v))}
-								/>
-								<Tooltip
-									cursor={{
-										fill: "color-mix(in srgb, var(--accent) 18%, transparent)",
-									}}
-									content={({ active, payload }) => {
-										if (!active || !payload?.length) {
-											return null;
-										}
-										const d = payload[0]?.payload as
-											| { label: string; value: number }
-											| undefined;
-										if (!d) {
-											return null;
-										}
-										return (
-											<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
-												<div className="font-medium">{d.label}</div>
-												<div className="mt-0.5 tabular-nums">
-													{d.value > 0
-														? formatCurrency(d.value, { decimals: 0 })
-														: "no gift"}
-												</div>
-											</div>
-										);
-									}}
-								/>
-								<Bar dataKey="value" radius={[4, 4, 0, 0]}>
-									{timeline.buckets.map((b) => (
-										<Cell
-											key={b.iso}
-											fill={
-												b.value > 0
-													? "var(--chart-current)"
-													: "var(--chart-track)"
-											}
-										/>
-									))}
-								</Bar>
-							</RechartsBarChart>
-						</ResponsiveContainer>
+						<CampaignTimelineChart buckets={timeline.buckets} />
 					</div>
 				)}
 			</Card>

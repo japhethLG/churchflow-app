@@ -4,6 +4,7 @@ import { Geist } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import { connection } from "next/server";
 import { Toaster } from "@/components/primitives/Toaster";
+import { WebVitalsReporter } from "@/components/telemetry/WebVitalsReporter";
 import { type Theme, ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryProvider } from "@/lib/api/providers";
@@ -100,6 +101,7 @@ export default async ({ children }: { children: React.ReactNode }) => {
 								</SerwistProvider>
 								<ModalHost />
 								<SheetHost />
+								<WebVitalsReporter />
 								<Toaster />
 							</QueryProvider>
 						</AuthProvider>

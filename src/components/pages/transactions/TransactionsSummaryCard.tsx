@@ -1,7 +1,7 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card } from "@/components/primitives";
+import { DonutChart } from "@/components/primitives/charts/DonutChart";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { num, pct, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
@@ -147,25 +147,12 @@ export const TransactionsSummaryCard = ({
 								</div>
 							</div>
 						</div>
-						<ResponsiveContainer width="100%" height="100%">
-							<PieChart>
-								<Pie
-									data={donutData}
-									dataKey="amount"
-									cx="50%"
-									cy="50%"
-									innerRadius="60%"
-									outerRadius="90%"
-									paddingAngle={1.5}
-									stroke="none"
-								>
-									{donutData.map((s) => (
-										<Cell key={s.key} fill={s.color} />
-									))}
-								</Pie>
-								<Tooltip content={<DonutTooltip />} />
-							</PieChart>
-						</ResponsiveContainer>
+						<DonutChart
+							data={donutData}
+							innerRadius="60%"
+							outerRadius="90%"
+							tooltip={<DonutTooltip />}
+						/>
 					</div>
 
 					{segments.length > 0 ? (

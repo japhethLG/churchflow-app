@@ -1,8 +1,8 @@
-import {
-	AvatarFallback,
-	AvatarImage,
-	Avatar as ShadedAvatar,
-} from "@/components/ui/avatar";
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+import { AvatarFallback, Avatar as ShadedAvatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 export const Avatar = ({
@@ -18,6 +18,11 @@ export const Avatar = ({
 	color?: string;
 	className?: string;
 }) => {
+	// Remote photos go through next/image (resized + WebP/AVIF, served from
+	// the same-origin /_next/image SWR cache) instead of a raw cross-origin
+	// <img>. On load failure we fall back to the initials, same as before.
+	const [imageFailed, setImageFailed] = useState(false);
+
 	const initials = name
 		.split(" ")
 		.map((n) => n[0])
@@ -37,12 +42,23 @@ export const Avatar = ({
 	const hash = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
 	const bg = color || palette[hash % palette.length];
 
+	const showImage = Boolean(src) && !imageFailed;
+
 	return (
 		<ShadedAvatar
 			style={{ width: size, height: size }}
 			className={cn("shrink-0", className)}
 		>
-			{src && <AvatarImage src={src} alt={name} className="object-cover" />}
+			{showImage && (
+				<Image
+					src={src as string}
+					alt={name}
+					fill
+					sizes={`${size}px`}
+					className="z-[1] rounded-full object-cover"
+					onError={() => setImageFailed(true)}
+				/>
+			)}
 			<AvatarFallback
 				style={{ color: bg, backgroundColor: `${bg}22` }}
 				className="font-semibold tracking-tighter"

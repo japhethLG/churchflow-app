@@ -9,13 +9,10 @@ import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import {
-	daysUntil,
 	LIFECYCLE_LABEL,
 	num,
 	type PledgeLifecycle,
 	pct,
-	pledgeLifecycle,
-	resolvePledgeDeadline,
 } from "../admin-shared";
 
 export type MemberPledgeRow = components["schemas"]["MyPledgeResponseDto"];
@@ -42,11 +39,9 @@ const lifecycleBadgeColor = (
 export const memberPledgeColumns = ({
 	campaignMap,
 	campaignItemMap,
-	itemDeadlinesById,
 }: {
 	campaignMap: Record<string, Campaign>;
 	campaignItemMap?: Record<string, string>;
-	itemDeadlinesById: Record<string, string | null>;
 }): DataTableColumn<MemberPledgeRow>[] => {
 	const itemMap = campaignItemMap ?? {};
 	return [
@@ -152,19 +147,10 @@ export const memberPledgeColumns = ({
 			label: "Status",
 			width: "140px",
 			render: (row) => {
-				const campaign = campaignMap[row.campaignId];
-				const deadline = resolvePledgeDeadline(
-					row,
-					campaign,
-					itemDeadlinesById,
-				);
-				const lifecycle = pledgeLifecycle(
-					row.pledgedAmount,
-					row.paidAmount,
-					row.status,
-					deadline,
-				);
-				const days = daysUntil(deadline);
+				// Deadline / lifecycle / days come computed server-side on the
+				// pledge response now — no item-deadline fan-out needed.
+				const lifecycle = row.lifecycle as PledgeLifecycle;
+				const days = row.daysUntil ?? null;
 				const daysCaption =
 					days === null
 						? null
@@ -196,27 +182,20 @@ export const memberPledgeColumns = ({
 export const MemberPledgeCard = ({
 	row,
 	campaignMap,
-	itemDeadlinesById,
 	href,
 	showCampaign = true,
 }: {
 	row: MemberPledgeRow;
 	campaignMap: Record<string, Campaign>;
-	itemDeadlinesById: Record<string, string | null>;
 	href?: string;
 	showCampaign?: boolean;
 }) => {
 	const campaign = campaignMap[row.campaignId];
 	const campaignTitle = campaign?.title ?? "Campaign";
 	const campaignDeletedAt = campaign?.deletedAt ?? null;
-	const deadline = resolvePledgeDeadline(row, campaign, itemDeadlinesById);
-	const lifecycle = pledgeLifecycle(
-		row.pledgedAmount,
-		row.paidAmount,
-		row.status,
-		deadline,
-	);
-	const days = daysUntil(deadline);
+	// Deadline / lifecycle / days come computed server-side on the pledge.
+	const lifecycle = row.lifecycle as PledgeLifecycle;
+	const days = row.daysUntil ?? null;
 	const paid = num(row.paidAmount);
 	const pledged = num(row.pledgedAmount);
 	const fulfillment = pct(paid, pledged);

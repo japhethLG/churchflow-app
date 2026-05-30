@@ -11,55 +11,33 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
-import {
-	daysUntil,
-	LIFECYCLE_COLOR,
-	LIFECYCLE_LABEL,
-	num,
-	pledgeLifecycle,
-	resolvePledgeDeadline,
-} from "../admin-shared";
+import { LIFECYCLE_COLOR, LIFECYCLE_LABEL, num } from "../admin-shared";
 
 type Pledge = components["schemas"]["MyPledgeResponseDto"];
-type Campaign = components["schemas"]["CampaignResponseDto"];
 
 // Member-side mirror of the admin OutstandingPledgesCard. Surfaces the
 // member's own pledges that are past-due, due-soon, or near deadline.
-// Same composition pattern (StackedProgressBar + lifecycle badge);
-// different copy + intent (this is the member's commitments, not the
-// church's collectibles).
+// Deadline / days-until / lifecycle / campaign snapshot all come embedded
+// on each pledge now (no campaign-roster or item-deadline fan-out needed).
 export const MemberOutstandingPledgesCard = ({
 	pledges,
-	campaignsById,
-	itemDeadlinesById,
 	tenantSlug,
 	loading,
 }: {
 	pledges: Pledge[];
-	campaignsById: Record<string, Campaign>;
-	itemDeadlinesById: Record<string, string | null>;
 	tenantSlug: string;
 	loading?: boolean;
 }) => {
 	const router = useRouter();
 
 	const enriched = pledges
-		.map((p) => {
-			const c = campaignsById[p.campaignId];
-			const deadline = resolvePledgeDeadline(p, c, itemDeadlinesById);
-			return {
-				p,
-				campaign: c,
-				deadline,
-				days: daysUntil(deadline),
-				lifecycle: pledgeLifecycle(
-					p.pledgedAmount,
-					p.paidAmount,
-					p.status,
-					deadline,
-				),
-			};
-		})
+		.map((p) => ({
+			p,
+			campaign: p.campaign,
+			deadline: p.resolvedDeadline ?? null,
+			days: p.daysUntil ?? null,
+			lifecycle: p.lifecycle,
+		}))
 		.filter(
 			(x) =>
 				x.p.status === "ACTIVE" &&

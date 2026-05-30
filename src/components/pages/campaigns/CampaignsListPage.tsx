@@ -13,12 +13,11 @@ import {
 	useTableFilters,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useCampaigns } from "@/lib/api/campaigns";
+import { useCampaigns, useCampaignsProgressBatch } from "@/lib/api/campaigns";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { daysUntil, num, pct } from "../admin-shared";
-import { useCampaignProgressMany } from "../dashboard/useCampaignProgressMany";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
@@ -60,11 +59,24 @@ export const CampaignsListPage = () => {
 		return out;
 	}, [all, status, search]);
 
-	// Fan-out progress for the visible rows. We keep it bounded by limiting
-	// the visible page; for a tenant with >25 campaigns, paginate or ask
-	// backend for a bulk endpoint.
+	// Progress for the visible rows in a SINGLE batched request (one
+	// round-trip instead of N per-campaign /progress calls).
 	const visibleIds = filtered.map((c) => c.id);
-	const { progressById } = useCampaignProgressMany(tenantSlug, visibleIds);
+	const progressBatchQ = useCampaignsProgressBatch(tenantSlug, visibleIds);
+	const progressById = useMemo(() => {
+		const map: Record<
+			string,
+			{ goalAmount: number; pledgedAmount: number; raisedAmount: number }
+		> = {};
+		for (const e of progressBatchQ.data?.items ?? []) {
+			map[e.campaignId] = {
+				goalAmount: e.goalAmount,
+				pledgedAmount: e.pledgedAmount,
+				raisedAmount: e.raisedAmount,
+			};
+		}
+		return map;
+	}, [progressBatchQ.data]);
 
 	const activeCount = all.filter((c) => c.status === "ACTIVE").length;
 	const completedCount = all.filter((c) => c.status === "COMPLETED").length;

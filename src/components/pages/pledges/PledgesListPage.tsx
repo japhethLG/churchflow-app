@@ -16,7 +16,6 @@ import {
 	useTableFilters,
 } from "@/components/primitives";
 import { useCampaigns } from "@/lib/api/campaigns";
-import { useMembers } from "@/lib/api/members";
 import { usePledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
@@ -24,15 +23,11 @@ import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 import { openSheet } from "@/lib/sheets/store";
 import {
-	daysUntil,
 	LIFECYCLE_LABEL,
 	num,
 	type PledgeLifecycle,
 	pct,
-	pledgeLifecycle,
-	resolvePledgeDeadline,
 } from "../admin-shared";
-import { useCampaignsManyWithItems } from "../dashboard/useCampaignsManyWithItems";
 
 type StatusFilter = "all" | "ACTIVE" | "FULFILLED" | "CANCELLED";
 type LifecycleFilter = "all" | PledgeLifecycle;
@@ -101,64 +96,30 @@ export const PledgesListPage = () => {
 		...t.stateFlags(),
 	});
 
-	// Joins — needed for lifecycle (campaign deadline) and member names.
-	const campaignsQ = useCampaigns(tenantSlug, { includeDeleted: true });
-	const membersQ = useMembers(tenantSlug, { limit: 500, includeDeleted: true });
-
-	const campaignsById = useMemo(
-		() =>
-			Object.fromEntries((campaignsQ.data?.items ?? []).map((c) => [c.id, c])),
-		[campaignsQ.data],
-	);
-	const membersById = useMemo(
-		() =>
-			Object.fromEntries((membersQ.data?.items ?? []).map((m) => [m.id, m])),
-		[membersQ.data],
-	);
+	// Campaign list is only needed for the "Record pledge" picker now —
+	// row labels/deadlines/lifecycle all come embedded on each pledge.
+	const campaignsQ = useCampaigns(tenantSlug);
 
 	const rows = data?.items ?? [];
 	const total = data?.meta.total ?? 0;
 
-	// Item deadlines for the campaigns in view — item deadline wins over
-	// campaign deadline when set (advance-deadline use case).
-	const visibleCampaignIds = useMemo(() => {
-		const set = new Set<string>();
-		for (const p of rows) {
-			if (p.campaignId) {
-				set.add(p.campaignId);
-			}
-		}
-		return Array.from(set);
-	}, [rows]);
-	const { itemDeadlinesById } = useCampaignsManyWithItems(
-		tenantSlug,
-		visibleCampaignIds,
-	);
-
+	// Enrich straight from the pledge response: member snapshot, campaign
+	// snapshot, resolved deadline, days-until, and lifecycle are all computed
+	// server-side now. This removes the previous limit:500 member fetch and
+	// the per-campaign GET fan-out the page used to do just to re-derive a
+	// deadline the API already returns.
 	const enriched = useMemo(() => {
-		return rows.map((p) => {
-			const c = campaignsById[p.campaignId];
-			const deadline = resolvePledgeDeadline(p, c, itemDeadlinesById);
-			return {
-				p,
-				deadline,
-				days: daysUntil(deadline),
-				lifecycle: pledgeLifecycle(
-					p.pledgedAmount,
-					p.paidAmount,
-					p.status,
-					deadline,
-				),
-				memberName: (() => {
-					const m = membersById[p.memberId];
-					return m
-						? `${m.firstName} ${m.lastName}`.trim() || "Unnamed"
-						: "Unknown";
-				})(),
-				campaignTitle: c?.title ?? "Unknown campaign",
-			};
-		});
-	}, [rows, campaignsById, membersById, itemDeadlinesById]);
+		return rows.map((p) => ({
+			p,
+			deadline: p.resolvedDeadline ?? null,
+			days: p.daysUntil ?? null,
+			lifecycle: p.lifecycle as PledgeLifecycle,
+			memberName: p.member
+				? `${p.member.firstName} ${p.member.lastName}`.trim() || "Unnamed"
+				: "Unknown",
+			campaignTitle: p.campaign?.title ?? "Unknown campaign",
+		}));
+	}, [rows]);
 
 	const filtered = useMemo(() => {
 		let out = enriched;
@@ -546,7 +507,7 @@ export const PledgesListPage = () => {
 					mobileCard={renderPledgeCard}
 					rows={filtered}
 					rowKey={(r) => r.p.id}
-					loading={isLoading || campaignsQ.isLoading || membersQ.isLoading}
+					loading={isLoading}
 					onRowClick={(r) =>
 						router.push(`/${tenantSlug}/admin/pledges/${r.p.id}`)
 					}

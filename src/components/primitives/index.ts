@@ -17,7 +17,6 @@ export {
 	type CalendarRange,
 } from "./Calendar";
 export { Card } from "./Card";
-export { BarChart, type BarDatum, Donut, type DonutDatum } from "./Charts";
 export { Chip } from "./Chip";
 export {
 	ConsistencyDots,

@@ -23,6 +23,22 @@ export const useMyCampaigns = (
 	);
 };
 
+// Batch progress for many campaigns (member view). Mirrors the tenant
+// useCampaignsProgressBatch — replaces the member dashboard / campaigns-list
+// fan-out of N individual /me/campaigns/:id/progress calls with one request.
+export const useMyCampaignsProgressBatch = (
+	tenantId: string,
+	campaignIds: string[],
+	enabled = true,
+) => {
+	const ids = [...campaignIds].sort().join(",");
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/me/campaigns/progress/batch",
+		{ params: { path: { tenantId }, query: { ids } } },
+		{ enabled: enabled && Boolean(tenantId) && campaignIds.length > 0 },
+	);
+};
+
 export const useMyCampaign = (
 	tenantId: string,
 	id: string,

@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME } from "./constants";
 
@@ -31,7 +32,11 @@ export type SessionUser = {
 //   - "verification failed": the cookie exists but Admin SDK rejected it
 //     (expired, revoked, tampered, JWKS unreachable). Logged with the
 //     reason code so an incident is distinguishable from normal expiry.
-export const getSessionUser = async (): Promise<SessionUser | null> => {
+//
+// Wrapped in React `cache()` so the per-request memo collapses the multiple
+// nested-layout calls ([tenantSlug] gate + the (admin)/(member) gate) into a
+// SINGLE verification per render instead of one Firebase round-trip each.
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
 	const store = await cookies();
 	const cookie = store.get(SESSION_COOKIE_NAME)?.value;
 	if (!cookie) {
@@ -39,7 +44,13 @@ export const getSessionUser = async (): Promise<SessionUser | null> => {
 	}
 
 	try {
-		const decoded = await adminAuth.verifySessionCookie(cookie, true);
+		// checkRevoked=false: verify the cookie signature locally against
+		// Google's cached public keys (no network) on this hot navigation
+		// gate. Revocation is still enforced on every data request by the
+		// backend's FirebaseAuthGuard, so a revoked session can render an
+		// empty shell at most until its next API call 401s — without paying
+		// a Firebase round-trip on every page navigation.
+		const decoded = await adminAuth.verifySessionCookie(cookie, false);
 		const claims = decoded as typeof decoded & {
 			isSuperAdmin?: boolean;
 			tenantMemberships?: Record<string, unknown>;
@@ -69,7 +80,7 @@ export const getSessionUser = async (): Promise<SessionUser | null> => {
 		);
 		return null;
 	}
-};
+});
 
 const normaliseMemberships = (
 	raw: unknown,

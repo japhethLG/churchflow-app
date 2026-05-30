@@ -98,16 +98,6 @@ export const MemberCampaignDetailPage = () => {
 	}, [myCampaignTransactions]);
 	const hasSpark = monthlySpark.some((v) => v > 0);
 
-	// Hoisted above the early returns so React hooks rules hold. Falls
-	// back to {} when the campaign hasn't loaded yet.
-	const itemDeadlinesById = useMemo<Record<string, string | null>>(() => {
-		const map: Record<string, string | null> = {};
-		for (const it of campaign?.items ?? []) {
-			map[it.id] = typeof it.deadline === "string" ? it.deadline : null;
-		}
-		return map;
-	}, [campaign]);
-
 	// Mobile FAB mirrors the header's pledge CTA. Hoisted above the early
 	// returns so the hook order stays stable; empty (no FAB) until the campaign
 	// loads and pledging is allowed.
@@ -247,7 +237,6 @@ export const MemberCampaignDetailPage = () => {
 	const pledgeColumns = memberPledgeColumns({
 		campaignMap: tenantCampaignMap,
 		campaignItemMap: itemTitleMap,
-		itemDeadlinesById,
 	}).filter((col) => col.key !== "campaign");
 
 	return (
@@ -445,7 +434,6 @@ export const MemberCampaignDetailPage = () => {
 							<MemberPledgeCard
 								row={p}
 								campaignMap={tenantCampaignMap}
-								itemDeadlinesById={itemDeadlinesById}
 								href={`/${tenantSlug}/member/my-pledges/${p.id}`}
 								showCampaign={false}
 							/>

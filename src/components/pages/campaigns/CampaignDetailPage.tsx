@@ -51,11 +51,10 @@ export const CampaignDetailPage = () => {
 		isLoading,
 		error,
 	} = useCampaign(tenantSlug, id, { includeDeleted: true });
-	const { data: progress } = useCampaignProgress(
-		tenantSlug,
-		id,
-		Boolean(campaign),
-	);
+	// Fetch progress in PARALLEL with the campaign — both are keyed only on
+	// tenantSlug + id (available immediately), so gating progress on the
+	// campaign result just serialized two independent round-trips.
+	const { data: progress } = useCampaignProgress(tenantSlug, id);
 
 	// Mobile FAB — contextual to the active tab. The desktop header keeps the
 	// Edit button + kebab; on mobile the bulky Edit button is hidden and its

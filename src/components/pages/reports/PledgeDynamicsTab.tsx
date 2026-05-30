@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, SectionTitle, StatBand } from "@/components/primitives";
+import { DonutChart } from "@/components/primitives/charts/DonutChart";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { buildFilterUrl } from "@/lib/url-filters";
@@ -187,30 +187,14 @@ export const PledgeDynamicsTab = ({
 										</div>
 									</div>
 								</div>
-								<ResponsiveContainer width="100%" height="100%">
-									<PieChart>
-										<Pie
-											data={
-												totalActiveOutstanding > 0 ? donutSegments : placeholder
-											}
-											dataKey="amount"
-											cx="50%"
-											cy="50%"
-											innerRadius={70}
-											outerRadius={100}
-											paddingAngle={1.5}
-											stroke="none"
-										>
-											{(totalActiveOutstanding > 0
-												? donutSegments
-												: placeholder
-											).map((s) => (
-												<Cell key={s.key} fill={s.color} />
-											))}
-										</Pie>
-										<Tooltip content={<DonutTooltip />} />
-									</PieChart>
-								</ResponsiveContainer>
+								<DonutChart
+									data={
+										totalActiveOutstanding > 0 ? donutSegments : placeholder
+									}
+									innerRadius={70}
+									outerRadius={100}
+									tooltip={<DonutTooltip />}
+								/>
 							</div>
 						</div>
 

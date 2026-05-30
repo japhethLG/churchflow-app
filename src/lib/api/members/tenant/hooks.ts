@@ -29,6 +29,28 @@ export const useMembers = (
 	);
 };
 
+// Per-member monthly giving series for the members-list sparklines. Scoped
+// to the member ids currently on the page so it's one small server-side
+// rollup, replacing the previous limit:500 transactions fetch + JS bucketing.
+export const useMembersGivingTrend = (
+	tenantId: string,
+	memberIds: string[],
+	months = 12,
+	enabled = true,
+) => {
+	const sortedIds = [...memberIds].sort();
+	return useApiQuery(
+		"/api/v1/tenants/{tenantId}/members/giving-trend",
+		{
+			params: {
+				path: { tenantId },
+				query: { memberIds: sortedIds, months },
+			},
+		},
+		{ enabled: enabled && Boolean(tenantId) && memberIds.length > 0 },
+	);
+};
+
 export const useMember = (
 	tenantId: string,
 	memberId: string,

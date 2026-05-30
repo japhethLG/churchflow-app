@@ -1,20 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import {
-	Bar,
-	CartesianGrid,
-	Cell,
-	Pie,
-	PieChart,
-	BarChart as RechartsBarChart,
-	ResponsiveContainer,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
 import {
 	Amount,
 	Avatar,
@@ -45,6 +34,17 @@ import {
 	TYPE_LABEL,
 } from "../admin-shared";
 import { transactionMobileCard } from "../transactions/TransactionsTable";
+
+// recharts charts loaded lazily so the chart library stays off this route's
+// first-load JS (both resolve the same chunk).
+const MonthlyGivingBarChart = dynamic(
+	() => import("./MemberOverviewCharts").then((m) => m.MonthlyGivingBarChart),
+	{ ssr: false, loading: () => null },
+);
+const MemberMixDonut = dynamic(
+	() => import("./MemberOverviewCharts").then((m) => m.MemberMixDonut),
+	{ ssr: false, loading: () => null },
+);
 
 type Member = components["schemas"]["MemberResponseDto"];
 type Transaction = components["schemas"]["TransactionResponseDto"];
@@ -346,70 +346,7 @@ export const MemberOverviewTab = ({
 				<Card padding={24}>
 					<SectionTitle title="Last 12 months" />
 					<div className="h-[220px] w-full">
-						<ResponsiveContainer width="100%" height="100%">
-							<RechartsBarChart
-								data={monthly.data}
-								barCategoryGap="22%"
-								margin={{ top: 4, right: 8, bottom: 0, left: -12 }}
-							>
-								<CartesianGrid
-									vertical={false}
-									strokeDasharray="3 3"
-									stroke="var(--input)"
-								/>
-								<XAxis
-									dataKey="label"
-									tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-									axisLine={false}
-									tickLine={false}
-								/>
-								<YAxis
-									tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-									axisLine={false}
-									tickLine={false}
-									width={48}
-									tickFormatter={(v) => formatCompact(Number(v))}
-								/>
-								<Tooltip
-									cursor={{
-										fill: "color-mix(in srgb, var(--accent) 18%, transparent)",
-									}}
-									content={({ active, payload }) => {
-										if (!active || !payload?.length) {
-											return null;
-										}
-										const d = payload[0]?.payload as
-											| { labelLong: string; value: number }
-											| undefined;
-										if (!d) {
-											return null;
-										}
-										return (
-											<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
-												<div className="font-medium">{d.labelLong}</div>
-												<div className="mt-0.5 tabular-nums">
-													{d.value > 0
-														? formatCurrency(d.value, { decimals: 0 })
-														: "no gift"}
-												</div>
-											</div>
-										);
-									}}
-								/>
-								<Bar dataKey="value" radius={[4, 4, 0, 0]}>
-									{monthly.data.map((d) => (
-										<Cell
-											key={d.key}
-											fill={
-												d.value > 0
-													? "var(--chart-current)"
-													: "var(--chart-track)"
-											}
-										/>
-									))}
-								</Bar>
-							</RechartsBarChart>
-						</ResponsiveContainer>
+						<MonthlyGivingBarChart data={monthly.data} />
 					</div>
 					<div className="mt-2 text-xs text-muted-foreground">
 						{monthly.monthsWithGiving > 0 ? (
@@ -461,61 +398,10 @@ export const MemberOverviewTab = ({
 						<div className="grid items-center gap-4 sm:grid-cols-[180px_minmax(0,1fr)]">
 							<div className="grid place-items-center">
 								<div className="relative size-[180px]">
-									<ResponsiveContainer width="100%" height="100%">
-										<PieChart>
-											<Pie
-												data={mixSegments}
-												dataKey="value"
-												cx="50%"
-												cy="50%"
-												innerRadius={54}
-												outerRadius={80}
-												paddingAngle={1.5}
-												stroke="none"
-											>
-												{mixSegments.map((s) => (
-													<Cell key={s.label} fill={s.color} />
-												))}
-											</Pie>
-											<Tooltip
-												content={({ active, payload }) => {
-													if (!active || !payload?.length) {
-														return null;
-													}
-													const d = payload[0]?.payload as
-														| ProgressSegment
-														| undefined;
-													if (!d) {
-														return null;
-													}
-													const share =
-														breakdownTotal > 0
-															? Math.round(
-																	(num(d.value) / breakdownTotal) * 100,
-																)
-															: 0;
-													return (
-														<div className="rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-lg">
-															<div className="flex items-center gap-1.5 font-medium">
-																<span
-																	className="inline-block size-2 rounded-sm"
-																	style={{ background: d.color }}
-																/>
-																{d.label}
-															</div>
-															<div className="mt-0.5 tabular-nums">
-																{d.displayValue ??
-																	formatCurrency(d.value, { decimals: 0 })}
-																<span className="ml-2 opacity-70">
-																	{share}%
-																</span>
-															</div>
-														</div>
-													);
-												}}
-											/>
-										</PieChart>
-									</ResponsiveContainer>
+									<MemberMixDonut
+										segments={mixSegments}
+										breakdownTotal={breakdownTotal}
+									/>
 									<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 										<div>
 											<div className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">

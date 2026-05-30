@@ -38,6 +38,18 @@ const authMiddleware: Middleware = {
 // invite token) and shouldn't bounce the visitor anywhere.
 const UNAUTHENTICATED_PATHS = ["/login", "/invite", "/logout"];
 
+// Soft-navigation bridge. A client component (AuthNavigationBridge, mounted
+// inside the QueryClientProvider) registers a handler that does
+// router.replace + queryClient.clear(). When present we use it instead of a
+// full-document `window.location` reload, so a session lapse no longer tears
+// down and re-hydrates the whole React tree. Falls back to a hard redirect
+// if no handler is registered yet (e.g. a 401 during very early boot).
+type LoginRedirector = (next: string) => void;
+let loginRedirector: LoginRedirector | null = null;
+export const setLoginRedirector = (fn: LoginRedirector | null): void => {
+	loginRedirector = fn;
+};
+
 let signOutInFlight = false;
 const handleUnauthorized = async () => {
 	if (signOutInFlight) {
@@ -62,20 +74,36 @@ const handleUnauthorized = async () => {
 		// ignore — cookie will be cleared on next session mint
 	}
 	const next = encodeURIComponent(path + window.location.search);
-	window.location.href = `/login?next=${next}`;
+	if (loginRedirector) {
+		loginRedirector(next);
+	} else {
+		window.location.href = `/login?next=${next}`;
+	}
+	// Allow a future 401 to redirect again once this navigation settles.
+	signOutInFlight = false;
 };
 
 // Auto-refresh the Next session cookie when the backend signals that the
 // caller's custom claims just changed. Avoids the "did you forget to call
 // refreshSession()?" footgun on every claim-mutating endpoint.
+//
+// Guarded against concurrent fan-out: a single claim-mutating action can
+// produce a burst of responses all carrying X-Claims-Refreshed, and without
+// this flag each one would force its own token refresh + cookie re-mint
+// (wasted work + rate-limit pressure). Mirrors `signOutInFlight`.
+let claimsRefreshInFlight = false;
 const handleClaimsRefreshed = async () => {
 	if (typeof window === "undefined") {
+		return;
+	}
+	if (claimsRefreshInFlight) {
 		return;
 	}
 	const user = getClientAuth().currentUser;
 	if (!user) {
 		return;
 	}
+	claimsRefreshInFlight = true;
 	try {
 		const idToken = await user.getIdToken(true);
 		await fetch("/api/auth/session", {
@@ -85,6 +113,8 @@ const handleClaimsRefreshed = async () => {
 		});
 	} catch {
 		// best-effort — next refresh cycle will pick up claims eventually
+	} finally {
+		claimsRefreshInFlight = false;
 	}
 };
 

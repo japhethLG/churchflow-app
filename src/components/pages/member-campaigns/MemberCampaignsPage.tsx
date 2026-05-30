@@ -14,13 +14,15 @@ import {
 	useTableFilters,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useMyCampaigns } from "@/lib/api/campaigns";
+import {
+	useMyCampaigns,
+	useMyCampaignsProgressBatch,
+} from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
 import { useMyPledges } from "@/lib/api/pledges";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { daysUntil, num, pct } from "../admin-shared";
-import { useMyCampaignProgressMany } from "../member-dashboard/useMyCampaignProgressMany";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
@@ -84,9 +86,24 @@ export const MemberCampaignsPage = () => {
 
 	const visible = filtered.slice(t.offset, t.offset + t.limit);
 
-	// Batch progress for the campaigns visible on the current page.
+	// Batch progress for the campaigns visible on the current page (one
+	// request instead of a per-campaign fan-out).
 	const visibleIds = visible.map((c) => c.id);
-	const { progressById } = useMyCampaignProgressMany(tenantSlug, visibleIds);
+	const progressBatchQ = useMyCampaignsProgressBatch(tenantSlug, visibleIds);
+	const progressById = useMemo(() => {
+		const map: Record<
+			string,
+			{ goalAmount: number; pledgedAmount: number; raisedAmount: number }
+		> = {};
+		for (const e of progressBatchQ.data?.items ?? []) {
+			map[e.campaignId] = {
+				goalAmount: e.goalAmount,
+				pledgedAmount: e.pledgedAmount,
+				raisedAmount: e.raisedAmount,
+			};
+		}
+		return map;
+	}, [progressBatchQ.data]);
 
 	// Aggregate stats — across active campaigns (using the progress map
 	// for the rows we actually have data for).

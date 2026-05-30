@@ -4,7 +4,10 @@ import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import { PageHeader } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useMyCampaigns } from "@/lib/api/campaigns";
+import {
+	useMyCampaigns,
+	useMyCampaignsProgressBatch,
+} from "@/lib/api/campaigns";
 import { useMyProfile } from "@/lib/api/members";
 import { useMyPledges } from "@/lib/api/pledges";
 import { useMyChurch, useMyChurchSummary } from "@/lib/api/tenants";
@@ -16,8 +19,6 @@ import { MemberChurchPulseStrip } from "./MemberChurchPulseStrip";
 import { MemberDeadlinesWatchCard } from "./MemberDeadlinesWatchCard";
 import { MemberOutstandingPledgesCard } from "./MemberOutstandingPledgesCard";
 import { MemberRecentGiving } from "./MemberRecentGiving";
-import { useMyCampaignProgressMany } from "./useMyCampaignProgressMany";
-import { useMyCampaignsManyWithItems } from "./useMyCampaignsManyWithItems";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
@@ -71,28 +72,30 @@ export const MemberDashboardPage = () => {
 				.map((c) => c.id),
 		[campaigns],
 	);
-	const { progressById } = useMyCampaignProgressMany(
+	const progressBatchQ = useMyCampaignsProgressBatch(
 		tenantSlug,
 		deadlinedActiveIds,
 	);
+	const progressById = useMemo(() => {
+		const map: Record<
+			string,
+			{ goalAmount: number; pledgedAmount: number; raisedAmount: number }
+		> = {};
+		for (const e of progressBatchQ.data?.items ?? []) {
+			map[e.campaignId] = {
+				goalAmount: e.goalAmount,
+				pledgedAmount: e.pledgedAmount,
+				raisedAmount: e.raisedAmount,
+			};
+		}
+		return map;
+	}, [progressBatchQ.data]);
 
-	// Pledges + per-campaign item deadlines for the OutstandingPledges
-	// card. Filtering to ACTIVE here keeps the fan-out lean.
+	// Active pledges for the OutstandingPledges card. Each pledge carries its
+	// resolved deadline / lifecycle / campaign snapshot, so no per-campaign
+	// item-deadline fan-out is needed.
 	const pledgesQ = useMyPledges(tenantSlug, { status: "ACTIVE" });
 	const pledges = pledgesQ.data?.items ?? [];
-	const pledgeCampaignIds = useMemo(() => {
-		const set = new Set<string>();
-		for (const p of pledges) {
-			if (p.campaignId) {
-				set.add(p.campaignId);
-			}
-		}
-		return Array.from(set);
-	}, [pledges]);
-	const { itemDeadlinesById } = useMyCampaignsManyWithItems(
-		tenantSlug,
-		pledgeCampaignIds,
-	);
 
 	return (
 		<div className="h-full flex flex-col">
@@ -120,10 +123,8 @@ export const MemberDashboardPage = () => {
 				<div className="mb-6 grid gap-4 lg:grid-cols-2">
 					<MemberOutstandingPledgesCard
 						pledges={pledges}
-						campaignsById={campaignsById}
-						itemDeadlinesById={itemDeadlinesById}
 						tenantSlug={tenantSlug}
-						loading={pledgesQ.isLoading || campaignsQ.isLoading}
+						loading={pledgesQ.isLoading}
 					/>
 					<MemberDeadlinesWatchCard
 						campaigns={campaigns}

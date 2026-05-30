@@ -1,7 +1,6 @@
 "use client";
 
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { usePathname } from "next/navigation";
 import {
 	createContext,
 	type ReactNode,
@@ -22,12 +21,20 @@ const AuthContext = createContext<AuthContextValue>({
 	loading: true,
 });
 
-const PUBLIC_PATHS = ["/login", "/invite", "/logout", "/privacy", "/terms"];
-
+// Pure auth-STATE provider for `useAuth()` consumers. It deliberately does
+// NOT redirect on a null user:
+//   - Navigation gating is owned by proxy.ts (the HTTP-only session cookie
+//     is the source of truth) and the RSC layouts' getSessionUser() check.
+//   - A session that lapses mid-use is caught by the API 401 handler, which
+//     ejects via a soft router.replace (see client.ts).
+// The old client-side redirect keyed off the Firebase *client* user (restored
+// async from IndexedDB), so a transient null — slow restore, cross-tab
+// sign-out sync, a refresh-token hiccup — would fire a full-document reload
+// and bounce a user whose cookie was still perfectly valid. Removing it kills
+// that hazard and the triple-gating it represented.
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
-	const pathname = usePathname();
 
 	useEffect(() => {
 		let unsub: (() => void) | undefined;
@@ -42,21 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		}
 		return () => unsub?.();
 	}, []);
-
-	// Proactively redirect to login when signed out on a protected route
-	useEffect(() => {
-		if (loading) {
-			return;
-		}
-
-		const isPublic =
-			pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-
-		if (!user && !isPublic) {
-			const next = encodeURIComponent(pathname + window.location.search);
-			window.location.href = `/login?next=${next}`;
-		}
-	}, [user, loading, pathname]);
 
 	const value = useMemo(() => ({ user, loading }), [user, loading]);
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

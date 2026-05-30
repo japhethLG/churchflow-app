@@ -1,75 +1,149 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { ModalBaseProps, ModalName } from "./registry";
 import { useModalStore } from "./store";
-// Importing the modals barrel loads every modal's `declare module`
-// augmentation so ModalPropsMap is fully populated here.
-import "@/components/modals";
-import { AddCampaignItemModal } from "@/components/modals/add-campaign-item";
-import { AddMemberModal } from "@/components/modals/add-member";
-import { CancelInvitationModal } from "@/components/modals/cancel-invitation";
-import { ConfirmCancelCampaignModal } from "@/components/modals/confirm-cancel-campaign";
-import { ConfirmDeleteModal } from "@/components/modals/confirm-delete";
-import { ConfirmDeleteCampaignModal } from "@/components/modals/confirm-delete-campaign";
-import { ConfirmDeleteCampaignItemModal } from "@/components/modals/confirm-delete-campaign-item";
-import { ConfirmDeleteMemberModal } from "@/components/modals/confirm-delete-member";
-import { ConfirmDeletePledgeModal } from "@/components/modals/confirm-delete-pledge";
-import { ConfirmDeleteTenantModal } from "@/components/modals/confirm-delete-tenant";
-import { ConfirmDeleteTransactionModal } from "@/components/modals/confirm-delete-transaction";
-import { ConfirmRestoreCampaignModal } from "@/components/modals/confirm-restore-campaign";
-import { ConfirmRestoreCampaignItemModal } from "@/components/modals/confirm-restore-campaign-item";
-import { ConfirmRestoreMemberModal } from "@/components/modals/confirm-restore-member";
-import { ConfirmRestorePledgeModal } from "@/components/modals/confirm-restore-pledge";
-import { ConfirmRestoreTenantModal } from "@/components/modals/confirm-restore-tenant";
-import { ConfirmRestoreTransactionModal } from "@/components/modals/confirm-restore-transaction";
-import { ConfirmToggleSuperAdminModal } from "@/components/modals/confirm-toggle-super-admin";
-import { CreatePledgeModal } from "@/components/modals/create-pledge";
-import { EditCampaignItemModal } from "@/components/modals/edit-campaign-item";
-import { EditMemberModal } from "@/components/modals/edit-member";
-import { EditPledgeModal } from "@/components/modals/edit-pledge";
-import { EditTenantModal } from "@/components/modals/edit-tenant";
-import { InviteAdminGlobalModal } from "@/components/modals/invite-admin-global";
-import { InviteMemberModal } from "@/components/modals/invite-member";
-import { InviteTenantAdminModal } from "@/components/modals/invite-tenant-admin";
-import { MemberPledgeModal } from "@/components/modals/member-pledge";
-import { MergeMemberModal } from "@/components/modals/merge-member";
-import { RecordGiftModal } from "@/components/modals/record-gift";
-import { RenameTenantSlugModal } from "@/components/modals/rename-tenant-slug";
 
 type AnyModal = ComponentType<ModalBaseProps & Record<string, unknown>>;
 
+// Code-split each modal into its own chunk, loaded only when first opened.
+// Previously all ~30 modals (and their zod/RHF form deps) were statically
+// imported here and pulled into the first authenticated navigation's bundle,
+// even though most navigations open zero modals.
+//
+// The `declare module "@/lib/modals/registry"` augmentations that populate
+// ModalPropsMap are applied by the compiler from src/** (tsconfig `include`),
+// so no barrel side-effect import is needed for type safety here.
+const lazyModal = (
+	loader: () => Promise<Record<string, unknown>>,
+	exportName: string,
+): AnyModal =>
+	dynamic(() => loader().then((mod) => mod[exportName] as AnyModal), {
+		ssr: false,
+	}) as AnyModal;
+
 const registry: Partial<Record<ModalName, AnyModal>> = {
-	"confirm-delete": ConfirmDeleteModal as AnyModal,
-	"edit-tenant": EditTenantModal as AnyModal,
-	"rename-tenant-slug": RenameTenantSlugModal as AnyModal,
-	"confirm-delete-tenant": ConfirmDeleteTenantModal as AnyModal,
-	"confirm-restore-tenant": ConfirmRestoreTenantModal as AnyModal,
-	"confirm-restore-member": ConfirmRestoreMemberModal as AnyModal,
-	"confirm-restore-campaign": ConfirmRestoreCampaignModal as AnyModal,
-	"confirm-restore-campaign-item": ConfirmRestoreCampaignItemModal as AnyModal,
-	"confirm-restore-pledge": ConfirmRestorePledgeModal as AnyModal,
-	"confirm-restore-transaction": ConfirmRestoreTransactionModal as AnyModal,
-	"invite-tenant-admin": InviteTenantAdminModal as AnyModal,
-	"invite-admin-global": InviteAdminGlobalModal as AnyModal,
-	"confirm-toggle-super-admin": ConfirmToggleSuperAdminModal as AnyModal,
-	"add-member": AddMemberModal as AnyModal,
-	"edit-member": EditMemberModal as AnyModal,
-	"confirm-delete-member": ConfirmDeleteMemberModal as AnyModal,
-	"invite-member": InviteMemberModal as AnyModal,
-	"merge-member": MergeMemberModal as AnyModal,
-	"confirm-delete-campaign": ConfirmDeleteCampaignModal as AnyModal,
-	"confirm-cancel-campaign": ConfirmCancelCampaignModal as AnyModal,
-	"add-campaign-item": AddCampaignItemModal as AnyModal,
-	"edit-campaign-item": EditCampaignItemModal as AnyModal,
-	"confirm-delete-campaign-item": ConfirmDeleteCampaignItemModal as AnyModal,
-	"create-pledge": CreatePledgeModal as AnyModal,
-	"edit-pledge": EditPledgeModal as AnyModal,
-	"confirm-delete-pledge": ConfirmDeletePledgeModal as AnyModal,
-	"record-gift": RecordGiftModal as AnyModal,
-	"confirm-delete-transaction": ConfirmDeleteTransactionModal as AnyModal,
-	"member-pledge": MemberPledgeModal as AnyModal,
-	"cancel-invitation": CancelInvitationModal as AnyModal,
+	"confirm-delete": lazyModal(
+		() => import("@/components/modals/confirm-delete"),
+		"ConfirmDeleteModal",
+	),
+	"edit-tenant": lazyModal(
+		() => import("@/components/modals/edit-tenant"),
+		"EditTenantModal",
+	),
+	"rename-tenant-slug": lazyModal(
+		() => import("@/components/modals/rename-tenant-slug"),
+		"RenameTenantSlugModal",
+	),
+	"confirm-delete-tenant": lazyModal(
+		() => import("@/components/modals/confirm-delete-tenant"),
+		"ConfirmDeleteTenantModal",
+	),
+	"confirm-restore-tenant": lazyModal(
+		() => import("@/components/modals/confirm-restore-tenant"),
+		"ConfirmRestoreTenantModal",
+	),
+	"confirm-restore-member": lazyModal(
+		() => import("@/components/modals/confirm-restore-member"),
+		"ConfirmRestoreMemberModal",
+	),
+	"confirm-restore-campaign": lazyModal(
+		() => import("@/components/modals/confirm-restore-campaign"),
+		"ConfirmRestoreCampaignModal",
+	),
+	"confirm-restore-campaign-item": lazyModal(
+		() => import("@/components/modals/confirm-restore-campaign-item"),
+		"ConfirmRestoreCampaignItemModal",
+	),
+	"confirm-restore-pledge": lazyModal(
+		() => import("@/components/modals/confirm-restore-pledge"),
+		"ConfirmRestorePledgeModal",
+	),
+	"confirm-restore-transaction": lazyModal(
+		() => import("@/components/modals/confirm-restore-transaction"),
+		"ConfirmRestoreTransactionModal",
+	),
+	"invite-tenant-admin": lazyModal(
+		() => import("@/components/modals/invite-tenant-admin"),
+		"InviteTenantAdminModal",
+	),
+	"invite-admin-global": lazyModal(
+		() => import("@/components/modals/invite-admin-global"),
+		"InviteAdminGlobalModal",
+	),
+	"confirm-toggle-super-admin": lazyModal(
+		() => import("@/components/modals/confirm-toggle-super-admin"),
+		"ConfirmToggleSuperAdminModal",
+	),
+	"add-member": lazyModal(
+		() => import("@/components/modals/add-member"),
+		"AddMemberModal",
+	),
+	"edit-member": lazyModal(
+		() => import("@/components/modals/edit-member"),
+		"EditMemberModal",
+	),
+	"confirm-delete-member": lazyModal(
+		() => import("@/components/modals/confirm-delete-member"),
+		"ConfirmDeleteMemberModal",
+	),
+	"invite-member": lazyModal(
+		() => import("@/components/modals/invite-member"),
+		"InviteMemberModal",
+	),
+	"merge-member": lazyModal(
+		() => import("@/components/modals/merge-member"),
+		"MergeMemberModal",
+	),
+	"confirm-delete-campaign": lazyModal(
+		() => import("@/components/modals/confirm-delete-campaign"),
+		"ConfirmDeleteCampaignModal",
+	),
+	"confirm-cancel-campaign": lazyModal(
+		() => import("@/components/modals/confirm-cancel-campaign"),
+		"ConfirmCancelCampaignModal",
+	),
+	"add-campaign-item": lazyModal(
+		() => import("@/components/modals/add-campaign-item"),
+		"AddCampaignItemModal",
+	),
+	"edit-campaign-item": lazyModal(
+		() => import("@/components/modals/edit-campaign-item"),
+		"EditCampaignItemModal",
+	),
+	"confirm-delete-campaign-item": lazyModal(
+		() => import("@/components/modals/confirm-delete-campaign-item"),
+		"ConfirmDeleteCampaignItemModal",
+	),
+	"create-pledge": lazyModal(
+		() => import("@/components/modals/create-pledge"),
+		"CreatePledgeModal",
+	),
+	"edit-pledge": lazyModal(
+		() => import("@/components/modals/edit-pledge"),
+		"EditPledgeModal",
+	),
+	"confirm-delete-pledge": lazyModal(
+		() => import("@/components/modals/confirm-delete-pledge"),
+		"ConfirmDeletePledgeModal",
+	),
+	"record-gift": lazyModal(
+		() => import("@/components/modals/record-gift"),
+		"RecordGiftModal",
+	),
+	"confirm-delete-transaction": lazyModal(
+		() => import("@/components/modals/confirm-delete-transaction"),
+		"ConfirmDeleteTransactionModal",
+	),
+	"member-pledge": lazyModal(
+		() => import("@/components/modals/member-pledge"),
+		"MemberPledgeModal",
+	),
+	"cancel-invitation": lazyModal(
+		() => import("@/components/modals/cancel-invitation"),
+		"CancelInvitationModal",
+	),
 };
 
 export const ModalHost = () => {

@@ -87,7 +87,9 @@ export const InviteTokenPage = ({ params }: { params: Params }) => {
 
 	const handleSwitchAccount = async () => {
 		await signOut();
-		window.location.reload();
+		// onAuthStateChanged (via useAuth) re-renders the sign-in CTA; a
+		// router.refresh re-runs any RSC data without a full document reload.
+		router.refresh();
 	};
 
 	const loading = isLoading || authLoading;

@@ -1,7 +1,7 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, SectionTitle } from "@/components/primitives";
+import { DonutChart } from "@/components/primitives/charts/DonutChart";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { num, pct, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
@@ -125,25 +125,12 @@ export const MemberChurchMixCard = ({
 								)}
 							</div>
 						</div>
-						<ResponsiveContainer width="100%" height="100%">
-							<PieChart>
-								<Pie
-									data={segments.length > 0 ? segments : placeholder}
-									dataKey="amount"
-									cx="50%"
-									cy="50%"
-									innerRadius={60}
-									outerRadius={88}
-									paddingAngle={1.5}
-									stroke="none"
-								>
-									{(segments.length > 0 ? segments : placeholder).map((s) => (
-										<Cell key={s.key} fill={s.color} />
-									))}
-								</Pie>
-								<Tooltip content={<DonutTooltip />} />
-							</PieChart>
-						</ResponsiveContainer>
+						<DonutChart
+							data={segments.length > 0 ? segments : placeholder}
+							innerRadius={60}
+							outerRadius={88}
+							tooltip={<DonutTooltip />}
+						/>
 					</div>
 				</div>
 

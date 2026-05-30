@@ -17,6 +17,7 @@ export const CAMPAIGN_PATHS = [
 	"/api/v1/tenants/{tenantId}/me/campaigns",
 	"/api/v1/tenants/{tenantId}/me/campaigns/{id}",
 	"/api/v1/tenants/{tenantId}/me/campaigns/{id}/progress",
+	"/api/v1/tenants/{tenantId}/me/campaigns/progress/batch",
 ] as const;
 
 export const invalidateCampaigns = (qc: QueryClient, tenantId?: string) => {

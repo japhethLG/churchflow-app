@@ -14,13 +14,11 @@ import {
 	useTableFilters,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { useMembers } from "@/lib/api/members";
-import { useTransactions } from "@/lib/api/transactions";
+import { useMembers, useMembersGivingTrend } from "@/lib/api/members";
 import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
-import { num } from "../admin-shared";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
@@ -31,29 +29,6 @@ const STATUS_OPTIONS = [
 	{ value: "active", label: "Active" },
 	{ value: "inactive", label: "Inactive" },
 ];
-
-// Build a 12-bucket monthly series per member from a flat transaction list.
-// Bucket index 0 = 11 months ago, bucket 11 = current month.
-const buildMonthlyByMember = (
-	transactions: components["schemas"]["TransactionResponseDto"][],
-): Record<string, number[]> => {
-	const buckets: Record<string, number[]> = {};
-	const startMonth = dayjs().startOf("month").subtract(11, "month");
-	for (const t of transactions) {
-		const mid = typeof t.memberId === "string" ? t.memberId : null;
-		if (!mid) {
-			continue;
-		}
-		const monthDelta = dayjs(t.date).startOf("month").diff(startMonth, "month");
-		if (monthDelta < 0 || monthDelta > 11) {
-			continue;
-		}
-		const arr = buckets[mid] ?? Array.from({ length: 12 }, () => 0);
-		arr[monthDelta] = (arr[monthDelta] ?? 0) + num(t.amount);
-		buckets[mid] = arr;
-	}
-	return buckets;
-};
 
 export const MembersListPage = () => {
 	const router = useRouter();
@@ -75,22 +50,22 @@ export const MembersListPage = () => {
 		...t.stateFlags(),
 	});
 
-	// Last 12 months of transactions, used to build per-member sparkline.
-	// At 500-row cap, this is preview-quality; at scale we'd want a backend
-	// `members/giving-trend?months=12` rollup. Flagged in the index page.
-	const yearFrom = dayjs().subtract(11, "month").startOf("month").toISOString();
-	const txQ = useTransactions(tenantSlug, {
-		dateFrom: yearFrom,
-		limit: 500,
-	});
-
-	const sparkBuckets = useMemo(
-		() => buildMonthlyByMember(txQ.data?.items ?? []),
-		[txQ.data],
-	);
-
 	const members: Member[] = data?.items ?? [];
 	const total = data?.meta.total ?? 0;
+
+	// Per-member 12-month sparkline series — a single server-side rollup
+	// scoped to the members on THIS page, replacing the old fetch-500-
+	// transactions-and-bucket-in-JS approach (which silently truncated at
+	// 500 rows for high-traffic tenants).
+	const visibleMemberIds = useMemo(() => members.map((m) => m.id), [members]);
+	const trendQ = useMembersGivingTrend(tenantSlug, visibleMemberIds, 12);
+	const sparkBuckets = useMemo(() => {
+		const map: Record<string, number[]> = {};
+		for (const item of trendQ.data?.items ?? []) {
+			map[item.memberId] = item.monthlyTotals;
+		}
+		return map;
+	}, [trendQ.data]);
 
 	const newIn30d = useMemo(
 		() =>

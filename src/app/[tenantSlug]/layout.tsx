@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { HydrateClient } from "@/lib/api/prefetch";
+import { getServerQueryClient } from "@/lib/api/query-client.server";
 import { serverApi } from "@/lib/api/server";
 import { getSessionUser } from "@/lib/auth/server";
 
@@ -36,9 +38,22 @@ export default async ({
 		// Verify before rendering so we 404 from the server instead of
 		// flickering through the page shell.
 		try {
-			await serverApi.GET("/api/v1/tenants/{tenantId}", {
+			const tenantInit = {
 				params: { path: { tenantId: tenantSlug } },
-			});
+			};
+			const { data } = await serverApi.GET(
+				"/api/v1/tenants/{tenantId}",
+				tenantInit,
+			);
+			// Reuse the validation payload instead of discarding it: seed it
+			// under the exact `useTenant(slug)` key so client surfaces (e.g.
+			// settings) hydrate the tenant from cache rather than refetching.
+			if (data) {
+				getServerQueryClient().setQueryData(
+					["/api/v1/tenants/{tenantId}", tenantInit],
+					data,
+				);
+			}
 		} catch (err) {
 			const status =
 				err && typeof err === "object" && "status" in err
@@ -51,5 +66,5 @@ export default async ({
 		}
 	}
 
-	return <>{children}</>;
+	return <HydrateClient>{children}</HydrateClient>;
 };

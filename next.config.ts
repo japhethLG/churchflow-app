@@ -17,6 +17,14 @@ const securityHeaders = [
 	},
 ];
 
+// PWA icons (and the logo) are static, rarely-changing brand assets that
+// live under /public, so Next only gives them a short default Cache-Control.
+// Pin them to a year + immutable so repeat visits / installed-app launches
+// serve them from cache instead of revalidating each navigation.
+const immutableAssetHeaders = [
+	{ key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+];
+
 const serviceWorkerHeaders = [
 	{ key: "Content-Type", value: "application/javascript; charset=utf-8" },
 	{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
@@ -48,10 +56,34 @@ const nextConfig: NextConfig = {
 	typescript: {
 		ignoreBuildErrors: false,
 	},
+	// Auto-memoize the client-heavy UI (data-dense list/dashboard pages) so
+	// re-renders don't recompute on every state change. Runs via a Babel
+	// plugin that Next applies only to React files through an SWC pre-pass.
+	reactCompiler: true,
+	experimental: {
+		// Reuse a just-visited dynamic route segment's RSC payload for 30s on
+		// forward re-navigation instead of refetching it (default is 0s). The
+		// group-level loading.tsx makes those segments prefetchable, so this
+		// turns a sidebar round-trip back into an instant client-cache hit.
+		staleTimes: { dynamic: 30, static: 180 },
+	},
+	// Allow next/image to optimize the remote profile photos rendered by the
+	// Avatar primitive (Google account avatars). Optimized + WebP/AVIF +
+	// same-origin /_next/image SWR caching instead of full-size cross-origin
+	// fetches. Hosts mirror the img-src allowlist in proxy.ts.
+	images: {
+		remotePatterns: [
+			{ protocol: "https", hostname: "lh3.googleusercontent.com" },
+			{ protocol: "https", hostname: "*.googleusercontent.com" },
+		],
+	},
 	headers: async () => [
 		{ source: "/:path*", headers: securityHeaders },
 		// PWA: serwist serves the SW from /serwist/sw.js via a Route Handler.
 		{ source: "/serwist/sw.js", headers: serviceWorkerHeaders },
+		// Long-lived immutable caching for PWA icons + logo.
+		{ source: "/icons/:path*", headers: immutableAssetHeaders },
+		{ source: "/logo.png", headers: immutableAssetHeaders },
 	],
 	rewrites: async () =>
 		firebaseAuthHost

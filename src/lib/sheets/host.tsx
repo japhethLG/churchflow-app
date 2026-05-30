@@ -1,23 +1,35 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { type ComponentType, useEffect, useState } from "react";
 import type { SheetBaseProps, SheetName } from "./registry";
 import { useSheetStore } from "./store";
-// Importing the sheets barrel loads every sheet's `declare module`
-// augmentation so SheetPropsMap is fully populated here.
-import "@/components/sheets";
-import { AccountSheet } from "@/components/sheets/account";
-import { MoreSheet } from "@/components/sheets/more";
-import { PledgeSheet } from "@/components/sheets/pledge";
-import { RecordGiftSheet } from "@/components/sheets/record-gift";
 
 type AnySheet = ComponentType<SheetBaseProps & Record<string, unknown>>;
 
+// Code-split each sheet; only fetched when first opened. The `declare
+// module` augmentations populating SheetPropsMap are applied by the
+// compiler from src/** (tsconfig `include`), so no barrel side-effect
+// import is needed for type safety.
+const lazySheet = (
+	loader: () => Promise<Record<string, unknown>>,
+	exportName: string,
+): AnySheet =>
+	dynamic(() => loader().then((mod) => mod[exportName] as AnySheet), {
+		ssr: false,
+	}) as AnySheet;
+
 const registry: Partial<Record<SheetName, AnySheet>> = {
-	account: AccountSheet as AnySheet,
-	more: MoreSheet as AnySheet,
-	pledge: PledgeSheet as AnySheet,
-	"record-gift": RecordGiftSheet as AnySheet,
+	account: lazySheet(
+		() => import("@/components/sheets/account"),
+		"AccountSheet",
+	),
+	more: lazySheet(() => import("@/components/sheets/more"), "MoreSheet"),
+	pledge: lazySheet(() => import("@/components/sheets/pledge"), "PledgeSheet"),
+	"record-gift": lazySheet(
+		() => import("@/components/sheets/record-gift"),
+		"RecordGiftSheet",
+	),
 };
 
 /**
