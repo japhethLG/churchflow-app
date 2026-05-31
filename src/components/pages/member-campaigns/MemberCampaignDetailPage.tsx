@@ -23,7 +23,7 @@ import { nstr } from "@/lib/api/coerce";
 import { useMyProfile } from "@/lib/api/members";
 import { useMyPledges } from "@/lib/api/pledges";
 import { useMyTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
@@ -88,7 +88,7 @@ export const MemberCampaignDetailPage = () => {
 		const start = dayjs().utc().subtract(11, "month").startOf("month");
 		const buckets: number[] = Array(12).fill(0);
 		for (const t of myCampaignTransactions) {
-			const d = dayjs(t.date).utc().startOf("month");
+			const d = dayjs.utc(t.date).startOf("month");
 			const idx = d.diff(start, "month");
 			if (idx >= 0 && idx < buckets.length) {
 				buckets[idx] = (buckets[idx] ?? 0) + num(t.amount);
@@ -214,7 +214,7 @@ export const MemberCampaignDetailPage = () => {
 			<StatusBadge status={STATUS_MAP[campaign.status]} />
 			{deadline ? (
 				<span className="text-xs text-muted-foreground">
-					Deadline · {dayjs(deadline).format("MMM D, YYYY")}
+					Deadline · {formatUtcDate(deadline, "MMM D, YYYY")}
 				</span>
 			) : (
 				<span className="text-xs text-muted-foreground">Open-ended</span>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { type components, nstr } from "@/lib/api";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 
 type Item = components["schemas"]["CampaignItemResponseDto"];
 
@@ -21,7 +21,7 @@ const toDateInput = (d: unknown): string => {
 	if (!s) {
 		return "";
 	}
-	return dayjs(s).format("YYYY-MM-DD");
+	return formatUtcDate(s, "YYYY-MM-DD");
 };
 
 export const buildEditCampaignItemDefaults = (

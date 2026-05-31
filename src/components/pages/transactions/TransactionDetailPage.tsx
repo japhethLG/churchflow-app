@@ -15,7 +15,7 @@ import {
 import { type components, nstr } from "@/lib/api";
 import { usePledge } from "@/lib/api/pledges";
 import { useTransaction, useTransactionSummary } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
 import { cn } from "@/lib/utils";
@@ -146,7 +146,7 @@ export const TransactionDetailPage = () => {
 					label: "Transactions",
 				}}
 				title={formatCurrency(tx.amount)}
-				subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${dayjs(tx.date).format("dddd, MMMM D, YYYY")}`}
+				subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${formatUtcDate(tx.date, "dddd, MMMM D, YYYY")}`}
 				action={
 					!isDeleted ? (
 						<Button
@@ -179,7 +179,7 @@ export const TransactionDetailPage = () => {
 							openModal("confirm-restore-transaction", {
 								tenantId: tenantSlug,
 								transactionId: tx.id,
-								summary: `${formatCurrency(tx.amount)} on ${dayjs(tx.date).format("MMM D, YYYY")}`,
+								summary: `${formatCurrency(tx.amount)} on ${formatUtcDate(tx.date, "MMM D, YYYY")}`,
 							})
 						}
 					/>

@@ -15,7 +15,7 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { usePledges } from "@/lib/api/pledges";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
 	LIFECYCLE_LABEL,
@@ -138,7 +138,7 @@ export const MemberPledgesTab = ({
 						label: "Deadline",
 						value: deadline ? (
 							<span className="text-sm font-medium text-foreground">
-								{dayjs(deadline).format("MMM D, YYYY")}
+								{formatUtcDate(deadline, "MMM D, YYYY")}
 							</span>
 						) : (
 							<span className="text-sm text-muted-foreground">None</span>
@@ -268,7 +268,7 @@ export const MemberPledgesTab = ({
 				return (
 					<div className="text-xs">
 						<div className="text-muted-foreground">
-							{dayjs(deadline).format("MMM D, YYYY")}
+							{formatUtcDate(deadline, "MMM D, YYYY")}
 						</div>
 						{days !== null && p.status === "ACTIVE" && (
 							<div

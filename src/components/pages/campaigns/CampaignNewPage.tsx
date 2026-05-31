@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/primitives";
 import { useAddCampaignItem, useCreateCampaign } from "@/lib/api/campaigns";
-import dayjs from "@/lib/dayjs";
+import { toUtcDayStart } from "@/lib/dayjs";
 import { CampaignForm } from "./CampaignForm";
 import type { CampaignFormValues } from "./formHelpers";
 
@@ -19,9 +19,7 @@ export const CampaignNewPage = () => {
 			body: {
 				title: values.title.trim(),
 				description: values.description?.trim() || undefined,
-				deadline: values.deadline
-					? dayjs(values.deadline).toISOString()
-					: undefined,
+				deadline: values.deadline ? toUtcDayStart(values.deadline) : undefined,
 				status: values.status,
 			},
 		});
@@ -37,9 +35,7 @@ export const CampaignNewPage = () => {
 					title: item.title.trim(),
 					description: item.description?.trim() || undefined,
 					targetAmount: Number(item.targetAmount),
-					deadline: item.deadline
-						? dayjs(item.deadline).toISOString()
-						: undefined,
+					deadline: item.deadline ? toUtcDayStart(item.deadline) : undefined,
 					sortOrder: idx,
 				},
 			});

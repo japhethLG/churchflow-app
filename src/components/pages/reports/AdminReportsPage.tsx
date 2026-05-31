@@ -25,22 +25,26 @@ const TABS: { value: Tab; label: string }[] = [
 ];
 
 const DEFAULT_RANGE: DateRangeValue = {
-	from: dayjs().subtract(11, "month").startOf("month").format("YYYY-MM-DD"),
-	to: dayjs().format("YYYY-MM-DD"),
+	from: dayjs()
+		.utc()
+		.subtract(11, "month")
+		.startOf("month")
+		.format("YYYY-MM-DD"),
+	to: dayjs().utc().format("YYYY-MM-DD"),
 };
 
 const RANGE_PRESETS = [
 	{
 		label: "This week",
 		resolve: () => ({
-			from: dayjs().startOf("week").format("YYYY-MM-DD"),
-			to: dayjs().endOf("week").format("YYYY-MM-DD"),
+			from: dayjs().utc().startOf("week").format("YYYY-MM-DD"),
+			to: dayjs().utc().endOf("week").format("YYYY-MM-DD"),
 		}),
 	},
 	{
 		label: "Last week",
 		resolve: () => {
-			const w = dayjs().subtract(1, "week");
+			const w = dayjs().utc().subtract(1, "week");
 			return {
 				from: w.startOf("week").format("YYYY-MM-DD"),
 				to: w.endOf("week").format("YYYY-MM-DD"),
@@ -50,36 +54,48 @@ const RANGE_PRESETS = [
 	{
 		label: "This month",
 		resolve: () => ({
-			from: dayjs().startOf("month").format("YYYY-MM-DD"),
-			to: dayjs().endOf("month").format("YYYY-MM-DD"),
+			from: dayjs().utc().startOf("month").format("YYYY-MM-DD"),
+			to: dayjs().utc().endOf("month").format("YYYY-MM-DD"),
 		}),
 	},
 	{
 		label: "Last month",
 		resolve: () => ({
-			from: dayjs().subtract(1, "month").startOf("month").format("YYYY-MM-DD"),
-			to: dayjs().subtract(1, "month").endOf("month").format("YYYY-MM-DD"),
+			from: dayjs()
+				.utc()
+				.subtract(1, "month")
+				.startOf("month")
+				.format("YYYY-MM-DD"),
+			to: dayjs()
+				.utc()
+				.subtract(1, "month")
+				.endOf("month")
+				.format("YYYY-MM-DD"),
 		}),
 	},
 	{
 		label: "YTD",
 		resolve: () => ({
-			from: dayjs().startOf("year").format("YYYY-MM-DD"),
-			to: dayjs().format("YYYY-MM-DD"),
+			from: dayjs().utc().startOf("year").format("YYYY-MM-DD"),
+			to: dayjs().utc().format("YYYY-MM-DD"),
 		}),
 	},
 	{
 		label: "Last 12 months",
 		resolve: () => ({
-			from: dayjs().subtract(11, "month").startOf("month").format("YYYY-MM-DD"),
-			to: dayjs().format("YYYY-MM-DD"),
+			from: dayjs()
+				.utc()
+				.subtract(11, "month")
+				.startOf("month")
+				.format("YYYY-MM-DD"),
+			to: dayjs().utc().format("YYYY-MM-DD"),
 		}),
 	},
 	{
 		label: "This year",
 		resolve: () => ({
-			from: dayjs().startOf("year").format("YYYY-MM-DD"),
-			to: dayjs().endOf("year").format("YYYY-MM-DD"),
+			from: dayjs().utc().startOf("year").format("YYYY-MM-DD"),
+			to: dayjs().utc().endOf("year").format("YYYY-MM-DD"),
 		}),
 	},
 ];

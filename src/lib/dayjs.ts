@@ -18,3 +18,64 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 export default dayjs;
+
+// ---------------------------------------------------------------------------
+// Date-only helpers — UTC-day semantics for CALENDAR-DAY fields (gift date,
+// campaign / item deadlines). The contract is: the backend stores & returns
+// these as the UTC-midnight instant of the picked calendar day. Routing every
+// write / render through these keeps call sites from improvising between
+// `dayjs(...)` (browser-local) and `dayjs.utc(...)` — the mismatch that let a
+// gift dated "June 1" be stored at the prior day for UTC+ users and then
+// dropped by the (correct) UTC date-range filter.
+//
+// Do NOT use these for genuine INSTANTS (createdAt / deletedAt / "x ago") —
+// those are real moments in time and should render in the viewer's locale.
+// ---------------------------------------------------------------------------
+
+/**
+ * WRITE / lower filter bound. Serialize a user-picked calendar day
+ * (`YYYY-MM-DD` from DatePicker/DateRangePicker) as the UTC start-of-day
+ * instant, so the stored day matches the day the user picked regardless of
+ * their timezone.
+ */
+export const toUtcDayStart = (date: string): string =>
+	dayjs.utc(date).startOf("day").toISOString();
+
+/**
+ * Inclusive upper filter bound — UTC end-of-day instant for a picked day.
+ */
+export const toUtcDayEnd = (date: string): string =>
+	dayjs.utc(date).endOf("day").toISOString();
+
+/**
+ * RENDER a date-only field in UTC, so a UTC-midnight instant displays as the
+ * calendar day it represents for every viewer. Do NOT use for instants.
+ */
+export const formatUtcDate = (iso: string, fmt: string): string =>
+	dayjs.utc(iso).format(fmt);
+
+/**
+ * Relative label for a DATE-ONLY field (gift date, deadline): "Today",
+ * "Yesterday", or "Nd ago" within the last week, otherwise the date formatted
+ * with `fallbackFormat`. Uses a UTC calendar-day difference, so the label is
+ * offset-independent and never fabricates a time-of-day. Do NOT use for
+ * instants (createdAt / "x ago").
+ */
+export const relativeUtcDate = (
+	iso: string,
+	fallbackFormat = "MMM D",
+): string => {
+	const day = dayjs.utc(iso).startOf("day");
+	const today = dayjs.utc().startOf("day");
+	const daysDiff = today.diff(day, "day");
+	if (daysDiff <= 0) {
+		return "Today";
+	}
+	if (daysDiff === 1) {
+		return "Yesterday";
+	}
+	if (daysDiff < 7) {
+		return `${daysDiff}d ago`;
+	}
+	return formatUtcDate(iso, fallbackFormat);
+};

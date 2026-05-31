@@ -84,7 +84,10 @@ export const daysUntil = (
 	if (!deadline) {
 		return null;
 	}
-	return dayjs(deadline).startOf("day").diff(dayjs().startOf("day"), "day");
+	return dayjs
+		.utc(deadline)
+		.startOf("day")
+		.diff(dayjs.utc().startOf("day"), "day");
 };
 
 // Resolve the deadline a pledge is operating against. Item deadline

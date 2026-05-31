@@ -17,7 +17,7 @@ import type { components } from "@/lib/api";
 import { useMyCampaigns } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
 import { useMyTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { num, pct, type TxType, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
 import { TransactionMixCard } from "../TransactionMixCard";
@@ -145,7 +145,7 @@ export const MemberTransactions = ({
 			width: "120px",
 			render: (t) => (
 				<span className="text-muted-foreground">
-					{dayjs(t.date).format("MMM D, YYYY")}
+					{formatUtcDate(t.date, "MMM D, YYYY")}
 				</span>
 			),
 		},
@@ -234,7 +234,7 @@ export const MemberTransactions = ({
 						label: "Date",
 						value: (
 							<span className="text-sm font-medium text-foreground">
-								{dayjs(tx.date).format("MMM D, YYYY")}
+								{formatUtcDate(tx.date, "MMM D, YYYY")}
 							</span>
 						),
 					},
@@ -266,7 +266,7 @@ export const MemberTransactions = ({
 							)}
 						</div>
 						<div className="truncate text-xs text-muted-foreground">
-							{dayjs(tx.date).format("MMM D, YYYY")}
+							{formatUtcDate(tx.date, "MMM D, YYYY")}
 						</div>
 					</div>
 					<div className="flex shrink-0 flex-col items-end gap-1">

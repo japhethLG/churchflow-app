@@ -37,15 +37,15 @@ export const MemberKpiStrip = ({
 		);
 	}
 
-	const now = dayjs();
+	const now = dayjs().utc();
 	const monthStart = now.startOf("month");
 	const yearStart = now.startOf("year");
 
 	const thisMonth = transactions.filter((t) =>
-		dayjs(t.date).isSameOrAfter(monthStart),
+		dayjs.utc(t.date).isSameOrAfter(monthStart),
 	);
 	const thisYear = transactions.filter((t) =>
-		dayjs(t.date).isSameOrAfter(yearStart),
+		dayjs.utc(t.date).isSameOrAfter(yearStart),
 	);
 
 	const monthTotal = thisMonth.reduce((s, t) => s + Number(t.amount), 0);

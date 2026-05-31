@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { PageHeader } from "@/components/primitives";
 import { nstr } from "@/lib/api";
 import { useCampaign, useUpdateCampaign } from "@/lib/api/campaigns";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate, toUtcDayStart } from "@/lib/dayjs";
 import { CampaignForm } from "./CampaignForm";
 import type { CampaignFormValues } from "./formHelpers";
 
@@ -14,7 +14,7 @@ const toDateInput = (d: unknown): string => {
 	if (!s) {
 		return "";
 	}
-	return dayjs(s).format("YYYY-MM-DD");
+	return formatUtcDate(s, "YYYY-MM-DD");
 };
 
 export const CampaignEditPage = () => {
@@ -49,9 +49,7 @@ export const CampaignEditPage = () => {
 			body: {
 				title: values.title.trim(),
 				description: values.description?.trim() || undefined,
-				deadline: values.deadline
-					? dayjs(values.deadline).toISOString()
-					: undefined,
+				deadline: values.deadline ? toUtcDayStart(values.deadline) : undefined,
 				status: values.status,
 			},
 		});

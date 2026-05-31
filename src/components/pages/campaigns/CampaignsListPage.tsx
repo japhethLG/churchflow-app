@@ -14,7 +14,7 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaigns, useCampaignsProgressBatch } from "@/lib/api/campaigns";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { daysUntil, num, pct } from "../admin-shared";
@@ -171,7 +171,7 @@ export const CampaignsListPage = () => {
 				if (c.status === "COMPLETED") {
 					return (
 						<div className="text-xs text-muted-foreground">
-							{dayjs(c.deadline).format("MMM D, YYYY")}
+							{formatUtcDate(c.deadline, "MMM D, YYYY")}
 						</div>
 					);
 				}
@@ -184,7 +184,7 @@ export const CampaignsListPage = () => {
 				return (
 					<div>
 						<div className="text-xs text-muted-foreground">
-							{dayjs(c.deadline).format("MMM D, YYYY")}
+							{formatUtcDate(c.deadline, "MMM D, YYYY")}
 						</div>
 						<Badge color={tone} className="mt-0.5">
 							{days !== null && days < 0
@@ -252,7 +252,7 @@ export const CampaignsListPage = () => {
 							typeof c.deadline === "string" ? (
 								<div className="flex items-center justify-end gap-2">
 									<span className="text-sm font-medium text-foreground">
-										{dayjs(c.deadline).format("MMM D, YYYY")}
+										{formatUtcDate(c.deadline, "MMM D, YYYY")}
 									</span>
 									{days !== null && c.status !== "COMPLETED" && (
 										<Badge color={deadlineTone}>

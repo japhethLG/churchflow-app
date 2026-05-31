@@ -48,9 +48,9 @@ export const MemberDashboardPage = () => {
 	const transactions = txQ.data?.items ?? [];
 
 	const myYearTotal = useMemo(() => {
-		const yearStart = dayjs().startOf("year");
+		const yearStart = dayjs().utc().startOf("year");
 		return transactions
-			.filter((t) => dayjs(t.date).isSameOrAfter(yearStart))
+			.filter((t) => dayjs.utc(t.date).isSameOrAfter(yearStart))
 			.reduce((s, t) => s + num(t.amount), 0);
 	}, [transactions]);
 

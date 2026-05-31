@@ -17,7 +17,7 @@ import {
 } from "@/components/primitives";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { usePledges } from "@/lib/api/pledges";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
@@ -265,7 +265,7 @@ export const PledgesListPage = () => {
 				return (
 					<div className="text-xs">
 						<div className="text-muted-foreground">
-							{dayjs(r.deadline).format("MMM D, YYYY")}
+							{formatUtcDate(r.deadline, "MMM D, YYYY")}
 						</div>
 						{r.days !== null && r.p.status === "ACTIVE" && (
 							<div
@@ -333,7 +333,7 @@ export const PledgesListPage = () => {
 							<div className="flex items-center justify-end gap-2">
 								{r.deadline ? (
 									<span className="text-sm font-medium text-foreground">
-										{dayjs(r.deadline).format("MMM D, YYYY")}
+										{formatUtcDate(r.deadline, "MMM D, YYYY")}
 									</span>
 								) : (
 									<span className="text-sm text-muted-foreground">—</span>

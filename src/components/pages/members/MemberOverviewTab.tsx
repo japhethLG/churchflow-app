@@ -23,7 +23,7 @@ import type { TransactionType as BadgeType } from "@/components/primitives/Badge
 import { type components, nstr } from "@/lib/api";
 import { useMemberSummary } from "@/lib/api/members";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate, relativeUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
 	bucketSmallSegments,
@@ -64,22 +64,6 @@ const TX_BADGE_LABEL: Record<Transaction["type"], BadgeType> = {
 	COMMITMENT: "Commitment",
 	DONATION: "Donation",
 	OTHER: "Other",
-};
-
-const relativeDate = (iso: string): string => {
-	const d = dayjs(iso);
-	const now = dayjs();
-	const hours = now.diff(d, "hour", true);
-	if (hours < 24) {
-		return `Today · ${d.format("h:mma")}`;
-	}
-	if (hours < 48) {
-		return "Yesterday";
-	}
-	if (hours < 24 * 7) {
-		return `${Math.floor(hours / 24)}d ago`;
-	}
-	return d.format("MMM D, YYYY");
 };
 
 export const MemberOverviewTab = ({
@@ -221,7 +205,7 @@ export const MemberOverviewTab = ({
 			width: "140px",
 			render: (t) => (
 				<span className="text-sm text-muted-foreground">
-					{relativeDate(t.date)}
+					{relativeUtcDate(t.date, "MMM D, YYYY")}
 				</span>
 			),
 		},
@@ -322,15 +306,15 @@ export const MemberOverviewTab = ({
 						},
 						{
 							label: "First gift",
-							value: firstISO ? dayjs(firstISO).format("MMM YYYY") : "—",
+							value: firstISO ? formatUtcDate(firstISO, "MMM YYYY") : "—",
 							caption: firstISO
 								? `${dayjs().diff(dayjs(firstISO), "month")} months ago`
 								: "No gifts yet",
 						},
 						{
 							label: "Last gift",
-							value: lastISO ? dayjs(lastISO).format("MMM D") : "—",
-							caption: lastISO ? relativeDate(lastISO) : "—",
+							value: lastISO ? formatUtcDate(lastISO, "MMM D") : "—",
+							caption: lastISO ? relativeUtcDate(lastISO, "MMM D, YYYY") : "—",
 						},
 						{
 							label: "Pledges",

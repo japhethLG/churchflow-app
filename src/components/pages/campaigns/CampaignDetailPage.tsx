@@ -12,7 +12,7 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaign, useCampaignProgress } from "@/lib/api/campaigns";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
 import { openSheet } from "@/lib/sheets/store";
@@ -175,7 +175,7 @@ export const CampaignDetailPage = () => {
 			<Badge color={STATUS_BADGE[campaign.status]}>{campaign.status}</Badge>
 			{deadlineStr ? (
 				<>
-					<span>Deadline · {dayjs(deadlineStr).format("MMMM D, YYYY")}</span>
+					<span>Deadline · {formatUtcDate(deadlineStr, "MMMM D, YYYY")}</span>
 					{deadlineBadge && (
 						<Badge color={deadlineBadge.color}>{deadlineBadge.text}</Badge>
 					)}

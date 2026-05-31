@@ -13,7 +13,7 @@ import {
 	TypeBadge,
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 
 export type TransactionRow = components["schemas"]["TransactionResponseDto"];
@@ -30,7 +30,7 @@ const TYPE_BADGE_LABEL: Record<TransactionRow["type"], BadgeType> = {
 };
 
 const fmtDate = (iso: string): string => {
-	return dayjs(iso).format("MMM D");
+	return formatUtcDate(iso, "MMM D");
 };
 
 const fullName = (m: EmbeddedMember | undefined | null): string => {
@@ -241,7 +241,7 @@ export const transactionMobileCard =
 						label: "Date",
 						value: (
 							<span className="text-sm font-medium text-foreground">
-								{dayjs(t.date).format("MMM D, YYYY")}
+								{formatUtcDate(t.date, "MMM D, YYYY")}
 							</span>
 						),
 					},
@@ -276,7 +276,7 @@ export const transactionMobileCard =
 							{m ? name : "Anonymous"}
 						</div>
 						<div className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-							<span>{dayjs(t.date).format("MMM D")}</span>
+							<span>{formatUtcDate(t.date, "MMM D")}</span>
 							<span className="size-0.5 rounded-full bg-muted-foreground" />
 							<span className="truncate">{campaignTitle ?? "No campaign"}</span>
 						</div>

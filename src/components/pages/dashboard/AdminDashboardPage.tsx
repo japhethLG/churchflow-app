@@ -39,13 +39,18 @@ export const AdminDashboardPage = () => {
 	const { tenantSlug } = useParams<{ tenantSlug: string }>();
 	const { user } = useAuth();
 
-	const weekFrom = dayjs().startOf("week").toISOString();
-	const weekTo = dayjs().endOf("week").toISOString();
+	const weekFrom = dayjs().utc().startOf("week").toISOString();
+	const weekTo = dayjs().utc().endOf("week").toISOString();
 	const priorWeekFrom = dayjs()
+		.utc()
 		.subtract(1, "week")
 		.startOf("week")
 		.toISOString();
-	const priorWeekTo = dayjs().subtract(1, "week").endOf("week").toISOString();
+	const priorWeekTo = dayjs()
+		.utc()
+		.subtract(1, "week")
+		.endOf("week")
+		.toISOString();
 
 	const weekSummary = useTransactionSummary(tenantSlug, {
 		dateFrom: weekFrom,

@@ -23,7 +23,7 @@ import { useCampaign } from "@/lib/api/campaigns";
 import { useMembers } from "@/lib/api/members";
 import { usePledge } from "@/lib/api/pledges";
 import { useTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
@@ -81,7 +81,7 @@ const buildTxColumns = ({
 		width: "120px",
 		render: (tx) => (
 			<span className="text-sm text-muted-foreground">
-				{dayjs(tx.date).format("MMM D, YYYY")}
+				{formatUtcDate(tx.date, "MMM D, YYYY")}
 			</span>
 		),
 	},
@@ -331,7 +331,7 @@ export const PledgeDetailPage = () => {
 							{typeLabel}
 						</div>
 						<div className="text-xs text-muted-foreground">
-							{dayjs(tx.date).format("MMM D, YYYY")}
+							{formatUtcDate(tx.date, "MMM D, YYYY")}
 						</div>
 					</div>
 					<span className="shrink-0 text-[15px] font-bold tabular-nums tracking-tight">
@@ -464,7 +464,7 @@ export const PledgeDetailPage = () => {
 									label: "Deadline",
 									value:
 										deadline !== null
-											? dayjs(deadline).format("MMM D, YYYY")
+											? formatUtcDate(deadline, "MMM D, YYYY")
 											: "—",
 									caption: daysCaption,
 								},

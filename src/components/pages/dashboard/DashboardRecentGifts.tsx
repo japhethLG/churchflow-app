@@ -13,7 +13,7 @@ import {
 	TypeBadge,
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import dayjs from "@/lib/dayjs";
+import { relativeUtcDate } from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
@@ -26,22 +26,6 @@ const TYPE_BADGE_LABEL: Record<Transaction["type"], BadgeType> = {
 	COMMITMENT: "Commitment",
 	DONATION: "Donation",
 	OTHER: "Other",
-};
-
-const relativeDate = (iso: string): string => {
-	const d = dayjs(iso);
-	const now = dayjs();
-	const hours = now.diff(d, "hour", true);
-	if (hours < 24) {
-		return `Today · ${d.format("h:mma")}`;
-	}
-	if (hours < 48) {
-		return "Yesterday";
-	}
-	if (hours < 24 * 7) {
-		return `${Math.floor(hours / 24)}d ago`;
-	}
-	return d.format("MMM D");
 };
 
 export const DashboardRecentGifts = ({
@@ -63,7 +47,7 @@ export const DashboardRecentGifts = ({
 			width: "120px",
 			render: (t) => (
 				<span className="text-sm text-muted-foreground">
-					{relativeDate(t.date)}
+					{relativeUtcDate(t.date)}
 				</span>
 			),
 		},
@@ -239,7 +223,7 @@ export const DashboardRecentGifts = ({
 												</span>
 											)}
 											<span className="ml-auto shrink-0 whitespace-nowrap">
-												{relativeDate(t.date)}
+												{relativeUtcDate(t.date)}
 											</span>
 										</div>
 									</div>

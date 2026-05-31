@@ -117,7 +117,7 @@ export const MemberInsightsPage = () => {
 			return null;
 		}
 		return transactions
-			.map((t) => dayjs(t.date))
+			.map((t) => dayjs.utc(t.date))
 			.reduce((earliest, d) => (d.isBefore(earliest) ? d : earliest));
 	}, [transactions]);
 	const lastGiftDate = useMemo(() => {
@@ -125,7 +125,7 @@ export const MemberInsightsPage = () => {
 			return null;
 		}
 		return transactions
-			.map((t) => dayjs(t.date))
+			.map((t) => dayjs.utc(t.date))
 			.reduce((latest, d) => (d.isAfter(latest) ? d : latest));
 	}, [transactions]);
 

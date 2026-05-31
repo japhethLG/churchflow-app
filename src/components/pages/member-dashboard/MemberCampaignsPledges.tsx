@@ -9,7 +9,7 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { nstr } from "@/lib/api/coerce";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -149,7 +149,7 @@ export const MemberCampaignsPledges = ({
 										)}
 										{deadline && (
 											<Badge color="gray">
-												Ends {dayjs(deadline).format("MMM D")}
+												Ends {formatUtcDate(deadline, "MMM D")}
 											</Badge>
 										)}
 									</div>

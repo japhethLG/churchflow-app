@@ -11,7 +11,7 @@ import {
 import { Pressable } from "@/components/primitives/Pressable";
 import { useMembers } from "@/lib/api/members";
 import { useBulkCreateTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import { toUtcDayStart } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import { BaseModal } from "../BaseModal";
@@ -227,7 +227,7 @@ export const RecordGiftModal = ({
 					items: savedGifts.map((g) => ({
 						type: g.type,
 						amount: Number(g.amount),
-						date: dayjs(date).toISOString(),
+						date: toUtcDayStart(date),
 						memberId: memberId || undefined,
 						campaignId: g.campaignId || undefined,
 						campaignItemId: g.campaignItemId || undefined,

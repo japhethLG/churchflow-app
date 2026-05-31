@@ -15,7 +15,7 @@ import {
 } from "@/components/primitives";
 import { type components, nstr } from "@/lib/api";
 import { useCampaign } from "@/lib/api/campaigns";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
 import { daysUntil, num, pct } from "../admin-shared";
@@ -183,7 +183,7 @@ export const CampaignItemsTab = ({
 						label: "Deadline",
 						value: r.deadline ? (
 							<span className="text-sm font-medium text-foreground">
-								{dayjs(r.deadline).format("MMM D, YYYY")}
+								{formatUtcDate(r.deadline, "MMM D, YYYY")}
 							</span>
 						) : (
 							<span className="text-sm text-muted-foreground">Open-ended</span>
@@ -332,7 +332,7 @@ export const CampaignItemsTab = ({
 				<div className="text-xs">
 					{r.deadline ? (
 						<div className="text-muted-foreground">
-							{dayjs(r.deadline).format("MMM D, YYYY")}
+							{formatUtcDate(r.deadline, "MMM D, YYYY")}
 						</div>
 					) : (
 						<div className="text-muted-foreground">—</div>

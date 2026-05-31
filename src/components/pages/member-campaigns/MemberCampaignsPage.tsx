@@ -20,7 +20,7 @@ import {
 } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
 import { useMyPledges } from "@/lib/api/pledges";
-import dayjs from "@/lib/dayjs";
+import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { daysUntil, num, pct } from "../admin-shared";
 
@@ -208,7 +208,7 @@ export const MemberCampaignsPage = () => {
 				if (c.status === "COMPLETED" || c.status === "CANCELLED") {
 					return (
 						<div className="text-xs text-muted-foreground">
-							{dayjs(deadline).format("MMM D, YYYY")}
+							{formatUtcDate(deadline, "MMM D, YYYY")}
 						</div>
 					);
 				}
@@ -221,7 +221,7 @@ export const MemberCampaignsPage = () => {
 				return (
 					<div>
 						<div className="text-xs text-muted-foreground">
-							{dayjs(deadline).format("MMM D, YYYY")}
+							{formatUtcDate(deadline, "MMM D, YYYY")}
 						</div>
 						<Badge color={tone} className="mt-0.5">
 							{days !== null && days < 0
@@ -272,7 +272,7 @@ export const MemberCampaignsPage = () => {
 						) : (
 							<span className="flex items-center justify-end gap-2">
 								<span className="text-sm font-medium text-foreground">
-									{dayjs(deadline).format("MMM D, YYYY")}
+									{formatUtcDate(deadline, "MMM D, YYYY")}
 								</span>
 								{!isClosed && days !== null && (
 									<Badge

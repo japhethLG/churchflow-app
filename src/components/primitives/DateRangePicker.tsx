@@ -67,7 +67,7 @@ export const DEFAULT_DATE_RANGE_PRESETS: DateRangePreset[] = [
 	{
 		label: "Today",
 		resolve: () => {
-			const t = dayjs().startOf("day");
+			const t = dayjs().utc().startOf("day");
 			return { from: fmt(t), to: fmt(t) };
 		},
 	},
@@ -76,7 +76,7 @@ export const DEFAULT_DATE_RANGE_PRESETS: DateRangePreset[] = [
 		resolve: () => {
 			// dayjs's startOf("week") is Sunday by default — matches the
 			// calendar's default `weekStartsOn`.
-			const now = dayjs();
+			const now = dayjs().utc();
 			return {
 				from: fmt(now.startOf("week")),
 				to: fmt(now.endOf("week")),
@@ -86,29 +86,29 @@ export const DEFAULT_DATE_RANGE_PRESETS: DateRangePreset[] = [
 	{
 		label: "Last week",
 		resolve: () => {
-			const w = dayjs().subtract(1, "week");
+			const w = dayjs().utc().subtract(1, "week");
 			return { from: fmt(w.startOf("week")), to: fmt(w.endOf("week")) };
 		},
 	},
 	{
 		label: "This month",
 		resolve: () => ({
-			from: fmt(dayjs().startOf("month")),
-			to: fmt(dayjs().endOf("month")),
+			from: fmt(dayjs().utc().startOf("month")),
+			to: fmt(dayjs().utc().endOf("month")),
 		}),
 	},
 	{
 		label: "Last month",
 		resolve: () => {
-			const m = dayjs().subtract(1, "month");
+			const m = dayjs().utc().subtract(1, "month");
 			return { from: fmt(m.startOf("month")), to: fmt(m.endOf("month")) };
 		},
 	},
 	{
 		label: "This year",
 		resolve: () => ({
-			from: fmt(dayjs().startOf("year")),
-			to: fmt(dayjs().endOf("year")),
+			from: fmt(dayjs().utc().startOf("year")),
+			to: fmt(dayjs().utc().endOf("year")),
 		}),
 	},
 ];

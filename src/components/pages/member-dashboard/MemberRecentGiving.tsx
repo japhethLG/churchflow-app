@@ -12,7 +12,7 @@ import {
 } from "@/components/primitives";
 import type { TransactionType } from "@/components/primitives/Badge";
 import { type components, nstr } from "@/lib/api";
-import dayjs from "@/lib/dayjs";
+import { relativeUtcDate } from "@/lib/dayjs";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
@@ -25,22 +25,6 @@ const TYPE_BADGE: Record<Transaction["type"], TransactionType> = {
 	COMMITMENT: "Commitment",
 	DONATION: "Donation",
 	OTHER: "Other",
-};
-
-const relativeDate = (iso: string): string => {
-	const d = dayjs(iso);
-	const now = dayjs();
-	const hours = now.diff(d, "hour", true);
-	if (hours < 24) {
-		return `Today · ${d.format("h:mma")}`;
-	}
-	if (hours < 48) {
-		return "Yesterday";
-	}
-	if (hours < 24 * 7) {
-		return `${Math.floor(hours / 24)}d ago`;
-	}
-	return d.format("MMM D");
 };
 
 // Member-side recent-giving table — mirrors the admin DashboardRecentGifts
@@ -69,7 +53,7 @@ export const MemberRecentGiving = ({
 			width: "120px",
 			render: (t) => (
 				<span className="text-sm text-muted-foreground">
-					{relativeDate(t.date)}
+					{relativeUtcDate(t.date)}
 				</span>
 			),
 		},
@@ -144,7 +128,7 @@ export const MemberRecentGiving = ({
 							</span>
 						</div>
 						<div className="mt-0.5 text-xs text-muted-foreground">
-							{relativeDate(t.date)}
+							{relativeUtcDate(t.date)}
 						</div>
 					</div>
 					<span className="shrink-0 text-sm font-bold tabular-nums">

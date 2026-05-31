@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Form, FormDatePicker, FormInput } from "@/components/formElements";
 import { useAddCampaignItem } from "@/lib/api/campaigns";
-import dayjs from "@/lib/dayjs";
+import { toUtcDayStart } from "@/lib/dayjs";
 import type { ModalBaseProps } from "@/lib/modals/registry";
 import { BaseModal } from "../BaseModal";
 import {
@@ -51,7 +51,7 @@ export const AddCampaignItemModal = ({
 					description: values.description.trim() || undefined,
 					targetAmount: Number(values.target),
 					deadline: values.deadline
-						? dayjs(values.deadline).toISOString()
+						? toUtcDayStart(values.deadline)
 						: undefined,
 					sortOrder: defaultSortOrder ?? 0,
 				},

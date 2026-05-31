@@ -103,9 +103,13 @@ export const CampaignOverviewTab = ({
 	const txItems = txQ.data?.items ?? [];
 
 	const timeline = useMemo(() => {
-		const start = dayjs(campaign.createdAt).startOf("day");
-		const end = deadline ? dayjs(deadline).endOf("day") : dayjs().endOf("day");
-		const clampedEnd = end.isBefore(dayjs()) ? end : dayjs().endOf("day");
+		const start = dayjs.utc(campaign.createdAt).startOf("day");
+		const end = deadline
+			? dayjs.utc(deadline).endOf("day")
+			: dayjs.utc().endOf("day");
+		const clampedEnd = end.isBefore(dayjs.utc())
+			? end
+			: dayjs.utc().endOf("day");
 		const durationDays = Math.max(1, clampedEnd.diff(start, "day"));
 		const bucket = pickBucket(durationDays);
 		const unit = bucketUnit[bucket];
@@ -124,7 +128,7 @@ export const CampaignOverviewTab = ({
 			}
 		}
 		for (const t of txItems) {
-			const d = dayjs(t.date).startOf(unit);
+			const d = dayjs.utc(t.date).startOf(unit);
 			const idx = d.diff(start.startOf(unit), unit);
 			if (idx >= 0 && idx < buckets.length) {
 				const b = buckets[idx];

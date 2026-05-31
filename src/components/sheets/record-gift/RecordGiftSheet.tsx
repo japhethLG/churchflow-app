@@ -18,7 +18,7 @@ import { Icon } from "@/components/primitives/Icon";
 import { BaseSheet } from "@/components/sheets/BaseSheet";
 import { useMembers } from "@/lib/api/members";
 import { useBulkCreateTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import { toUtcDayStart } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import type { SheetBaseProps } from "@/lib/sheets/registry";
 import { useSheetDrill } from "@/lib/sheets/useSheetDrill";
@@ -167,7 +167,7 @@ export const RecordGiftSheet = ({
 					items: savedGifts.map((g) => ({
 						type: g.type,
 						amount: Number(g.amount),
-						date: dayjs(date).toISOString(),
+						date: toUtcDayStart(date),
 						memberId: memberId || undefined,
 						campaignId: g.campaignId || undefined,
 						campaignItemId: g.campaignItemId || undefined,

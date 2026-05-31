@@ -10,7 +10,7 @@ import {
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
 import { num, pct, type TxType, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
@@ -143,7 +143,7 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 		openModal("confirm-restore-transaction", {
 			tenantId: tenantSlug,
 			transactionId: t.id,
-			summary: `${formatCurrency(t.amount)} on ${dayjs(t.date).format("MMM D, YYYY")}`,
+			summary: `${formatCurrency(t.amount)} on ${formatUtcDate(t.date, "MMM D, YYYY")}`,
 		});
 
 	const columns = transactionColumns({

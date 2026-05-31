@@ -20,7 +20,7 @@ import { type components, nstr } from "@/lib/api";
 import { useMyCampaign } from "@/lib/api/campaigns";
 import { useMyPledge } from "@/lib/api/pledges";
 import { useMyTransactions } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
 	daysUntil,
@@ -82,7 +82,7 @@ const buildTxColumns = (
 			width: "130px",
 			render: (tx) => (
 				<span className="text-sm text-muted-foreground">
-					{dayjs(tx.date).format("MMM D, YYYY")}
+					{formatUtcDate(tx.date, "MMM D, YYYY")}
 				</span>
 			),
 		},
@@ -298,7 +298,7 @@ export const MemberPledgeDetailPage = () => {
 							{typeLabel}
 						</div>
 						<div className="text-xs text-muted-foreground">
-							{dayjs(tx.date).format("MMM D, YYYY")}
+							{formatUtcDate(tx.date, "MMM D, YYYY")}
 						</div>
 					</div>
 					<span className="shrink-0 text-sm font-bold tabular-nums">
@@ -429,7 +429,7 @@ export const MemberPledgeDetailPage = () => {
 							<div className="mt-4 rounded-lg bg-muted/40 px-4 py-3 text-sm text-secondary-foreground">
 								To fulfill by{" "}
 								<span className="font-semibold text-foreground">
-									{dayjs(deadline).format("MMM D, YYYY")}
+									{formatUtcDate(deadline, "MMM D, YYYY")}
 								</span>{" "}
 								({pace.daysLeft}d), give about{" "}
 								<span className="font-semibold text-foreground">
