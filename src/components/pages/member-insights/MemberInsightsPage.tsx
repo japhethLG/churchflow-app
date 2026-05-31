@@ -22,7 +22,13 @@ import {
 } from "@/lib/api/transactions";
 import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
-import { num, pct, type TxType, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import {
+	num,
+	pct,
+	TX_TYPE_LABEL,
+	type TxType,
+	TYPE_COLOR,
+} from "../admin-shared";
 import { TransactionMixCard } from "../TransactionMixCard";
 
 // recharts charts loaded lazily so the chart library stays off this route's
@@ -225,7 +231,7 @@ export const MemberInsightsPage = () => {
 				const amount = num(b.total);
 				return {
 					key: b.type,
-					label: TYPE_LABEL[b.type as TxType],
+					label: TX_TYPE_LABEL[b.type as TxType],
 					color: TYPE_COLOR[b.type as TxType],
 					amount,
 					count: b.count,

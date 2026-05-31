@@ -1,11 +1,8 @@
 import { z } from "zod";
+import { requiredEmail } from "@/lib/form-validators";
 
 export const inviteMemberSchema = z.object({
-	email: z
-		.string()
-		.trim()
-		.min(1, "Email is required")
-		.email("Enter a valid email"),
+	email: requiredEmail(),
 	role: z.enum(["USER", "ADMIN"]),
 });
 

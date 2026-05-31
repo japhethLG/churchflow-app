@@ -23,6 +23,7 @@ import { nstr } from "@/lib/api/coerce";
 import { useMyProfile } from "@/lib/api/members";
 import { useMyPledges } from "@/lib/api/pledges";
 import { useMyTransactions } from "@/lib/api/transactions";
+import { CAMPAIGN_STATUS_LABELS } from "@/lib/constants/campaign";
 import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
@@ -35,15 +36,7 @@ import {
 	memberPledgeColumns,
 } from "../member-pledges/MemberPledgesTable";
 
-type Campaign = components["schemas"]["MyCampaignWithItemsResponseDto"];
 type CampaignAsRowCampaign = components["schemas"]["CampaignResponseDto"];
-
-const STATUS_MAP: Record<Campaign["status"], Status> = {
-	DRAFT: "Upcoming",
-	ACTIVE: "Active",
-	COMPLETED: "Completed",
-	CANCELLED: "Cancelled",
-};
 
 export const MemberCampaignDetailPage = () => {
 	const router = useRouter();
@@ -211,7 +204,7 @@ export const MemberCampaignDetailPage = () => {
 
 	const subtitle = (
 		<span className="inline-flex flex-wrap items-center gap-2">
-			<StatusBadge status={STATUS_MAP[campaign.status]} />
+			<StatusBadge status={CAMPAIGN_STATUS_LABELS[campaign.status] as Status} />
 			{deadline ? (
 				<span className="text-xs text-muted-foreground">
 					Deadline · {formatUtcDate(deadline, "MMM D, YYYY")}

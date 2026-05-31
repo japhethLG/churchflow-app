@@ -15,10 +15,12 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { usePledges } from "@/lib/api/pledges";
+import { PLEDGE_STATUS_FILTER_OPTIONS } from "@/lib/constants/pledge";
 import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
 	LIFECYCLE_LABEL,
+	lifecycleBadgeColor,
 	num,
 	type PledgeLifecycle,
 	pct,
@@ -28,31 +30,6 @@ type Member = components["schemas"]["MemberResponseDto"];
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
 type StatusFilter = "all" | "ACTIVE" | "FULFILLED" | "CANCELLED";
-
-const STATUS_OPTIONS = [
-	{ value: "all", label: "All statuses" },
-	{ value: "ACTIVE", label: "Active" },
-	{ value: "FULFILLED", label: "Fulfilled" },
-	{ value: "CANCELLED", label: "Cancelled" },
-];
-
-const lifecycleBadgeColor = (
-	l: PledgeLifecycle,
-): "green" | "red" | "amber" | "neutral" | "blue" => {
-	if (l === "past-due") {
-		return "red";
-	}
-	if (l === "due-soon") {
-		return "amber";
-	}
-	if (l === "fulfilled") {
-		return "green";
-	}
-	if (l === "on-track") {
-		return "blue";
-	}
-	return "neutral";
-};
 
 export const MemberPledgesTab = ({
 	member,
@@ -309,7 +286,7 @@ export const MemberPledgesTab = ({
 					label: "Status",
 					value: status,
 					onChange: (v) => setStatus(v as StatusFilter),
-					options: STATUS_OPTIONS,
+					options: PLEDGE_STATUS_FILTER_OPTIONS,
 				},
 				{ kind: "state", value: state, onChange: setState },
 			]}

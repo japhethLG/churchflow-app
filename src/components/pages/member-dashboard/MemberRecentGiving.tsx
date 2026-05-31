@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { TX_TYPE_LABEL } from "@/components/pages/admin-shared";
 import {
 	Amount,
 	type DataTableColumn,
@@ -10,22 +11,11 @@ import {
 	ExpandableCard,
 	TypeBadge,
 } from "@/components/primitives";
-import type { TransactionType } from "@/components/primitives/Badge";
 import { type components, nstr } from "@/lib/api";
 import { relativeUtcDate } from "@/lib/dayjs";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
-
-const TYPE_BADGE: Record<Transaction["type"], TransactionType> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
 
 // Member-side recent-giving table — mirrors the admin DashboardRecentGifts
 // composition but scopes to the caller's own transactions (the self
@@ -61,7 +51,7 @@ export const MemberRecentGiving = ({
 			key: "type",
 			label: "Type",
 			width: "130px",
-			render: (t) => <TypeBadge type={TYPE_BADGE[t.type]} />,
+			render: (t) => <TypeBadge type={TX_TYPE_LABEL[t.type]} />,
 		},
 		{
 			key: "campaign",
@@ -116,7 +106,7 @@ export const MemberRecentGiving = ({
 				<div className="flex items-center gap-3">
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-2">
-							<TypeBadge type={TYPE_BADGE[t.type]} />
+							<TypeBadge type={TX_TYPE_LABEL[t.type]} />
 							<span className="truncate text-xs text-muted-foreground">
 								{c?.deletedAt ? (
 									<DeletedLabel deletedAt={c.deletedAt}>{c.title}</DeletedLabel>

@@ -17,6 +17,7 @@ import {
 } from "@/components/primitives";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { usePledges } from "@/lib/api/pledges";
+import { PLEDGE_STATUS_FILTER_OPTIONS } from "@/lib/constants/pledge";
 import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
@@ -24,6 +25,7 @@ import { openModal } from "@/lib/modals/store";
 import { openSheet } from "@/lib/sheets/store";
 import {
 	LIFECYCLE_LABEL,
+	lifecycleBadgeColor,
 	num,
 	type PledgeLifecycle,
 	pct,
@@ -31,13 +33,6 @@ import {
 
 type StatusFilter = "all" | "ACTIVE" | "FULFILLED" | "CANCELLED";
 type LifecycleFilter = "all" | PledgeLifecycle;
-
-const STATUS_OPTIONS = [
-	{ value: "all", label: "All statuses" },
-	{ value: "ACTIVE", label: "Active" },
-	{ value: "FULFILLED", label: "Fulfilled" },
-	{ value: "CANCELLED", label: "Cancelled" },
-];
 
 const LIFECYCLE_OPTIONS = [
 	{ value: "all", label: "All lifecycle" },
@@ -47,19 +42,6 @@ const LIFECYCLE_OPTIONS = [
 	{ value: "fulfilled", label: "Fulfilled" },
 	{ value: "no-deadline", label: "No deadline" },
 ];
-
-const lifecycleBadgeColor = (
-	l: PledgeLifecycle,
-): "green" | "red" | "amber" | "neutral" | "blue" =>
-	l === "past-due"
-		? "red"
-		: l === "due-soon"
-			? "amber"
-			: l === "fulfilled"
-				? "green"
-				: l === "on-track"
-					? "blue"
-					: "neutral";
 
 export const PledgesListPage = () => {
 	const router = useRouter();
@@ -474,7 +456,7 @@ export const PledgesListPage = () => {
 				<DataTableShell
 					search={t.search("Search by member or campaign…")}
 					filters={[
-						t.select("status", "Status", STATUS_OPTIONS),
+						t.select("status", "Status", PLEDGE_STATUS_FILTER_OPTIONS),
 						t.select("lifecycle", "Lifecycle", LIFECYCLE_OPTIONS),
 						t.state(),
 						t.date("Created"),

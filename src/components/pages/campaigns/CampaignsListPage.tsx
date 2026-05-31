@@ -14,6 +14,11 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaigns, useCampaignsProgressBatch } from "@/lib/api/campaigns";
+import {
+	CAMPAIGN_STATUS_COLOR,
+	CAMPAIGN_STATUS_FILTER_OPTIONS,
+	type CampaignStatus,
+} from "@/lib/constants/campaign";
 import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
@@ -21,15 +26,7 @@ import { daysUntil, num, pct } from "../admin-shared";
 
 type Campaign = components["schemas"]["CampaignResponseDto"];
 
-type StatusFilter = "all" | "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
-
-const STATUS_OPTIONS = [
-	{ value: "all", label: "All statuses" },
-	{ value: "DRAFT", label: "Draft" },
-	{ value: "ACTIVE", label: "Active" },
-	{ value: "COMPLETED", label: "Completed" },
-	{ value: "CANCELLED", label: "Cancelled" },
-];
+type StatusFilter = "all" | CampaignStatus;
 
 export const CampaignsListPage = () => {
 	const router = useRouter();
@@ -200,19 +197,7 @@ export const CampaignsListPage = () => {
 			label: "Status",
 			width: "120px",
 			render: (c) => (
-				<Badge
-					color={
-						c.status === "ACTIVE"
-							? "green"
-							: c.status === "COMPLETED"
-								? "blue"
-								: c.status === "DRAFT"
-									? "neutral"
-									: "red"
-					}
-				>
-					{c.status}
-				</Badge>
+				<Badge color={CAMPAIGN_STATUS_COLOR[c.status]}>{c.status}</Badge>
 			),
 		},
 	];
@@ -233,14 +218,7 @@ export const CampaignsListPage = () => {
 				: days !== null && days <= 14
 					? "amber"
 					: "neutral";
-		const statusColor =
-			c.status === "ACTIVE"
-				? "green"
-				: c.status === "COMPLETED"
-					? "blue"
-					: c.status === "DRAFT"
-						? "neutral"
-						: "red";
+		const statusColor = CAMPAIGN_STATUS_COLOR[c.status];
 		return (
 			<ExpandableCard
 				href={`/${tenantSlug}/admin/campaigns/${c.id}`}
@@ -380,7 +358,10 @@ export const CampaignsListPage = () => {
 			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<DataTableShell<Campaign>
 					search={t.search("Search by title…")}
-					filters={[t.select("status", "Status", STATUS_OPTIONS), t.state()]}
+					filters={[
+						t.select("status", "Status", CAMPAIGN_STATUS_FILTER_OPTIONS),
+						t.state(),
+					]}
 					onClearFilters={t.clear}
 					stats={[
 						{ label: "total", value: filtered.length },

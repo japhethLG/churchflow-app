@@ -12,6 +12,7 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useCampaign, useCampaignProgress } from "@/lib/api/campaigns";
+import { CAMPAIGN_STATUS_COLOR } from "@/lib/constants/campaign";
 import { formatUtcDate } from "@/lib/dayjs";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
@@ -30,16 +31,6 @@ const TABS = [
 	{ value: "items", label: "Line items" },
 	{ value: "pledges", label: "Pledges" },
 ];
-
-const STATUS_BADGE: Record<
-	"DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED",
-	"neutral" | "green" | "blue" | "red"
-> = {
-	DRAFT: "neutral",
-	ACTIVE: "green",
-	COMPLETED: "blue",
-	CANCELLED: "red",
-};
 
 export const CampaignDetailPage = () => {
 	const router = useRouter();
@@ -172,7 +163,9 @@ export const CampaignDetailPage = () => {
 
 	const subtitle = (
 		<span className="inline-flex flex-wrap items-center gap-2">
-			<Badge color={STATUS_BADGE[campaign.status]}>{campaign.status}</Badge>
+			<Badge color={CAMPAIGN_STATUS_COLOR[campaign.status]}>
+				{campaign.status}
+			</Badge>
 			{deadlineStr ? (
 				<>
 					<span>Deadline · {formatUtcDate(deadlineStr, "MMMM D, YYYY")}</span>

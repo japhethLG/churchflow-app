@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { TX_TYPE_LABEL } from "@/components/pages/admin-shared";
 import {
 	Amount,
 	Avatar,
@@ -12,34 +13,13 @@ import {
 	SectionTitle,
 	TypeBadge,
 } from "@/components/primitives";
-import { type components, nstr } from "@/lib/api";
+import { nstr } from "@/lib/api";
 import { usePledge } from "@/lib/api/pledges";
 import { useTransaction, useTransactionSummary } from "@/lib/api/transactions";
 import dayjs, { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
 import { cn } from "@/lib/utils";
-
-type Tx = components["schemas"]["TransactionResponseDto"];
-
-const TYPE_BADGE_LABEL: Record<
-	Tx["type"],
-	| "Tithe"
-	| "Offering"
-	| "Mission"
-	| "First Fruit"
-	| "Commitment"
-	| "Donation"
-	| "Other"
-> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
 
 export const TransactionDetailPage = () => {
 	const router = useRouter();
@@ -146,7 +126,7 @@ export const TransactionDetailPage = () => {
 					label: "Transactions",
 				}}
 				title={formatCurrency(tx.amount)}
-				subtitle={`${TYPE_BADGE_LABEL[tx.type]} · ${formatUtcDate(tx.date, "dddd, MMMM D, YYYY")}`}
+				subtitle={`${TX_TYPE_LABEL[tx.type]} · ${formatUtcDate(tx.date, "dddd, MMMM D, YYYY")}`}
 				action={
 					!isDeleted ? (
 						<Button
@@ -212,7 +192,7 @@ export const TransactionDetailPage = () => {
 						<DetailRow label="Amount" value={<Amount value={tx.amount} />} />
 						<DetailRow
 							label="Type"
-							value={<TypeBadge type={TYPE_BADGE_LABEL[tx.type]} />}
+							value={<TypeBadge type={TX_TYPE_LABEL[tx.type]} />}
 						/>
 						<DetailRow
 							label="Reference #"

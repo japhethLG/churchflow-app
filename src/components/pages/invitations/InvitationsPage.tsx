@@ -13,6 +13,7 @@ import {
 	useTableFilters,
 } from "@/components/primitives";
 import { useInvitations } from "@/lib/api/invitations";
+import { ROLE_FILTER_OPTIONS } from "@/lib/constants/role";
 import dayjs from "@/lib/dayjs";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
@@ -31,12 +32,6 @@ const STATUS_OPTIONS = [
 	{ value: "ACCEPTED", label: "Accepted" },
 	{ value: "CANCELLED", label: "Cancelled" },
 	{ value: "EXPIRED", label: "Expired" },
-];
-
-const ROLE_OPTIONS = [
-	{ value: "all", label: "All roles" },
-	{ value: "ADMIN", label: "Admin" },
-	{ value: "USER", label: "Member" },
 ];
 
 export const InvitationsPage = () => {
@@ -190,7 +185,7 @@ export const InvitationsPage = () => {
 					search={t.search("Search by email…")}
 					filters={[
 						t.select("status", "Status", STATUS_OPTIONS),
-						t.select("role", "Role", ROLE_OPTIONS),
+						t.select("role", "Role", ROLE_FILTER_OPTIONS),
 						t.date("Date range"),
 					]}
 					onClearFilters={t.clear}

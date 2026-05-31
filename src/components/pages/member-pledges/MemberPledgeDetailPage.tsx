@@ -25,42 +25,16 @@ import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
 	daysUntil,
 	LIFECYCLE_LABEL,
+	lifecycleBadgeColor,
 	num,
 	type PledgeLifecycle,
 	pct,
 	pledgeLifecycle,
 	resolvePledgeDeadline,
+	TX_TYPE_LABEL,
 } from "../admin-shared";
 
 type Transaction = components["schemas"]["MyTransactionResponseDto"];
-
-const TX_TYPE_LABEL: Record<Transaction["type"], string> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission Giving",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
-
-const lifecycleBadgeColor = (
-	l: PledgeLifecycle,
-): "green" | "red" | "amber" | "neutral" | "blue" => {
-	if (l === "past-due") {
-		return "red";
-	}
-	if (l === "due-soon") {
-		return "amber";
-	}
-	if (l === "fulfilled") {
-		return "green";
-	}
-	if (l === "on-track") {
-		return "blue";
-	}
-	return "neutral";
-};
 
 // Payments table with a running-remaining column — gives the member a
 // tangible sense of "after this payment, how much do I still owe?".

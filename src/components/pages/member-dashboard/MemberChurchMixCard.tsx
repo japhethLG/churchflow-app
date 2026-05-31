@@ -4,7 +4,7 @@ import { Card, SectionTitle } from "@/components/primitives";
 import { DonutChart } from "@/components/primitives/charts/DonutChart";
 import type { components } from "@/lib/api";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
-import { num, pct, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import { num, pct, TX_TYPE_LABEL, TYPE_COLOR } from "../admin-shared";
 
 type Summary = components["schemas"]["MyChurchSummaryResponseDto"];
 
@@ -72,7 +72,7 @@ export const MemberChurchMixCard = ({
 			const amount = num(b.total);
 			return {
 				key: b.type,
-				label: TYPE_LABEL[b.type],
+				label: TX_TYPE_LABEL[b.type],
 				color: TYPE_COLOR[b.type],
 				amount,
 				count: b.count,

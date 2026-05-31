@@ -5,17 +5,9 @@ import { useMemo } from "react";
 import { PageHeader } from "@/components/primitives";
 import { nstr } from "@/lib/api";
 import { useCampaign, useUpdateCampaign } from "@/lib/api/campaigns";
-import { formatUtcDate, toUtcDayStart } from "@/lib/dayjs";
+import { toDateInput, toUtcDayStart } from "@/lib/dayjs";
 import { CampaignForm } from "./CampaignForm";
 import type { CampaignFormValues } from "./formHelpers";
-
-const toDateInput = (d: unknown): string => {
-	const s = nstr(d);
-	if (!s) {
-		return "";
-	}
-	return formatUtcDate(s, "YYYY-MM-DD");
-};
 
 export const CampaignEditPage = () => {
 	const router = useRouter();

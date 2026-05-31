@@ -30,43 +30,17 @@ import { openModal } from "@/lib/modals/store";
 import {
 	daysUntil,
 	LIFECYCLE_LABEL,
+	lifecycleBadgeColor,
 	num,
 	type PledgeLifecycle,
 	pct,
 	pledgeLifecycle,
 	resolvePledgeDeadline,
+	TX_TYPE_LABEL,
 } from "../admin-shared";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
-
-const TX_TYPE_LABEL: Record<Transaction["type"], string> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission Giving",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
-
-const lifecycleBadgeColor = (
-	l: PledgeLifecycle,
-): "green" | "red" | "amber" | "neutral" | "blue" => {
-	if (l === "past-due") {
-		return "red";
-	}
-	if (l === "due-soon") {
-		return "amber";
-	}
-	if (l === "fulfilled") {
-		return "green";
-	}
-	if (l === "on-track") {
-		return "blue";
-	}
-	return "neutral";
-};
 
 const buildTxColumns = ({
 	tenantSlug,

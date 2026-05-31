@@ -12,40 +12,26 @@ import {
 	PageHeader,
 	useTableFilters,
 } from "@/components/primitives";
-import { type TransactionType, TypeBadge } from "@/components/primitives/Badge";
+import { TypeBadge } from "@/components/primitives/Badge";
 import type { components } from "@/lib/api";
 import { useMyCampaigns } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
 import { useMyTransactions } from "@/lib/api/transactions";
-import dayjs, { formatUtcDate } from "@/lib/dayjs";
+import { TRANSACTION_TYPE_FILTER_OPTIONS } from "@/lib/constants/transaction";
+import dayjs, { dateRangeToWire, formatUtcDate } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
-import { num, pct, type TxType, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import {
+	num,
+	pct,
+	TX_TYPE_LABEL,
+	type TxType,
+	TYPE_COLOR,
+} from "../admin-shared";
 import { TransactionMixCard } from "../TransactionMixCard";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
-const TYPE_BADGE: Record<TxType, TransactionType> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
-
 type TypeFilter = "all" | TxType;
-
-const TYPE_OPTIONS = [
-	{ value: "all", label: "All types" },
-	{ value: "TITHE", label: "Tithe" },
-	{ value: "OFFERING", label: "Offering" },
-	{ value: "MISSION_GIVING", label: "Mission" },
-	{ value: "FIRST_FRUIT", label: "First fruit" },
-	{ value: "COMMITMENT", label: "Commitment" },
-	{ value: "DONATION", label: "Donation" },
-	{ value: "OTHER", label: "Other" },
-];
 
 // Default to year-to-date so the page lands on the most useful slice for
 // a member reviewing their giving history.
@@ -83,12 +69,7 @@ export const MemberTransactions = ({
 		[campaigns],
 	);
 
-	const dateFrom = range.from
-		? dayjs.utc(range.from).startOf("day").toISOString()
-		: undefined;
-	const dateTo = range.to
-		? dayjs.utc(range.to).endOf("day").toISOString()
-		: undefined;
+	const { dateFrom, dateTo } = dateRangeToWire(range);
 
 	// Filtered query — table + mix bar both consume this. The 12-month
 	// sparkline below uses a separate query (stable trailing window).
@@ -127,7 +108,7 @@ export const MemberTransactions = ({
 			.sort((a, b) => b[1].amount - a[1].amount)
 			.map(([k, v]) => ({
 				key: k,
-				label: TYPE_LABEL[k],
+				label: TX_TYPE_LABEL[k],
 				color: TYPE_COLOR[k],
 				amount: v.amount,
 				count: v.count,
@@ -153,7 +134,7 @@ export const MemberTransactions = ({
 			key: "type",
 			label: "Type",
 			width: "140px",
-			render: (t) => <TypeBadge type={TYPE_BADGE[t.type] || "Other"} />,
+			render: (t) => <TypeBadge type={TX_TYPE_LABEL[t.type]} />,
 		},
 		{
 			key: "campaign",
@@ -271,7 +252,7 @@ export const MemberTransactions = ({
 					</div>
 					<div className="flex shrink-0 flex-col items-end gap-1">
 						<Amount value={tx.amount} />
-						<TypeBadge type={TYPE_BADGE[tx.type] || "Other"} />
+						<TypeBadge type={TX_TYPE_LABEL[tx.type]} />
 					</div>
 				</div>
 			</ExpandableCard>
@@ -301,7 +282,7 @@ export const MemberTransactions = ({
 
 				<DataTableShell<Transaction>
 					filters={[
-						t.select("type", "Type", TYPE_OPTIONS),
+						t.select("type", "Type", TRANSACTION_TYPE_FILTER_OPTIONS),
 						t.select("campaign", "Campaign", [
 							{ value: "all", label: "All campaigns" },
 							...campaigns.map((c) => ({ value: c.id, label: c.title })),

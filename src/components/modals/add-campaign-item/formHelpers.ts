@@ -1,12 +1,10 @@
 import { z } from "zod";
+import { positiveAmount, requiredString } from "@/lib/form-validators";
 
 export const addCampaignItemSchema = z.object({
-	title: z.string().trim().min(1, "Title is required"),
+	title: requiredString("Title"),
 	description: z.string(),
-	target: z
-		.string()
-		.min(1, "Target amount is required")
-		.refine((v) => Number(v) > 0, "Target must be greater than 0"),
+	target: positiveAmount("Target", "Target amount"),
 	deadline: z.string(),
 });
 

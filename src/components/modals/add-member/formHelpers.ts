@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { optionalEmail, requiredString } from "@/lib/form-validators";
 
 export const addMemberSchema = z.object({
-	firstName: z.string().trim().min(1, "First name is required"),
-	lastName: z.string().trim().min(1, "Last name is required"),
-	email: z.union([z.literal(""), z.string().email("Enter a valid email")]),
+	firstName: requiredString("First name"),
+	lastName: requiredString("Last name"),
+	email: optionalEmail(),
 	phone: z.string(),
 	address: z.string(),
 });

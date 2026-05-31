@@ -12,7 +12,8 @@ import {
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
-import dayjs, { formatUtcDate } from "@/lib/dayjs";
+import { TRANSACTION_TYPE_FILTER_OPTIONS } from "@/lib/constants/transaction";
+import dayjs, { dateRangeToWire, formatUtcDate } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
 import { openModal } from "@/lib/modals/store";
@@ -29,28 +30,10 @@ type Campaign = components["schemas"]["CampaignResponseDto"];
 type TransactionType = TransactionRow["type"];
 type TypeFilter = "all" | TransactionType;
 
-const TYPE_OPTIONS = [
-	{ value: "all", label: "All types" },
-	{ value: "TITHE", label: "Tithe" },
-	{ value: "OFFERING", label: "Offering" },
-	{ value: "MISSION_GIVING", label: "Mission" },
-	{ value: "FIRST_FRUIT", label: "First fruit" },
-	{ value: "COMMITMENT", label: "Commitment" },
-	{ value: "DONATION", label: "Donation" },
-	{ value: "OTHER", label: "Other" },
-];
-
 const DEFAULT_RANGE: DateRangeValue = {
 	from: dayjs().utc().startOf("month").format("YYYY-MM-DD"),
 	to: dayjs().utc().endOf("month").format("YYYY-MM-DD"),
 };
-
-const toWireRange = (range: DateRangeValue) => ({
-	dateFrom: range.from
-		? dayjs.utc(range.from).startOf("day").toISOString()
-		: undefined,
-	dateTo: range.to ? dayjs.utc(range.to).endOf("day").toISOString() : undefined,
-});
 
 export const TransactionsListPage = () => {
 	const router = useRouter();
@@ -79,7 +62,7 @@ export const TransactionsListPage = () => {
 	});
 	const campaigns: Campaign[] = campaignsData?.items ?? [];
 
-	const wireRange = toWireRange(range);
+	const wireRange = dateRangeToWire(range);
 	const filters = {
 		type: type === "all" ? undefined : type,
 		campaignId: campaignId === "all" ? undefined : campaignId,
@@ -203,7 +186,7 @@ export const TransactionsListPage = () => {
 				<DataTableShell<TransactionRow>
 					search={t.search("Search note or reference…")}
 					filters={[
-						t.select("type", "Type", TYPE_OPTIONS),
+						t.select("type", "Type", TRANSACTION_TYPE_FILTER_OPTIONS),
 						t.select("campaignId", "Campaign", campaignFilterOptions),
 						t.state(),
 						t.date("Period"),

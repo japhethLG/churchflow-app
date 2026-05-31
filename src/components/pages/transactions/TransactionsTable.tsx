@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { TX_TYPE_LABEL } from "@/components/pages/admin-shared";
 import {
 	Amount,
 	Avatar,
-	type TransactionType as BadgeType,
 	type DataTableColumn,
 	DeletedLabel,
 	ExpandableCard,
@@ -18,16 +18,6 @@ import { formatCurrency } from "@/lib/format-currency";
 
 export type TransactionRow = components["schemas"]["TransactionResponseDto"];
 type EmbeddedMember = NonNullable<TransactionRow["member"]>;
-
-const TYPE_BADGE_LABEL: Record<TransactionRow["type"], BadgeType> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
 
 const fmtDate = (iso: string): string => {
 	return formatUtcDate(iso, "MMM D");
@@ -105,7 +95,7 @@ export const transactionColumns = ({
 		key: "type",
 		label: "Type",
 		width: "130px",
-		render: (t) => <TypeBadge type={TYPE_BADGE_LABEL[t.type]} />,
+		render: (t) => <TypeBadge type={TX_TYPE_LABEL[t.type]} />,
 	},
 	{
 		key: "campaign",
@@ -285,7 +275,7 @@ export const transactionMobileCard =
 						<span className="text-[15px] font-bold tabular-nums tracking-tight">
 							{formatCurrency(t.amount, { decimals: 0 })}
 						</span>
-						<TypeBadge type={TYPE_BADGE_LABEL[t.type]} />
+						<TypeBadge type={TX_TYPE_LABEL[t.type]} />
 					</div>
 				</div>
 			</ExpandableCard>

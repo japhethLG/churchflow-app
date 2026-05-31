@@ -10,10 +10,17 @@ import {
 import { type components, nstr } from "@/lib/api";
 import { useCampaigns } from "@/lib/api/campaigns";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
-import dayjs, { formatUtcDate } from "@/lib/dayjs";
+import { TRANSACTION_TYPE_FILTER_OPTIONS } from "@/lib/constants/transaction";
+import { dateRangeToWire, formatUtcDate } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { openModal } from "@/lib/modals/store";
-import { num, pct, type TxType, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import {
+	num,
+	pct,
+	TX_TYPE_LABEL,
+	type TxType,
+	TYPE_COLOR,
+} from "../admin-shared";
 import { TransactionMixCard } from "../TransactionMixCard";
 import {
 	type TransactionRow,
@@ -25,24 +32,6 @@ type Member = components["schemas"]["MemberResponseDto"];
 
 type TransactionType = TransactionRow["type"];
 type TypeFilter = "all" | TransactionType;
-
-const TYPE_OPTIONS = [
-	{ value: "all", label: "All types" },
-	{ value: "TITHE", label: "Tithe" },
-	{ value: "OFFERING", label: "Offering" },
-	{ value: "MISSION_GIVING", label: "Mission" },
-	{ value: "FIRST_FRUIT", label: "First fruit" },
-	{ value: "COMMITMENT", label: "Commitment" },
-	{ value: "DONATION", label: "Donation" },
-	{ value: "OTHER", label: "Other" },
-];
-
-const toWireRange = (range: DateRangeValue) => ({
-	dateFrom: range.from
-		? dayjs.utc(range.from).startOf("day").toISOString()
-		: undefined,
-	dateTo: range.to ? dayjs.utc(range.to).endOf("day").toISOString() : undefined,
-});
 
 export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 	const router = useRouter();
@@ -70,7 +59,7 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 	});
 	const campaigns = campaignsData?.items ?? [];
 
-	const wireRange = toWireRange(range);
+	const wireRange = dateRangeToWire(range);
 
 	// Member-scoped summary powers the donut + table breakdown above the
 	// transactions list. Tracks the date range AND the StateFilter (so the
@@ -94,7 +83,7 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 				const amount = num(b.total);
 				return {
 					key: b.type,
-					label: TYPE_LABEL[b.type as TxType],
+					label: TX_TYPE_LABEL[b.type as TxType],
 					color: TYPE_COLOR[b.type as TxType],
 					amount,
 					count: b.count,
@@ -180,7 +169,7 @@ export const MemberTransactionsTab = ({ member }: { member: Member }) => {
 			<DataTableShell<TransactionRow>
 				search={t.search("Search note or reference…")}
 				filters={[
-					t.select("type", "Type", TYPE_OPTIONS),
+					t.select("type", "Type", TRANSACTION_TYPE_FILTER_OPTIONS),
 					t.select("campaignId", "Campaign", campaignFilterOptions),
 					t.state(),
 					t.date("Date range"),

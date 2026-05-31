@@ -5,6 +5,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
+import { nstr } from "@/lib/api/coerce";
 
 // `utc` lets callers reach for `dayjs.utc()` when computing boundaries
 // they intend to ship over the wire. Without it, `dayjs().startOf("month")`
@@ -78,4 +79,31 @@ export const relativeUtcDate = (
 		return `${daysDiff}d ago`;
 	}
 	return formatUtcDate(iso, fallbackFormat);
+};
+
+/**
+ * Widen a calendar-day range (`YYYY-MM-DD` from DateRangePicker) into the
+ * wire shape list hooks expect: UTC start-of-day for the lower bound and
+ * UTC end-of-day for the (inclusive) upper bound, omitting absent bounds.
+ * This is the single source for the UTC-day widening the anti-patterns
+ * table calls out — model for transactions/TransactionsListPage toWireRange.
+ */
+export const dateRangeToWire = (range: {
+	from?: string;
+	to?: string;
+}): { dateFrom?: string; dateTo?: string } => ({
+	dateFrom: range.from ? toUtcDayStart(range.from) : undefined,
+	dateTo: range.to ? toUtcDayEnd(range.to) : undefined,
+});
+
+/**
+ * Normalize a wire date value into a `YYYY-MM-DD` string for an
+ * `<input type="date">` / DatePicker value. Returns "" when null/blank.
+ */
+export const toDateInput = (d: unknown): string => {
+	const s = nstr(d);
+	if (!s) {
+		return "";
+	}
+	return formatUtcDate(s, "YYYY-MM-DD");
 };

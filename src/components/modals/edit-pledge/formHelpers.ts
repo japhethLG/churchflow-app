@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { type components, nstr } from "@/lib/api";
+import { PLEDGE_STATUS_OPTIONS } from "@/lib/constants/pledge";
+import { positiveAmount } from "@/lib/form-validators";
 
 type Pledge = components["schemas"]["PledgeResponseDto"];
 
 export const editPledgeSchema = z.object({
-	amount: z
-		.string()
-		.min(1, "Amount is required")
-		.refine((v) => Number(v) > 0, "Amount must be greater than 0"),
+	amount: positiveAmount(),
 	status: z.enum(["ACTIVE", "FULFILLED", "CANCELLED"]),
 	note: z.string(),
 });
@@ -22,8 +21,4 @@ export const buildEditPledgeDefaults = (
 	note: nstr(pledge.note) ?? "",
 });
 
-export const STATUS_OPTIONS = [
-	{ value: "ACTIVE", label: "Active", description: "Still owed" },
-	{ value: "FULFILLED", label: "Fulfilled", description: "Fully paid" },
-	{ value: "CANCELLED", label: "Cancelled", description: "Withdrawn" },
-] as const;
+export const STATUS_OPTIONS = PLEDGE_STATUS_OPTIONS;

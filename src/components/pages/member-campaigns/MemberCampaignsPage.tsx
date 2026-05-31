@@ -20,6 +20,7 @@ import {
 } from "@/lib/api/campaigns";
 import { nstr } from "@/lib/api/coerce";
 import { useMyPledges } from "@/lib/api/pledges";
+import { CAMPAIGN_STATUS_LABELS } from "@/lib/constants/campaign";
 import { formatUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import { daysUntil, num, pct } from "../admin-shared";
@@ -28,20 +29,15 @@ type Campaign = components["schemas"]["CampaignResponseDto"];
 
 type StatusFilter = "all" | "ACTIVE" | "DRAFT" | "COMPLETED" | "CANCELLED";
 
+// Member filter keeps its own ordering (ACTIVE before DRAFT/"Upcoming");
+// labels derive from the shared member label map so wording can't drift.
 const STATUS_OPTIONS = [
 	{ value: "all", label: "All statuses" },
-	{ value: "ACTIVE", label: "Active" },
-	{ value: "DRAFT", label: "Upcoming" },
-	{ value: "COMPLETED", label: "Completed" },
-	{ value: "CANCELLED", label: "Cancelled" },
+	{ value: "ACTIVE", label: CAMPAIGN_STATUS_LABELS.ACTIVE },
+	{ value: "DRAFT", label: CAMPAIGN_STATUS_LABELS.DRAFT },
+	{ value: "COMPLETED", label: CAMPAIGN_STATUS_LABELS.COMPLETED },
+	{ value: "CANCELLED", label: CAMPAIGN_STATUS_LABELS.CANCELLED },
 ];
-
-const STATUS_MAP: Record<Campaign["status"], Status> = {
-	DRAFT: "Upcoming",
-	ACTIVE: "Active",
-	COMPLETED: "Completed",
-	CANCELLED: "Cancelled",
-};
 
 export const MemberCampaignsPage = () => {
 	const router = useRouter();
@@ -236,7 +232,9 @@ export const MemberCampaignsPage = () => {
 			key: "status",
 			label: "Status",
 			width: "120px",
-			render: (c) => <StatusBadge status={STATUS_MAP[c.status]} />,
+			render: (c) => (
+				<StatusBadge status={CAMPAIGN_STATUS_LABELS[c.status] as Status} />
+			),
 		},
 	];
 
@@ -302,7 +300,7 @@ export const MemberCampaignsPage = () => {
 							</Badge>
 						)}
 					</div>
-					<StatusBadge status={STATUS_MAP[c.status]} />
+					<StatusBadge status={CAMPAIGN_STATUS_LABELS[c.status] as Status} />
 				</div>
 			</ExpandableCard>
 		);

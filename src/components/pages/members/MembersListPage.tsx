@@ -15,6 +15,7 @@ import {
 } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import { useMembers, useMembersGivingTrend } from "@/lib/api/members";
+import { MEMBER_STATUS_FILTER_OPTIONS } from "@/lib/constants/member";
 import dayjs from "@/lib/dayjs";
 import { formatCompact } from "@/lib/format-currency";
 import { useMobileActions } from "@/lib/mobile-actions/store";
@@ -23,12 +24,6 @@ import { openModal } from "@/lib/modals/store";
 type Member = components["schemas"]["MemberResponseDto"];
 
 type StatusFilter = "all" | "active" | "inactive";
-
-const STATUS_OPTIONS = [
-	{ value: "all", label: "All statuses" },
-	{ value: "active", label: "Active" },
-	{ value: "inactive", label: "Inactive" },
-];
 
 export const MembersListPage = () => {
 	const router = useRouter();
@@ -286,7 +281,10 @@ export const MembersListPage = () => {
 			<div className="overflow-auto flex-1 px-4 pb-36 md:px-8 md:pb-8">
 				<DataTableShell<Member>
 					search={t.search("Search by name or email…")}
-					filters={[t.select("status", "Status", STATUS_OPTIONS), t.state()]}
+					filters={[
+						t.select("status", "Status", MEMBER_STATUS_FILTER_OPTIONS),
+						t.state(),
+					]}
 					onClearFilters={t.clear}
 					stats={[
 						{ label: "total", value: total },

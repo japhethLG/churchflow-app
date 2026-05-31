@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { TX_TYPE_LABEL } from "@/components/pages/admin-shared";
 import {
 	Amount,
 	Avatar,
-	type TransactionType as BadgeType,
 	Card,
 	type DataTableColumn,
 	DataTableShell,
@@ -17,16 +17,6 @@ import { relativeUtcDate } from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
 
 type Transaction = components["schemas"]["TransactionResponseDto"];
-
-const TYPE_BADGE_LABEL: Record<Transaction["type"], BadgeType> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
 
 export const DashboardRecentGifts = ({
 	transactions,
@@ -93,7 +83,7 @@ export const DashboardRecentGifts = ({
 			key: "type",
 			label: "Type",
 			width: "130px",
-			render: (t) => <TypeBadge type={TYPE_BADGE_LABEL[t.type]} />,
+			render: (t) => <TypeBadge type={TX_TYPE_LABEL[t.type]} />,
 		},
 		{
 			key: "campaign",
@@ -214,7 +204,7 @@ export const DashboardRecentGifts = ({
 											</span>
 										</div>
 										<div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-											<TypeBadge type={TYPE_BADGE_LABEL[t.type]} />
+											<TypeBadge type={TX_TYPE_LABEL[t.type]} />
 											{c ? (
 												<span className="truncate text-primary">{c.title}</span>
 											) : (

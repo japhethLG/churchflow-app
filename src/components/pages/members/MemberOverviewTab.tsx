@@ -19,19 +19,19 @@ import {
 	StatusBadge,
 	TypeBadge,
 } from "@/components/primitives";
-import type { TransactionType as BadgeType } from "@/components/primitives/Badge";
 import { type components, nstr } from "@/lib/api";
 import { useMemberSummary } from "@/lib/api/members";
 import { useTransactionSummary, useTransactions } from "@/lib/api/transactions";
+import { MIX_OPTIONS } from "@/lib/constants/transaction";
 import dayjs, { formatUtcDate, relativeUtcDate } from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
 import {
 	bucketSmallSegments,
 	num,
 	pickCategorical,
+	TX_TYPE_LABEL,
 	type TxType,
 	TYPE_COLOR,
-	TYPE_LABEL,
 } from "../admin-shared";
 import { transactionMobileCard } from "../transactions/TransactionsTable";
 
@@ -50,21 +50,6 @@ type Member = components["schemas"]["MemberResponseDto"];
 type Transaction = components["schemas"]["TransactionResponseDto"];
 
 type MixMode = "type" | "campaign";
-
-const MIX_OPTIONS = [
-	{ value: "type", label: "By type" },
-	{ value: "campaign", label: "By campaign" },
-];
-
-const TX_BADGE_LABEL: Record<Transaction["type"], BadgeType> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
-};
 
 export const MemberOverviewTab = ({
 	member,
@@ -171,7 +156,7 @@ export const MemberOverviewTab = ({
 					return {
 						value,
 						color: TYPE_COLOR[k],
-						label: TYPE_LABEL[k],
+						label: TX_TYPE_LABEL[k],
 						displayValue: formatCurrency(value, { decimals: 0 }),
 					};
 				})
@@ -213,7 +198,7 @@ export const MemberOverviewTab = ({
 			key: "type",
 			label: "Type",
 			width: "130px",
-			render: (t) => <TypeBadge type={TX_BADGE_LABEL[t.type]} />,
+			render: (t) => <TypeBadge type={TX_TYPE_LABEL[t.type]} />,
 		},
 		{
 			key: "campaign",

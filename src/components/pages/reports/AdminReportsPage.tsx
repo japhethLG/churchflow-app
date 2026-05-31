@@ -11,7 +11,7 @@ import {
 } from "@/components/primitives";
 import { usePledgesDynamicsReport } from "@/lib/api/pledges";
 import { useGiversReport, useTransactionSummary } from "@/lib/api/transactions";
-import dayjs from "@/lib/dayjs";
+import dayjs, { dateRangeToWire } from "@/lib/dayjs";
 import { GiversTab } from "./GiversTab";
 import { PledgeDynamicsTab } from "./PledgeDynamicsTab";
 import { TrendTab } from "./TrendTab";
@@ -100,13 +100,6 @@ const RANGE_PRESETS = [
 	},
 ];
 
-const toIso = (range: DateRangeValue) => ({
-	dateFrom: range.from
-		? dayjs.utc(range.from).startOf("day").toISOString()
-		: undefined,
-	dateTo: range.to ? dayjs.utc(range.to).endOf("day").toISOString() : undefined,
-});
-
 const priorYearRange = (range: DateRangeValue): DateRangeValue => ({
 	from: range.from
 		? dayjs(range.from).subtract(1, "year").format("YYYY-MM-DD")
@@ -121,8 +114,8 @@ export const AdminReportsPage = () => {
 	const [tab, setTab] = useState<Tab>("trend");
 	const [range, setRange] = useState<DateRangeValue>(DEFAULT_RANGE);
 
-	const currentRange = toIso(range);
-	const priorRange = toIso(priorYearRange(range));
+	const currentRange = dateRangeToWire(range);
+	const priorRange = dateRangeToWire(priorYearRange(range));
 
 	const currentSummary = useTransactionSummary(tenantSlug, {
 		dateFrom: currentRange.dateFrom,

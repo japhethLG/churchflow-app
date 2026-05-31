@@ -10,7 +10,7 @@ import {
 } from "@/components/primitives";
 import { useMyCampaigns } from "@/lib/api/campaigns";
 import { useMyPledges } from "@/lib/api/pledges";
-import dayjs from "@/lib/dayjs";
+import { dateRangeToWire } from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import { num, pct } from "../admin-shared";
 import {
@@ -47,14 +47,7 @@ export const MemberMyPledgesPage = () => {
 	};
 
 	// Self-scoped automatically by URL prefix.
-	const pledgesQ = useMyPledges(tenantSlug, {
-		dateFrom: range.from
-			? dayjs.utc(range.from).startOf("day").toISOString()
-			: undefined,
-		dateTo: range.to
-			? dayjs.utc(range.to).endOf("day").toISOString()
-			: undefined,
-	});
+	const pledgesQ = useMyPledges(tenantSlug, dateRangeToWire(range));
 	const pledges: MemberPledgeRow[] = pledgesQ.data?.items ?? [];
 
 	// Include archived campaigns so deleted-campaign cells can render

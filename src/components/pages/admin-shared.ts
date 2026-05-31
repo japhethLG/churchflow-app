@@ -2,12 +2,13 @@
 // preview-specific styling lives in the page composites; this file is
 // only for pure functions and small lookup tables.
 
+import type { BadgeColor, TransactionType } from "@/components/primitives";
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 
 export type TxType = components["schemas"]["TransactionResponseDto"]["type"];
 
-export const TYPE_LABEL: Record<TxType, string> = {
+export const TX_TYPE_LABEL: Record<TxType, TransactionType> = {
 	TITHE: "Tithe",
 	OFFERING: "Offering",
 	MISSION_GIVING: "Mission",
@@ -167,6 +168,25 @@ export const LIFECYCLE_COLOR: Record<PledgeLifecycle, string> = {
 	"past-due": "var(--chart-negative)",
 	"no-deadline": "var(--chart-prior)",
 	cancelled: "var(--muted-foreground)",
+};
+
+// Pledge lifecycle → Badge color for the inline lifecycle pill. Past-due
+// is red, due-soon amber, fulfilled green, on-track blue, everything else
+// neutral (no-deadline / cancelled).
+export const lifecycleBadgeColor = (l: PledgeLifecycle): BadgeColor => {
+	if (l === "past-due") {
+		return "red";
+	}
+	if (l === "due-soon") {
+		return "amber";
+	}
+	if (l === "fulfilled") {
+		return "green";
+	}
+	if (l === "on-track") {
+		return "blue";
+	}
+	return "neutral";
 };
 
 // Visit each item; drop those below `minFraction` of total and bucket

@@ -10,6 +10,7 @@ import dayjs from "@/lib/dayjs";
 import { formatCurrency } from "@/lib/format-currency";
 import {
 	LIFECYCLE_LABEL,
+	lifecycleBadgeColor,
 	num,
 	type PledgeLifecycle,
 	pct,
@@ -17,24 +18,6 @@ import {
 
 export type MemberPledgeRow = components["schemas"]["MyPledgeResponseDto"];
 type Campaign = components["schemas"]["CampaignResponseDto"];
-
-const lifecycleBadgeColor = (
-	l: PledgeLifecycle,
-): "green" | "red" | "amber" | "neutral" | "blue" => {
-	if (l === "past-due") {
-		return "red";
-	}
-	if (l === "due-soon") {
-		return "amber";
-	}
-	if (l === "fulfilled") {
-		return "green";
-	}
-	if (l === "on-track") {
-		return "blue";
-	}
-	return "neutral";
-};
 
 export const memberPledgeColumns = ({
 	campaignMap,

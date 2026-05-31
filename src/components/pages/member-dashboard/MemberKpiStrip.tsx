@@ -1,5 +1,6 @@
 "use client";
 
+import { TX_TYPE_LABEL, type TxType } from "@/components/pages/admin-shared";
 import { Amount, StatCard } from "@/components/primitives";
 import { TypeBadge } from "@/components/primitives/Badge";
 import dayjs from "@/lib/dayjs";
@@ -8,16 +9,6 @@ type Transaction = {
 	type: string;
 	amount: number;
 	date: string;
-};
-
-const TYPE_LABEL: Record<string, string> = {
-	TITHE: "Tithe",
-	OFFERING: "Offering",
-	MISSION_GIVING: "Mission",
-	FIRST_FRUIT: "First Fruit",
-	COMMITMENT: "Commitment",
-	DONATION: "Donation",
-	OTHER: "Other",
 };
 
 export const MemberKpiStrip = ({
@@ -60,7 +51,7 @@ export const MemberKpiStrip = ({
 
 	const recentCaption = recent
 		? (() => {
-				const typeLabel = TYPE_LABEL[recent.type] ?? recent.type;
+				const typeLabel = TX_TYPE_LABEL[recent.type as TxType] ?? recent.type;
 				const daysText =
 					recentDays === 0
 						? "Today"

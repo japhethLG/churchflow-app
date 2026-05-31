@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Card, SectionTitle } from "@/components/primitives";
 import type { components } from "@/lib/api";
-import { num, pct, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import { num, pct, TX_TYPE_LABEL, TYPE_COLOR } from "../admin-shared";
 import { TransactionMixCard } from "../TransactionMixCard";
 
 // recharts loaded only when the trend chart actually renders.
@@ -78,7 +78,7 @@ export const TrendTab = ({
 			const amount = num(b.total);
 			return {
 				key: b.type,
-				label: TYPE_LABEL[b.type],
+				label: TX_TYPE_LABEL[b.type],
 				color: TYPE_COLOR[b.type],
 				amount,
 				count: b.count,

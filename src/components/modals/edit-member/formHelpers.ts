@@ -1,12 +1,13 @@
 import { z } from "zod";
 import type { components } from "@/lib/api";
+import { optionalEmail, requiredString } from "@/lib/form-validators";
 
 type Member = components["schemas"]["MemberResponseDto"];
 
 export const editMemberSchema = z.object({
-	firstName: z.string().trim().min(1, "First name is required"),
-	lastName: z.string().trim().min(1, "Last name is required"),
-	email: z.union([z.literal(""), z.string().email("Enter a valid email")]),
+	firstName: requiredString("First name"),
+	lastName: requiredString("Last name"),
+	email: optionalEmail(),
 	phone: z.string(),
 	address: z.string(),
 	role: z.enum(["USER", "ADMIN"]),
@@ -29,12 +30,5 @@ export const buildEditMemberDefaults = (
 	status: member.status,
 });
 
-export const ROLE_OPTIONS = [
-	{ value: "USER", label: "Member" },
-	{ value: "ADMIN", label: "Admin" },
-] as const;
-
-export const STATUS_OPTIONS = [
-	{ value: "ACTIVE", label: "Active" },
-	{ value: "INACTIVE", label: "Inactive" },
-] as const;
+export { MEMBER_STATUS_OPTIONS as STATUS_OPTIONS } from "@/lib/constants/member";
+export { ROLE_OPTIONS } from "@/lib/constants/role";

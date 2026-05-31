@@ -1,5 +1,6 @@
 import { z } from "zod";
 import dayjs from "@/lib/dayjs";
+import { positiveAmount } from "@/lib/form-validators";
 
 const TRANSACTION_TYPES = [
 	"TITHE",
@@ -26,10 +27,7 @@ export const giftRowSchema = z.object({
 	// API boundary.
 	rowId: z.string().min(1),
 	type: z.enum(TRANSACTION_TYPES),
-	amount: z
-		.string()
-		.min(1, "Amount is required")
-		.refine((v) => Number(v) > 0, "Amount must be greater than 0"),
+	amount: positiveAmount(),
 	campaignId: z.string(),
 	campaignItemId: z.string(),
 	pledgeId: z.string(),

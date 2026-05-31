@@ -14,7 +14,12 @@ import {
 import type { components } from "@/lib/api";
 import dayjs from "@/lib/dayjs";
 import { formatCompact, formatCurrency } from "@/lib/format-currency";
-import { num, pickCategorical, TYPE_COLOR, TYPE_LABEL } from "../admin-shared";
+import {
+	num,
+	pickCategorical,
+	TX_TYPE_LABEL,
+	TYPE_COLOR,
+} from "../admin-shared";
 
 type Report = components["schemas"]["GiversReportResponseDto"];
 
@@ -157,7 +162,7 @@ export const GiversTab = ({
 											.map((b) => ({
 												value: b.amount,
 												color: TYPE_COLOR[b.type],
-												label: TYPE_LABEL[b.type],
+												label: TX_TYPE_LABEL[b.type],
 												displayValue: formatCurrency(b.amount, {
 													decimals: 0,
 												}),
